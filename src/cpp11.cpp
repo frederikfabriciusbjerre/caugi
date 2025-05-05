@@ -5,6 +5,13 @@
 #include "cpp11/declarations.hpp"
 #include <R_ext/Visibility.h>
 
+// caugi_distance_hd.cpp
+int caugi_distance_hd(const std::vector<int>& row_ptr1, const std::vector<int>& col_ids1, const std::vector<int>& row_ptr2, const std::vector<int>& col_ids2);
+extern "C" SEXP _caugi_caugi_distance_hd(SEXP row_ptr1, SEXP col_ids1, SEXP row_ptr2, SEXP col_ids2) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(caugi_distance_hd(cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(row_ptr1), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(col_ids1), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(row_ptr2), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(col_ids2)));
+  END_CPP11
+}
 // csr_to_amat.cpp
 SEXP caugi_create_amat_from_csr(const integers& row_ptr, const integers& col_ids, const integers& type_codes, std::string type);
 extern "C" SEXP _caugi_caugi_create_amat_from_csr(SEXP row_ptr, SEXP col_ids, SEXP type_codes, SEXP type) {
@@ -48,6 +55,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_caugi_caugi_create_csr_from_csr",    (DL_FUNC) &_caugi_caugi_create_csr_from_csr,    4},
     {"_caugi_caugi_create_csr_from_dense",  (DL_FUNC) &_caugi_caugi_create_csr_from_dense,  1},
     {"_caugi_caugi_create_csr_from_sparse", (DL_FUNC) &_caugi_caugi_create_csr_from_sparse, 2},
+    {"_caugi_caugi_distance_hd",            (DL_FUNC) &_caugi_caugi_distance_hd,            4},
     {NULL, NULL, 0}
 };
 }
