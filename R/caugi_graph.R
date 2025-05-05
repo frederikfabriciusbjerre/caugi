@@ -86,7 +86,7 @@ caugi_graph <- function(...) {
 
     # infer nodes if absent
     if (is.null(nodes)) {
-      nodes <- tibble::tibble(name = unique(c(edges$from, edges$to)))
+      nodes <- tibble::tibble(name = sort(unique(c(edges$from, edges$to))))
     } else {
       missing <- setdiff(unique(c(edges$from, edges$to)), nodes$name)
       if (length(missing)) {

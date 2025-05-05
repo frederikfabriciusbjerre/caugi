@@ -65,6 +65,8 @@ test_that("Directed edges and undirected edges are handled correctly", {
     "B" %-->% "A",
     "C" %<->% "B"
   )
+  print(g1)
+  print(g2)
 
   expect_equal(hd(g1, g2), 0)
 })

@@ -6,10 +6,10 @@
 #include <R_ext/Visibility.h>
 
 // caugi_distance_hd.cpp
-int caugi_distance_hd(const std::vector<int>& row_ptr1, const std::vector<int>& col_ids1, const std::vector<int>& row_ptr2, const std::vector<int>& col_ids2);
-extern "C" SEXP _caugi_caugi_distance_hd(SEXP row_ptr1, SEXP col_ids1, SEXP row_ptr2, SEXP col_ids2) {
+int caugi_distance_hd(const std::vector<int>& row_ptr1, const std::vector<int>& col_ids1, const std::vector<int>& type_codes1, const std::vector<int>& row_ptr2, const std::vector<int>& col_ids2, const std::vector<int>& type_codes2);
+extern "C" SEXP _caugi_caugi_distance_hd(SEXP row_ptr1, SEXP col_ids1, SEXP type_codes1, SEXP row_ptr2, SEXP col_ids2, SEXP type_codes2) {
   BEGIN_CPP11
-    return cpp11::as_sexp(caugi_distance_hd(cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(row_ptr1), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(col_ids1), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(row_ptr2), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(col_ids2)));
+    return cpp11::as_sexp(caugi_distance_hd(cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(row_ptr1), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(col_ids1), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(type_codes1), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(row_ptr2), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(col_ids2), cpp11::as_cpp<cpp11::decay_t<const std::vector<int>&>>(type_codes2)));
   END_CPP11
 }
 // csr_to_amat.cpp
@@ -55,7 +55,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_caugi_caugi_create_csr_from_csr",    (DL_FUNC) &_caugi_caugi_create_csr_from_csr,    4},
     {"_caugi_caugi_create_csr_from_dense",  (DL_FUNC) &_caugi_caugi_create_csr_from_dense,  1},
     {"_caugi_caugi_create_csr_from_sparse", (DL_FUNC) &_caugi_caugi_create_csr_from_sparse, 2},
-    {"_caugi_caugi_distance_hd",            (DL_FUNC) &_caugi_caugi_distance_hd,            4},
+    {"_caugi_caugi_distance_hd",            (DL_FUNC) &_caugi_caugi_distance_hd,            6},
     {NULL, NULL, 0}
 };
 }
