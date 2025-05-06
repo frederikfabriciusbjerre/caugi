@@ -3,4 +3,3 @@
 ^examples($|/)
 ^caugi[.]Rproj$
 ^[.]Rproj[.]user$
-^.*\.Rproj$
