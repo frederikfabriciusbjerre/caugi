@@ -27,17 +27,17 @@ caugi_graph <- function(...) {
 
   # two-tibble path
   if (length(dots) == 2 &&
-    is.data.frame(dots[[1]]) &&
-    "name" %in% names(dots[[1]]) &&
-    is.data.frame(dots[[2]]) &&
-    all(c("from", "to", "edge_type") %in% names(dots[[2]]))) {
+      is.data.frame(dots[[1]]) &&
+      "name" %in% names(dots[[1]]) &&
+      is.data.frame(dots[[2]]) &&
+      all(c("from", "to", "edge_type") %in% names(dots[[2]]))) {
     nodes <- dots[[1]]
     edges <- dots[[2]]
   } else {
     # flexible path
     ## Peel off an optional leading node tibble
     if (length(dots) && is.data.frame(dots[[1]]) &&
-      "name" %in% names(dots[[1]])) {
+        "name" %in% names(dots[[1]])) {
       nodes <- dots[[1]]
       dots <- dots[-1]
     } else {
@@ -54,9 +54,9 @@ caugi_graph <- function(...) {
     )
     if (any(bad)) {
       stop("All arguments after an optional node tibble must be\n",
-        "  * a two-sided formula (A ~ B) or\n",
-        "  * an edge spec produced by %-->%, %<->%, %---%, %o--%, %o->%, or %o-o%",
-        call. = FALSE
+           "  * a two-sided formula (A ~ B) or\n",
+           "  * an edge spec produced by %-->%, %<->%, %---%, %o--%, %o->%, or %o-o%",
+           call. = FALSE
       )
     }
 
@@ -66,7 +66,7 @@ caugi_graph <- function(...) {
       rhs <- all.vars(rlang::f_rhs(fml))
       if (!length(lhs) || !length(rhs)) {
         stop("Formula ", deparse(fml), " must have names both sides.",
-          call. = FALSE
+             call. = FALSE
         )
       }
       tidyr::crossing(from = lhs, to = rhs) |>
@@ -86,13 +86,13 @@ caugi_graph <- function(...) {
 
     # infer nodes if absent
     if (is.null(nodes)) {
-      nodes <- tibble::tibble(name = sort(unique(c(edges$from, edges$to))))
+      nodes <- tibble::tibble(name = unique(c(edges$from, edges$to)))
     } else {
       missing <- setdiff(unique(c(edges$from, edges$to)), nodes$name)
       if (length(missing)) {
         stop("Edge list refers to unknown node(s): ",
-          paste(missing, collapse = ", "),
-          call. = FALSE
+             paste(missing, collapse = ", "),
+             call. = FALSE
         )
       }
     }
@@ -108,12 +108,7 @@ caugi_graph <- function(...) {
       edges[swap_needed, c("to", "from")]
   }
   # remove duplicate edges
-  edges <- dplyr::distinct(edges,
-    .data$from,
-    .data$to,
-    .data$edge_type,
-    .keep_all = TRUE
-  )
+  edges <- dplyr::distinct(edges, from, to, edge_type, .keep_all = TRUE)
 
   # check edge types
   type_codes <- as.integer(factor(edges$edge_type, levels = edge_type_levels))
@@ -226,17 +221,17 @@ caugi_graph_from_csr <- function(node_names, ptrs) {
 check_edge_integer <- function(x) {
   if (!rlang::is_integerish(x)) {
     stop("Edge integer must be an integer",
-      .call = FALSE
+         .call = FALSE
     )
   }
   if (any(x < 1L | x > length(edge_type_levels))) {
     stop("Edge integer must be between 1 and ", length(edge_type_levels),
-      .call = FALSE
+         .call = FALSE
     )
   }
   if (anyNA(x)) {
     stop("Edge integer must not be NA",
-      .call = FALSE
+         .call = FALSE
     )
   }
   invisible(TRUE)
