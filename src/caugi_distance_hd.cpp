@@ -1,10 +1,6 @@
-#include <iostream>
-#include <ostream>  // For std::endl
-#include <set>
-#include <vector>   // For std::vector
-#include <algorithm> // For std::min and std::max
-#include <cpp11.hpp>  // Ensure cpp11 is included
-
+#include <iostream>  // For std::cout
+#include <cpp11.hpp>  // cpp11 library
+#include <vector>
 
 [[cpp11::register]]
 int caugi_distance_hd(const std::vector<int>& row_ptr1, const std::vector<int>& col_ids1, const std::vector<int>& type_codes1,
@@ -12,8 +8,14 @@ int caugi_distance_hd(const std::vector<int>& row_ptr1, const std::vector<int>& 
 
   const int n = row_ptr1.size() - 1;
 
-  // Fix the size comparison: cast size to int
-  if (static_cast<int>(row_ptr2.size()) != n + 1) cpp11::stop("Graphs have different #vertices");
+  // Debug: Print sizes of row_ptrs
+  std::cout << "Row_ptr1 size: " << row_ptr1.size() << std::endl;
+  std::cout << "Row_ptr2 size: " << row_ptr2.size() << std::endl;
+
+  if (row_ptr2.size() != n + 1) {
+    std::cerr << "Error: Graphs have different #vertices!" << std::endl;
+    cpp11::stop("Graphs have different #vertices");
+  }
 
   int dist = 0;
 
@@ -24,19 +26,28 @@ int caugi_distance_hd(const std::vector<int>& row_ptr1, const std::vector<int>& 
     auto it2  = col_ids2.begin() + row_ptr2[v];
     auto end2 = col_ids2.begin() + row_ptr2[v + 1];
 
+    // Debug: Print the edges for each vertex
+    std::cout << "Edges for graph 1 (vertex " << v << "): ";
+    for (auto it = it1; it != end1; ++it) {
+      std::cout << *it << " ";
+    }
+    std::cout << std::endl;  // New line after the edges of graph 1
+
+    std::cout << "Edges for graph 2 (vertex " << v << "): ";
+    for (auto it = it2; it != end2; ++it) {
+      std::cout << *it << " ";
+    }
+    std::cout << std::endl;  // New line after the edges of graph 2
+
     while (it1 != end1 && it2 != end2) {
-      // Compare edges
       if (*it1 == *it2) {
-        // Same edge, no difference
         ++it1; ++it2;
       }
       else if (*it1 < *it2) {
-        // Edge only in the first graph
         ++dist;
         ++it1;
       }
       else {
-        // Edge only in the second graph
         ++dist;
         ++it2;
       }
@@ -46,6 +57,8 @@ int caugi_distance_hd(const std::vector<int>& row_ptr1, const std::vector<int>& 
     dist += (end1 - it1) + (end2 - it2);
   }
 
+  // Print final Hamming distance
+  std::cout << "Hamming Distance: " << dist << std::endl;
+
   return dist;
 }
-
