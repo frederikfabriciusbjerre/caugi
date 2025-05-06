@@ -108,7 +108,12 @@ caugi_graph <- function(...) {
       edges[swap_needed, c("to", "from")]
   }
   # remove duplicate edges
-  edges <- dplyr::distinct(edges, from, to, edge_type, .keep_all = TRUE)
+  edges <- dplyr::distinct(edges,
+                           .data$from,
+                           .data$to,
+                           .data$edge_type,
+                           .keep_all = TRUE
+  )
 
   # check edge types
   type_codes <- as.integer(factor(edges$edge_type, levels = edge_type_levels))
