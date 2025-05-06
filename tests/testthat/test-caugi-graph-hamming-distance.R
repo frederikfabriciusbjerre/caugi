@@ -17,10 +17,12 @@ test_that("Identical graphs have Hamming distance 0", {
 test_that("Graphs differ in one edge", {
   g1 <- caugi_graph(
     "A" %-->% "B",
-    "B" %<->% "C"
+    "B" %<->% "C",
+    "C" %<->% "C"
   )
   g2 <- caugi_graph(
-    "A" %-->% "B"
+    "A" %-->% "B",
+    "C" %<->% "C"
   )
 
   # Hamming distance between graphs differing by one edge should be 1
@@ -35,7 +37,7 @@ test_that("Graphs differ in two edge", {
   )
   g2 <- caugi_graph(
     "A" %-->% "B",
-    "C" %<->% "D"
+    "C" %<->% "A"
   )
 
   # Hamming distance between graphs differing by one edge should be 2
@@ -45,11 +47,11 @@ test_that("Graphs differ in two edge", {
 
 test_that("Graphs differ in four edges", {
   g1 <- caugi_graph(
-    "A" %-->% "B",
+    "A" %-->% "D",
     "B" %<->% "C"
   )
   g2 <- caugi_graph(
-    "A" %-->% "C",
+    "A" %-->% "B",
     "C" %<->% "D"
   )
   # Hamming distance between graphs differing by two edges should be 4
