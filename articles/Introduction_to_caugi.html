@@ -79,12 +79,7 @@
 <span><span class="co"># install.packages("caugi")</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load the package</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://frederikfabriciusbjerre.github.io/caugi/">caugi</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'caugi'</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:utils':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     de</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://frederikfabriciusbjerre.github.io/caugi/">caugi</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="what-is-caugi">What is <code>caugi</code>?<a class="anchor" aria-label="anchor" href="#what-is-caugi"></a>
 </h2>
@@ -279,18 +274,18 @@ you can both use symbols, characters, or indices.</p>
 <span>  <span class="va">E</span> <span class="op">%---%</span> <span class="cn">F</span>,</span>
 <span>  class <span class="op">=</span> <span class="st">"PDAG"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/parents.html">pa</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">D</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">D</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 1</span></span></span>
 <span><span class="co">#&gt;   name </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> B    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> C</span></span>
-<span><span class="fu"><a href="../reference/children.html">ch</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 1</span></span></span>
 <span><span class="co">#&gt;   name </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> D</span></span>
-<span><span class="fu"><a href="../reference/neighbors.html">nb</a></span><span class="op">(</span><span class="va">cg</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">B</span>, <span class="va">C</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">B</span>, <span class="va">C</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
 <span><span class="co">#&gt;   name </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
