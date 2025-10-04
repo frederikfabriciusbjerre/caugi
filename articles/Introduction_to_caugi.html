@@ -172,20 +172,17 @@ can do so like this:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/caugi_graph.html">caugi_graph</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op">%&lt;--%</span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"PDAG"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
 <span><span class="co">#&gt;   name </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> D    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
 <span><span class="co">#&gt;   from  edge  to   </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     --&gt;   B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A     --&gt;   C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> B     --&gt;   D    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> C     --&gt;   D</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B     &lt;--   C</span></span>
 <span></span>
 <span><span class="co"># reset the registry to default with original edges</span></span>
 <span><span class="fu"><a href="../reference/reset_caugi_registry.html">reset_caugi_registry</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -225,37 +222,39 @@ or parentheses to group.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">Y</span>, <span class="va">Z</span><span class="op">)</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">W</span>, <span class="co"># Y → W and Z → W</span></span>
 <span>  <span class="op">(</span><span class="va">A</span> <span class="op">+</span> <span class="va">B</span><span class="op">)</span> <span class="op">%---%</span> <span class="op">(</span><span class="va">C</span> <span class="op">+</span> <span class="va">D</span><span class="op">)</span> <span class="co"># all undirected pairs across groups</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 1</span></span></span>
 <span><span class="co">#&gt;   name </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> D    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> X    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Y    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Z    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> A    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> B    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> W    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> C    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> D    </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 3</span></span></span>
 <span><span class="co">#&gt;   from  edge  to   </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     --&gt;   B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A     --&gt;   C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> B     --&gt;   D    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> C     --&gt;   D</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     ---   C    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A     ---   D    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> B     ---   C    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> B     ---   D    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> X     --&gt;   Y    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> X     --&gt;   Z    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> Y     --&gt;   W    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> Z     --&gt;   W</span></span></code></pre></div>
 <p>Unconnected symbols also declare nodes:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/caugi_graph.html">caugi_graph</a></span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span>, <span class="va">C</span><span class="op">)</span> <span class="co"># declares three isolated nodes</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
 <span><span class="co">#&gt;   name </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> D    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
-<span><span class="co">#&gt;   from  edge  to   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     --&gt;   B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A     --&gt;   C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> B     --&gt;   D    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> C     --&gt;   D</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 0 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 variables: from &lt;chr&gt;, edge &lt;chr&gt;, to &lt;chr&gt;</span></span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
