@@ -6,6 +6,8 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/articles/index.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/authors.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/index.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/adjustment_set.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/all_backdoor_sets.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/ancestors.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/as_caugi.amat.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/as_caugi.data.frame.html</loc></url>
@@ -25,6 +27,7 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/collapse_directed_PAG_to_symmetric_PAG.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/collapse_directed_to_symmetric_edges.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/collapse_symmetric_edges.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/d_separated.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/descendants.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-cg_state.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-collect_edges_nodes.html</loc></url>
@@ -47,6 +50,7 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-register_edge.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-relations.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-resolve_idx.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-resolve_idx_adjustment.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-resolve_idx_from_index.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-split_plus.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-update_caugi_graph.html</loc></url>
@@ -59,6 +63,7 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_dag.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_empty_caugi.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_pdag.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_valid_backdoor.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/length.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/markov_blanket.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.html</loc></url>
