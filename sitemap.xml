@@ -38,6 +38,7 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-edge_units_to_tibble.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-expand_nodes.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-expand_targets.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-flatten_edge_chain.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-get_edges_tibble.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-get_nodes_tibble.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-getter_output.html</loc></url>
@@ -52,6 +53,7 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-resolve_idx.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-resolve_idx_adjustment.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-resolve_idx_from_index.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-segment_units.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-split_plus.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-update_caugi_graph.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/exogenous.html</loc></url>
