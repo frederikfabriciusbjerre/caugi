@@ -75,6 +75,7 @@ infix operators. Nodes can be specified as symbols, strings, or numbers.</p>
 <span>  from <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  edge <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  to <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  nodes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  simple <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  build <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Unknown"</span>, <span class="st">"DAG"</span>, <span class="st">"PDAG"</span><span class="op">)</span></span>
@@ -105,6 +106,10 @@ Optional; mutually exclusive with <code>...</code>.</p></dd>
 <dt id="arg-to">to<a class="anchor" aria-label="anchor" href="#arg-to"></a></dt>
 <dd><p>Character vector of target node names.
 Optional; mutually exclusive with <code>...</code>.</p></dd>
+
+
+<dt id="arg-nodes">nodes<a class="anchor" aria-label="anchor" href="#arg-nodes"></a></dt>
+<dd><p>Character vector of node names to declare as isolated nodes.</p></dd>
 
 
 <dt id="arg-simple">simple<a class="anchor" aria-label="anchor" href="#arg-simple"></a></dt>
