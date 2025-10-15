@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   Introduction_to_caugi: Introduction_to_caugi.html
-last_built: 2025-10-14T19:41Z
+last_built: 2025-10-15T08:35Z
 urls:
   reference: https://frederikfabriciusbjerre.github.io/caugi/reference
   article: https://frederikfabriciusbjerre.github.io/caugi/articles
