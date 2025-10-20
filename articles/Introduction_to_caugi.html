@@ -34,6 +34,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/Introduction_to_caugi.html">Introduction to `caugi`</a></li>
+    <li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
+    <li><a class="dropdown-item" href="../articles/package_use.html">How to use caugi in a package</a></li>
+    <li><a class="dropdown-item" href="../articles/performance.html">Performance</a></li>
   </ul>
 </li>
       </ul>
@@ -89,35 +92,6 @@ Graph Interface</strong>.</p>
 causal graphs. You define graphs with readable infix operators, query
 relations, and keep R code nice and tidy, while Rust handles
 performance.</p>
-</div>
-<div class="section level2">
-<h2 id="why-caugi">Why <code>caugi</code>?<a class="anchor" aria-label="anchor" href="#why-caugi"></a>
-</h2>
-<p>Causal graphs are easy to draw and aid us in understanding causal
-mechanisms by visual representation. In R, representing them can feel
-clunky. We usually resort to adjacency matrices, edge lists, or packages
-like <code>igraph</code> or <code>graph</code>.</p>
-<p>These packages are great and each have their strengths, but they are
-not built for <em>causal</em> graphs, which often have special edge
-types and properties.</p>
-<p>In the same way, adjacency matrices can be hard to read, especially
-since different standards exists for representing different types of
-causal relationships. For example, it is not even standardized, if
-<code>A[i,j] == 1</code> represents <code>i --&gt; j</code> or
-<code>j --&gt; i</code>, or how to represent a PAG edge such as
-<code>o-&gt;</code>.</p>
-<p>For people working in causal inference and causal discovery, this can
-lead to clunky, hacky code that is hard to read and maintain.
-<code>caugi</code> aims to fix this with a well thought, readable
-syntax, which mimics how we draw graphs in hand.</p>
-<p>When makeshift solutions are used to represent causal graphs, it
-leads to not only bugs, but confusion and wasted time. With
-<code>caugi</code> we aim to make causal graphs safe to work with, so
-you do not accidentally create invalid graphs, and so you can focus on
-the causal problems at hand, not on the representation.</p>
-<p>So why <code>caugi</code>? <code>caugi</code> makes it easy to
-define, query, and modify causal graphs in R with a clean syntax and
-fast performance.</p>
 </div>
 <div class="section level2">
 <h2 id="the-basic-object-caugi_graph">The basic object: <code>caugi_graph</code><a class="anchor" aria-label="anchor" href="#the-basic-object-caugi_graph"></a>
@@ -387,7 +361,7 @@ future:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] vctrs_0.6.5       cli_3.6.5         knitr_1.50        rlang_1.1.6      </span></span>
-<span><span class="co">#&gt;  [5] xfun_0.53         generics_0.1.4    S7_0.2.0          textshaping_1.0.4</span></span>
+<span><span class="co">#&gt;  [5] xfun_0.53         generics_0.1.4    textshaping_1.0.4 S7_0.2.0         </span></span>
 <span><span class="co">#&gt;  [9] jsonlite_2.0.0    glue_1.8.0        htmltools_0.5.8.1 ragg_1.5.0       </span></span>
 <span><span class="co">#&gt; [13] sass_0.4.10       rmarkdown_2.30    tibble_3.3.0      evaluate_1.0.5   </span></span>
 <span><span class="co">#&gt; [17] jquerylib_0.1.4   fastmap_1.2.0     yaml_2.3.10       lifecycle_1.0.4  </span></span>
