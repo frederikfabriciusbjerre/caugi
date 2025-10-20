@@ -62,7 +62,7 @@ So why `caugi`? `caugi` makes it easy to define, query, and modify causal graphs
 
 A `caugi_graph` is the bread and butter of `caugi`. It is easy to create, query, and modify. 
 
-You can create simple graphs as well as a large number of predefined graph classes. Currently, we only support `"Unknown"`, `"DAG"`, or `"PDAG"`. We plan on supporting several other causal graph types in future releases, such as `"PAG"`, `"CPDAG"`, `"MAG"`, `"SWIG"`, and `"ADMG"`.
+You can create simple graphs as well as a large number of predefined graph classes. Currently, we support `"Unknown"`, `"DAG"`, `"PDAG"`, and `"ADMG"`. We plan on supporting several other causal graph types in future releases, such as `"PAG"`, `"CPDAG"`, `"MAG"`, and `"SWIG"`.
 
 ```{r}
 # a tiny DAG
@@ -73,6 +73,19 @@ cg <- caugi_graph(
   class = "DAG", # optional, guarantees acyclicity by construction
   simple = TRUE, # default
   build = TRUE # build now; otherwise built lazily on first query
+)
+```
+
+For graphs with latent confounding, you can use the ADMG (Acyclic Directed Mixed Graph) class:
+
+```{r}
+# an ADMG with directed and bidirected edges
+admg <- caugi_graph(
+  X %-->% Y,
+  X %<->% Y,  # bidirected edge representing latent confounding
+  Z %-->% X,
+  Z %-->% Y,
+  class = "ADMG"
 )
 ```
 
@@ -193,11 +206,8 @@ The S7 object system is not widely used yet, but we found that the S3 object sys
 
 We plan on adding the following features to `caugi` in the future:
 
-* Graph classes: PAG, CPDAG, MAG, SWIG, ADMG,
-* Adjustment sets,
-* Structural Hamming Distance,
-* Adjustment Identification Distance,
-* d- and m-separation queries,
+* Graph classes: PAG, CPDAG, MAG, SWIG,
+* Additional algorithms for ADMGs,
 * ...and much more! 
 
 ## Session info
