@@ -37,7 +37,7 @@
 #' if calling [build()]. __Note__: Even if `build = TRUE`, if no edges or
 #' nodes are provided, the graph will not be built and the pointer will be
 #' `NULL`.
-#' @param class Character; one of `"Unknown"`, `"DAG"`, or `"PDAG"`.
+#' @param class Character; one of `"Unknown"`, `"DAG"`, `"PDAG"`, or `"ADMG"`.
 #'
 #' @returns A [`caugi_graph`] S7 object containing the nodes, edges, and a
 #' pointer to the underlying Rust graph structure.
@@ -181,7 +181,7 @@ caugi_graph <- S7::new_class(
                          from = NULL, edge = NULL, to = NULL, nodes = NULL,
                          simple = TRUE,
                          build = TRUE,
-                         class = c("Unknown", "DAG", "PDAG")) {
+                         class = c("Unknown", "DAG", "PDAG", "ADMG")) {
     class <- match.arg(class)
 
     calls <- as.list(substitute(list(...)))[-1L]
@@ -295,7 +295,7 @@ caugi_graph <- S7::new_class(
 #' @param built Logical; whether the graph has been built.
 #' @param simple Logical; whether the graph is simple
 #' (no parallel edges or self-loops).
-#' @param class Character; one of `"Unknown"`, `"DAG"`, or `"PDAG"`.
+#' @param class Character; one of `"Unknown"`, `"DAG"`, `"PDAG"`, or `"ADMG"`.
 #'
 #' @keywords internal
 .cg_state <- function(nodes, edges, ptr, built, simple, class) {

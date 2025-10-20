@@ -1,3 +1,4 @@
+use super::admg::Admg;
 use super::CaugiGraph;
 use super::dag::Dag;
 use super::pdag::Pdag;
@@ -7,8 +8,9 @@ use std::sync::Arc;
 pub enum GraphView {
     Dag(Arc<Dag>),
     Pdag(Arc<Pdag>),
+    Admg(Arc<Admg>),
     Raw(Arc<CaugiGraph>),
-    // ADMG, MAG, PAG, etc in the future
+    // MAG, PAG, etc in the future
 }
 
 impl GraphView {
@@ -17,6 +19,7 @@ impl GraphView {
         match self {
             GraphView::Dag(d) => d.core_ref(),
             GraphView::Pdag(p) => p.core_ref(),
+            GraphView::Admg(a) => a.core_ref(),
             GraphView::Raw(c) => c,
         }
     }
@@ -26,6 +29,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => g.n(),
             GraphView::Pdag(g) => g.n(),
+            GraphView::Admg(g) => g.n(),
             GraphView::Raw(core) => core.n(),
         }
     }
@@ -35,6 +39,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.parents_of(i)),
             GraphView::Pdag(g) => Ok(g.parents_of(i)),
+            GraphView::Admg(g) => Ok(g.parents_of(i)),
             GraphView::Raw(_) => Err("parents_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -42,6 +47,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.children_of(i)),
             GraphView::Pdag(g) => Ok(g.children_of(i)),
+            GraphView::Admg(g) => Ok(g.children_of(i)),
             GraphView::Raw(_) => Err("children_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -49,13 +55,23 @@ impl GraphView {
         match self {
             GraphView::Dag(_) => Err("undirected_of not defined for Dag".into()),
             GraphView::Pdag(g) => Ok(g.undirected_of(i)),
+            GraphView::Admg(_) => Err("undirected_of not defined for Admg".into()),
             GraphView::Raw(_) => Err("undirected_of not implemented for UNKNOWN class".into()),
+        }
+    }
+    pub fn bidirected_of(&self, i: u32) -> Result<&[u32], String> {
+        match self {
+            GraphView::Dag(_) => Err("bidirected_of not defined for Dag".into()),
+            GraphView::Pdag(_) => Err("bidirected_of not defined for Pdag".into()),
+            GraphView::Admg(g) => Ok(g.bidirected_of(i)),
+            GraphView::Raw(_) => Err("bidirected_of not implemented for UNKNOWN class".into()),
         }
     }
     pub fn neighbors_of(&self, i: u32) -> Result<&[u32], String> {
         match self {
             GraphView::Dag(g) => Ok(g.neighbors_of(i)),
             GraphView::Pdag(g) => Ok(g.neighbors_of(i)),
+            GraphView::Admg(g) => Ok(g.neighbors_of(i)),
             GraphView::Raw(_) => Err("neighbors_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -63,6 +79,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.ancestors_of(i)),
             GraphView::Pdag(g) => Ok(g.ancestors_of(i)),
+            GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Raw(_) => Err("ancestors_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -70,6 +87,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.descendants_of(i)),
             GraphView::Pdag(g) => Ok(g.descendants_of(i)),
+            GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Raw(_) => Err("descendants_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -77,6 +95,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Pdag(g) => Ok(g.markov_blanket_of(i)),
+            GraphView::Admg(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Raw(_) => Err("markov_blanket_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -84,6 +103,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.exogenous_nodes()),
             GraphView::Pdag(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
+            GraphView::Admg(g) => Ok(g.exogenous_nodes()),
             GraphView::Raw(_) => Err("exogenous_nodes not implemented for UNKNOWN class".into()),
         }
     }

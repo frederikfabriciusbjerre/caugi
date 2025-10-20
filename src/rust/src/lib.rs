@@ -13,7 +13,7 @@ use graph::metrics::aid;
 use graph::metrics::{hd, shd_with_perm};
 
 use graph::view::GraphView;
-use graph::{CaugiGraph, dag::Dag, pdag::Pdag};
+use graph::{CaugiGraph, admg::Admg, dag::Dag, pdag::Pdag};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -187,6 +187,11 @@ fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<Grap
                 Pdag::new(Arc::new(core.as_ref().clone())).unwrap_or_else(|e| throw_r_error(e));
             ExternalPtr::new(GraphView::Pdag(Arc::new(pdag)))
         }
+        "ADMG" => {
+            let admg =
+                Admg::new(Arc::new(core.as_ref().clone())).unwrap_or_else(|e| throw_r_error(e));
+            ExternalPtr::new(GraphView::Admg(Arc::new(admg)))
+        }
         _ => ExternalPtr::new(GraphView::Raw(Arc::new(core.as_ref().clone()))),
     }
 }
@@ -222,6 +227,14 @@ fn children_of_ptr(g: ExternalPtr<GraphView>, i: i32) -> Robj {
 fn undirected_of_ptr(g: ExternalPtr<GraphView>, i: i32) -> Robj {
     g.as_ref()
         .undirected_of(i as u32)
+        .map(|s| s.iter().map(|&x| x as i32).collect_robj())
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
+fn bidirected_of_ptr(g: ExternalPtr<GraphView>, i: i32) -> Robj {
+    g.as_ref()
+        .bidirected_of(i as u32)
         .map(|s| s.iter().map(|&x| x as i32).collect_robj())
         .unwrap_or_else(|e| throw_r_error(e))
 }
@@ -281,10 +294,17 @@ fn is_pdag_type_ptr(g: ExternalPtr<GraphView>) -> bool {
 }
 
 #[extendr]
+fn is_admg_type_ptr(g: ExternalPtr<GraphView>) -> bool {
+    let core = g.as_ref().core();
+    Admg::new(Arc::new(core.clone())).is_ok()
+}
+
+#[extendr]
 fn graph_class_ptr(g: ExternalPtr<GraphView>) -> String {
     match g.as_ref() {
         GraphView::Dag(_) => "DAG",
         GraphView::Pdag(_) => "PDAG",
+        GraphView::Admg(_) => "ADMG",
         GraphView::Raw(_) => "UNKNOWN",
     }
     .to_string()
@@ -558,6 +578,7 @@ extendr_module! {
     fn parents_of_ptr;
     fn children_of_ptr;
     fn undirected_of_ptr;
+    fn bidirected_of_ptr;
     fn neighbors_of_ptr;
     fn ancestors_of_ptr;
     fn descendants_of_ptr;
@@ -574,6 +595,7 @@ extendr_module! {
     // class tests + validator
     fn is_dag_type_ptr;
     fn is_pdag_type_ptr;
+    fn is_admg_type_ptr;
 
     // metrics
     fn shd_of_ptrs;
