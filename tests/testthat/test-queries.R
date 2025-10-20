@@ -121,6 +121,18 @@ test_that("neighbors returns undirected and directed adjacency", {
   expect_identical(sort(neighbors(cg, "C")$name), c("B", "E"))
 })
 
+test_that("bidirected returns bidirected neighbors in ADMG", {
+  cg <- caugi_graph(A %-->% B, B %<->% C, A %<->% D, class = "ADMG")
+  # B has bidirected neighbor C
+  expect_identical(bidirected(cg, "B")$name, "C")
+  # A has bidirected neighbor D
+  expect_identical(bidirected(cg, "A")$name, "D")
+  # C has bidirected neighbor B
+  expect_identical(bidirected(cg, "C")$name, "B")
+  # D has no children but has bidirected neighbor A
+  expect_identical(bidirected(cg, "D")$name, "A")
+})
+
 test_that("queries match with nodes and indexes", {
   cg <- caugi_graph(A %-->% B, B %-->% C, B %---% D, C %---% E, class = "PDAG")
   expect_identical(children(cg, A), children(cg, index = 1))

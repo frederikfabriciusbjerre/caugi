@@ -374,6 +374,68 @@ test_that("caugi_graph(vector mode) works with isolated nodes", {
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────── ADMG ─────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("ADMG graph accepts directed and bidirected edges", {
+  cg <- caugi_graph(
+    A %-->% B,
+    B %<->% C,
+    A %-->% C,
+    class = "ADMG"
+  )
+  expect_s7_class(cg, caugi_graph)
+  expect_equal(cg@graph_class, "ADMG")
+  expect_equal(nrow(cg@nodes), 3)
+  expect_equal(nrow(cg@edges), 3)
+})
+
+test_that("ADMG graph rejects undirected edges", {
+  expect_error(
+    caugi_graph(
+      A %-->% B,
+      B %---% C,
+      class = "ADMG"
+    ),
+    "cannot contain undirected"
+  )
+})
+
+test_that("ADMG graph rejects partial edges", {
+  expect_error(
+    caugi_graph(
+      A %-->% B,
+      B %o->% C,
+      class = "ADMG"
+    ),
+    "cannot contain.*partial"
+  )
+})
+
+test_that("ADMG graph rejects directed cycles", {
+  expect_error(
+    caugi_graph(
+      A %-->% B,
+      B %-->% C,
+      C %-->% A,
+      class = "ADMG"
+    ),
+    "cycle"
+  )
+})
+
+test_that("ADMG graph allows bidirected cycles", {
+  cg <- caugi_graph(
+    A %<->% B,
+    B %<->% C,
+    C %<->% A,
+    class = "ADMG"
+  )
+  expect_s7_class(cg, caugi_graph)
+  expect_equal(nrow(cg@edges), 3)
+})
+
+# ──────────────────────────────────────────────────────────────────────────────
 # ────────────────────────────────── Errors ────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
