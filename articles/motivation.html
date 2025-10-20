@@ -74,18 +74,18 @@ designed to provide a <em>fast</em>, <em>flexible</em>, and
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://frederikfabriciusbjerre.github.io/caugi/">caugi</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="causality">Causality<a class="anchor" aria-label="anchor" href="#causality"></a>
+<h3 id="representation-of-causal-graphs">Representation of causal graphs<a class="anchor" aria-label="anchor" href="#representation-of-causal-graphs"></a>
 </h3>
 <p>Causal graphs are easy to draw and aid us in understanding causal
 mechanisms by visual representation. In R, representing them can feel
-clunky. We usually resort to adjacency matrices, edge lists, or packages
-like <code>igraph</code> or <code>graph</code>.</p>
-<p>These packages are great and each have their strengths, but they are
-not built for <em>causal</em> graphs, which often have special edge
-types and properties. This leads to situations such as representing
-undirected edges as two directed edges going in each direction, or
-representing PAG-type edges by opaque matrix formats, as seen in for
-example <code>pcalg</code>, where</p>
+clunky. Historically, users have resorted to adjacency matrices, edge
+lists, or packages like <code>igraph</code> or <code>graph</code>.</p>
+<p>These tools are great and each have their strengths, but they are not
+built for <em>causal</em> graphs, which often have special edge types
+and properties. This leads to situations such as representing undirected
+edges as two directed edges going in each direction, or representing
+PAG-type edges by opaque matrix formats, as seen in for example
+<code>pcalg</code>, where</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"E"</span><span class="op">)</span></span>
 <span><span class="va">amat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
@@ -106,37 +106,19 @@ example <code>pcalg</code>, where</p>
 <span><span class="co">#&gt; C 0 1 0 0 3</span></span>
 <span><span class="co">#&gt; D 0 1 0 0 3</span></span>
 <span><span class="co">#&gt; E 3 0 3 3 0</span></span></code></pre></div>
-<p>describes the graph</p>
+<p>represents the graph</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/caugi_graph.html">caugi_graph</a></span><span class="op">(</span></span>
 <span>  <span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op">%o-&gt;%</span> <span class="va">C</span> <span class="op">%---%</span> <span class="va">E</span>,</span>
 <span>  <span class="va">B</span> <span class="op">%o-o%</span> <span class="va">D</span> <span class="op">%---%</span> <span class="va">E</span>,</span>
 <span>  <span class="va">A</span> <span class="op">%--o%</span> <span class="va">E</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 1</span></span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> D    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> E    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;   from  edge  to   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     --&gt;   B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A     --o   E    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> B     o-&gt;   C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> B     o-o   D    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> C     ---   E    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> D     ---   E</span></span></code></pre></div>
-<p>Hopefully, it is clear what is easier to read.</p>
-<p>In general, for people working in causal inference and causal
-discovery, the lack of readable, well supported formats can lead to
-clunky, hacky code that is hard to read and maintain. <code>caugi</code>
-aims to fix this with a readable syntax, which mimics how we draw graphs
-in hand, and gives the user the ability to express complex causal
-relationships.</p>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The second form reads like the picture in your head.</p>
+<p>For people working in causal inference and causal discovery, the lack
+of readable, well supported formats can lead to clunky, hacky code that
+is hard to read and maintain. <code>caugi</code> aims to fix this with a
+readable syntax, which mimics how we draw graphs in hand, and gives the
+user the ability to express complex causal relationships.</p>
 </div>
 <div class="section level3">
 <h3 id="safety">Safety<a class="anchor" aria-label="anchor" href="#safety"></a>
@@ -146,6 +128,18 @@ leads to not only bugs, but confusion and wasted time. With
 <code>caugi</code> we aim to make causal graphs safe to work with, so
 you do not accidentally create invalid graphs, and so you can focus on
 the causal problems at hand, not on the representation.</p>
+<p>We have ensured that <code>caugi</code> graph object it should not be
+possible to alter in such a way that the underlying graph class becomes
+valid. For example, creating a DAG with <code>caugi</code>, acyclicity
+is guaranteed by construction. Trying to add an edge that would create a
+cycle will throw an error.</p>
+<p>More generally, all <code>caugi</code> aims to be <strong>graph-class
+safe</strong>. Think of it as type safety, but on a graph class level.
+This safety comes at some costs; if <code>caugi</code> doesn’t support
+the graph type, you are using, then the graph class should be set to
+<code>"Unknown"</code>, and most operations will not be available.
+However, this is a small price to pay for safety and clarity. In
+<code>caugi</code>, we prefer clarity over silent misinterpretation.</p>
 <p>We refer to the vignette <code><a href="../articles/package_use.html">vignette("package_use")</a></code> to see
 how to (safely) use <code>caugi</code> in your package.</p>
 </div>
@@ -156,8 +150,10 @@ how to (safely) use <code>caugi</code> in your package.</p>
 objects are fast to query, but slower to initialize than other graph
 object types might be. The trade-off is favorable, as graphs are
 typically queried many times after being created once. This makes
-<code>caugi</code> suitable for large graphs, where performance matters.
-You can read more about performance in
+<code>caugi</code> suitable for large graphs, where performance matters,
+but even for small graphs the performance gain is significant to other
+packages.</p>
+<p>You can read more about the performance of <code>caugi</code> in
 <code><a href="../articles/performance.html">vignette("performance")</a></code>.</p>
 </div>
 </div>
