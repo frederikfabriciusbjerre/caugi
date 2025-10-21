@@ -60,12 +60,29 @@ ancestors(cg, D)
 descendants(cg, A)
 ```
 
+You can also work with ADMGs (Acyclic Directed Mixed Graphs) which combine directed edges with bidirected edges representing latent confounding:
+
+```{r admg-example}
+# Create an ADMG with directed and bidirected edges
+admg <- caugi_graph(
+  X %-->% Y,
+  X %<->% Y,  # Latent confounding between X and Y
+  Z %-->% X,
+  Z %-->% Y,
+  class = "ADMG"
+)
+
+# Query bidirected neighbors
+bidirected(admg, X)
+bidirected(admg, Y)
+```
+
 ## Key features
 
 | :rocket:                        | What                                                                                                                                                   | Why it matters                                                            |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
 | **Flexible coercion & formats** | `as_caugi()` ingests **igraph**, **graphNEL**, **pcalg** `amat` (CPDAG *and* PAG), and sparse or dense (binary/integer‑coded) matrices. | Re‑use existing data structures; no tedious re‑encoding.                  |
-| **PAG & mixed‑graph support**   | Native edge codes for PAGs (`o->`, `o-o`, `--o`) and bidirected/undirected edges.                                                                      | Analyse outputs of discovery algorithms like FCI or RFCI out‑of‑the‑box.  |
+| **ADMG, PAG & mixed‑graph support**   | Native edge codes for ADMGs, PAGs (`o->`, `o-o`, `--o`) and bidirected/undirected edges.                                                                      | Analyse outputs of discovery algorithms like FCI or RFCI, and work with graphs containing latent confounding out‑of‑the‑box.  |
 | **Readable syntax**             | `A %-->% B`, `B %<->% C` ...                                                                                                                             | Write graphs exactly as you draw them on a whiteboard.                    |
 | **Blazing speed**               | Core implemented in Rust in a Compressed Sparse Row (CSR) representation.                                                                          | Millions of edges? No problem.                                            |
 | **Frontloading computation** | The CSR format is build to be immutable by design. You can add edges/nodes, but the graph is only rebuilt when you call `build()` or query the graph. | Avoids unnecessary recomputation; keeps your code snappy (and keeps you happy).                  |

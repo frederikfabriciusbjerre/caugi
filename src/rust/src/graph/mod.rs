@@ -9,6 +9,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 
+pub mod admg;
 pub mod alg;
 pub mod builder;
 pub mod dag;
