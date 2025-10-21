@@ -155,10 +155,10 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span>  caugi_parents_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
 <span>  caugi_children_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
 <span></span>
-<span>  <span class="co"># using node name (same as index here, but slower)</span></span>
-<span>  caugi_neighbors_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"50"</span><span class="op">)</span>,</span>
-<span>  caugi_parents_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"50"</span><span class="op">)</span>,</span>
-<span>  caugi_children_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"50"</span><span class="op">)</span>,</span>
+<span>  <span class="co"># using node name (same as index here)</span></span>
+<span>  caugi_neighbors_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
+<span>  caugi_parents_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="st">"50"</span><span class="op">)</span>,</span>
+<span>  caugi_children_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="st">"50"</span><span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># using Rust backend directly (fastest possible, 0 indexed, less safe)</span></span>
 <span>  caugi_neighbors_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">neighbors_of_ptr</span><span class="op">(</span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">49L</span><span class="op">)</span>,</span>
@@ -167,19 +167,19 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span>  times <span class="op">=</span> <span class="fl">10000</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Unit: microseconds</span></span>
-<span><span class="co">#&gt;                    expr     min       lq       mean   median       uq       max</span></span>
-<span><span class="co">#&gt;        igraph_neighbors 194.023 207.8380 224.098310 212.7970 222.4610 11424.515</span></span>
-<span><span class="co">#&gt;          igraph_parents 170.058 183.7030 194.486806 188.1410 195.9010  8857.994</span></span>
-<span><span class="co">#&gt;         igraph_children 171.611 183.7430 199.860330 188.4820 196.4065 11111.461</span></span>
-<span><span class="co">#&gt;   caugi_neighbors_index  42.519  47.1680  55.178942  49.9430  55.6440 10071.439</span></span>
-<span><span class="co">#&gt;     caugi_parents_index  42.099  46.8375  54.365874  49.6830  55.2330 11602.036</span></span>
-<span><span class="co">#&gt;    caugi_children_index  42.028  47.1380  53.880648  49.9430  55.4630 10321.956</span></span>
-<span><span class="co">#&gt;  caugi_neighbors_parsed  43.211  47.8190  54.633035  50.5295  56.3105 10320.824</span></span>
-<span><span class="co">#&gt;    caugi_parents_parsed  42.669  47.4880  57.913767  50.1730  55.8440 11735.896</span></span>
-<span><span class="co">#&gt;   caugi_children_parsed  43.390  47.7690  53.486040  50.4740  56.0850  6177.150</span></span>
-<span><span class="co">#&gt;    caugi_neighbors_rust   5.501   6.6420   7.934349   7.1130   9.4170   176.439</span></span>
-<span><span class="co">#&gt;      caugi_parents_rust   5.501   6.6430   7.937855   7.1230   9.4880    38.132</span></span>
-<span><span class="co">#&gt;     caugi_children_rust   5.320   6.6220   8.308411   7.0840   9.3675  4382.140</span></span>
+<span><span class="co">#&gt;                    expr     min      lq       mean   median       uq       max</span></span>
+<span><span class="co">#&gt;        igraph_neighbors 193.812 206.666 221.078644 211.3850 220.4620 10367.299</span></span>
+<span><span class="co">#&gt;          igraph_parents 170.618 182.581 198.222699 186.9845 194.0820 13254.419</span></span>
+<span><span class="co">#&gt;         igraph_children 170.689 182.541 193.150476 187.1790 194.2230 10386.654</span></span>
+<span><span class="co">#&gt;   caugi_neighbors_index  42.148  46.867  54.697066  49.4020  54.7820  9448.453</span></span>
+<span><span class="co">#&gt;     caugi_parents_index  42.058  46.587  52.836549  49.2470  54.3910  7229.510</span></span>
+<span><span class="co">#&gt;    caugi_children_index  42.680  46.867  52.930546  49.4975  54.7330  8750.359</span></span>
+<span><span class="co">#&gt;  caugi_neighbors_parsed  46.026  51.977  60.212606  54.8930  60.2630  8800.472</span></span>
+<span><span class="co">#&gt;    caugi_parents_parsed  42.880  47.198  54.746415  49.6730  54.8030  9308.411</span></span>
+<span><span class="co">#&gt;   caugi_children_parsed  43.211  47.398  52.651325  49.8230  55.0935  4738.709</span></span>
+<span><span class="co">#&gt;    caugi_neighbors_rust   5.541   6.582   7.761342   7.0030   9.1570    39.704</span></span>
+<span><span class="co">#&gt;      caugi_parents_rust   5.510   6.602   8.627799   7.0330   9.2270  8157.743</span></span>
+<span><span class="co">#&gt;     caugi_children_rust   5.490   6.592   7.775152   7.0130   9.1770    55.034</span></span>
 <span><span class="co">#&gt;  neval</span></span>
 <span><span class="co">#&gt;  10000</span></span>
 <span><span class="co">#&gt;  10000</span></span>
@@ -193,11 +193,107 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span><span class="co">#&gt;  10000</span></span>
 <span><span class="co">#&gt;  10000</span></span>
 <span><span class="co">#&gt;  10000</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://people.math.aau.dk/~sorenh/software/gR/" class="external-link">gRbase</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'gRbase'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:igraph':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     edges, is_dag, topo_sort</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:caugi':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     ancestors, children, edges, is_dag, nodes, parents</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># using gRbase to check d-separation</span></span>
+<span><span class="va">d_separates</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dag_</span>, <span class="va">a</span>, <span class="va">b</span>, <span class="va">c</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">ag</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/gRbase/man/graph_query.html" class="external-link">ancestralGraph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">c</span><span class="op">)</span>, <span class="va">dag_</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/gRbase/man/graph_query.html" class="external-link">separates</a></span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">c</span>, <span class="fu"><a href="https://rdrr.io/pkg/gRbase/man/graph-moralize.html" class="external-link">moralize</a></span><span class="op">(</span><span class="va">ag</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">cg0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_graph.html">caugi_graph</a></span><span class="op">(</span></span>
+<span>  <span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span> <span class="op">+</span> <span class="va">E</span>,</span>
+<span>  <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span>,</span>
+<span>  <span class="va">C</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">D</span>,</span>
+<span>  <span class="va">E</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">D</span>,</span>
+<span>  <span class="cn">F</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">G</span>,</span>
+<span>  <span class="va">G</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">E</span>,</span>
+<span>  class <span class="op">=</span> <span class="st">"DAG"</span>,</span>
+<span>  simple <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  build <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">grbg</span> <span class="op">&lt;-</span> <span class="fu">gRbase</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gRbase/man/graph-create.html" class="external-link">dag</a></span><span class="op">(</span><span class="op">~</span><span class="va">a</span>, <span class="op">~</span> <span class="va">b</span> <span class="op">*</span> <span class="va">a</span>, <span class="op">~</span> <span class="va">c</span> <span class="op">*</span> <span class="va">a</span> <span class="op">*</span> <span class="va">b</span>, <span class="op">~</span> <span class="va">d</span> <span class="op">*</span> <span class="va">c</span> <span class="op">*</span> <span class="va">e</span>, <span class="op">~</span> <span class="va">e</span> <span class="op">*</span> <span class="va">a</span> <span class="op">*</span> <span class="va">g</span>, <span class="op">~</span> <span class="va">g</span> <span class="op">*</span> <span class="va">f</span><span class="op">)</span></span>
+<span><span class="va">ig</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">cg0</span><span class="op">)</span></span>
+<span><span class="va">bng</span> <span class="op">&lt;-</span> <span class="fu">bnlearn</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bnlearn/man/modelstring.html" class="external-link">as.bn</a></span><span class="op">(</span><span class="va">ig</span><span class="op">)</span></span>
+<span><span class="va">ggmg</span> <span class="op">&lt;-</span> <span class="fu">ggm</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggm/man/DAG.html" class="external-link">DAG</a></span><span class="op">(</span></span>
+<span>  <span class="va">A</span> <span class="op">~</span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span> <span class="op">+</span> <span class="va">E</span>,</span>
+<span>  <span class="va">B</span> <span class="op">~</span> <span class="va">C</span>,</span>
+<span>  <span class="va">C</span> <span class="op">~</span> <span class="va">D</span>,</span>
+<span>  <span class="va">E</span> <span class="op">~</span> <span class="va">D</span>,</span>
+<span>  <span class="cn">F</span> <span class="op">~</span> <span class="va">G</span>,</span>
+<span>  <span class="va">G</span> <span class="op">~</span> <span class="va">E</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span></span>
+<span>  grbase <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">gRbase</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gRbase/man/graph_query.html" class="external-link">parents</a></span><span class="op">(</span><span class="st">"d"</span>, <span class="va">grbg</span><span class="op">)</span></span>
+<span>    <span class="fu">gRbase</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gRbase/man/graph_query.html" class="external-link">children</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="va">grbg</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  caugi <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="va">D</span><span class="op">)</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="va">A</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  caugi_index <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg0</span>, index <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg0</span>, index <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  caugi_rust <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">parents_of_ptr</span><span class="op">(</span><span class="va">cg0</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">6L</span><span class="op">)</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">children_of_ptr</span><span class="op">(</span><span class="va">cg0</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">0L</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  igraph <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="st">"D"</span>, mode <span class="op">=</span> <span class="st">"in"</span><span class="op">)</span></span>
+<span>    <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="st">"A"</span>, mode <span class="op">=</span> <span class="st">"out"</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  bnlearn <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">bnlearn</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bnlearn/man/mb.html" class="external-link">parents</a></span><span class="op">(</span><span class="va">bng</span>, <span class="st">"D"</span><span class="op">)</span></span>
+<span>    <span class="fu">bnlearn</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bnlearn/man/mb.html" class="external-link">children</a></span><span class="op">(</span><span class="va">bng</span>, <span class="st">"A"</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  ggm <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">ggm</span><span class="fu">::</span><span class="fu">pa</span><span class="op">(</span><span class="st">"D"</span>, <span class="va">ggmg</span><span class="op">)</span></span>
+<span>    <span class="fu">ggm</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggm/man/SimpleGraphOperations.html" class="external-link">ch</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="va">ggmg</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  times <span class="op">=</span> <span class="fl">10000</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Unit: microseconds</span></span>
+<span><span class="co">#&gt;         expr      min        lq       mean    median        uq        max neval</span></span>
+<span><span class="co">#&gt;       grbase 1726.043 1802.3850 1944.65472 1824.0965 1848.8975 188895.730 10000</span></span>
+<span><span class="co">#&gt;        caugi  138.769  161.5320  178.66941  173.9950  184.5450  12813.547 10000</span></span>
+<span><span class="co">#&gt;  caugi_index   87.263  102.4665  115.82269  113.1715  121.3915  11107.210 10000</span></span>
+<span><span class="co">#&gt;   caugi_rust   11.853   14.6970   17.83905   16.8310   21.0945    120.977 10000</span></span>
+<span><span class="co">#&gt;       igraph  491.678  540.2890  585.46827  559.7950  577.6290  14629.628 10000</span></span>
+<span><span class="co">#&gt;      bnlearn   33.984   44.0020   49.30176   48.3800   50.2740  10304.421 10000</span></span>
+<span><span class="co">#&gt;          ggm   99.726  122.0980  136.15269  131.1250  135.4880  15852.872 10000</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span></span>
+<span>  grbase <span class="op">=</span> <span class="fu">d_separates</span><span class="op">(</span><span class="va">grbg</span>, <span class="st">"c"</span>, <span class="st">"e"</span>, <span class="st">"a"</span><span class="op">)</span>,</span>
+<span>  caugi <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/d_separated.html">d_separated</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="va">C</span>, <span class="va">E</span>, <span class="va">A</span><span class="op">)</span>,</span>
+<span>  caugi_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">is_d_separated_ptr</span><span class="op">(</span><span class="va">cg0</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">2L</span>, <span class="fl">3L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
+<span>  bnlearn <span class="op">=</span> <span class="fu">bnlearn</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bnlearn/man/dsep.html" class="external-link">dsep</a></span><span class="op">(</span><span class="va">bng</span>, <span class="st">"C"</span>, <span class="st">"E"</span>, <span class="st">"A"</span><span class="op">)</span>,</span>
+<span>  ggm <span class="op">=</span> <span class="fu">ggm</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggm/man/dSep.html" class="external-link">dSep</a></span><span class="op">(</span><span class="va">ggmg</span>, <span class="st">"C"</span>, <span class="st">"E"</span>, <span class="st">"A"</span><span class="op">)</span>,</span>
+<span>  times <span class="op">=</span> <span class="fl">10000</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Unit: microseconds</span></span>
+<span><span class="co">#&gt;        expr      min        lq       mean   median        uq        max neval</span></span>
+<span><span class="co">#&gt;      grbase 6343.074 6577.6730 7464.85460 6624.289 6688.0640 218245.735 10000</span></span>
+<span><span class="co">#&gt;       caugi  248.434  298.0270  361.45021  317.443  332.7465  20992.950 10000</span></span>
+<span><span class="co">#&gt;  caugi_rust    6.762    9.8280   14.30324   14.467   17.8540     77.595 10000</span></span>
+<span><span class="co">#&gt;     bnlearn  258.803  310.9010  358.44353  328.594  344.9040  33344.263 10000</span></span>
+<span><span class="co">#&gt;         ggm  223.919  266.7285  303.21330  278.911  293.4230  34080.929 10000</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.5.1 (2025-06-13)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -220,23 +316,26 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] microbenchmark_1.5.0 igraph_2.2.0         caugi_0.0.0.9000    </span></span>
+<span><span class="co">#&gt; [1] gRbase_2.0.3         microbenchmark_1.5.0 igraph_2.2.0        </span></span>
+<span><span class="co">#&gt; [4] caugi_0.0.0.9000    </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] Matrix_1.7-3        jsonlite_2.0.0      dplyr_1.1.4        </span></span>
-<span><span class="co">#&gt;  [4] compiler_4.5.1      tidyselect_1.2.1    jquerylib_0.1.4    </span></span>
-<span><span class="co">#&gt;  [7] systemfonts_1.3.1   textshaping_1.0.4   yaml_2.3.10        </span></span>
-<span><span class="co">#&gt; [10] fastmap_1.2.0       lattice_0.22-7      R6_2.6.1           </span></span>
-<span><span class="co">#&gt; [13] generics_0.1.4      knitr_1.50          BiocGenerics_0.54.1</span></span>
-<span><span class="co">#&gt; [16] htmlwidgets_1.6.4   graph_1.86.0        tibble_3.3.0       </span></span>
-<span><span class="co">#&gt; [19] desc_1.4.3          bslib_0.9.0         pillar_1.11.1      </span></span>
-<span><span class="co">#&gt; [22] rlang_1.1.6         cachem_1.1.0        xfun_0.53          </span></span>
-<span><span class="co">#&gt; [25] fs_1.6.6            sass_0.4.10         S7_0.2.0           </span></span>
-<span><span class="co">#&gt; [28] cli_3.6.5           pkgdown_2.1.3       magrittr_2.0.4     </span></span>
-<span><span class="co">#&gt; [31] digest_0.6.37       grid_4.5.1          lifecycle_1.0.4    </span></span>
-<span><span class="co">#&gt; [34] vctrs_0.6.5         evaluate_1.0.5      glue_1.8.0         </span></span>
-<span><span class="co">#&gt; [37] ragg_1.5.0          stats4_4.5.1        rmarkdown_2.30     </span></span>
-<span><span class="co">#&gt; [40] tools_4.5.1         pkgconfig_2.0.3     htmltools_0.5.8.1</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] Matrix_1.7-3        jsonlite_2.0.0      BiocManager_1.30.26</span></span>
+<span><span class="co">#&gt;  [4] dplyr_1.1.4         compiler_4.5.1      Rcpp_1.1.0         </span></span>
+<span><span class="co">#&gt;  [7] tidyselect_1.2.1    parallel_4.5.1      jquerylib_0.1.4    </span></span>
+<span><span class="co">#&gt; [10] systemfonts_1.3.1   textshaping_1.0.4   yaml_2.3.10        </span></span>
+<span><span class="co">#&gt; [13] fastmap_1.2.0       lattice_0.22-7      R6_2.6.1           </span></span>
+<span><span class="co">#&gt; [16] generics_0.1.4      knitr_1.50          BiocGenerics_0.54.1</span></span>
+<span><span class="co">#&gt; [19] htmlwidgets_1.6.4   graph_1.86.0        tibble_3.3.0       </span></span>
+<span><span class="co">#&gt; [22] desc_1.4.3          bslib_0.9.0         pillar_1.11.1      </span></span>
+<span><span class="co">#&gt; [25] rlang_1.1.6         cachem_1.1.0        bnlearn_5.1        </span></span>
+<span><span class="co">#&gt; [28] xfun_0.53           fs_1.6.6            sass_0.4.10        </span></span>
+<span><span class="co">#&gt; [31] S7_0.2.0            cli_3.6.5           pkgdown_2.1.3      </span></span>
+<span><span class="co">#&gt; [34] magrittr_2.0.4      digest_0.6.37       grid_4.5.1         </span></span>
+<span><span class="co">#&gt; [37] lifecycle_1.0.4     vctrs_0.6.5         ggm_2.5.2          </span></span>
+<span><span class="co">#&gt; [40] evaluate_1.0.5      glue_1.8.0          ragg_1.5.0         </span></span>
+<span><span class="co">#&gt; [43] stats4_4.5.1        rmarkdown_2.30      tools_4.5.1        </span></span>
+<span><span class="co">#&gt; [46] pkgconfig_2.0.3     htmltools_0.5.8.1</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
