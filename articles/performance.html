@@ -188,13 +188,13 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 6</span></span></span>
 <span><span class="co">#&gt;   expression       min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi_rust    10.8µs   12.1µs   <span style="text-decoration: underline;">80</span>974.         0B    16.2 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bnlearn       34.6µs   37.6µs   <span style="text-decoration: underline;">25</span>980.    24.31KB    20.8 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> caugi_index   53.1µs   57.1µs   <span style="text-decoration: underline;">17</span>150.         0B    19.1 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> caugi_named   62.6µs   67.3µs   <span style="text-decoration: underline;">13</span>907.    63.84KB    14.2 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ggm          228.7µs  238.4µs    <span style="text-decoration: underline;">4</span>021.   596.28KB    78.7 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> igraph       531.1µs  558.5µs    <span style="text-decoration: underline;">1</span>784.     8.38KB    12.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> dagitty       11.8ms   12.3ms      72.9  106.34KB     2.03</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi_rust    11.3µs   12.7µs   <span style="text-decoration: underline;">76</span>188.         0B    15.2 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bnlearn       34.5µs     38µs   <span style="text-decoration: underline;">25</span>629.    24.31KB    18.0 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> caugi_index   54.1µs   58.7µs   <span style="text-decoration: underline;">16</span>581.         0B    19.3 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> caugi_named   63.6µs   69.2µs   <span style="text-decoration: underline;">14</span>081.    63.84KB    14.7 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ggm          235.7µs  470.5µs    <span style="text-decoration: underline;">2</span>413.   596.28KB    48.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> igraph       527.8µs    562µs    <span style="text-decoration: underline;">1</span>769.     8.38KB    12.8 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> dagitty       11.7ms   12.4ms      76.2  106.34KB     2.06</span></span></code></pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
 <span>  caugi <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/d_separated.html">d_separated</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"V50"</span>, <span class="st">"V18"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"V8"</span>, <span class="st">"V20"</span>, <span class="st">"V43"</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -209,12 +209,12 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
 <span><span class="co">#&gt;   expression       min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi_rust   10.58µs  11.33µs   <span style="text-decoration: underline;">86</span>307.         0B     8.63</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> caugi_index  54.79µs  58.64µs   <span style="text-decoration: underline;">16</span>355.   165.93KB     4.07</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> caugi        85.35µs  94.34µs    <span style="text-decoration: underline;">9</span>564.   204.74KB     6.01</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ggm           1.32ms   1.34ms     700.     2.04MB    39.7 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bnlearn       2.18ms   2.25ms     424.   714.46KB     4.26</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> dagitty       8.91ms   9.39ms      95.8   65.88KB     0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi_rust   10.62µs  11.41µs   <span style="text-decoration: underline;">85</span>611.         0B     0   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> caugi_index  55.45µs  60.59µs   <span style="text-decoration: underline;">16</span>027.   165.93KB    17.2 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> caugi        86.77µs  93.69µs   <span style="text-decoration: underline;">10</span>111.   204.74KB    15.0 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ggm           1.32ms   1.39ms     604.     2.04MB    36.1 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bnlearn       2.21ms   2.32ms     386.   714.46KB     4.29</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> dagitty       8.93ms   9.57ms      94.7   65.88KB     0</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
