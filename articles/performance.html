@@ -167,18 +167,18 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Unit: microseconds</span></span>
 <span><span class="co">#&gt;                    expr     min       lq       mean   median       uq       max</span></span>
-<span><span class="co">#&gt;        igraph_neighbors 198.861 210.4530 226.601914 215.3170 225.4505 11702.342</span></span>
-<span><span class="co">#&gt;          igraph_parents 175.398 186.8390 204.293977 191.2370 200.1540 10148.630</span></span>
-<span><span class="co">#&gt;         igraph_children 174.727 186.4080 201.355188 190.8315 199.3320 10007.116</span></span>
-<span><span class="co">#&gt;   caugi_neighbors_index  26.519  28.8440  31.872407  30.2515  34.0040   120.966</span></span>
-<span><span class="co">#&gt;     caugi_parents_index  26.389  28.6740  31.639165  30.0460  33.8430   177.451</span></span>
-<span><span class="co">#&gt;    caugi_children_index  26.198  28.6930  32.164073  30.0760  33.8930  5025.764</span></span>
-<span><span class="co">#&gt;  caugi_neighbors_parsed  31.028  34.2995  40.483782  37.2800  41.4980  9621.457</span></span>
-<span><span class="co">#&gt;    caugi_parents_parsed  31.119  34.2840  38.617142  37.4600  41.4870   231.773</span></span>
-<span><span class="co">#&gt;   caugi_children_parsed  30.878  34.2140  39.414666  37.2490  41.3770  5199.409</span></span>
-<span><span class="co">#&gt;    caugi_neighbors_rust   5.600   6.6530   7.952812   7.1330   9.5480    70.361</span></span>
-<span><span class="co">#&gt;      caugi_parents_rust   5.500   6.6030   8.467394   7.0830   9.5080  5582.494</span></span>
-<span><span class="co">#&gt;     caugi_children_rust   5.520   6.6320   7.980839   7.1030   9.6180   165.900</span></span>
+<span><span class="co">#&gt;        igraph_neighbors 198.470 212.4660 233.731097 219.3595 230.0835 13194.371</span></span>
+<span><span class="co">#&gt;          igraph_parents 172.942 188.5110 204.597356 194.2520 204.6620 12339.357</span></span>
+<span><span class="co">#&gt;         igraph_children 174.005 188.0105 205.029260 193.8910 204.4015 13540.136</span></span>
+<span><span class="co">#&gt;   caugi_neighbors_index  26.219  28.7335  32.901453  30.3460  34.0440  7681.071</span></span>
+<span><span class="co">#&gt;     caugi_parents_index  26.149  28.6130  32.873729  30.1660  33.9240  9959.721</span></span>
+<span><span class="co">#&gt;    caugi_children_index  26.039  28.6030  35.750828  30.1870  33.9130 11082.123</span></span>
+<span><span class="co">#&gt;  caugi_neighbors_parsed  30.577  34.1440  39.517730  37.3645  41.4980  8827.429</span></span>
+<span><span class="co">#&gt;    caugi_parents_parsed  30.747  34.0840  39.754624  37.4100  41.4970 10495.930</span></span>
+<span><span class="co">#&gt;   caugi_children_parsed  30.447  33.9940  40.933930  37.2745  41.3075 11366.513</span></span>
+<span><span class="co">#&gt;    caugi_neighbors_rust   5.470   6.6520   9.985573   7.1630   9.5425 11243.443</span></span>
+<span><span class="co">#&gt;      caugi_parents_rust   5.550   6.6220   7.987612   7.1130   9.5080    33.903</span></span>
+<span><span class="co">#&gt;     caugi_children_rust   5.430   6.6020   8.015222   7.1030   9.5680    40.415</span></span>
 <span><span class="co">#&gt;  neval</span></span>
 <span><span class="co">#&gt;  10000</span></span>
 <span><span class="co">#&gt;  10000</span></span>
@@ -265,13 +265,13 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Unit: microseconds</span></span>
 <span><span class="co">#&gt;         expr      min        lq       mean    median        uq        max neval</span></span>
-<span><span class="co">#&gt;       grbase 1721.024 1801.9150 1933.43391 1823.9210 1848.5365 180619.827 10000</span></span>
-<span><span class="co">#&gt;        caugi   62.617   73.7530   87.79542   81.8730   89.1965  13219.374 10000</span></span>
-<span><span class="co">#&gt;  caugi_index   53.960   59.6165   69.40038   65.8630   72.0740  13440.838 10000</span></span>
-<span><span class="co">#&gt;   caugi_rust   11.712   14.2160   17.82251   16.7865   21.4050     81.843 10000</span></span>
-<span><span class="co">#&gt;       igraph  494.583  543.3950  586.48943  564.5590  583.7600  18394.688 10000</span></span>
-<span><span class="co">#&gt;      bnlearn   34.454   43.0405   49.36004   48.5310   50.5450  12893.736 10000</span></span>
-<span><span class="co">#&gt;          ggm   97.863  119.0020  132.68667  131.1750  135.7035  10800.287 10000</span></span></code></pre></div>
+<span><span class="co">#&gt;       grbase 1698.527 1794.4560 1949.14179 1821.2055 1853.7165 200465.490 10000</span></span>
+<span><span class="co">#&gt;        caugi   62.307   73.6220   85.32668   82.0930   89.4270   8000.537 10000</span></span>
+<span><span class="co">#&gt;  caugi_index   53.770   59.9415   71.98909   66.3240   72.4950  15841.327 10000</span></span>
+<span><span class="co">#&gt;   caugi_rust   11.662   14.3670   19.28790   17.0520   21.3400  12302.278 10000</span></span>
+<span><span class="co">#&gt;       igraph  490.654  540.5280  590.13138  562.3385  582.0855  18905.319 10000</span></span>
+<span><span class="co">#&gt;      bnlearn   33.963   42.5445   49.06888   48.2100   50.9750   9011.954 10000</span></span>
+<span><span class="co">#&gt;          ggm   97.633  118.7270  141.03390  131.0795  137.6165  16687.905 10000</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span></span>
 <span>  grbase <span class="op">=</span> <span class="fu">d_separates</span><span class="op">(</span><span class="va">grbg</span>, <span class="st">"c"</span>, <span class="st">"e"</span>, <span class="st">"a"</span><span class="op">)</span>,</span>
@@ -283,13 +283,13 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span>  times <span class="op">=</span> <span class="fl">10000</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Unit: microseconds</span></span>
-<span><span class="co">#&gt;         expr      min        lq       mean    median        uq       max neval</span></span>
-<span><span class="co">#&gt;       grbase 6410.831 6620.1170 7465.99024 6668.8530 6730.5280 218422.39 10000</span></span>
-<span><span class="co">#&gt;        caugi   76.183   92.0415  114.59883  107.3260  116.4020  21217.72 10000</span></span>
-<span><span class="co">#&gt;  caugi_index   50.484   62.2760   80.31223   75.7620   83.7410  17262.19 10000</span></span>
-<span><span class="co">#&gt;   caugi_rust    6.643    9.1870   15.19490   13.0345   17.8030  18364.08 10000</span></span>
-<span><span class="co">#&gt;      bnlearn  255.036  306.3570  355.14969  326.0890  342.2740  21819.16 10000</span></span>
-<span><span class="co">#&gt;          ggm  223.397  265.6960  312.48616  279.9230  294.0995  25602.56 10000</span></span></code></pre></div>
+<span><span class="co">#&gt;         expr      min        lq       mean    median        uq        max neval</span></span>
+<span><span class="co">#&gt;       grbase 6403.880 6681.9485 7816.76798 6784.6405 6972.3450 229462.937 10000</span></span>
+<span><span class="co">#&gt;        caugi   74.109   92.5525  125.90371  108.6125  126.9665  38464.117 10000</span></span>
+<span><span class="co">#&gt;  caugi_index   49.212   62.0005   87.47563   75.9820   90.4790  20580.562 10000</span></span>
+<span><span class="co">#&gt;   caugi_rust    6.732    9.2425   14.65634   13.1700   18.4145     73.858 10000</span></span>
+<span><span class="co">#&gt;      bnlearn  254.374  309.4120  398.16858  338.0200  373.8170  37927.606 10000</span></span>
+<span><span class="co">#&gt;          ggm  225.761  267.6240  323.90675  288.4475  316.0890  32731.879 10000</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
