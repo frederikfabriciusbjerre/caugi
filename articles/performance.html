@@ -140,46 +140,45 @@ possible, while keeping the user experience smooth.</p>
 <p>We compare <code>caugi</code> to <code>igraph</code> on querying. We
 generate a random tree graph with 1000 nodes for the comparison.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ig</span> <span class="op">&lt;-</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/make_tree.html" class="external-link">make_tree</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ig</span> <span class="op">&lt;-</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/sample_gnm.html" class="external-link">sample_gnm</a></span><span class="op">(</span><span class="fl">10000</span>, <span class="fl">50000</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/as_directed.html" class="external-link">as_directed</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"acyclic"</span><span class="op">)</span></span>
 <span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/as_caugi.html">as_caugi</a></span><span class="op">(</span><span class="va">ig</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span></code></pre></div>
-<p>`</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span></span>
 <span>  <span class="co"># igraph</span></span>
-<span>  igraph_neighbors <span class="op">=</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="fl">50</span><span class="op">)</span>,</span>
-<span>  igraph_parents <span class="op">=</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="fl">50</span>, mode <span class="op">=</span> <span class="st">"in"</span><span class="op">)</span>,</span>
-<span>  igraph_children <span class="op">=</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="fl">50</span>, mode <span class="op">=</span> <span class="st">"out"</span><span class="op">)</span>,</span>
+<span>  igraph_neighbors <span class="op">=</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="fl">5000</span><span class="op">)</span>,</span>
+<span>  igraph_parents <span class="op">=</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="fl">5000</span>, mode <span class="op">=</span> <span class="st">"in"</span><span class="op">)</span>,</span>
+<span>  igraph_children <span class="op">=</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="fl">5000</span>, mode <span class="op">=</span> <span class="st">"out"</span><span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># using index (fastest R side option)</span></span>
-<span>  caugi_neighbors_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
-<span>  caugi_parents_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
-<span>  caugi_children_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
+<span>  caugi_neighbors_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span>,</span>
+<span>  caugi_parents_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span>,</span>
+<span>  caugi_children_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># using node name (same as index here)</span></span>
-<span>  caugi_neighbors_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
-<span>  caugi_parents_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="st">"50"</span><span class="op">)</span>,</span>
-<span>  caugi_children_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="st">"50"</span><span class="op">)</span>,</span>
+<span>  caugi_neighbors_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="st">"5000"</span><span class="op">)</span>,</span>
+<span>  caugi_parents_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="st">"5000"</span><span class="op">)</span>,</span>
+<span>  caugi_children_parsed <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="st">"5000"</span><span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># using Rust backend directly (fastest possible, 0 indexed, less safe)</span></span>
-<span>  caugi_neighbors_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">neighbors_of_ptr</span><span class="op">(</span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">49L</span><span class="op">)</span>,</span>
-<span>  caugi_parents_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">parents_of_ptr</span><span class="op">(</span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">49L</span><span class="op">)</span>,</span>
-<span>  caugi_children_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">children_of_ptr</span><span class="op">(</span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">49L</span><span class="op">)</span>,</span>
+<span>  caugi_neighbors_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">neighbors_of_ptr</span><span class="op">(</span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">4999L</span><span class="op">)</span>,</span>
+<span>  caugi_parents_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">parents_of_ptr</span><span class="op">(</span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">4999L</span><span class="op">)</span>,</span>
+<span>  caugi_children_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">children_of_ptr</span><span class="op">(</span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">4999L</span><span class="op">)</span>,</span>
 <span>  times <span class="op">=</span> <span class="fl">10000</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Unit: microseconds</span></span>
-<span><span class="co">#&gt;                    expr     min      lq       mean   median       uq       max</span></span>
-<span><span class="co">#&gt;        igraph_neighbors 193.812 206.666 221.078644 211.3850 220.4620 10367.299</span></span>
-<span><span class="co">#&gt;          igraph_parents 170.618 182.581 198.222699 186.9845 194.0820 13254.419</span></span>
-<span><span class="co">#&gt;         igraph_children 170.689 182.541 193.150476 187.1790 194.2230 10386.654</span></span>
-<span><span class="co">#&gt;   caugi_neighbors_index  42.148  46.867  54.697066  49.4020  54.7820  9448.453</span></span>
-<span><span class="co">#&gt;     caugi_parents_index  42.058  46.587  52.836549  49.2470  54.3910  7229.510</span></span>
-<span><span class="co">#&gt;    caugi_children_index  42.680  46.867  52.930546  49.4975  54.7330  8750.359</span></span>
-<span><span class="co">#&gt;  caugi_neighbors_parsed  46.026  51.977  60.212606  54.8930  60.2630  8800.472</span></span>
-<span><span class="co">#&gt;    caugi_parents_parsed  42.880  47.198  54.746415  49.6730  54.8030  9308.411</span></span>
-<span><span class="co">#&gt;   caugi_children_parsed  43.211  47.398  52.651325  49.8230  55.0935  4738.709</span></span>
-<span><span class="co">#&gt;    caugi_neighbors_rust   5.541   6.582   7.761342   7.0030   9.1570    39.704</span></span>
-<span><span class="co">#&gt;      caugi_parents_rust   5.510   6.602   8.627799   7.0330   9.2270  8157.743</span></span>
-<span><span class="co">#&gt;     caugi_children_rust   5.490   6.592   7.775152   7.0130   9.1770    55.034</span></span>
+<span><span class="co">#&gt;                    expr     min       lq       mean   median       uq       max</span></span>
+<span><span class="co">#&gt;        igraph_neighbors 198.861 210.4530 226.601914 215.3170 225.4505 11702.342</span></span>
+<span><span class="co">#&gt;          igraph_parents 175.398 186.8390 204.293977 191.2370 200.1540 10148.630</span></span>
+<span><span class="co">#&gt;         igraph_children 174.727 186.4080 201.355188 190.8315 199.3320 10007.116</span></span>
+<span><span class="co">#&gt;   caugi_neighbors_index  26.519  28.8440  31.872407  30.2515  34.0040   120.966</span></span>
+<span><span class="co">#&gt;     caugi_parents_index  26.389  28.6740  31.639165  30.0460  33.8430   177.451</span></span>
+<span><span class="co">#&gt;    caugi_children_index  26.198  28.6930  32.164073  30.0760  33.8930  5025.764</span></span>
+<span><span class="co">#&gt;  caugi_neighbors_parsed  31.028  34.2995  40.483782  37.2800  41.4980  9621.457</span></span>
+<span><span class="co">#&gt;    caugi_parents_parsed  31.119  34.2840  38.617142  37.4600  41.4870   231.773</span></span>
+<span><span class="co">#&gt;   caugi_children_parsed  30.878  34.2140  39.414666  37.2490  41.3770  5199.409</span></span>
+<span><span class="co">#&gt;    caugi_neighbors_rust   5.600   6.6530   7.952812   7.1330   9.5480    70.361</span></span>
+<span><span class="co">#&gt;      caugi_parents_rust   5.500   6.6030   8.467394   7.0830   9.5080  5582.494</span></span>
+<span><span class="co">#&gt;     caugi_children_rust   5.520   6.6320   7.980839   7.1030   9.6180   165.900</span></span>
 <span><span class="co">#&gt;  neval</span></span>
 <span><span class="co">#&gt;  10000</span></span>
 <span><span class="co">#&gt;  10000</span></span>
@@ -239,8 +238,8 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span>    <span class="fu">gRbase</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/gRbase/man/graph_query.html" class="external-link">children</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="va">grbg</span><span class="op">)</span></span>
 <span>  <span class="op">}</span>,</span>
 <span>  caugi <span class="op">=</span> <span class="op">{</span></span>
-<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="va">D</span><span class="op">)</span></span>
-<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="va">A</span><span class="op">)</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="st">"D"</span><span class="op">)</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="st">"A"</span><span class="op">)</span></span>
 <span>  <span class="op">}</span>,</span>
 <span>  caugi_index <span class="op">=</span> <span class="op">{</span></span>
 <span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg0</span>, index <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
@@ -266,29 +265,31 @@ generate a random tree graph with 1000 nodes for the comparison.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Unit: microseconds</span></span>
 <span><span class="co">#&gt;         expr      min        lq       mean    median        uq        max neval</span></span>
-<span><span class="co">#&gt;       grbase 1726.043 1802.3850 1944.65472 1824.0965 1848.8975 188895.730 10000</span></span>
-<span><span class="co">#&gt;        caugi  138.769  161.5320  178.66941  173.9950  184.5450  12813.547 10000</span></span>
-<span><span class="co">#&gt;  caugi_index   87.263  102.4665  115.82269  113.1715  121.3915  11107.210 10000</span></span>
-<span><span class="co">#&gt;   caugi_rust   11.853   14.6970   17.83905   16.8310   21.0945    120.977 10000</span></span>
-<span><span class="co">#&gt;       igraph  491.678  540.2890  585.46827  559.7950  577.6290  14629.628 10000</span></span>
-<span><span class="co">#&gt;      bnlearn   33.984   44.0020   49.30176   48.3800   50.2740  10304.421 10000</span></span>
-<span><span class="co">#&gt;          ggm   99.726  122.0980  136.15269  131.1250  135.4880  15852.872 10000</span></span></code></pre></div>
+<span><span class="co">#&gt;       grbase 1721.024 1801.9150 1933.43391 1823.9210 1848.5365 180619.827 10000</span></span>
+<span><span class="co">#&gt;        caugi   62.617   73.7530   87.79542   81.8730   89.1965  13219.374 10000</span></span>
+<span><span class="co">#&gt;  caugi_index   53.960   59.6165   69.40038   65.8630   72.0740  13440.838 10000</span></span>
+<span><span class="co">#&gt;   caugi_rust   11.712   14.2160   17.82251   16.7865   21.4050     81.843 10000</span></span>
+<span><span class="co">#&gt;       igraph  494.583  543.3950  586.48943  564.5590  583.7600  18394.688 10000</span></span>
+<span><span class="co">#&gt;      bnlearn   34.454   43.0405   49.36004   48.5310   50.5450  12893.736 10000</span></span>
+<span><span class="co">#&gt;          ggm   97.863  119.0020  132.68667  131.1750  135.7035  10800.287 10000</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span></span>
 <span>  grbase <span class="op">=</span> <span class="fu">d_separates</span><span class="op">(</span><span class="va">grbg</span>, <span class="st">"c"</span>, <span class="st">"e"</span>, <span class="st">"a"</span><span class="op">)</span>,</span>
-<span>  caugi <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/d_separated.html">d_separated</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="va">C</span>, <span class="va">E</span>, <span class="va">A</span><span class="op">)</span>,</span>
-<span>  caugi_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">is_d_separated_ptr</span><span class="op">(</span><span class="va">cg0</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">2L</span>, <span class="fl">3L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
+<span>  caugi <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/d_separated.html">d_separated</a></span><span class="op">(</span><span class="va">cg0</span>, <span class="st">"C"</span>, <span class="st">"E"</span>, <span class="st">"A"</span><span class="op">)</span>,</span>
+<span>  caugi_index <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/d_separated.html">d_separated</a></span><span class="op">(</span><span class="va">cg0</span>, X_index <span class="op">=</span> <span class="fl">3L</span>, Y_index <span class="op">=</span> <span class="fl">4L</span>, Z_index <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>  caugi_rust <span class="op">=</span> <span class="fu">caugi</span><span class="fu">:::</span><span class="fu">d_separated_ptr</span><span class="op">(</span><span class="va">cg0</span><span class="op">@</span><span class="va">ptr</span>, <span class="fl">2L</span>, <span class="fl">3L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
 <span>  bnlearn <span class="op">=</span> <span class="fu">bnlearn</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bnlearn/man/dsep.html" class="external-link">dsep</a></span><span class="op">(</span><span class="va">bng</span>, <span class="st">"C"</span>, <span class="st">"E"</span>, <span class="st">"A"</span><span class="op">)</span>,</span>
 <span>  ggm <span class="op">=</span> <span class="fu">ggm</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggm/man/dSep.html" class="external-link">dSep</a></span><span class="op">(</span><span class="va">ggmg</span>, <span class="st">"C"</span>, <span class="st">"E"</span>, <span class="st">"A"</span><span class="op">)</span>,</span>
 <span>  times <span class="op">=</span> <span class="fl">10000</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Unit: microseconds</span></span>
-<span><span class="co">#&gt;        expr      min        lq       mean   median        uq        max neval</span></span>
-<span><span class="co">#&gt;      grbase 6343.074 6577.6730 7464.85460 6624.289 6688.0640 218245.735 10000</span></span>
-<span><span class="co">#&gt;       caugi  248.434  298.0270  361.45021  317.443  332.7465  20992.950 10000</span></span>
-<span><span class="co">#&gt;  caugi_rust    6.762    9.8280   14.30324   14.467   17.8540     77.595 10000</span></span>
-<span><span class="co">#&gt;     bnlearn  258.803  310.9010  358.44353  328.594  344.9040  33344.263 10000</span></span>
-<span><span class="co">#&gt;         ggm  223.919  266.7285  303.21330  278.911  293.4230  34080.929 10000</span></span></code></pre></div>
+<span><span class="co">#&gt;         expr      min        lq       mean    median        uq       max neval</span></span>
+<span><span class="co">#&gt;       grbase 6410.831 6620.1170 7465.99024 6668.8530 6730.5280 218422.39 10000</span></span>
+<span><span class="co">#&gt;        caugi   76.183   92.0415  114.59883  107.3260  116.4020  21217.72 10000</span></span>
+<span><span class="co">#&gt;  caugi_index   50.484   62.2760   80.31223   75.7620   83.7410  17262.19 10000</span></span>
+<span><span class="co">#&gt;   caugi_rust    6.643    9.1870   15.19490   13.0345   17.8030  18364.08 10000</span></span>
+<span><span class="co">#&gt;      bnlearn  255.036  306.3570  355.14969  326.0890  342.2740  21819.16 10000</span></span>
+<span><span class="co">#&gt;          ggm  223.397  265.6960  312.48616  279.9230  294.0995  25602.56 10000</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>

@@ -247,17 +247,15 @@ you can both use symbols, characters, or indices.</p>
 <span>  <span class="va">E</span> <span class="op">%---%</span> <span class="cn">F</span>,</span>
 <span>  class <span class="op">=</span> <span class="st">"PDAG"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">D</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"D"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "B" "C"</span></span>
 <span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; [1] "D"</span></span>
-<span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">B</span>, <span class="va">C</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="fu"><a href="../reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $B</span></span>
 <span><span class="co">#&gt; [1] "A" "D"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; $C</span></span>
 <span><span class="co">#&gt; [1] "A" "D"</span></span></code></pre></div>
 </div>
 <div class="section level3">

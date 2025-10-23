@@ -48,11 +48,11 @@ X --&amp;gt; Y."><meta property="og:image" content="https://frederikfabriciusbje
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">is_valid_backdoor</span><span class="op">(</span></span>
 <span>  <span class="va">cg</span>,</span>
-<span>  x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  y <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  X <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  Y <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  Z <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  x_index <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  y_index <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  X_index <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  Y_index <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  Z_index <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -65,18 +65,16 @@ X --&amp;gt; Y."><meta property="og:image" content="https://frederikfabriciusbje
 <dd><p>A <code>caugi_graph</code> object.</p></dd>
 
 
-<dt id="arg-x-y">x, y<a class="anchor" aria-label="anchor" href="#arg-x-y"></a></dt>
-<dd><p>Single node (name/expression)
-or 1-based index via <code>x_index</code>,<code>y_index</code>.</p></dd>
+<dt id="arg-x-y">X, Y<a class="anchor" aria-label="anchor" href="#arg-x-y"></a></dt>
+<dd><p>Single node names.</p></dd>
 
 
 <dt id="arg-z">Z<a class="anchor" aria-label="anchor" href="#arg-z"></a></dt>
-<dd><p>Optional node set for conditioning; or <code>Z_index</code> for indices.</p></dd>
+<dd><p>Optional node set for conditioning</p></dd>
 
 
-<dt id="arg-x-index-y-index-z-index">x_index, y_index, Z_index<a class="anchor" aria-label="anchor" href="#arg-x-index-y-index-z-index"></a></dt>
-<dd><p>Optional 1-based indices
-(exclusive with name args).</p></dd>
+<dt id="arg-x-index-y-index-z-index">X_index, Y_index, Z_index<a class="anchor" aria-label="anchor" href="#arg-x-index-y-index-z-index"></a></dt>
+<dd><p>Optional 1-based indices.</p></dd>
 
 </dl></div>
     <div class="section level2">
