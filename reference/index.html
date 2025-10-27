@@ -36,7 +36,7 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="caugi-graph">Caugi Graph<a class="anchor" aria-label="anchor" href="#caugi-graph"></a></h2>
 
 
 
@@ -48,23 +48,22 @@
 
       <dl><dt>
 
-          <code><a href="adjustment_set.html">adjustment_set()</a></code>
+          <code><a href="caugi_graph.html">caugi_graph()</a></code>
 
         </dt>
-        <dd>Compute an adjustment set</dd>
-      </dl><dl><dt>
+        <dd>Create a <code>caugi_graph</code> from edge expressions.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="queries">Queries<a class="anchor" aria-label="anchor" href="#queries"></a></h2>
 
-          <code><a href="aid.html">aid()</a></code>
 
-        </dt>
-        <dd>Adjustment Identification Distance</dd>
-      </dl><dl><dt>
 
-          <code><a href="all_backdoor_sets.html">all_backdoor_sets()</a></code>
 
-        </dt>
-        <dd>Get all backdoor sets up to a certain size.</dd>
-      </dl><dl><dt>
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="ancestors.html">ancestors()</a></code>
 
@@ -72,52 +71,10 @@
         <dd>Get ancestors of nodes in a <code>caugi_graph</code></dd>
       </dl><dl><dt>
 
-          <code><a href="as_caugi.html">as_caugi()</a></code>
-
-        </dt>
-        <dd>Convert to a <code>caugi_graph</code></dd>
-      </dl><dl><dt>
-
-          <code><a href="as_igraph.html">as_igraph()</a></code>
-
-        </dt>
-        <dd>Convert a caugi_graph to an igraph object</dd>
-      </dl><dl><dt>
-
-          <code><a href="build.html">build()</a></code>
-
-        </dt>
-        <dd>Build the graph now</dd>
-      </dl><dl><dt>
-
-          <code><a href="caugi_graph.html">caugi_graph()</a></code>
-
-        </dt>
-        <dd>Create a <code>caugi_graph</code> from edge expressions.</dd>
-      </dl><dl><dt>
-
-          <code><a href="caugi_registry.html">caugi_registry()</a></code>
-
-        </dt>
-        <dd>Access the global edge registry, creating it if needed.</dd>
-      </dl><dl><dt>
-
-          <code><a href="caugi_verbs.html">add_edges()</a></code> <code><a href="caugi_verbs.html">remove_edges()</a></code> <code><a href="caugi_verbs.html">set_edges()</a></code> <code><a href="caugi_verbs.html">add_nodes()</a></code> <code><a href="caugi_verbs.html">remove_nodes()</a></code>
-
-        </dt>
-        <dd>Manipulate nodes and edges of a <code>caugi_graph</code></dd>
-      </dl><dl><dt>
-
           <code><a href="children.html">children()</a></code>
 
         </dt>
         <dd>Get children of nodes in a <code>caugi_graph</code></dd>
-      </dl><dl><dt>
-
-          <code><a href="d_separated.html">d_separated()</a></code>
-
-        </dt>
-        <dd>Are X and Y d-separated given Z?</dd>
       </dl><dl><dt>
 
           <code><a href="descendants.html">descendants()</a></code>
@@ -132,16 +89,16 @@
         <dd>Get the edge types of a <code>caugi_graph</code>.</dd>
       </dl><dl><dt>
 
+          <code><a href="edges.html">edges()</a></code> <code><a href="edges.html">E()</a></code>
+
+        </dt>
+        <dd>Get edges of a <code>caugi_graph</code>.</dd>
+      </dl><dl><dt>
+
           <code><a href="exogenous.html">exogenous()</a></code>
 
         </dt>
         <dd>Get all exogenous nodes in a <code>caugi_graph</code></dd>
-      </dl><dl><dt>
-
-          <code><a href="hd.html">hd()</a></code>
-
-        </dt>
-        <dd>Hamming Distance</dd>
       </dl><dl><dt>
 
           <code><a href="is_acyclic.html">is_acyclic()</a></code>
@@ -174,18 +131,6 @@
         <dd>Is the <code>caugi</code> graph a PDAG?</dd>
       </dl><dl><dt>
 
-          <code><a href="is_valid_backdoor.html">is_valid_backdoor()</a></code>
-
-        </dt>
-        <dd>Is a backdoor set valid?</dd>
-      </dl><dl><dt>
-
-          <code><a href="length.html">length</a></code>
-
-        </dt>
-        <dd>Length of a <code>caugi_graph</code></dd>
-      </dl><dl><dt>
-
           <code><a href="markov_blanket.html">markov_blanket()</a></code>
 
         </dt>
@@ -198,7 +143,7 @@
         <dd>Get neighbors of nodes in a <code>caugi_graph</code></dd>
       </dl><dl><dt>
 
-          <code><a href="nodes_and_edges.html">nodes()</a></code> <code><a href="nodes_and_edges.html">vertices()</a></code> <code><a href="nodes_and_edges.html">V()</a></code> <code><a href="nodes_and_edges.html">edges()</a></code> <code><a href="nodes_and_edges.html">E()</a></code>
+          <code><a href="nodes.html">nodes()</a></code> <code><a href="nodes.html">vertices()</a></code> <code><a href="nodes.html">V()</a></code>
 
         </dt>
         <dd>Get nodes or edges of a <code>caugi_graph</code></dd>
@@ -210,10 +155,166 @@
         <dd>Get parents of nodes in a <code>caugi_graph</code></dd>
       </dl><dl><dt>
 
+          <code><a href="same_nodes.html">same_nodes()</a></code>
+
+        </dt>
+        <dd>Same nodes?</dd>
+      </dl><dl><dt>
+
+          <code><a href="subgraph.html">subgraph()</a></code>
+
+        </dt>
+        <dd>Extract a subgraph induced by a set of nodes</dd>
+      </dl></div><div class="section level2">
+      <h2 id="verbs">Verbs<a class="anchor" aria-label="anchor" href="#verbs"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="build.html">build()</a></code>
+
+        </dt>
+        <dd>Build the graph now</dd>
+      </dl><dl><dt>
+
+          <code><a href="caugi_verbs.html">add_edges()</a></code> <code><a href="caugi_verbs.html">remove_edges()</a></code> <code><a href="caugi_verbs.html">set_edges()</a></code> <code><a href="caugi_verbs.html">add_nodes()</a></code> <code><a href="caugi_verbs.html">remove_nodes()</a></code>
+
+        </dt>
+        <dd>Manipulate nodes and edges of a <code>caugi_graph</code></dd>
+      </dl></div><div class="section level2">
+      <h2 id="adjustment-and-d-separation">Adjustment and d-separation<a class="anchor" aria-label="anchor" href="#adjustment-and-d-separation"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="adjustment_set.html">adjustment_set()</a></code>
+
+        </dt>
+        <dd>Compute an adjustment set</dd>
+      </dl><dl><dt>
+
+          <code><a href="all_backdoor_sets.html">all_backdoor_sets()</a></code>
+
+        </dt>
+        <dd>Get all backdoor sets up to a certain size.</dd>
+      </dl><dl><dt>
+
+          <code><a href="d_separated.html">d_separated()</a></code>
+
+        </dt>
+        <dd>Are X and Y d-separated given Z?</dd>
+      </dl><dl><dt>
+
+          <code><a href="is_valid_backdoor.html">is_valid_backdoor()</a></code>
+
+        </dt>
+        <dd>Is a backdoor set valid?</dd>
+      </dl></div><div class="section level2">
+      <h2 id="conversions">Conversions<a class="anchor" aria-label="anchor" href="#conversions"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="as_caugi.html">as_caugi()</a></code>
+
+        </dt>
+        <dd>Convert to a <code>caugi_graph</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="as_igraph.html">as_igraph()</a></code>
+
+        </dt>
+        <dd>Convert a caugi_graph to an igraph object</dd>
+      </dl></div><div class="section level2">
+      <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="length.html">length</a></code>
+
+        </dt>
+        <dd>Length of a <code>caugi_graph</code></dd>
+      </dl><dl><dt>
+
           <code><a href="print.html">print</a></code>
 
         </dt>
         <dd>Print a <code>caugi_graph</code></dd>
+      </dl></div><div class="section level2">
+      <h2 id="metrics">Metrics<a class="anchor" aria-label="anchor" href="#metrics"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="aid.html">aid()</a></code>
+
+        </dt>
+        <dd>Adjustment Identification Distance</dd>
+      </dl><dl><dt>
+
+          <code><a href="hd.html">hd()</a></code>
+
+        </dt>
+        <dd>Hamming Distance</dd>
+      </dl><dl><dt>
+
+          <code><a href="shd.html">shd()</a></code>
+
+        </dt>
+        <dd>Structural Hamming Distance</dd>
+      </dl></div><div class="section level2">
+      <h2 id="edge-registry">Edge Registry<a class="anchor" aria-label="anchor" href="#edge-registry"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="caugi_registry.html">caugi_registry()</a></code>
+
+        </dt>
+        <dd>Access the global edge registry, creating it if needed.</dd>
       </dl><dl><dt>
 
           <code><a href="register_caugi_edge.html">register_caugi_edge()</a></code>
@@ -228,30 +329,13 @@
         <dd>Reset the global edge registry.</dd>
       </dl><dl><dt>
 
-          <code><a href="same_nodes.html">same_nodes()</a></code>
-
-        </dt>
-        <dd>Same nodes?</dd>
-      </dl><dl><dt>
-
           <code><a href="seal_caugi_registry.html">seal_caugi_registry()</a></code>
 
         </dt>
         <dd>Seal the global edge registry.</dd>
-      </dl><dl><dt>
-
-          <code><a href="shd.html">shd()</a></code>
-
-        </dt>
-        <dd>Structural Hamming Distance</dd>
-      </dl><dl><dt>
-
-          <code><a href="subgraph.html">subgraph()</a></code>
-
-        </dt>
-        <dd>Extract a subgraph induced by a set of nodes</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

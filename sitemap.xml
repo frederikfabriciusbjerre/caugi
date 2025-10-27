@@ -48,6 +48,7 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-split_plus.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-update_caugi_graph.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/edge_types.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/edges.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/exogenous.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/freeze_state.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/grapes-greater-than-grapes.html</loc></url>
@@ -63,7 +64,7 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/length.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/markov_blanket.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.html</loc></url>
-<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/nodes_and_edges.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/parents.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/print.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.html</loc></url>
