@@ -70,7 +70,7 @@ acyclic, if <code>FALSE</code> (default), it will look at the graph class.</p></
 <p><strong>Check logic</strong></p>
 <p>By the construction of the <code>caugi_graph</code>, if the graph class is "DAG" or
 "PDAG", the graph should be guaranteed to be acyclic. If the graph class is
-"Unknown", the graph may or may not be acyclic. If <code>force_check = TRUE</code>, the
+"UNKNOWN", the graph may or may not be acyclic. If <code>force_check = TRUE</code>, the
 function will check if the graph is acyclic using the Rust backend, no matter
 the class. If the graph class is not inherently acyclic, <code>is_acyclic</code> will
 run the check.</p>
