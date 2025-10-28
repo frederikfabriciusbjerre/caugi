@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Causal Graph Interface">
-<meta name="description" content="A causal graph interface for R using a Rust backend.">
-<meta property="og:description" content="A causal graph interface for R using a Rust backend.">
+<meta name="description" content="caugi is a package for creating, querying, and processing causal graphs.">
+<meta property="og:description" content="caugi is a package for creating, querying, and processing causal graphs.">
 <meta property="og:image" content="https://frederikfabriciusbjerre.github.io/caugi/logo.svg">
 </head>
 <body>
@@ -105,38 +105,16 @@
 <span><span class="co">#&gt; 4 C     --&gt;   D</span></span></code></pre></div>
 <p>You can query it:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">D</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 1</span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 B    </span></span>
-<span><span class="co">#&gt; 2 C</span></span>
-<span><span class="fu"><a href="reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">D</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 1</span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 B    </span></span>
-<span><span class="co">#&gt; 2 C</span></span>
-<span><span class="fu"><a href="reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">A</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 1</span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 B    </span></span>
-<span><span class="co">#&gt; 2 C</span></span>
-<span><span class="fu"><a href="reference/ancestors.html">ancestors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">D</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 1</span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 A    </span></span>
-<span><span class="co">#&gt; 2 B    </span></span>
-<span><span class="co">#&gt; 3 C</span></span>
-<span><span class="fu"><a href="reference/descendants.html">descendants</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">A</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 1</span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 B    </span></span>
-<span><span class="co">#&gt; 2 C    </span></span>
-<span><span class="co">#&gt; 3 D</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/neighbors.html">neighbors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"D"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "B" "C"</span></span>
+<span><span class="fu"><a href="reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"D"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "B" "C"</span></span>
+<span><span class="fu"><a href="reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"A"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "B" "C"</span></span>
+<span><span class="fu"><a href="reference/ancestors.html">ancestors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"D"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "A" "B" "C"</span></span>
+<span><span class="fu"><a href="reference/descendants.html">descendants</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"A"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "B" "C" "D"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="key-features">Key features<a class="anchor" aria-label="anchor" href="#key-features"></a>
@@ -208,7 +186,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Frederik Fabricius-Bjerre <br><small class="roles"> Author, maintainer </small>   </li>
+<li>Frederik Fabricius-Bjerre <br><small class="roles"> Maintainer </small>   </li>
 </ul>
 </div>
 
@@ -217,6 +195,7 @@
 <ul class="list-unstyled">
 <li><a href="https://github.com/frederikfabriciusbjerre/caugi/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/frederikfabriciusbjerre/caugi/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://app.codecov.io/gh/frederikfabriciusbjerre/caugi" class="external-link"><img src="https://codecov.io/gh/frederikfabriciusbjerre/caugi/graph/badge.svg" alt="Code coverage"></a></li>
+<li><a href="https://extendr.github.io/extendr/extendr_api/" class="external-link"><img src="https://img.shields.io/badge/extendr-%5E0.8.1-276DC2" alt="extendr"></a></li>
 </ul>
 </div>
 
