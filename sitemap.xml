@@ -21,7 +21,6 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/build.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/caugi-package.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_graph.html</loc></url>
-<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_registry.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_verbs.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/children.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/d_separated.html</loc></url>
@@ -74,9 +73,8 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/parents.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/print.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.html</loc></url>
-<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/reset_caugi_registry.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/registry.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/same_nodes.html</loc></url>
-<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/seal_caugi_registry.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/shd.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/subgraph.html</loc></url>
 </urlset>

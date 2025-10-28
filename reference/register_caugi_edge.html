@@ -85,16 +85,39 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The integer code assigned to the registered edge type.</p>
+    <p>TRUE, invisibly.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other registry:
-<code><a href="caugi_registry.html">caugi_registry</a>()</code>,
-<code><a href="reset_caugi_registry.html">reset_caugi_registry</a>()</code>,
-<code><a href="seal_caugi_registry.html">seal_caugi_registry</a>()</code></p></div>
+<code><a href="registry.html">registry</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># first, for reproducability, we reset the registry to default</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="registry.html">reset_caugi_registry</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># create a new registry</span></span></span>
+<span class="r-in"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="registry.html">caugi_registry</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># register an edge</span></span></span>
+<span class="r-in"><span><span class="fu">register_caugi_edge</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  glyph <span class="op">=</span> <span class="st">"&lt;--"</span>,</span></span>
+<span class="r-in"><span>  tail_mark <span class="op">=</span> <span class="st">"arrow"</span>,</span></span>
+<span class="r-in"><span>  head_mark <span class="op">=</span> <span class="st">"tail"</span>,</span></span>
+<span class="r-in"><span>  class <span class="op">=</span> <span class="st">"directed"</span>,</span></span>
+<span class="r-in"><span>  symmetric <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># now, this edge is available for caugi graphs:</span></span></span>
+<span class="r-in"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi_graph.html">caugi_graph</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op">%&lt;--%</span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># reset the registry to default</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="registry.html">reset_caugi_registry</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
