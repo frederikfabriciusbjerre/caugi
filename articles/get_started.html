@@ -68,7 +68,206 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load the package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://frederikfabriciusbjerre.github.io/caugi/">caugi</a></span><span class="op">)</span></span></code></pre></div>
-  </main>
+<p>In this vignette, we will walk you through on how to create a
+<code>caugi_graph</code>, query it, modify it, and then compare it to
+other <code>caugi</code>s.</p>
+<div class="section level2">
+<h2 id="the-caugi-object">The <code>caugi</code> object<a class="anchor" aria-label="anchor" href="#the-caugi-object"></a>
+</h2>
+<p>You can create a <code>caugi</code> graph object using the
+<code><a href="../reference/caugi_graph.html">caugi_graph()</a></code> function along with infix operators to define
+edges. Let’s create a directed acyclic graph (DAG) with 5 nodes and 5
+edges.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_graph.html">caugi_graph</a></span><span class="op">(</span></span>
+<span>  <span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span>,</span>
+<span>  <span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span>,</span>
+<span>  class <span class="op">=</span> <span class="st">"DAG"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">cg</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
+<span><span class="co">#&gt;   name </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> D    </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">#&gt;   from  edge  to   </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     --&gt;   B    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A     --&gt;   C    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> B     --&gt;   C    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> B     --&gt;   D</span></span></code></pre></div>
+<p>You might scratch your head a bit, when looking at the call above. To
+clarify, <code>A %--&gt;% B</code> creates the edge <code>--&gt;</code>
+from <code>A</code> to <code>B</code>. The syntax
+<code>B %--&gt;% C + D</code> is equivalent to <code>B %--&gt; C</code>
+<em>and</em> <code>B %--&gt;% D</code>. Notice that the graph prints two
+<code>tibbles</code>. The first is equivalent to <code>cg@nodes</code>
+and the second <code>cg@edges</code>. Besides that the
+<code>caugi</code> holds other <em>properties</em>. Let’s check the
+other properties.</p>
+<div class="section level3">
+<h3 id="properties">Properties<a class="anchor" aria-label="anchor" href="#properties"></a>
+</h3>
+<div class="section level4">
+<h4 id="ptr">
+<code>ptr</code><a class="anchor" aria-label="anchor" href="#ptr"></a>
+</h4>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span></span>
+<span><span class="co">#&gt; &lt;pointer: 0x5559c3b2d9a0&gt;</span></span></code></pre></div>
+<p>This is the pointer to the Rust object that <code>caugi</code>
+utilizes for performance.</p>
+</div>
+<div class="section level4">
+<h4 id="simple">
+<code>simple</code><a class="anchor" aria-label="anchor" href="#simple"></a>
+</h4>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">simple</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>This indicates whether the graph is <em>simple</em> or not. Let’s try
+to create a non-simple graph:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/caugi_graph.html">caugi_graph</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">A</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error in graph_builder_add_edges(b, as.integer(unname(id[edges$from])), : parallel edges not allowed in simple graphs</span></span></code></pre></div>
+<p>This cannot be done unless you initialize the graph with
+<code>simple = FALSE</code>. Note that, currently, all of the supported
+graph classes only support <code>simple = TRUE</code> unless the class
+is <code>UNKNOWN</code>.</p>
+</div>
+<div class="section level4">
+<h4 id="graph_class">
+<code>graph_class</code><a class="anchor" aria-label="anchor" href="#graph_class"></a>
+</h4>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">graph_class</span></span>
+<span><span class="co">#&gt; [1] "DAG"</span></span></code></pre></div>
+<p>This is the graph’s class. As you can see here, it is a DAG.</p>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="querying-the-caugi">Querying the <code>caugi</code><a class="anchor" aria-label="anchor" href="#querying-the-caugi"></a>
+</h2>
+<p>We can query the <code>caugi</code> graph object with the built-in
+queries provided in the package. Let’s try to find the descendants of
+all the parents of the node <code>C</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/descendants.html">descendants</a></span><span class="op">(</span><span class="va">cg</span>, <span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"C"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $A</span></span>
+<span><span class="co">#&gt; [1] "B" "C" "D"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $B</span></span>
+<span><span class="co">#&gt; [1] "C" "D"</span></span></code></pre></div>
+<p>First note that the output is a list of named character vectors. How
+come? Since the parents of <code>C</code> is <code>c(A, B)</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"C"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "A" "B"</span></span></code></pre></div>
+<p>So for each parent of <code>C</code> we have a named vector in the
+list that represents the descendants of that parent node.</p>
+</div>
+<div class="section level2">
+<h2 id="modifying-the-caugi">Modifying the <code>caugi</code><a class="anchor" aria-label="anchor" href="#modifying-the-caugi"></a>
+</h2>
+<p>Let’s try to modify the graph from before, so we get a new DAG.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg_modified</span> <span class="op">&lt;-</span> <span class="va">cg</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/caugi_verbs.html">remove_edges</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">A</span>, <span class="va">D</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span><span class="op">)</span></span>
+<span><span class="va">cg_modified</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
+<span><span class="co">#&gt;   name </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> D    </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
+<span><span class="co">#&gt;   from  edge  to   </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     --&gt;   C    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B     --&gt;   A    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> D     --&gt;   C</span></span></code></pre></div>
+<p>Would you like to add nodes? Then use <code><a href="../reference/caugi_verbs.html">add_nodes()</a></code>.</p>
+</div>
+<div class="section level2">
+<h2 id="graph-metrics">Graph metrics<a class="anchor" aria-label="anchor" href="#graph-metrics"></a>
+</h2>
+<p>Now that we have two different graphs, we can use different metrics
+to measure the difference between the two graphs. Here, we use the
+adjustment identification distance (AID) and the structural Hamming
+distance (SHD):</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/aid.html">aid</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">cg_modified</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.5833333</span></span>
+<span><span class="fu"><a href="../reference/shd.html">shd</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">cg_modified</span>, normalized <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.6666667</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="there-you-go">There you go!<a class="anchor" aria-label="anchor" href="#there-you-go"></a>
+</h2>
+<p>You have now created a graph, inspected it, modified it, and measured
+the difference between the two graphs – both structurally and
+interventionally. For further reading, we recommend the vignettes
+<code><a href="../articles/package_use.html">vignette("package_use")</a></code> and
+<code><a href="../articles/performance.html">vignette("performance")</a></code> to see how to use
+<code>caugi</code> in your own packages, and to see how
+<code>caugi</code> performs compared to other graph packages in R. For
+the interested reader, we also recommend
+<code><a href="../articles/motivation.html">vignette("motivation")</a></code>, which goes deeper into the
+motivation behind <code>caugi</code> and what we aspire to do with
+<code>caugi</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="appendix">Appendix<a class="anchor" aria-label="anchor" href="#appendix"></a>
+</h2>
+<div class="section level3">
+<h3 id="advanced-properties">Advanced properties<a class="anchor" aria-label="anchor" href="#advanced-properties"></a>
+</h3>
+<div class="section level4">
+<h4 id="built">
+<code>built</code><a class="anchor" aria-label="anchor" href="#built"></a>
+</h4>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">built</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>This indicates whether the graph has been “built” or not on the Rust
+side. This is important, as the Rust object may not agree with the R
+object if <code>built = FALSE</code>.</p>
+</div>
+<div class="section level4">
+<h4 id="name_index_map">
+<code>name_index_map</code><a class="anchor" aria-label="anchor" href="#name_index_map"></a>
+</h4>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">name_index_map</span></span></code></pre></div>
+<p>The <code>name_index_map</code> is a hashmap that takes node names as
+keys and output zero-based indices. This is use to access nodes’
+zero-based indices,, when converting node names to indices for Rust
+calls, as the Rust backend uses zero-based indices.</p>
+</div>
+<div class="section level4">
+<h4 id="state">
+<code>.state</code><a class="anchor" aria-label="anchor" href="#state"></a>
+</h4>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">.state</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x5559c1bcb058&gt;</span></span></code></pre></div>
+<p>This is the internal state of the <code>caugi</code> graph object. It
+is used to ensure that the <code>caugi</code> object can be modifying in
+R and, so to say, <em>safes</em> the modifications you might make to the
+graph in R without having to rebuild the graph in Rust each time. The
+most important takeaways about the state is that you should
+<em>avoid</em> modifying the state directly. Instead, you should use the
+verbs.</p>
+</div>
+</div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
