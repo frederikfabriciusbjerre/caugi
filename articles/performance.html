@@ -174,14 +174,16 @@ become prohibitively slow for larger graphs.</p>
 <span>  <span class="op">}</span>,</span>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># igraph returns igraph object</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Some expressions had a GC in every iteration; so filtering is</span></span>
+<span><span class="co">#&gt; disabled.</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi        64.4µs   68.1µs <span style="text-decoration: underline;">14</span>351.      67.42KB     6.16</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph     525.96µs 553.91µs  <span style="text-decoration: underline;">1</span>785.      360.8KB    10.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn     40.03µs  42.53µs <span style="text-decoration: underline;">22</span>920.      38.38KB    19.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ggm         19.18ms  19.18ms    52.1     70.73MB  <span style="text-decoration: underline;">1</span>355.  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> dagitty       2.62s    2.62s     0.382    5.09MB     0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi       65.86µs  70.95µs <span style="text-decoration: underline;">13</span>362.      67.42KB    6.00 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph      541.3µs 574.62µs  <span style="text-decoration: underline;">1</span>634.      360.8KB    8.00 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn     39.88µs  42.92µs <span style="text-decoration: underline;">15</span>666.      38.38KB   14.4  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ggm         19.47ms  23.09ms    32.6     70.73MB   48.0  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> dagitty       2.77s    2.77s     0.361    5.09MB    0.361</span></span></code></pre></div>
 <p><code>bnlearn</code> is fastest here, but is only able to handle
 smaller graphs, whereas <code>caugi</code> and <code>igraph</code> can
 handle very large graph objects with almost no time increase:</p>
@@ -204,8 +206,8 @@ handle very large graph objects with almost no time increase:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi        63.8µs   66.7µs    <span style="text-decoration: underline;">14</span>649.     1008B     8.37</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph        775µs  809.9µs     <span style="text-decoration: underline;">1</span>227.    3.05MB    68.0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi        63.8µs     68µs    <span style="text-decoration: underline;">14</span>296.     1008B     8.42</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph      810.9µs    877µs     <span style="text-decoration: underline;">1</span>108.    3.05MB    59.1</span></span></code></pre></div>
 <p>For ancestors and descendants, we see that <code>caugi</code>
 outperforms all other packages by a several magnitudes, expect for
 <code>igraph</code>, which it still beats, but by a smaller margin::</p>
@@ -234,10 +236,10 @@ outperforms all other packages by a several magnitudes, expect for
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi      186.09µs  204.2µs  <span style="text-decoration: underline;">2</span>099.       65.3KB     1.82</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph     629.85µs 689.91µs  <span style="text-decoration: underline;">1</span>393.     117.85KB     2.00</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn       1.06s    1.06s     0.943    1.33GB    10.4 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> dagitty       2.65s    2.65s     0.377    5.09MB     0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi      185.77µs 202.53µs  <span style="text-decoration: underline;">4</span>810.       65.3KB     2.00</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph     650.92µs 685.74µs  <span style="text-decoration: underline;">1</span>352.     117.85KB     4.00</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn       1.11s    1.11s     0.904    1.33GB    13.6 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> dagitty       2.83s    2.83s     0.353    5.09MB     0</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="d-separation">d-separation<a class="anchor" aria-label="anchor" href="#d-separation"></a>
@@ -270,9 +272,9 @@ then check for d-separation.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi       34.23ms  34.71ms    28.6     33.05KB     0   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bnlearn       4.04s    4.04s     0.247    3.22GB     5.20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> dagitty       2.07s    2.07s     0.483    4.19MB     0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi       35.89ms   36.1ms    27.5     33.05KB     0   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bnlearn       3.29s    3.29s     0.303    3.22GB     7.59</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> dagitty       2.15s    2.15s     0.465    4.19MB     0</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="subgraph-building">Subgraph (building)<a class="anchor" aria-label="anchor" href="#subgraph-building"></a>
@@ -304,9 +306,9 @@ benchmark:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi       13.35ms  13.73ms    67.6        12MB     1.99</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph       1.85ms   1.91ms   520.       81.1KB     0   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn       1.03s    1.03s     0.971   983.6MB     2.91</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi       12.59ms  12.78ms    76.3        12MB     1.96</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph       1.84ms   2.28ms   468.       81.1KB     0   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn       1.17s    1.17s     0.856   983.6MB     3.43</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level3">

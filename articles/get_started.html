@@ -117,7 +117,7 @@ other properties.</p>
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span></span>
-<span><span class="co">#&gt; &lt;pointer: 0x5559c3b2d9a0&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;pointer: 0x55d103039e40&gt;</span></span></code></pre></div>
 <p>This is the pointer to the Rust object that <code>caugi</code>
 utilizes for performance.</p>
 </div>
@@ -175,7 +175,8 @@ list that represents the descendants of that parent node.</p>
 </h2>
 <p>Let’s try to modify the graph from before, so we get a new DAG.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cg_modified</span> <span class="op">&lt;-</span> <span class="va">cg</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/caugi_verbs.html">remove_edges</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="va">cg_modified</span> <span class="op">&lt;-</span> <span class="va">cg</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/caugi_verbs.html">remove_edges</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">A</span>, <span class="va">D</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span><span class="op">)</span></span>
 <span><span class="va">cg_modified</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
@@ -255,7 +256,7 @@ calls, as the Rust backend uses zero-based indices.</p>
 </h4>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">.state</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x5559c1bcb058&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;environment: 0x55d103547ee8&gt;</span></span></code></pre></div>
 <p>This is the internal state of the <code>caugi</code> graph object. It
 is used to ensure that the <code>caugi</code> object can be modifying in
 R and, so to say, <em>safes</em> the modifications you might make to the
