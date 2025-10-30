@@ -9,7 +9,7 @@ Complete Partially Directed Acyclic Graph (CPDAG)."><meta property="og:image" co
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,7 @@ Complete Partially Directed Acyclic Graph (CPDAG).</p>
 
 
 <dl><dt id="arg-cg">cg<a class="anchor" aria-label="anchor" href="#arg-cg"></a></dt>
-<dd><p>A <code>caugi_graph</code> object.</p></dd>
+<dd><p>A <code>caugi</code> object.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -85,7 +85,7 @@ Complete Partially Directed Acyclic Graph (CPDAG).</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cg_cpdag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi_graph.html">caugi_graph</a></span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cg_cpdag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">A</span> <span class="op">%---%</span> <span class="va">B</span>,</span></span>
 <span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span>,</span></span>
 <span class="r-in"><span>  <span class="va">B</span> <span class="op"><a href="grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span>,</span></span>
@@ -94,7 +94,7 @@ Complete Partially Directed Acyclic Graph (CPDAG).</p>
 <span class="r-in"><span><span class="fu">is_cpdag</span><span class="op">(</span><span class="va">cg_cpdag</span><span class="op">)</span> <span class="co"># TRUE</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">cg_not_cpdag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi_graph.html">caugi_graph</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">cg_not_cpdag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">A</span> <span class="op">%---%</span> <span class="va">B</span>,</span></span>
 <span class="r-in"><span>  <span class="va">A</span> <span class="op">%---%</span> <span class="va">C</span>,</span></span>
 <span class="r-in"><span>  <span class="va">B</span> <span class="op"><a href="grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span>,</span></span>

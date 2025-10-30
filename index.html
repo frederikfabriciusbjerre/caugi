@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,14 +72,14 @@
 <p><code>caugi</code> (pronounced “corgi”) stands for <strong>Causal Graph Interface</strong>. It is a <em>causality-first</em> graph package that focuses on performance and flexibility. If you are developing scripts or algorithms in the field of causality or if you are learning about causal graphs for the first time, <code>caugi</code> is made for you.</p>
 </div>
 <div class="section level2">
-<h2 id="the-basic-object-caugi_graph">The basic object: <code>caugi_graph</code>
-<a class="anchor" aria-label="anchor" href="#the-basic-object-caugi_graph"></a>
+<h2 id="the-basic-object-caugi">The basic object: <code>caugi</code>
+<a class="anchor" aria-label="anchor" href="#the-basic-object-caugi"></a>
 </h2>
-<p>A <code>caugi_graph</code> is the bread and butter of <code>caugi</code>. It is easy to create, query, and modify.</p>
-<p>You can create simple graphs as well as a number of predefined graph classes. Currently, we only support <code>"UNKNOWN"</code>, <code>"DAG"</code>, or <code>"PDAG"</code>. We plan on supporting several other causal graph types in future releases, such as <code>"PAG"</code>, <code>"CPDAG"</code>, <code>"MAG"</code>, <code>"SWIG"</code>, and <code>"ADMG"</code>.</p>
+<p>A <code>caugi</code> graph object is the bread and butter of the <code>caugi</code> package. It is easy to create, query, and modify.</p>
+<p>You can create simple graphs as well as a number of predefined graph classes. Currently, we only support <code>"UNKNOWN"</code>, <code>"DAG"</code>, or <code>"PDAG"</code>. We plan on supporting several other causal graph types in future releases, such as <code>"PAG"</code>, <code>"MAG"</code>, <code>"SWIG"</code>, and <code>"ADMG"</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># a tiny DAG</span></span>
-<span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/caugi_graph.html">caugi_graph</a></span><span class="op">(</span></span>
+<span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/caugi.html">caugi</a></span><span class="op">(</span></span>
 <span>  <span class="va">A</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>,</span>
 <span>  <span class="va">B</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">D</span>,</span>
 <span>  <span class="va">C</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">D</span>,</span>
@@ -113,7 +113,7 @@
 <span>  symmetric <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="reference/caugi_graph.html">caugi_graph</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op">%&lt;--%</span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op">%&lt;--%</span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 1</span></span>
 <span><span class="co">#&gt;   name </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;</span></span>
@@ -134,7 +134,7 @@
 <div class="section level2">
 <h2 id="querying-and-metrics">Querying and metrics<a class="anchor" aria-label="anchor" href="#querying-and-metrics"></a>
 </h2>
-<p><code>caugi</code> provides a number of functions to query and analyze <code>caugi_graph</code> objects. Some of the available functions are:</p>
+<p><code>caugi</code> provides a number of functions to query and analyze <code>caugi</code> objects. Some of the available functions are:</p>
 <ul>
 <li>Relational queries, such as <code><a href="reference/parents.html">parents()</a></code>, <code><a href="reference/ancestors.html">ancestors()</a></code>, <code><a href="reference/neighbors.html">neighbors()</a></code>, and more.</li>
 <li>Structural queries, such as <code><a href="reference/is_acyclic.html">is_acyclic()</a></code>, <code>is_cpdag</code>, and more.</li>
