@@ -2,11 +2,11 @@ pandoc: 3.1.11
 pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
-  Introduction_to_caugi: Introduction_to_caugi.html
+  get_started: get_started.html
   motivation: motivation.html
   package_use: package_use.html
   performance: performance.html
-last_built: 2025-10-29T20:50Z
+last_built: 2025-10-30T11:17Z
 urls:
   reference: https://frederikfabriciusbjerre.github.io/caugi/reference
   article: https://frederikfabriciusbjerre.github.io/caugi/articles
