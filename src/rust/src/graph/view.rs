@@ -1,14 +1,16 @@
 use super::CaugiGraph;
 use super::dag::Dag;
 use super::pdag::Pdag;
+use super::pag::Pag;
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub enum GraphView {
     Dag(Arc<Dag>),
     Pdag(Arc<Pdag>),
+    Pag(Arc<Pag>),
     Raw(Arc<CaugiGraph>),
-    // ADMG, MAG, PAG, etc in the future
+    // ADMG, MAG, etc in the future
 }
 
 impl GraphView {
@@ -17,6 +19,7 @@ impl GraphView {
         match self {
             GraphView::Dag(d) => d.core_ref(),
             GraphView::Pdag(p) => p.core_ref(),
+            GraphView::Pag(p) => p.core_ref(),
             GraphView::Raw(c) => c,
         }
     }
@@ -26,6 +29,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => g.n(),
             GraphView::Pdag(g) => g.n(),
+            GraphView::Pag(g) => g.n(),
             GraphView::Raw(core) => core.n(),
         }
     }
@@ -35,6 +39,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.parents_of(i)),
             GraphView::Pdag(g) => Ok(g.parents_of(i)),
+            GraphView::Pag(g) => Ok(g.parents_of(i)),
             GraphView::Raw(_) => Err("parents_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -42,6 +47,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.children_of(i)),
             GraphView::Pdag(g) => Ok(g.children_of(i)),
+            GraphView::Pag(g) => Ok(g.children_of(i)),
             GraphView::Raw(_) => Err("children_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -49,6 +55,7 @@ impl GraphView {
         match self {
             GraphView::Dag(_) => Err("undirected_of not defined for Dag".into()),
             GraphView::Pdag(g) => Ok(g.undirected_of(i)),
+            GraphView::Pag(g) => Ok(g.undirected_of(i)),
             GraphView::Raw(_) => Err("undirected_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -56,6 +63,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.neighbors_of(i)),
             GraphView::Pdag(g) => Ok(g.neighbors_of(i)),
+            GraphView::Pag(g) => Ok(g.neighbors_of(i)),
             GraphView::Raw(_) => Err("neighbors_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -63,6 +71,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.ancestors_of(i)),
             GraphView::Pdag(g) => Ok(g.ancestors_of(i)),
+            GraphView::Pag(g) => Ok(g.ancestors_of(i)),
             GraphView::Raw(_) => Err("ancestors_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -70,6 +79,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.descendants_of(i)),
             GraphView::Pdag(g) => Ok(g.descendants_of(i)),
+            GraphView::Pag(g) => Ok(g.descendants_of(i)),
             GraphView::Raw(_) => Err("descendants_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -77,6 +87,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Pdag(g) => Ok(g.markov_blanket_of(i)),
+            GraphView::Pag(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Raw(_) => Err("markov_blanket_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -84,6 +95,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.exogenous_nodes()),
             GraphView::Pdag(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
+            GraphView::Pag(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
             GraphView::Raw(_) => Err("exogenous_nodes not implemented for UNKNOWN class".into()),
         }
     }
@@ -143,6 +155,10 @@ impl GraphView {
                 let p = super::pdag::Pdag::new(std::sync::Arc::new(core2))?;
                 GraphView::Pdag(std::sync::Arc::new(p))
             }
+            GraphView::Pag(_) => {
+                let p = super::pag::Pag::new(std::sync::Arc::new(core2))?;
+                GraphView::Pag(std::sync::Arc::new(p))
+            }
             GraphView::Raw(_) => GraphView::Raw(std::sync::Arc::new(core2)),
         };
         Ok(gv)
@@ -157,6 +173,7 @@ impl GraphView {
                 Ok(GraphView::Pdag(std::sync::Arc::new(p)))
             }
             GraphView::Pdag(_) => Ok(self.clone()),
+            GraphView::Pag(_) => Err("to_cpdag is not defined for PAGs".into()),
             _ => Err("to_cpdag is only defined for DAGs".into()),
         }
     }

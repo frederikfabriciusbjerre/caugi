@@ -13,6 +13,7 @@ pub mod alg;
 pub mod builder;
 pub mod dag;
 pub mod pdag;
+pub mod pag;
 pub mod view;
 pub use view::GraphView;
 pub mod metrics;

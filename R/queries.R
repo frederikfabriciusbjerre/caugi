@@ -126,10 +126,10 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 #' it, if possible.
 #'
 #' @details
-#' Logically, it should not be possible to have a graph class of "DAG" or "PDAG"
-#' that has cycles, but in case the user modified the graph after creation in
-#' some unforeseen way that could have introduced cycles, this function allows
-#' to force a check of acyclicity, if needed.
+#' Logically, it should not be possible to have a graph class of "DAG", "PDAG",
+#' or "PAG" that has cycles, but in case the user modified the graph after
+#' creation in some unforeseen way that could have introduced cycles, this
+#' function allows to force a check of acyclicity, if needed.
 #'
 #' @returns A logical value indicating whether the graph is acyclic.
 #'
@@ -158,7 +158,8 @@ is_acyclic <- function(cg, force_check = FALSE) {
   if (force_check) {
     is_it <- is_acyclic_ptr(cg@ptr)
   } else if (identical(cg@graph_class, "DAG") ||
-    identical(cg@graph_class, "PDAG")) {
+    identical(cg@graph_class, "PDAG") ||
+    identical(cg@graph_class, "PAG")) {
     is_it <- TRUE
   } else {
     is_it <- is_acyclic_ptr(cg@ptr)
@@ -276,6 +277,49 @@ is_pdag <- function(cg, force_check = FALSE) {
   } else {
     # if we can't be sure from the class, we check
     is_it <- is_pdag_type_ptr(cg@ptr)
+  }
+  is_it
+}
+
+#' @title Is the `caugi` graph a PAG?
+#'
+#' @description Checks if the given `caugi` graph is a
+#' Partial Ancestral Graph (PAG).
+#'
+#' @param cg A `caugi` object.
+#' @param force_check Logical. If `TRUE`, it will check if the graph is actually
+#' a PAG, if `FALSE` (default), it will look at the graph class and match
+#' against `"PAG"`.
+#'
+#' @returns A logical value indicating whether the graph is a PAG.
+#'
+#' @examples
+#' cg_pag <- caugi(
+#'   A %o->% B,
+#'   B %<->% C,
+#'   class = "PAG"
+#' )
+#' is_pag(cg_pag) # TRUE
+#'
+#' cg_dag <- caugi(
+#'   A %-->% B,
+#'   B %-->% C,
+#'   class = "DAG"
+#' )
+#' is_pag(cg_dag) # FALSE
+#'
+#' @family queries
+#' @concept queries
+#'
+#' @export
+is_pag <- function(cg, force_check = FALSE) {
+  is_caugi(cg, throw_error = TRUE)
+  cg <- build(cg)
+  if (identical(cg@graph_class, "PAG") && !force_check) {
+    is_it <- TRUE
+  } else {
+    # if we can't be sure from the class, we check
+    is_it <- is_pag_type_ptr(cg@ptr)
   }
   is_it
 }

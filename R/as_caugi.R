@@ -430,11 +430,6 @@ S7::method(
     }
   }
 
-  # todo:
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
-  class <- if (class == "PAG") "UNKNOWN" else class
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
-
   caugi(
     from = from,
     edge = edge,
@@ -590,7 +585,7 @@ S7::method(
       nodes = nm,
       simple = isTRUE(simple),
       build = isTRUE(build),
-      class = if (class == "PAG") "UNKNOWN" else class
+      class = class
     ))
   }
 
@@ -637,11 +632,6 @@ S7::method(
   from <- v[keep]
   to <- w[keep]
   edge <- edge[keep]
-
-  # todo:
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
-  class <- if (class == "PAG") "UNKNOWN" else class
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
 
   if (collapse) {
     is_edge_symmetric(collapse_to)

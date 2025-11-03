@@ -13,7 +13,7 @@ use graph::metrics::aid;
 use graph::metrics::{hd, shd_with_perm};
 
 use graph::view::GraphView;
-use graph::{CaugiGraph, dag::Dag, pdag::Pdag};
+use graph::{CaugiGraph, dag::Dag, pdag::Pdag, pag::Pag};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -195,6 +195,11 @@ fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<Grap
                 Pdag::new(Arc::new(core.as_ref().clone())).unwrap_or_else(|e| throw_r_error(e));
             ExternalPtr::new(GraphView::Pdag(Arc::new(pdag)))
         }
+        "PAG" => {
+            let pag =
+                Pag::new(Arc::new(core.as_ref().clone())).unwrap_or_else(|e| throw_r_error(e));
+            ExternalPtr::new(GraphView::Pag(Arc::new(pag)))
+        }
         _ => ExternalPtr::new(GraphView::Raw(Arc::new(core.as_ref().clone()))),
     }
 }
@@ -355,10 +360,17 @@ fn is_pdag_type_ptr(g: ExternalPtr<GraphView>) -> bool {
 }
 
 #[extendr]
+fn is_pag_type_ptr(g: ExternalPtr<GraphView>) -> bool {
+    let core = g.as_ref().core();
+    Pag::new(Arc::new(core.clone())).is_ok()
+}
+
+#[extendr]
 fn graph_class_ptr(g: ExternalPtr<GraphView>) -> String {
     match g.as_ref() {
         GraphView::Dag(_) => "DAG",
         GraphView::Pdag(_) => "PDAG",
+        GraphView::Pag(_) => "PAG",
         GraphView::Raw(_) => "UNKNOWN",
     }
     .to_string()
@@ -733,6 +745,7 @@ extendr_module! {
     // class tests + validator
     fn is_dag_type_ptr;
     fn is_pdag_type_ptr;
+    fn is_pag_type_ptr;
 
     // metrics
     fn shd_of_ptrs;
