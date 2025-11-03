@@ -39,13 +39,7 @@ impl Pag {
                     EdgeClass::Undirected => deg[i].1 += 1,
                     EdgeClass::Bidirected => deg[i].3 += 1,
                     EdgeClass::Partial => deg[i].4 += 1,
-                    EdgeClass::PartiallyDirected => {
-                        if core.side[k] == 1 {
-                            deg[i].5 += 1 // partial directed (circle at this end)
-                        } else {
-                            deg[i].5 += 1 // partial directed (arrow at other end)
-                        }
-                    }
+                    EdgeClass::PartiallyDirected => deg[i].5 += 1,
                     EdgeClass::PartiallyUndirected => deg[i].6 += 1,
                 }
             }
