@@ -455,3 +455,88 @@ test_that("subgraph with index matches nodes variant", {
   expect_identical(s1@edges, s2@edges)
   expect_true(s1@built && s2@built)
 })
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────── PAG ──────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("PAG graphs can be created and queried", {
+  cg <- caugi(
+    A %o->% B,
+    B %<->% C,
+    A %-->% D,
+    C %o-o% D,
+    class = "PAG"
+  )
+  
+  expect_s7_class(cg, caugi)
+  expect_equal(cg@graph_class, "PAG")
+  expect_true(is_pag(cg))
+  expect_false(is_dag(cg))
+  expect_false(is_pdag(cg))
+})
+
+test_that("is_pag correctly identifies PAG graphs", {
+  cg_pag <- caugi(
+    A %o->% B,
+    B %<->% C,
+    class = "PAG"
+  )
+  expect_true(is_pag(cg_pag))
+  
+  cg_dag <- caugi(
+    A %-->% B,
+    B %-->% C,
+    class = "DAG"
+  )
+  expect_false(is_pag(cg_dag))
+  
+  cg_pdag <- caugi(
+    A %-->% B,
+    B %---% C,
+    class = "PDAG"
+  )
+  expect_false(is_pag(cg_pdag))
+})
+
+test_that("PAG graphs support basic queries", {
+  cg <- caugi(
+    A %o->% B,
+    B %-->% C,
+    A %<->% D,
+    class = "PAG"
+  )
+  
+  # Test basic queries work
+  expect_no_error(parents(cg, "B"))
+  expect_no_error(children(cg, "B"))
+  expect_no_error(neighbors(cg, "B"))
+  expect_no_error(ancestors(cg, "C"))
+  expect_no_error(descendants(cg, "A"))
+})
+
+test_that("PAG from matrix works correctly", {
+  nm <- c("A", "B", "C", "D")
+  M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
+  
+  # A --> B
+  M["A", "B"] <- 2L # mark at B end
+  M["B", "A"] <- 3L # mark at A end
+  
+  # A --- C
+  M["A", "C"] <- 3L
+  M["C", "A"] <- 3L
+  
+  # B o-> C
+  M["B", "C"] <- 2L
+  M["C", "B"] <- 1L
+  
+  # C <-> D
+  M["C", "D"] <- 2L
+  M["D", "C"] <- 2L
+  
+  cg <- as_caugi(M, class = "PAG")
+  expect_s7_class(cg, caugi)
+  expect_equal(cg@graph_class, "PAG")
+  expect_true(is_pag(cg))
+})
