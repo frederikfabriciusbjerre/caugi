@@ -89,25 +89,20 @@ internal pointer to the graph. If the graph is already built, it is returned.</p
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi_verbs.html">remove_edges</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">B</span> <span class="op">%---%</span> <span class="va">C</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># A --&gt; B, C, D, E</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="caugi_verbs.html">remove_nodes</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"E"</span><span class="op">)</span><span class="op">)</span> <span class="co"># A --&gt; B</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in (function (keys) {    if (!(is.character(keys) || is.null(keys))) {        stop("remove: `keys` must be a character vector or NULL")    }    if (any(keys == "") || any(is.na(keys))) {        stop("remove: `keys` must not be \"\" or NA")    }    if (length(keys) == 1) {        invisible(remove_one(keys))    }    else {        invisible(vapply(keys, remove_one, FUN.VALUE = TRUE,             USE.NAMES = FALSE))    }})("C", "D", "E"):</span> unused arguments ("D", "E")</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># verbs do not build the Rust backend</span></span></span>
 <span class="r-in"><span><span class="va">cg</span><span class="op">@</span><span class="va">built</span> <span class="co"># FALSE</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-in"><span><span class="fu">build</span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 1</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   name </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> A    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> B    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> C    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> D    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> E    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   from  edge  to   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> A     --&gt;   B    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> B     ---   C    </span>
 <span class="r-in"><span><span class="va">cg</span><span class="op">@</span><span class="va">built</span> <span class="co"># TRUE</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span></span></span>
