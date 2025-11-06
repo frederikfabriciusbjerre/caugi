@@ -60,20 +60,16 @@
 <ul><li>
 <strong>Follow tidyverse style guide</strong>: Use <code>styler::style_pkg()</code> before committing R code</li>
 <li>
-<strong>Roxygen2 documentation</strong>: All exported functions must have comprehensive documentation with <code>@param</code>, <code>@returns</code>, and <code>@examples</code>
+<strong>Roxygen2 documentation</strong>: All exported functions must have comprehensive documentation with <code>@title</code>, <code>@description</code>, <code>@param</code>, <code>@returns</code>, and <code>@examples</code>
 </li>
-<li>
-<strong>Line separators</strong>: Use decorative comment lines (<code># ────────</code>) to separate major sections in files</li>
 <li>
 <strong>Naming conventions</strong>:
 <ul><li>Functions: <code>snake_case</code>
 </li>
-<li>S7 classes: <code>PascalCase</code> or <code>snake_case</code>
+<li>S7 classes: <code>snake_case</code>
 </li>
 <li>Internal functions: prefix with <code>.</code> (e.g., <code>.internal_function</code>)</li>
 </ul></li>
-<li>
-<strong>Edge operators</strong>: The package defines custom infix operators like <code>%--&gt;%</code>, <code>%---%</code>, <code>%&lt;-&gt;%</code>, etc.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="rust-code">Rust Code<a class="anchor" aria-label="anchor" href="#rust-code"></a></h3>
@@ -199,14 +195,13 @@
 <li>
 <code>bitflags = "2.9.3"</code> - Bitflag operations</li>
 <li>
-<code>gadjid</code> (optional) - Additional graph algorithms</li>
+<code>gadjid</code> (optional) - For adjustment identification distance</li>
 </ul></div>
 <div class="section level3">
 <h3 id="system-requirements">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements"></a></h3>
 <ul><li>Cargo (Rust package manager)</li>
-<li>rustc &gt;= 1.75.0 (as specified in DESCRIPTION)</li>
-<li>xz compression library</li>
-</ul><p><strong>Note</strong>: The Cargo.toml specifies <code>rust-version = '1.85'</code> and <code>edition = '2024'</code>, but these appear to be non-standard values. The authoritative requirement is in the DESCRIPTION file.</p>
+<li>rustc &gt;= 1.85.0 (as specified in DESCRIPTION)</li>
+</ul><p><strong>Note</strong>: The Cargo.toml specifies <code>rust-version = '1.85'</code> and <code>edition = '2024'</code>.</p>
 </div>
 </div>
 <div class="section level2">
