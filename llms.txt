@@ -1,0 +1,336 @@
+# caugi
+
+> **Causal Graph Interface (for R)** — a blazingly fast, tidy toolbox
+> for building, coercing and analyzing causal graphs.
+
+``` r
+library(caugi)
+```
+
+## What is `caugi`?
+
+`caugi` (pronounced “corgi”) stands for **Causal Graph Interface**. It
+is a *causality-first* graph package that focuses on performance and
+flexibility. If you are developing scripts or algorithms in the field of
+causality or if you are learning about causal graphs for the first time,
+`caugi` is made for you.
+
+## The basic object: `caugi`
+
+A `caugi` graph object is the bread and butter of the `caugi` package.
+It is easy to create, query, and modify.
+
+You can create simple graphs as well as a number of predefined graph
+classes. Currently, we support `"UNKNOWN"`, `"DAG"`, `"PDAG"`, and
+`"UG"`. We plan on supporting several other causal graph types in future
+releases, such as `"PAG"`, `"MAG"`, `"SWIG"`, and `"ADMG"`.
+
+``` r
+# a tiny DAG
+cg <- caugi(
+  A %-->% B + C,
+  B %-->% D,
+  C %-->% D,
+  class = "DAG"
+)
+```
+
+### Edge operators
+
+The available edges in `caugi` are listed below:
+
+- `%-->%` (directed)
+- `%---%` (undirected)
+- `%<->%` (bidirected)
+- `%o->%` (partially directed)
+- `%o--%` (partially undirected)
+- `%o-o%` (partial)
+
+You can register more types with
+[`register_caugi_edge()`](https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.md),
+if you find that you need a more expressive set of edges. For example,
+if you want to represent a directed edge in the reverse direction, you
+can do so like this:
+
+``` r
+register_caugi_edge(
+  glyph = "<--",
+  tail_mark = "arrow",
+  head_mark = "tail",
+  class = "directed",
+  symmetric = FALSE
+)
+
+caugi(A %-->% B, B %<--% C, class = "DAG")
+#> # A tibble: 3 × 1
+#>   name 
+#>   <chr>
+#> 1 A    
+#> 2 B    
+#> 3 C    
+#> # A tibble: 2 × 3
+#>   from  edge  to   
+#>   <chr> <chr> <chr>
+#> 1 A     -->   B    
+#> 2 B     <--   C
+
+# reset the registry to default with original edges
+reset_caugi_registry()
+```
+
+We expect this feature to be needing further polishing in future
+releases, and we would love your input if you use this feature!
+
+## Querying and metrics
+
+`caugi` provides a number of functions to query and analyze `caugi`
+objects. Some of the available functions are:
+
+- Relational queries, such as
+  [`parents()`](https://frederikfabriciusbjerre.github.io/caugi/reference/parents.md),
+  [`ancestors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/ancestors.md),
+  [`neighbors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md),
+  and more.
+- Structural queries, such as
+  [`is_acyclic()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_acyclic.md),
+  [`is_cpdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_cpdag.md),
+  and more.
+- Graph manipulations, such as `add_edge()`, `remove_node()`, and more.
+- Graph metrics, such as
+  [`shd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/shd.md)
+  and
+  [`aid()`](https://frederikfabriciusbjerre.github.io/caugi/reference/aid.md).
+
+## How it works
+
+`caugi` graphs are represented in a compact Compressed Sparse Row (CSR)
+format in Rust. `caugi` works with a front-loading philosophy. Since the
+`caugi` graph is stored in a CSR format, mutations of the graph is
+computationally expensive compared to other graph storage systems, *but*
+it allows for very fast querying. Additionally to the storage format of
+the graph itself, `caugi` also stores additional information about node
+relations in such a way that it allows for faster queries without
+blowing up the object too much.
+
+To accommodate for the cost of mutations, `caugi` graphs are built
+lazily. This means that when you mutate the graph, for example by adding
+edges to it, the graph edits are stored in R, but not in Rust. When you
+then need to query the graphs, the graph will rebuild itself in Rust,
+and the query will be executed on the newly built graph. You can also
+use the `build(cg)` function to force building the graph in Rust at any
+time.
+
+## Why?
+
+It’s fast, *dawg* 🐶 See the [vignette on
+performance](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.html)
+for benchmarks.
+
+## Contribution
+
+Would you like to contribute? Great! Please follow the tidyverse style
+guide for R code. Before opening a PR, run `styler::style_pkg()` for R
+and `cargo fmt` for Rust, and make sure to write tests for new features.
+
+Did you find run into problems? That’s *paw-ful*! Please report an
+[issue](https://github.com/frederikfabriciusbjerre/caugi/issues).
+
+# Package index
+
+## The caugi object
+
+- [`caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi.md)
+  :
+
+  Create a `caugi` from edge expressions.
+
+## Queries
+
+- [`ancestors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/ancestors.md)
+  :
+
+  Get ancestors of nodes in a `caugi`
+
+- [`children()`](https://frederikfabriciusbjerre.github.io/caugi/reference/children.md)
+  :
+
+  Get children of nodes in a `caugi`
+
+- [`descendants()`](https://frederikfabriciusbjerre.github.io/caugi/reference/descendants.md)
+  :
+
+  Get descendants of nodes in a `caugi`
+
+- [`edge_types()`](https://frederikfabriciusbjerre.github.io/caugi/reference/edge_types.md)
+  :
+
+  Get the edge types of a `caugi`.
+
+- [`edges()`](https://frederikfabriciusbjerre.github.io/caugi/reference/edges.md)
+  [`E()`](https://frederikfabriciusbjerre.github.io/caugi/reference/edges.md)
+  :
+
+  Get edges of a `caugi`.
+
+- [`exogenous()`](https://frederikfabriciusbjerre.github.io/caugi/reference/exogenous.md)
+  :
+
+  Get all exogenous nodes in a `caugi`
+
+- [`is_acyclic()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_acyclic.md)
+  :
+
+  Is the `caugi` acyclic?
+
+- [`is_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_caugi.md)
+  :
+
+  Is it a `caugi` graph?
+
+- [`is_cpdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_cpdag.md)
+  :
+
+  Is the `caugi` graph a CPDAG?
+
+- [`is_dag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_dag.md)
+  :
+
+  Is the `caugi` graph a DAG?
+
+- [`is_empty_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_empty_caugi.md)
+  :
+
+  Is the `caugi` graph empty?
+
+- [`is_pdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_pdag.md)
+  :
+
+  Is the `caugi` graph a PDAG?
+
+- [`markov_blanket()`](https://frederikfabriciusbjerre.github.io/caugi/reference/markov_blanket.md)
+  :
+
+  Get Markov blanket of nodes in a `caugi`
+
+- [`neighbors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md)
+  [`neighbours()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md)
+  :
+
+  Get neighbors of nodes in a `caugi`
+
+- [`nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.md)
+  [`vertices()`](https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.md)
+  [`V()`](https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.md)
+  :
+
+  Get nodes or edges of a `caugi`
+
+- [`parents()`](https://frederikfabriciusbjerre.github.io/caugi/reference/parents.md)
+  :
+
+  Get parents of nodes in a `caugi`
+
+- [`same_nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/same_nodes.md)
+  : Same nodes?
+
+- [`subgraph()`](https://frederikfabriciusbjerre.github.io/caugi/reference/subgraph.md)
+  : Get the induced subgraph
+
+## Verbs
+
+- [`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md)
+  : Build the graph now
+
+- [`add_edges()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_verbs.md)
+  [`remove_edges()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_verbs.md)
+  [`set_edges()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_verbs.md)
+  [`add_nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_verbs.md)
+  [`remove_nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_verbs.md)
+  :
+
+  Manipulate nodes and edges of a `caugi`
+
+## Adjustment and d-separation
+
+- [`adjustment_set()`](https://frederikfabriciusbjerre.github.io/caugi/reference/adjustment_set.md)
+  : Compute an adjustment set
+- [`all_backdoor_sets()`](https://frederikfabriciusbjerre.github.io/caugi/reference/all_backdoor_sets.md)
+  : Get all backdoor sets up to a certain size.
+- [`d_separated()`](https://frederikfabriciusbjerre.github.io/caugi/reference/d_separated.md)
+  : Are X and Y d-separated given Z?
+- [`is_valid_backdoor()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_valid_backdoor.md)
+  : Is a backdoor set valid?
+
+## Simulation
+
+- [`generate_graph()`](https://frederikfabriciusbjerre.github.io/caugi/reference/generate_graph.md)
+  :
+
+  Generate a `caugi` using Erdős-Rényi.
+
+## Metrics
+
+- [`aid()`](https://frederikfabriciusbjerre.github.io/caugi/reference/aid.md)
+  : Adjustment Identification Distance
+- [`hd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/hd.md)
+  : Hamming Distance
+- [`shd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/shd.md)
+  : Structural Hamming Distance
+
+## Edge Registry
+
+- [`register_caugi_edge()`](https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.md)
+  : Register a new edge type in the global registry.
+- [`caugi_registry()`](https://frederikfabriciusbjerre.github.io/caugi/reference/registry.md)
+  [`reset_caugi_registry()`](https://frederikfabriciusbjerre.github.io/caugi/reference/registry.md)
+  [`seal_caugi_registry()`](https://frederikfabriciusbjerre.github.io/caugi/reference/registry.md)
+  : caugi edge registry
+
+## Methods
+
+- [`length`](https://frederikfabriciusbjerre.github.io/caugi/reference/length.md)
+  :
+
+  Length of a `caugi`
+
+- [`print`](https://frederikfabriciusbjerre.github.io/caugi/reference/print.md)
+  :
+
+  Print a `caugi`
+
+## Conversions
+
+- [`as_adjacency()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_adjacency.md)
+  : Convert a caugi to an adjacency matrix
+
+- [`as_bnlearn()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_bnlearn.md)
+  : Convert a caugi to a bnlearn network
+
+- [`as_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_caugi.md)
+  :
+
+  Convert to a `caugi`
+
+- [`as_dagitty()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_dagitty.md)
+  : Convert a caugi to a dagitty graph
+
+- [`as_igraph()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_igraph.md)
+  : Convert a caugi to an igraph object
+
+## Operatoins
+
+- [`moralize()`](https://frederikfabriciusbjerre.github.io/caugi/reference/moralize.md)
+  : Moralize a DAG
+- [`skeleton()`](https://frederikfabriciusbjerre.github.io/caugi/reference/skeleton.md)
+  : Get the skeleton of a graph
+
+# Articles
+
+### All vignettes
+
+- [Get
+  started](https://frederikfabriciusbjerre.github.io/caugi/articles/get_started.md):
+- [Motivation](https://frederikfabriciusbjerre.github.io/caugi/articles/motivation.md):
+- [How to use caugi in a
+  package](https://frederikfabriciusbjerre.github.io/caugi/articles/package_use.md):
+- [Performance](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.md):
