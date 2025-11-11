@@ -4,9 +4,9 @@ This vignette discusses the performance characteristics of `caugi`
 including a comparison to the popular [`igraph`](https://r.igraph.org/),
 [`bnlearn`](https://www.bnlearn.com/),
 [`dagitty`](https://dagitty.net/), and
-[`ggm`](https://cran.r-project.org/web/packages/ggm/index.html). We
-focus on the practical trade-offs that arise from different core data
-structures and design choices.
+[`ggm`](https://cran.r-project.org/package=ggm). We focus on the
+practical trade-offs that arise from different core data structures and
+design choices.
 
 The headline is: `caugi` frontloads computation. That is, `caugi` spends
 more effort when constructing a graph and preparing indexes, so that
@@ -112,11 +112,11 @@ bench::mark(
 #> # A tibble: 5 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi        65.3µs  70.23µs 13270.      67.36KB     8.00
-#> 2 igraph      539.5µs 579.28µs  1650.      360.8KB     6.00
-#> 3 bnlearn     40.13µs  43.08µs 20599.      38.38KB    16.5 
-#> 4 ggm         20.23ms  26.94ms    21.0     69.86MB    40.3 
-#> 5 dagitty       2.63s    2.63s     0.379    5.09MB     0
+#> 1 caugi        64.4µs   68.4µs 13788.      67.36KB     8.00
+#> 2 igraph        517µs  552.6µs  1723.      360.8KB     7.99
+#> 3 bnlearn      39.6µs   41.9µs 17494.      38.38KB    14.4 
+#> 4 ggm          19.5ms   24.5ms    33.5     69.86MB    61.0 
+#> 5 dagitty        2.6s     2.6s     0.384    5.09MB     0
 ```
 
 `bnlearn` is fastest here, but is only able to handle smaller graphs,
@@ -142,8 +142,8 @@ bench::mark(
 #> # A tibble: 2 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi        62.8µs   67.5µs    14409.     1008B     8.47
-#> 2 igraph      801.3µs  843.2µs     1174.    3.05MB    55.9
+#> 1 caugi        62.9µs   66.4µs    14768.     1008B     8.35
+#> 2 igraph      768.5µs  800.3µs     1231.    3.05MB    42.6
 ```
 
 For ancestors and descendants, we see that `caugi` outperforms all other
@@ -175,10 +175,10 @@ bench::mark(
 #> # A tibble: 4 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi      199.21µs 216.11µs  4524.      65.25KB     2.00
-#> 2 igraph     640.68µs 680.37µs  1389.     117.85KB     4.00
-#> 3 bnlearn        1.1s     1.1s     0.912    1.33GB    15.5 
-#> 4 dagitty       2.72s    2.72s     0.368    5.09MB     0
+#> 1 caugi      195.66µs 211.94µs  4606.      65.25KB     2.00
+#> 2 igraph     626.58µs 661.07µs  1439.     117.85KB     2.00
+#> 3 bnlearn       1.04s    1.04s     0.963    1.33GB    16.4 
+#> 4 dagitty        2.7s     2.7s     0.371    5.09MB     0
 ```
 
 #### d-separation
@@ -214,9 +214,9 @@ bench::mark(
 #> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi       35.33ms  35.77ms    27.9     33.02KB     0   
-#> 2 bnlearn       3.25s    3.25s     0.307    3.22GB     4.30
-#> 3 dagitty       2.12s    2.12s     0.471    4.19MB     0
+#> 1 caugi       33.48ms   33.7ms    29.3     33.02KB     0   
+#> 2 bnlearn       3.13s    3.13s     0.320    3.22GB     4.48
+#> 3 dagitty       2.06s    2.06s     0.484    4.19MB     0
 ```
 
 #### Subgraph (building)
@@ -247,9 +247,9 @@ bench::mark(
 #> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi        13.1ms  13.39ms    74.1        12MB     0   
-#> 2 igraph       1.89ms   2.32ms   453.       81.1KB     0   
-#> 3 bnlearn       1.05s    1.05s     0.955   983.6MB     2.86
+#> 1 caugi       12.46ms  15.95ms    67.5        12MB     0   
+#> 2 igraph       2.23ms   2.26ms   441.       81.1KB     0   
+#> 3 bnlearn       1.05s    1.05s     0.949   983.6MB     2.85
 ```
 
 ### Session info
@@ -290,7 +290,7 @@ sessionInfo()
 #> [31] bnlearn_5.1         xfun_0.54           fs_1.6.6           
 #> [34] sass_0.4.10         S7_0.2.0            cli_3.6.5          
 #> [37] pkgdown_2.2.0       magrittr_2.0.4      digest_0.6.37      
-#> [40] lifecycle_1.0.4     dagitty_0.3-4       caugi_0.1.0        
+#> [40] lifecycle_1.0.4     dagitty_0.3-4       caugi_0.1.1        
 #> [43] vctrs_0.6.5         bench_1.1.4         data.table_1.17.8  
 #> [46] ggm_2.5.2           evaluate_1.0.5      glue_1.8.0         
 #> [49] ragg_1.5.0          stats4_4.5.2        profmem_0.7.0      

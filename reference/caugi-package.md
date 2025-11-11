@@ -8,6 +8,9 @@ Useful links:
 
 - <https://frederikfabriciusbjerre.github.io/caugi/>
 
+- Report bugs at
+  <https://github.com/frederikfabriciusbjerre/caugi/issues>
+
 ## Author
 
 Frederik Fabricius-Bjerre <frederik@fabriciusbjerre.dk>

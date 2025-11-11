@@ -10,12 +10,12 @@ Source:
 [`DESCRIPTION`](https://github.com/frederikfabriciusbjerre/caugi/blob/main/DESCRIPTION)
 
 Fabricius-Bjerre F (2025). *caugi: Causal Graph Interface*. R package
-version 0.1.0, <https://frederikfabriciusbjerre.github.io/caugi/>.
+version 0.1.1, <https://frederikfabriciusbjerre.github.io/caugi/>.
 
     @Manual{,
       title = {caugi: Causal Graph Interface},
       author = {Frederik Fabricius-Bjerre},
       year = {2025},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.1},
       url = {https://frederikfabriciusbjerre.github.io/caugi/},
     }
