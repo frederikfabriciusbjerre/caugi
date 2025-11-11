@@ -10,4 +10,4 @@ Useful links:
 
 ## Author
 
-Frederik Fabricius-Bjerre <frederik@fabriciusbjerre.dk>,
+Frederik Fabricius-Bjerre <frederik@fabriciusbjerre.dk>

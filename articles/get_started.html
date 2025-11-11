@@ -45,6 +45,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/frederikfabriciusbjerre/caugi/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -60,7 +61,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Get started</h1>
             
       
-
+      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/vignettes/get_started.Rmd" class="external-link"><code>vignettes/get_started.Rmd</code></a></small>
       <div class="d-none name"><code>get_started.Rmd</code></div>
     </div>
 
@@ -118,7 +119,7 @@ other properties.</p>
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span></span>
-<span><span class="co">#&gt; &lt;pointer: 0x55a06e4295e0&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;pointer: 0x55587540fc50&gt;</span></span></code></pre></div>
 <p>This is the pointer to the Rust object that <code>caugi</code>
 utilizes for performance.</p>
 </div>
@@ -258,7 +259,7 @@ calls, as the Rust backend uses zero-based indices.</p>
 </h4>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">.state</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x55a06aed4558&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;environment: 0x555873263d08&gt;</span></span></code></pre></div>
 <p>This is the internal state of the <code>caugi</code> graph object. It
 is used to ensure that the <code>caugi</code> object can be modifying in
 R and, so to say, <em>saves</em> the modifications you might make to the
