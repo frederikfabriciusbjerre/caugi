@@ -82,25 +82,23 @@ edges. Let’s create a directed acyclic graph (DAG) with 5 nodes and 5
 edges.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
-<span>  <span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span>,</span>
-<span>  <span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span>,</span>
+<span>  <span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span>,</span>
+<span>  <span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>,</span>
 <span>  class <span class="op">=</span> <span class="st">"DAG"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">cg</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> D    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
-<span><span class="co">#&gt;   from  edge  to   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     --&gt;   B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A     --&gt;   C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> B     --&gt;   C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> B     --&gt;   D</span></span></code></pre></div>
+<span><span class="co">#&gt;      name</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:      A</span></span>
+<span><span class="co">#&gt; 2:      B</span></span>
+<span><span class="co">#&gt; 3:      C</span></span>
+<span><span class="co">#&gt; 4:      D</span></span>
+<span><span class="co">#&gt;      from   edge     to</span></span>
+<span><span class="co">#&gt;    &lt;char&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:      A    --&gt;      B</span></span>
+<span><span class="co">#&gt; 2:      B    --&gt;      C</span></span>
+<span><span class="co">#&gt; 3:      B    --&gt;      D</span></span>
+<span><span class="co">#&gt; 4:      A    --&gt;      C</span></span></code></pre></div>
 <p>You might scratch your head a bit, when looking at the call above. To
 clarify, <code>A %--&gt;% B</code> creates the edge <code>--&gt;</code>
 from <code>A</code> to <code>B</code>. The syntax
@@ -119,7 +117,7 @@ other properties.</p>
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span></span>
-<span><span class="co">#&gt; &lt;pointer: 0x5625cfa08a30&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;pointer: 0x560afdc81070&gt;</span></span></code></pre></div>
 <p>This is the pointer to the Rust object that <code>caugi</code>
 utilizes for performance.</p>
 </div>
@@ -133,7 +131,7 @@ utilizes for performance.</p>
 <p>This indicates whether the graph is <em>simple</em> or not. Let’s try
 to create a non-simple graph:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">A</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Error in graph_builder_add_edges(b, as.integer(unname(id[edges$from])), : parallel edges not allowed in simple graphs</span></span></code></pre></div>
 <p>This cannot be done unless you initialize the graph with
 <code>simple = FALSE</code>. Note that, currently, all of the supported
@@ -178,22 +176,20 @@ list that represents the descendants of that parent node.</p>
 <p>Let’s try to modify the graph from before, so we get a new DAG.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg_modified</span> <span class="op">&lt;-</span> <span class="va">cg</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/caugi_verbs.html">remove_edges</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">A</span>, <span class="va">D</span> <span class="op"><a href="../reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">C</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/caugi_verbs.html">remove_edges</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">A</span>, <span class="va">D</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span><span class="op">)</span></span>
 <span><span class="va">cg_modified</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 1</span></span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> D    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
-<span><span class="co">#&gt;   from  edge  to   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     --&gt;   C    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B     --&gt;   A    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> D     --&gt;   C</span></span></code></pre></div>
+<span><span class="co">#&gt;      name</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:      A</span></span>
+<span><span class="co">#&gt; 2:      B</span></span>
+<span><span class="co">#&gt; 3:      C</span></span>
+<span><span class="co">#&gt; 4:      D</span></span>
+<span><span class="co">#&gt;      from   edge     to</span></span>
+<span><span class="co">#&gt;    &lt;char&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:      A    --&gt;      C</span></span>
+<span><span class="co">#&gt; 2:      B    --&gt;      A</span></span>
+<span><span class="co">#&gt; 3:      D    --&gt;      C</span></span></code></pre></div>
 <p>Would you like to add nodes? Then use <code><a href="../reference/caugi_verbs.html">add_nodes()</a></code>.</p>
 </div>
 <div class="section level2">
@@ -259,7 +255,7 @@ calls, as the Rust backend uses zero-based indices.</p>
 </h4>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">.state</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x5625d14f3908&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;environment: 0x560afe313140&gt;</span></span></code></pre></div>
 <p>This is the internal state of the <code>caugi</code> graph object. It
 is used to ensure that the <code>caugi</code> object can be modified in
 R and, so to speak, <em>saves</em> the modifications you might make to

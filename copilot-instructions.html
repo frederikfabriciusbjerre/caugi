@@ -220,9 +220,9 @@
 <h3 id="creating-a-caugi-object">Creating a caugi object<a class="anchor" aria-label="anchor" href="#creating-a-caugi-object"></a></h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/caugi.html">caugi</a></span><span class="op">(</span></span>
-<span>  <span class="va">A</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>,</span>
-<span>  <span class="va">B</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">D</span>,</span>
-<span>  <span class="va">C</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">D</span>,</span>
+<span>  <span class="va">A</span> <span class="op"><a href="reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>,</span>
+<span>  <span class="va">B</span> <span class="op"><a href="reference/edge_operators.html">%--&gt;%</a></span> <span class="va">D</span>,</span>
+<span>  <span class="va">C</span> <span class="op"><a href="reference/edge_operators.html">%--&gt;%</a></span> <span class="va">D</span>,</span>
 <span>  class <span class="op">=</span> <span class="st">"DAG"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -237,7 +237,7 @@
 <h3 id="testing-pattern">Testing pattern<a class="anchor" aria-label="anchor" href="#testing-pattern"></a></h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">test_that</span><span class="op">(</span><span class="st">"feature description"</span>, <span class="op">{</span></span>
-<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="reference/grapes-greater-than-grapes.html">%--&gt;%</a></span> <span class="va">B</span><span class="op">)</span></span>
+<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span><span class="op">)</span></span>
 <span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">some_function</span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
 <span>  <span class="fu">expect_equal</span><span class="op">(</span><span class="va">result</span>, <span class="va">expected_value</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>

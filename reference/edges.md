@@ -16,6 +16,10 @@ E(cg)
 
   A `caugi` object.
 
+## Value
+
+A `data.table` with columns `from`, `edge`, and `to`.
+
 ## See also
 
 Other queries:
@@ -46,10 +50,9 @@ cg <- caugi(
   D,
   class = "DAG"
 )
-edges(cg) # returns the tibble with columns from, edge, to
-#> # A tibble: 2 × 3
-#>   from  edge  to   
-#>   <chr> <chr> <chr>
-#> 1 A     -->   B    
-#> 2 B     -->   C    
+edges(cg) # returns the data.table with columns from, edge, to
+#>      from   edge     to
+#>    <char> <char> <char>
+#> 1:      A    -->      B
+#> 2:      B    -->      C
 ```

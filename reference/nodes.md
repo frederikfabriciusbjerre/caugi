@@ -20,7 +20,7 @@ V(cg)
 
 ## Value
 
-A tibble with a `name` column.
+A `data.table` with a `name` column.
 
 ## See also
 
@@ -52,12 +52,11 @@ cg <- caugi(
   D,
   class = "DAG"
 )
-nodes(cg) # returns the tibble with nodes A, B, C, D
-#> # A tibble: 4 × 1
-#>   name 
-#>   <chr>
-#> 1 A    
-#> 2 B    
-#> 3 C    
-#> 4 D    
+nodes(cg) # returns the data.table with nodes A, B, C, D
+#>      name
+#>    <char>
+#> 1:      A
+#> 2:      B
+#> 3:      C
+#> 4:      D
 ```

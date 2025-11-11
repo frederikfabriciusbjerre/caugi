@@ -30,17 +30,15 @@ cg <- caugi(
   class = "DAG"
 )
 print(cg)
-#> # A tibble: 5 × 1
-#>   name 
-#>   <chr>
-#> 1 A    
-#> 2 B    
-#> 3 C    
-#> 4 D    
-#> 5 E    
-#> # A tibble: 2 × 3
-#>   from  edge  to   
-#>   <chr> <chr> <chr>
-#> 1 A     -->   B    
-#> 2 A     -->   C    
+#>      name
+#>    <char>
+#> 1:      A
+#> 2:      B
+#> 3:      C
+#> 4:      D
+#> 5:      E
+#>      from   edge     to
+#>    <char> <char> <char>
+#> 1:      A    -->      B
+#> 2:      A    -->      C
 ```

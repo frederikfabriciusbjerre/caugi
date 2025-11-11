@@ -27,4 +27,4 @@ This function helps build infix operators.
 
 ## Value
 
-A tibble with columns `from`, `to`, and `edge`.
+A `data.table` with columns `from`, `to`, and `edge`.

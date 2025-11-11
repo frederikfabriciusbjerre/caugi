@@ -107,16 +107,14 @@ Let’s try it out!
 ``` r
 cg <- correlation_implies_causation(df)
 cg
-#> # A tibble: 3 × 1
-#>   name 
-#>   <chr>
-#> 1 V1   
-#> 2 V2   
-#> 3 V3   
-#> # A tibble: 1 × 3
-#>   from  edge  to   
-#>   <chr> <chr> <chr>
-#> 1 V1    -->   V2
+#>      name
+#>    <char>
+#> 1:     V1
+#> 2:     V2
+#> 3:     V3
+#>      from   edge     to
+#>    <char> <char> <char>
+#> 1:     V1    -->     V2
 ```
 
 ## Something is up!
@@ -220,16 +218,14 @@ Now, when you call `correlation_implies_causation(df)`, it will return a
 ``` r
 cg <- correlation_implies_causation(df)
 cg
-#> # A tibble: 3 × 1
-#>   name 
-#>   <chr>
-#> 1 V1   
-#> 2 V2   
-#> 3 V3   
-#> # A tibble: 1 × 3
-#>   from  edge  to   
-#>   <chr> <chr> <chr>
-#> 1 V1    -->   V2
+#>      name
+#>    <char>
+#> 1:     V1
+#> 2:     V2
+#> 3:     V3
+#>      from   edge     to
+#>    <char> <char> <char>
+#> 1:     V1    -->     V2
 cg@graph_class
 #> [1] "DAG"
 ```

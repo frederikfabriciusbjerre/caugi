@@ -36,7 +36,7 @@ adjustment_set(
 
 ## Value
 
-A tibble with a `name` column (possibly 0 rows).
+A character vector of node names representing the adjustment set.
 
 ## Details
 

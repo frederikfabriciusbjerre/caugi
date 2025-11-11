@@ -1,4 +1,4 @@
-# Internal: Create the state environment for a `caugi`
+# Create the state environment for a `caugi` (internal)
 
 Internal function to create the state environment for a `caugi`. This
 function is not intended to be used directly by users.
@@ -22,11 +22,11 @@ function is not intended to be used directly by users.
 
 - nodes:
 
-  A tibble of nodes with a `name` column.
+  A `data.table` of nodes with a `name` column.
 
 - edges:
 
-  A tibble of edges with `from`, `edge`, and `to` columns.
+  A `data.table` of edges with `from`, `edge`, and `to` columns.
 
 - ptr:
 

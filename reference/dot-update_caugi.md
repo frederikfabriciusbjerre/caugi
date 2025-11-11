@@ -23,11 +23,12 @@ built.
 
 - nodes:
 
-  A tibble with column `name` for node names to add/remove.
+  A `data.frame` with column `name` for node names to add/remove.
 
 - edges:
 
-  A tibble with columns `from`, `edge`, `to` for edges to add/remove.
+  A `data.frame` with columns `from`, `edge`, `to` for edges to
+  add/remove.
 
 - action:
 

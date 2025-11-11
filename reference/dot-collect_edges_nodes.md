@@ -19,6 +19,6 @@ edges).
 
 A list with two elements:
 
-- edges: a tibble with columns `from`, `edge`, `to`
+- edges: a `data.table` with columns `from`, `edge`, `to`
 
 - declared: a character vector of explicitly declared nodes

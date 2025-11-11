@@ -167,16 +167,14 @@ correlation threshold.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">correlation_implies_causation</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="va">cg</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> V1   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> V2   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> V3   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
-<span><span class="co">#&gt;   from  edge  to   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> V1    --&gt;   V2</span></span></code></pre></div>
+<span><span class="co">#&gt;      name</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:     V1</span></span>
+<span><span class="co">#&gt; 2:     V2</span></span>
+<span><span class="co">#&gt; 3:     V3</span></span>
+<span><span class="co">#&gt;      from   edge     to</span></span>
+<span><span class="co">#&gt;    &lt;char&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:     V1    --&gt;     V2</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="something-is-up">Something is up!<a class="anchor" aria-label="anchor" href="#something-is-up"></a>
@@ -272,16 +270,14 @@ otherwise an <code>"UNKNOWN"</code> graph.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">correlation_implies_causation</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="va">cg</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
-<span><span class="co">#&gt;   name </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> V1   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> V2   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> V3   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
-<span><span class="co">#&gt;   from  edge  to   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> V1    --&gt;   V2</span></span>
+<span><span class="co">#&gt;      name</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:     V1</span></span>
+<span><span class="co">#&gt; 2:     V2</span></span>
+<span><span class="co">#&gt; 3:     V3</span></span>
+<span><span class="co">#&gt;      from   edge     to</span></span>
+<span><span class="co">#&gt;    &lt;char&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt; 1:     V1    --&gt;     V2</span></span>
 <span><span class="va">cg</span><span class="op">@</span><span class="va">graph_class</span></span>
 <span><span class="co">#&gt; [1] "DAG"</span></span></code></pre></div>
 </div>

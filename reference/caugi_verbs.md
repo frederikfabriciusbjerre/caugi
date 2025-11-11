@@ -95,15 +95,13 @@ cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
 cg@built # FALSE
 #> [1] FALSE
 build(cg)
-#> # A tibble: 2 × 1
-#>   name 
-#>   <chr>
-#> 1 A    
-#> 2 B    
-#> # A tibble: 1 × 3
-#>   from  edge  to   
-#>   <chr> <chr> <chr>
-#> 1 A     -->   B    
+#>      name
+#>    <char>
+#> 1:      A
+#> 2:      B
+#>      from   edge     to
+#>    <char> <char> <char>
+#> 1:      A    -->      B
 cg@built # TRUE
 #> [1] TRUE
 ```
