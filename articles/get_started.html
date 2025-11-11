@@ -70,7 +70,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load the package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://frederikfabriciusbjerre.github.io/caugi/">caugi</a></span><span class="op">)</span></span></code></pre></div>
-<p>In this vignette, we will walk you through on how to create a
+<p>In this vignette, we will walk you through how to create a
 <code>caugi</code>, query it, modify it, and then compare it to other
 <code>caugi</code>s.</p>
 <div class="section level2">
@@ -107,7 +107,7 @@ from <code>A</code> to <code>B</code>. The syntax
 <code>B %--&gt;% C + D</code> is equivalent to <code>B %--&gt; C</code>
 <em>and</em> <code>B %--&gt;% D</code>. Notice that the graph prints two
 <code>tibbles</code>. The first is equivalent to <code>cg@nodes</code>
-and the second <code>cg@edges</code>. Besides that the
+and the second <code>cg@edges</code>. Besides that, the
 <code>caugi</code> holds other <em>properties</em>. Let’s check the
 other properties.</p>
 <div class="section level3">
@@ -119,7 +119,7 @@ other properties.</p>
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span></span>
-<span><span class="co">#&gt; &lt;pointer: 0x5641c6efa300&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;pointer: 0x55fd39ca0b00&gt;</span></span></code></pre></div>
 <p>This is the pointer to the Rust object that <code>caugi</code>
 utilizes for performance.</p>
 </div>
@@ -249,8 +249,8 @@ object if <code>built = FALSE</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">name_index_map</span></span></code></pre></div>
 <p>The <code>name_index_map</code> is a hashmap that takes node names as
-keys and output zero-based indices. This is use to access nodes’
-zero-based indices,, when converting node names to indices for Rust
+keys and outputs zero-based indices. This is used to access nodes’
+zero-based indices, when converting node names to indices for Rust
 calls, as the Rust backend uses zero-based indices.</p>
 </div>
 <div class="section level4">
@@ -259,12 +259,12 @@ calls, as the Rust backend uses zero-based indices.</p>
 </h4>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">.state</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x5641c90b9208&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;environment: 0x55fd3693d198&gt;</span></span></code></pre></div>
 <p>This is the internal state of the <code>caugi</code> graph object. It
-is used to ensure that the <code>caugi</code> object can be modifying in
-R and, so to say, <em>saves</em> the modifications you might make to the
-graph in R without having to rebuild the graph in Rust each time. The
-most important takeaways about the state is that you should
+is used to ensure that the <code>caugi</code> object can be modified in
+R and, so to speak, <em>saves</em> the modifications you might make to
+the graph in R without having to rebuild the graph in Rust each time.
+The most important takeaway about the state is that you should
 <em>avoid</em> modifying the state directly. Instead, you should use the
 verbs.</p>
 </div>

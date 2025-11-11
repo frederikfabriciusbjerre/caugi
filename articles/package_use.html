@@ -79,7 +79,7 @@ approach this.</p>
 <p>Imagine that you want to build a causal discovery function that
 utilizes <code>caugi</code> for graph representation and manipulation.
 While seemingly not a very good idea, let’s pretend your algorithmic
-idea is to measure the correlation between variables and then drawing
+idea is to measure the correlation between variables and then draw
 causal conclusions based on this<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Note that correlation does not imply causation!&lt;/p&gt;"><sup>1</sup></a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @title Correlation implies causation!</span></span>
@@ -126,7 +126,7 @@ that, as a start:</p>
 <span><span class="co">#'</span></span>
 <span><span class="co">#' @returns A `caugi` representing the causal graph that is totally true!</span></span>
 <span><span class="va">correlation_implies_causation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 </div>
@@ -142,7 +142,7 @@ arbitrary threshold:</p>
 <span><span class="co">#'</span></span>
 <span><span class="co">#' @returns A `caugi` representing the causal graph that is totally true!</span></span>
 <span><span class="va">correlation_implies_causation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">cor_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span>  <span class="co"># Add edges for correlations above 0.5</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">cor_matrix</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -150,7 +150,7 @@ arbitrary threshold:</p>
 <span>      <span class="kw">if</span> <span class="op">(</span><span class="va">i</span> <span class="op">!=</span> <span class="va">j</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">cor_matrix</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="va">from</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="va">j</span><span class="op">]</span></span>
 <span>        <span class="va">to</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
-<span>        <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">cg</span>, from <span class="op">=</span> <span class="va">from</span>, edge <span class="op">=</span> <span class="st">"--&gt;"</span>, to <span class="op">=</span> <span class="va">to</span><span class="op">)</span> <span class="co"># add edge to caugi</span></span>
+<span>        <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">cg</span>, from <span class="op">=</span> <span class="va">from</span>, edge <span class="op">=</span> <span class="st">"--&gt;"</span>, to <span class="op">=</span> <span class="va">to</span><span class="op">)</span> <span class="co"># add edge to caugi</span></span>
 <span>      <span class="op">}</span></span>
 <span>    <span class="op">}</span></span>
 <span>  <span class="op">}</span></span>
@@ -196,7 +196,7 @@ makes sure that the graph class agrees with the input graph.</p>
 <span><span class="co">#'</span></span>
 <span><span class="co">#' @returns A `caugi` representing the causal graph that is totally true!</span></span>
 <span><span class="va">correlation_implies_causation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">cor_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span>  <span class="co"># Add edges for correlations above 0.5</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">cor_matrix</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -204,11 +204,11 @@ makes sure that the graph class agrees with the input graph.</p>
 <span>      <span class="kw">if</span> <span class="op">(</span><span class="va">i</span> <span class="op">!=</span> <span class="va">j</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">cor_matrix</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="va">from</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="va">j</span><span class="op">]</span></span>
 <span>        <span class="va">to</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
-<span>        <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">cg</span>, from <span class="op">=</span> <span class="va">from</span>, edge <span class="op">=</span> <span class="st">"--&gt;"</span>, to <span class="op">=</span> <span class="va">to</span><span class="op">)</span> <span class="co"># add edge to caugi</span></span>
+<span>        <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">cg</span>, from <span class="op">=</span> <span class="va">from</span>, edge <span class="op">=</span> <span class="st">"--&gt;"</span>, to <span class="op">=</span> <span class="va">to</span><span class="op">)</span> <span class="co"># add edge to caugi</span></span>
 <span>      <span class="op">}</span></span>
 <span>    <span class="op">}</span></span>
 <span>  <span class="op">}</span></span>
-<span>  <span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
+<span>  <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><strong>Hold on, it doesn’t check every iteration?</strong> No,
@@ -226,9 +226,9 @@ debugging.</p>
 <p>Now, you might want to specify the class of the output graph. Let’s
 say that <em>if possible</em> the output should be a DAG (which is
 advantageous for several reasons), but you don’t want to enforce
-acyclicity in the algorithm, as that could sometimes make your function
-error. You would rather have it return a graph in any case, but if it
-<em>is</em> a DAG, then we return a DAG.</p>
+acyclicity in the algorithm, as that could sometimes cause your function
+to throw an error. You would rather have it return a graph in any case,
+but if it <em>is</em> a DAG, then we return a DAG.</p>
 <p>This is not ideal in <code>caugi</code>. Because of the way
 <code>caugi</code> works, this is a bit slower, but we can still do
 it!</p>
@@ -239,10 +239,10 @@ it!</p>
 <span><span class="co">#'</span></span>
 <span><span class="co">#' @returns A `caugi` representing the causal graph that is totally true!</span></span>
 <span><span class="va">correlation_implies_causation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">cor_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span>  <span class="co"># Add edges for correlations above 0.5</span></span>
-<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">cor_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span>  <span class="co"># Add edges for correlations above 0.5</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">cor_matrix</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -250,17 +250,17 @@ it!</p>
 <span>      <span class="kw">if</span> <span class="op">(</span><span class="va">i</span> <span class="op">!=</span> <span class="va">j</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">cor_matrix</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="va">from</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="va">j</span><span class="op">]</span></span>
 <span>        <span class="va">to</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
-<span>        <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">cg</span>, from <span class="op">=</span> <span class="va">from</span>, edge <span class="op">=</span> <span class="st">"--&gt;"</span>, to <span class="op">=</span> <span class="va">to</span><span class="op">)</span> <span class="co"># add edge to caugi</span></span>
+<span>        <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">cg</span>, from <span class="op">=</span> <span class="va">from</span>, edge <span class="op">=</span> <span class="st">"--&gt;"</span>, to <span class="op">=</span> <span class="va">to</span><span class="op">)</span> <span class="co"># add edge to caugi</span></span>
 <span>      <span class="op">}</span></span>
 <span>    <span class="op">}</span></span>
 <span>  <span class="op">}</span></span>
 <span>  <span class="va">it_is</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/is_dag.html">is_dag</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span> <span class="co"># this builds, since it is a query</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">it_is</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
-<span>      from <span class="op">=</span> <span class="fu"><a href="../reference/edges.html">edges</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span><span class="op">$</span><span class="va">from</span>,</span>
-<span>      edge <span class="op">=</span> <span class="fu"><a href="../reference/edges.html">edges</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span><span class="op">$</span><span class="va">edge</span>,</span>
-<span>      to <span class="op">=</span> <span class="fu"><a href="../reference/edges.html">edges</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span><span class="op">$</span><span class="va">to</span>,</span>
-<span>      nodes <span class="op">=</span> <span class="fu"><a href="../reference/nodes.html">nodes</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>,</span>
+<span>    <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
+<span>      from <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/edges.html">edges</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span><span class="op">$</span><span class="va">from</span>,</span>
+<span>      edge <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/edges.html">edges</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span><span class="op">$</span><span class="va">edge</span>,</span>
+<span>      to <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/edges.html">edges</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span><span class="op">$</span><span class="va">to</span>,</span>
+<span>      nodes <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/nodes.html">nodes</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span><span class="op">$</span><span class="va">name</span>,</span>
 <span>      class <span class="op">=</span> <span class="st">"DAG"</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">}</span></span>

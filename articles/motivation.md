@@ -58,7 +58,7 @@ The second form reads like the picture in your head.
 For people working in causal inference and causal discovery, the lack of
 readable, well supported formats can lead to clunky, hacky code that is
 hard to read and maintain. `caugi` aims to fix this with a readable
-syntax, which mimics how we draw graphs in hand, and gives the user the
+syntax, which mimics how we draw graphs by hand, and gives the user the
 ability to express complex causal relationships.
 
 ## Safety
@@ -69,21 +69,20 @@ make causal graphs safe to work with, so you do not accidentally create
 invalid graphs, and so you can focus on the causal problems at hand, not
 on the representation.
 
-We have ensured that `caugi` graph object it should not be possible to
-alter in such a way that the underlying graph class becomes valid. For
+We have ensured that the `caugi` graph object should be impossible to
+alter in such a way that the underlying graph class becomes invalid. For
 example, creating a DAG with `caugi`, acyclicity is guaranteed by
 construction. Trying to add an edge that would create a cycle will throw
 an error.
 
-More generally, all `caugi` aims to be **graph-class safe**. Think of it
-as type safety, but on a graph class level. This safety comes at some
-costs; if `caugi` doesn’t support the graph type, you are using, then
-the graph class should be set to `"UNKNOWN"`, and most operations will
-not be available, since the interpretation of the relationships
-described by the graph is *unknown* to `caugi`. However, this is a small
-price to pay for safety and clarity. In `caugi`, we prefer clarity over
-silent misinterpretation. `caugi` will act as your causality guard dog
-🐶
+More generally, `caugi` aims to be **graph-class safe**. Think of it as
+type safety, but on a graph-class level. This safety comes at some
+costs; if `caugi` doesn’t support the graph type you are using, then the
+graph class should be set to `"UNKNOWN"`, and most operations will not
+be available, since the interpretation of the relationships described by
+the graph is *unknown* to `caugi`. However, this is a small price to pay
+for safety and clarity. In `caugi`, we prefer clarity over silent
+misinterpretation. `caugi` will act as your causality guard dog 🐶
 
 We refer to the vignette
 [`vignette("package_use")`](https://frederikfabriciusbjerre.github.io/caugi/articles/package_use.md)

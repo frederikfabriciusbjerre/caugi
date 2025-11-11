@@ -116,7 +116,7 @@ PAG-type edges by opaque matrix formats, as seen in for example
 <p>For people working in causal inference and causal discovery, the lack
 of readable, well supported formats can lead to clunky, hacky code that
 is hard to read and maintain. <code>caugi</code> aims to fix this with a
-readable syntax, which mimics how we draw graphs in hand, and gives the
+readable syntax, which mimics how we draw graphs by hand, and gives the
 user the ability to express complex causal relationships.</p>
 </div>
 <div class="section level2">
@@ -127,15 +127,15 @@ leads to not only bugs, but confusion and wasted time. With
 <code>caugi</code> we aim to make causal graphs safe to work with, so
 you do not accidentally create invalid graphs, and so you can focus on
 the causal problems at hand, not on the representation.</p>
-<p>We have ensured that <code>caugi</code> graph object it should not be
-possible to alter in such a way that the underlying graph class becomes
-valid. For example, creating a DAG with <code>caugi</code>, acyclicity
-is guaranteed by construction. Trying to add an edge that would create a
-cycle will throw an error.</p>
-<p>More generally, all <code>caugi</code> aims to be <strong>graph-class
-safe</strong>. Think of it as type safety, but on a graph class level.
+<p>We have ensured that the <code>caugi</code> graph object should be
+impossible to alter in such a way that the underlying graph class
+becomes invalid. For example, creating a DAG with <code>caugi</code>,
+acyclicity is guaranteed by construction. Trying to add an edge that
+would create a cycle will throw an error.</p>
+<p>More generally, <code>caugi</code> aims to be <strong>graph-class
+safe</strong>. Think of it as type safety, but on a graph-class level.
 This safety comes at some costs; if <code>caugi</code> doesn’t support
-the graph type, you are using, then the graph class should be set to
+the graph type you are using, then the graph class should be set to
 <code>"UNKNOWN"</code>, and most operations will not be available, since
 the interpretation of the relationships described by the graph is
 <em>unknown</em> to <code>caugi</code>. However, this is a small price

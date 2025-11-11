@@ -13,8 +13,8 @@ work through an example to illustrate how you could approach this.
 Imagine that you want to build a causal discovery function that utilizes
 `caugi` for graph representation and manipulation. While seemingly not a
 very good idea, let’s pretend your algorithmic idea is to measure the
-correlation between variables and then drawing causal conclusions based
-on this[¹](#fn1).
+correlation between variables and then draw causal conclusions based on
+this[¹](#fn1).
 
 ``` r
 #' @title Correlation implies causation!
@@ -64,7 +64,7 @@ that, as a start:
 #'
 #' @returns A `caugi` representing the causal graph that is totally true!
 correlation_implies_causation <- function(df) {
-  cg <- caugi(nodes = names(df))
+  cg <- caugi::caugi(nodes = names(df))
   return(NULL)
 }
 ```
@@ -81,7 +81,7 @@ arbitrary threshold:
 #'
 #' @returns A `caugi` representing the causal graph that is totally true!
 correlation_implies_causation <- function(df) {
-  cg <- caugi(nodes = names(df))
+  cg <- caugi::caugi(nodes = names(df))
   cor_matrix <- cor(df)
   # Add edges for correlations above 0.5
   for (i in seq_len(ncol(cor_matrix))) {
@@ -89,7 +89,7 @@ correlation_implies_causation <- function(df) {
       if (i != j && abs(cor_matrix[i, j]) > 0.5) {
         from <- names(df)[j]
         to <- names(df)[i]
-        cg <- add_edges(cg, from = from, edge = "-->", to = to) # add edge to caugi
+        cg <- caugi::add_edges(cg, from = from, edge = "-->", to = to) # add edge to caugi
       }
     }
   }
@@ -140,7 +140,7 @@ graph class agrees with the input graph.
 #'
 #' @returns A `caugi` representing the causal graph that is totally true!
 correlation_implies_causation <- function(df) {
-  cg <- caugi(nodes = names(df))
+  cg <- caugi::caugi(nodes = names(df))
   cor_matrix <- cor(df)
   # Add edges for correlations above 0.5
   for (i in seq_len(ncol(cor_matrix))) {
@@ -148,11 +148,11 @@ correlation_implies_causation <- function(df) {
       if (i != j && abs(cor_matrix[i, j]) > 0.5) {
         from <- names(df)[j]
         to <- names(df)[i]
-        cg <- add_edges(cg, from = from, edge = "-->", to = to) # add edge to caugi
+        cg <- caugi::add_edges(cg, from = from, edge = "-->", to = to) # add edge to caugi
       }
     }
   }
-  build(cg)
+  caugi::build(cg)
   return(cg)
 }
 ```
@@ -171,9 +171,9 @@ computationally expensive, but sometimes necessary for debugging.
 Now, you might want to specify the class of the output graph. Let’s say
 that *if possible* the output should be a DAG (which is advantageous for
 several reasons), but you don’t want to enforce acyclicity in the
-algorithm, as that could sometimes make your function error. You would
-rather have it return a graph in any case, but if it *is* a DAG, then we
-return a DAG.
+algorithm, as that could sometimes cause your function to throw an
+error. You would rather have it return a graph in any case, but if it
+*is* a DAG, then we return a DAG.
 
 This is not ideal in `caugi`. Because of the way `caugi` works, this is
 a bit slower, but we can still do it!
@@ -185,10 +185,10 @@ a bit slower, but we can still do it!
 #'
 #' @returns A `caugi` representing the causal graph that is totally true!
 correlation_implies_causation <- function(df) {
-  cg <- caugi(nodes = names(df))
+  cg <- caugi::caugi(nodes = names(df))
   cor_matrix <- cor(df)
   # Add edges for correlations above 0.5
-  cg <- caugi(nodes = names(df))
+  cg <- caugi::caugi(nodes = names(df))
   cor_matrix <- cor(df)
   # Add edges for correlations above 0.5
   for (i in seq_len(ncol(cor_matrix))) {
@@ -196,17 +196,17 @@ correlation_implies_causation <- function(df) {
       if (i != j && abs(cor_matrix[i, j]) > 0.5) {
         from <- names(df)[j]
         to <- names(df)[i]
-        cg <- add_edges(cg, from = from, edge = "-->", to = to) # add edge to caugi
+        cg <- caugi::add_edges(cg, from = from, edge = "-->", to = to) # add edge to caugi
       }
     }
   }
   it_is <- is_dag(cg) # this builds, since it is a query
   if (it_is) {
-    cg <- caugi(
-      from = edges(cg)$from,
-      edge = edges(cg)$edge,
-      to = edges(cg)$to,
-      nodes = nodes(cg)$name,
+    cg <- caugi::caugi(
+      from = caugi::edges(cg)$from,
+      edge = caugi::edges(cg)$edge,
+      to = caugi::edges(cg)$to,
+      nodes = caugi::nodes(cg)$name,
       class = "DAG"
     )
   }

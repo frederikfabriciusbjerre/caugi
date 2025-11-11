@@ -17,31 +17,31 @@ backend.
 
 #### Compressed Sparse Row (CSR) representation
 
-The core data structure in `caugi` is a Compressed Sparse Row (CSR)
-representation of the graph. CSR stores for each vertex a contiguous
-slice of neighbor IDs with a pointer (offset) array that marks the
-start/end of each slice. This format is memory efficient for sparse
-graphs. The `caugi` graph object also stores important query information
-in the object, leading to parent, child, and neighbor queries being done
-in $\mathcal{O}(1)$. This yields a larger memory footprint, but the
-trade-off is that queries are extremely fast.
+The core data structure in `caugi` is a compressed sparse row (CSR)
+representation of the graph. CSR representations store for each vertex a
+contiguous slice of neighbor IDs with a pointer (offset) array that
+marks the start/end of each slice. This format is memory efficient for
+sparse graphs. The `caugi` graph object also stores important query
+information in the object, leading to parent, child, and neighbor
+queries being done in $\mathcal{O}(1)$. This yields a larger memory
+footprint, but the trade-off is that queries are extremely fast.
 
 #### Mutation and lazy building
 
 The `caugi` graph objects are expensive to build. This is the
-performance downside of using `caugi`. For each time, we make a
+performance downside of using `caugi`. For each time we make a
 modification to a `caugi` graph object, we need to rebuild the graph
-completely, since the graph object is immutable by design. This has
+completely since the graph object is immutable by design. This has
 complexity $\mathcal{O}\left( |V| + |E| \right)$, where $V$ is the
 vertex set and $E$ is the edge set.
 
-However, the graph object will only be rebuild, when the user either
+However, the graph object will only be rebuilt when the user either
 calls
 [`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md)
 directly or queries the graph. Therefore, you do not need to worry about
 wasting compute time by iteratively making changes to a `caugi` graph
-object, as the graph rebuilds lazily when queried. By doing this `caugi`
-graphs *feel* mutable, but, in reality, they are not.
+object, as the graph rebuilds lazily when queried. By doing this,
+`caugi` graphs *feel* mutable, but, in reality, they are not.
 
 By doing it this way, we ensure - that the graph object is always in a
 consistent state when queried, and - that queries are as fast as
@@ -112,11 +112,11 @@ bench::mark(
 #> # A tibble: 5 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi        64.4µs   68.4µs 13788.      67.36KB     8.00
-#> 2 igraph        517µs  552.6µs  1723.      360.8KB     7.99
-#> 3 bnlearn      39.6µs   41.9µs 17494.      38.38KB    14.4 
-#> 4 ggm          19.5ms   24.5ms    33.5     69.86MB    61.0 
-#> 5 dagitty        2.6s     2.6s     0.384    5.09MB     0
+#> 1 caugi        64.3µs   68.9µs 13470.      67.36KB     8.00
+#> 2 igraph      528.1µs  566.6µs  1671.      360.8KB     6.00
+#> 3 bnlearn      39.4µs   42.2µs 20895.      38.38KB    16.7 
+#> 4 ggm          20.4ms   26.5ms    29.4     69.86MB    52.9 
+#> 5 dagitty        2.7s     2.7s     0.370    5.09MB     0
 ```
 
 `bnlearn` is fastest here, but is only able to handle smaller graphs,
@@ -142,8 +142,8 @@ bench::mark(
 #> # A tibble: 2 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi        62.9µs   66.4µs    14768.     1008B     8.35
-#> 2 igraph      768.5µs  800.3µs     1231.    3.05MB    42.6
+#> 1 caugi          63µs   66.8µs    14547.     1008B     8.42
+#> 2 igraph        806µs  853.7µs     1148.    3.05MB    50.7
 ```
 
 For ancestors and descendants, we see that `caugi` outperforms all other
@@ -175,10 +175,10 @@ bench::mark(
 #> # A tibble: 4 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi      195.66µs 211.94µs  4606.      65.25KB     2.00
-#> 2 igraph     626.58µs 661.07µs  1439.     117.85KB     2.00
-#> 3 bnlearn       1.04s    1.04s     0.963    1.33GB    16.4 
-#> 4 dagitty        2.7s     2.7s     0.371    5.09MB     0
+#> 1 caugi      195.32µs 212.09µs  4627.      65.25KB     2.00
+#> 2 igraph     641.19µs 677.38µs  1382.     117.85KB     4.00
+#> 3 bnlearn       1.27s    1.27s     0.786    1.33GB    13.4 
+#> 4 dagitty       2.77s    2.77s     0.361    5.09MB     0
 ```
 
 #### d-separation
@@ -214,9 +214,9 @@ bench::mark(
 #> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi       33.48ms   33.7ms    29.3     33.02KB     0   
-#> 2 bnlearn       3.13s    3.13s     0.320    3.22GB     4.48
-#> 3 dagitty       2.06s    2.06s     0.484    4.19MB     0
+#> 1 caugi       35.26ms  35.51ms    27.9     33.02KB     0   
+#> 2 bnlearn       3.62s    3.62s     0.276    3.22GB     4.15
+#> 3 dagitty       2.05s    2.05s     0.488    4.19MB     0
 ```
 
 #### Subgraph (building)
@@ -225,7 +225,7 @@ Here we see an example of where the frontloading hurts performance. When
 we build a subgraph, we have to rebuild the entire `caugi` graph object.
 Here, we see that while `caugi` outperforms other packages for queries
 (except for parents/children for `bnlearn`), it is slower for building
-the graph objects themselves, which shows for the subgraph benchmark:
+the graph objects themselves, which shows in the subgraph benchmark:
 
 ``` r
 subgraph_nodes_index <- sample.int(1000, 500)
@@ -247,9 +247,9 @@ bench::mark(
 #> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi       12.46ms  15.95ms    67.5        12MB     0   
-#> 2 igraph       2.23ms   2.26ms   441.       81.1KB     0   
-#> 3 bnlearn       1.05s    1.05s     0.949   983.6MB     2.85
+#> 1 caugi       13.96ms  14.23ms    68.3        12MB     1.95
+#> 2 igraph       1.89ms   1.95ms   491.       81.1KB     0   
+#> 3 bnlearn       1.13s    1.13s     0.882   983.6MB     2.65
 ```
 
 ### Session info
