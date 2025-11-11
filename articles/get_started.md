@@ -51,7 +51,7 @@ other *properties*. Let’s check the other properties.
 
 ``` r
 cg@ptr
-#> <pointer: 0x560e0dc3e230>
+#> <pointer: 0x5625cfa08a30>
 ```
 
 This is the pointer to the Rust object that `caugi` utilizes for
@@ -199,7 +199,7 @@ Rust backend uses zero-based indices.
 
 ``` r
 cg@.state
-#> <environment: 0x560e0b178198>
+#> <environment: 0x5625d14f3908>
 ```
 
 This is the internal state of the `caugi` graph object. It is used to
