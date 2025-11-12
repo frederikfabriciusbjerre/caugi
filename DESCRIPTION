@@ -1,13 +1,28 @@
 Package: caugi
 Title: Causal Graph Interface
 Version: 0.2.0
-Authors@R: 
+Authors@R: c(
     person(
-    given = "Frederik", 
-    family = "Fabricius-Bjerre", 
-    email = "frederik@fabriciusbjerre.dk", 
-    role = c("aut", "cre", "cph")
+      given = "Frederik", 
+      family = "Fabricius-Bjerre", 
+      email = "frederik@fabriciusbjerre.dk", 
+      role = c("aut", "cre", "cph")
+    ), 
+    person(
+      given = "Johan",
+      family = "Larsson",
+      role = "aut",
+      email = "johan@jolars.co",
+      comment = c(ORCID = "0000-0002-4029-5945")
+    ),
+    person(
+      given = "Michael",
+      family = "Sachs",
+      role = "aut",
+      email = "sachsmc@gmail.com",
+      comment = c(ORCID = "0000-0002-1279-8676")
     )
+  )
 Description: Create, query, and modify causal graphs. 'caugi' (Causal Graph
     Interface) is a causality-first, high performance graph package that 
     provides a simple interface to build, structure, and examine causal 
