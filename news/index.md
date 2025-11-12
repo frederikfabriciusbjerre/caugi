@@ -1,5 +1,11 @@
 # Changelog
 
+## caugi 0.2.1
+
+- Update function documentation to make package CRAN ready.
+- Update performance vignette.
+- Add Michael Sachs and Johan Larsson to Authors in DESCRIPTION.
+
 ## caugi 0.2.0
 
 - Drop dependencies on `dplyr` and `tibble`.

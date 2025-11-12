@@ -28,3 +28,20 @@ Undirected Graph (UG), also known as a Markov Graph.
 
 Other operations:
 [`skeleton()`](https://frederikfabriciusbjerre.github.io/caugi/reference/skeleton.md)
+
+## Examples
+
+``` r
+cg <- caugi(A %-->% C, B %-->% C, class = "DAG")
+moralize(cg) # A -- B, A -- C, B -- C
+#>      name
+#>    <char>
+#> 1:      A
+#> 2:      B
+#> 3:      C
+#>      from   edge     to
+#>    <char> <char> <char>
+#> 1:      A    ---      B
+#> 2:      A    ---      C
+#> 3:      B    ---      C
+```

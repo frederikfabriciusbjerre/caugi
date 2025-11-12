@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,20 +66,30 @@
 <blockquote>
 <p><strong>Causal Graph Interface (for R)</strong> — a blazingly fast, tidy toolbox for building, coercing and analyzing causal graphs.</p>
 </blockquote>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://frederikfabriciusbjerre.github.io/caugi/">caugi</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="what-is-caugi">What is <code>caugi</code>?<a class="anchor" aria-label="anchor" href="#what-is-caugi"></a>
 </h2>
 <p><code>caugi</code> (pronounced “corgi”) stands for <strong>Causal Graph Interface</strong>. It is a <em>causality-first</em> graph package that focuses on performance and flexibility. If you are developing scripts or algorithms in the field of causality or if you are learning about causal graphs for the first time, <code>caugi</code> is made for you.</p>
 </div>
 <div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>You can install the development version of <code>caugi</code> from GitHub with:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"frederikfabriciusbjerre/caugi"</span><span class="op">)</span></span></code></pre></div>
+<p>or directly from CRAN with:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"caugi"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="the-basic-object-caugi">The basic object: <code>caugi</code>
 <a class="anchor" aria-label="anchor" href="#the-basic-object-caugi"></a>
 </h2>
 <p>A <code>caugi</code> graph object is the bread and butter of the <code>caugi</code> package. It is easy to create, query, and modify.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://frederikfabriciusbjerre.github.io/caugi/">caugi</a></span><span class="op">)</span></span></code></pre></div>
 <p>You can create simple graphs as well as a number of predefined graph classes. Currently, we support <code>"UNKNOWN"</code>, <code>"DAG"</code>, <code>"PDAG"</code>, and <code>"UG"</code>. We plan on supporting several other causal graph types in future releases, such as <code>"PAG"</code>, <code>"MAG"</code>, <code>"SWIG"</code>, and <code>"ADMG"</code>.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># a tiny DAG</span></span>
 <span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/caugi.html">caugi</a></span><span class="op">(</span></span>
 <span>  <span class="va">A</span> <span class="op"><a href="reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>,</span>
@@ -106,7 +116,7 @@
 <code>%o-o%</code> (partial)</li>
 </ul>
 <p>You can register more types with <code><a href="reference/register_caugi_edge.html">register_caugi_edge()</a></code>, if you find that you need a more expressive set of edges. For example, if you want to represent a directed edge in the reverse direction, you can do so like this:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/register_caugi_edge.html">register_caugi_edge</a></span><span class="op">(</span></span>
 <span>  glyph <span class="op">=</span> <span class="st">"&lt;--"</span>,</span>
 <span>  tail_mark <span class="op">=</span> <span class="st">"arrow"</span>,</span>
@@ -188,6 +198,8 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Frederik Fabricius-Bjerre <br><small class="roles"> Author, maintainer, copyright holder </small>   </li>
+<li>Johan Larsson <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-4029-5945" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>Michael Sachs <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-1279-8676" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
 
@@ -205,7 +217,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Frederik Fabricius-Bjerre.</p>
+  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs.</p>
 </div>
 
 <div class="pkgdown-footer-right">

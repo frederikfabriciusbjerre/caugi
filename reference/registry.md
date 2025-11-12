@@ -1,4 +1,4 @@
-# caugi edge registry
+# `caugi` edge registry
 
 The `caugi` edge registry stores information about the different edge
 types that can be used in `caugi` graphs. It maps edge glyphs (e.g.,

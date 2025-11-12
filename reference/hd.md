@@ -24,10 +24,21 @@ hd(cg1, cg2, normalized = FALSE)
 
 ## Value
 
-An integer representing the Hamming Distance between the two graphs.
+An integer representing the Hamming Distance between the two graphs, if
+`normalized = FALSE`, or a numeric between 0 and 1 if
+`normalized = TRUE`.
 
 ## See also
 
 Other metrics:
 [`aid()`](https://frederikfabriciusbjerre.github.io/caugi/reference/aid.md),
 [`shd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/shd.md)
+
+## Examples
+
+``` r
+cg1 <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+cg2 <- caugi(A %-->% B %-->% C, D %---% C, class = "PDAG")
+hd(cg1, cg2) # 0
+#> [1] 0
+```

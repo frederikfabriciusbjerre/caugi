@@ -37,7 +37,7 @@ d_separated(
 
 ## Value
 
-Logical scalar.
+`TRUE` if d-separated, `FALSE` otherwise.
 
 ## See also
 

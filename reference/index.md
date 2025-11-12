@@ -144,10 +144,13 @@
 
 - [`register_caugi_edge()`](https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.md)
   : Register a new edge type in the global registry.
+
 - [`caugi_registry()`](https://frederikfabriciusbjerre.github.io/caugi/reference/registry.md)
   [`reset_caugi_registry()`](https://frederikfabriciusbjerre.github.io/caugi/reference/registry.md)
   [`seal_caugi_registry()`](https://frederikfabriciusbjerre.github.io/caugi/reference/registry.md)
-  : caugi edge registry
+  :
+
+  `caugi` edge registry
 
 ## Methods
 

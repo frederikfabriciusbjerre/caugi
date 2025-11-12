@@ -28,3 +28,17 @@ known as a Markov Graph.
 
 Other operations:
 [`moralize()`](https://frederikfabriciusbjerre.github.io/caugi/reference/moralize.md)
+
+## Examples
+
+``` r
+cg <- caugi(A %-->% B, class = "DAG")
+skeleton(cg) # A --- B
+#>      name
+#>    <char>
+#> 1:      A
+#> 2:      B
+#>      from   edge     to
+#>    <char> <char> <char>
+#> 1:      A    ---      B
+```

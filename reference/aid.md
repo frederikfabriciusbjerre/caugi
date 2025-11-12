@@ -31,10 +31,21 @@ aid(truth, guess, type = c("oset", "ancestor", "parent"), normalized = TRUE)
 
 ## Value
 
-A list containing the score (normalized) and the count.
+A numeric representing the AID between the two graphs, if
+`normalized = TRUE`, or an integer count if `normalized = FALSE`.
 
 ## See also
 
 Other metrics:
 [`hd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/hd.md),
 [`shd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/shd.md)
+
+## Examples
+
+``` r
+set.seed(1)
+truth <- generate_graph(n = 100, m = 200, class = "DAG")
+guess <- generate_graph(n = 100, m = 200, class = "DAG")
+aid(truth, guess) # 0.0187
+#> [1] 0.1086869
+```
