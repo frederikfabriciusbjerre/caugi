@@ -5,7 +5,7 @@
 \alias{caugi_registry}
 \alias{reset_caugi_registry}
 \alias{seal_caugi_registry}
-\title{caugi edge registry}
+\title{\code{caugi} edge registry}
 \usage{
 caugi_registry()
 

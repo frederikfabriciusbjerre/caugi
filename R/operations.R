@@ -15,10 +15,16 @@
 #'
 #' @param cg A `caugi` object (DAG).
 #'
+#' @returns A `caugi` object representing the moralized graph (UG).
+#'
+#' @examples
+#' cg <- caugi(A %-->% C, B %-->% C, class = "DAG")
+#' moralize(cg) # A -- B, A -- C, B -- C
+#'
 #' @family operations
 #' @concept operations
 #'
-#' @returns A `caugi` object representing the moralized graph (UG).
+#' @export
 moralize <- function(cg) {
   is_caugi(cg, TRUE)
   if (cg@graph_class != "DAG") {
@@ -43,10 +49,16 @@ moralize <- function(cg) {
 #'
 #' @param cg A `caugi` object. Either a DAG or PDAG.
 #'
+#' @returns A `caugi` object representing the skeleton of the graph (UG).
+#'
+#' @examples
+#' cg <- caugi(A %-->% B, class = "DAG")
+#' skeleton(cg) # A --- B
+#'
 #' @family operations
 #' @concept operations
 #'
-#' @returns A `caugi` object representing the skeleton of the graph (UG).
+#' @export
 skeleton <- function(cg) {
   is_caugi(cg, TRUE)
   cg <- build(cg)

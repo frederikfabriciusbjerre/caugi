@@ -44,7 +44,7 @@
 #' @param state For internal use. Build a graph by supplying a pre-constructed
 #' state environment.
 #'
-#' @returns A [`caugi`] S7 object containing the nodes, edges, and a
+#' @returns A `caugi` S7 object containing the nodes, edges, and a
 #' pointer to the underlying Rust graph structure.
 #'
 #' @examples
@@ -409,6 +409,7 @@ caugi <- S7::new_class(
 #' (default), nodes will be named `V1`, `V2`, ..., `Vn`.
 #'
 #' @returns A `caugi` object representing the graph.
+#'
 #' @keywords internal
 .view_to_caugi <- function(ptr, node_names = NULL) {
   if (is.null(ptr)) stop("ptr is NULL", call. = FALSE)
@@ -471,6 +472,7 @@ caugi <- S7::new_class(
 #' indices.
 #'
 #' @returns An environment containing the graph state.
+#'
 #' @keywords internal
 .cg_state <- function(nodes, edges, ptr, built, simple, class,
                       name_index_map, index_name_map) {
@@ -496,6 +498,7 @@ caugi <- S7::new_class(
 #' @returns The frozen/unfrozen environment.
 #'
 #' @name freeze_state
+#'
 #' @keywords internal
 .freeze_state <- function(e) {
   for (nm in ls(envir = e, all.names = TRUE)) lockBinding(nm, e)
@@ -504,6 +507,7 @@ caugi <- S7::new_class(
 }
 
 #' @name freeze_state
+#'
 #' @keywords internal
 .unfreeze_state <- function(e) {
   for (nm in ls(envir = e, all.names = TRUE)) unlockBinding(nm, e)

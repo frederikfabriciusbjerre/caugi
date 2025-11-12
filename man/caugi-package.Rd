@@ -3,9 +3,11 @@
 \docType{package}
 \name{caugi-package}
 \alias{caugi-package}
-\title{caugi: A tidy interface to causal graphs}
+\title{\code{caugi} (Causal Graph Interface)}
 \description{
-\strong{caugi} wraps a high-performance Rust core in a pipe-friendly R API.
+Create, query, and modify causal graphs. 'caugi' (Causal Graph Interface) is
+a causality-first, high performance graph package that provides a simple
+interface to build, structure, and examine causal relationships.
 }
 \seealso{
 Useful links:
@@ -16,7 +18,14 @@ Useful links:
 
 }
 \author{
-Frederik Fabricius-Bjerre \email{frederik@fabriciusbjerre.dk}
+\strong{Maintainer}: Frederik Fabricius-Bjerre \email{frederik@fabriciusbjerre.dk} [copyright holder]
+
+Authors:
+\itemize{
+  \item Johan Larsson \email{johan@jolars.co} (\href{https://orcid.org/0000-0002-4029-5945}{ORCID})
+  \item Michael Sachs \email{sachsmc@gmail.com} (\href{https://orcid.org/0000-0002-1279-8676}{ORCID})
+}
+
 }
 \keyword{internal}
 \keyword{package}

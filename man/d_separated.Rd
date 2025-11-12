@@ -25,7 +25,7 @@ If \code{Z} is \code{NULL} or missing, no nodes are conditioned on.}
 with \code{X},\code{Y},\code{Z} respectively).}
 }
 \value{
-Logical scalar.
+\code{TRUE} if d-separated, \code{FALSE} otherwise.
 }
 \description{
 Checks whether every node in \code{X} is d-separated from every node

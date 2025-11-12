@@ -14,7 +14,7 @@
 #' @param X_index,Y_index,Z_index Optional numeric 1-based indices (exclusive
 #'   with `X`,`Y`,`Z` respectively).
 #'
-#' @returns Logical scalar.
+#' @returns `TRUE` if d-separated, `FALSE` otherwise.
 #'
 #' @examples
 #' cg <- caugi(

@@ -18,11 +18,19 @@ Options are \code{"oset"} (default), \code{"ancestor"}, and \code{"parent"}.}
 returns the count.}
 }
 \value{
-A list containing the score (normalized) and the count.
+A numeric representing the AID between the two graphs, if
+\code{normalized = TRUE}, or an integer count if \code{normalized = FALSE}.
 }
 \description{
 Compute the Adjustment Identification Distance (AID) between two
 graphs using the \code{gadjid} Rust package.
+}
+\examples{
+set.seed(1)
+truth <- generate_graph(n = 100, m = 200, class = "DAG")
+guess <- generate_graph(n = 100, m = 200, class = "DAG")
+aid(truth, guess) # 0.0187
+
 }
 \seealso{
 Other metrics: 

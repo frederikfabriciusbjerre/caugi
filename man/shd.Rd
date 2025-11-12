@@ -14,11 +14,18 @@ shd(cg1, cg2, normalized = FALSE)
 \item{normalized}{Logical; if \code{TRUE}, returns the normalized SHD.}
 }
 \value{
-An integer representing the SHD between the two graphs.
+An integer representing the Hamming Distance between the two graphs,
+if \code{normalized = FALSE}, or a numeric between 0 and 1 if \code{normalized = TRUE}.
 }
 \description{
 Compute the Structural Hamming Distance (SHD) between two
 graphs.
+}
+\examples{
+cg1 <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
+cg2 <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
+shd(cg1, cg2) # 1
+
 }
 \seealso{
 Other metrics: 

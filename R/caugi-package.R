@@ -1,10 +1,9 @@
-#' caugi: A tidy interface to causal graphs
+#' @title `caugi` (Causal Graph Interface)
 #'
 #' @description
-#' **caugi** wraps a high-performance Rust core in a pipe-friendly R API.
-#'
-#' @author
-#' Frederik Fabricius-Bjerre \email{frederik@fabriciusbjerre.dk}
+#' Create, query, and modify causal graphs. 'caugi' (Causal Graph Interface) is
+#' a causality-first, high performance graph package that provides a simple
+#' interface to build, structure, and examine causal relationships.
 #'
 #' @docType package
 #' @keywords package internal

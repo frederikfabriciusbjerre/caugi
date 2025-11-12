@@ -20,6 +20,11 @@ undirected edges.
 This changes the graph from any class to an Undirected Graph (UG), also known
 as a Markov Graph.
 }
+\examples{
+cg <- caugi(A \%-->\% B, class = "DAG")
+skeleton(cg) # A --- B
+
+}
 \seealso{
 Other operations: 
 \code{\link{moralize}()}

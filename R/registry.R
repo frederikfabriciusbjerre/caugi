@@ -2,7 +2,7 @@
 # ─────────────────────────────── Registry API ─────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-#' @title caugi edge registry
+#' @title `caugi` edge registry
 #'
 #' @description
 #' The `caugi` edge registry stores information about the different edge types

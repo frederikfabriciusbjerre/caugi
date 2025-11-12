@@ -15,7 +15,13 @@
 #' @param cg2 A `caugi` object.
 #' @param normalized Logical; if `TRUE`, returns the normalized SHD.
 #'
-#' @returns An integer representing the SHD between the two graphs.
+#' @returns An integer representing the Hamming Distance between the two graphs,
+#' if `normalized = FALSE`, or a numeric between 0 and 1 if `normalized = TRUE`.
+#'
+#' @examples
+#' cg1 <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+#' cg2 <- caugi(A %-->% B %-->% C, D %---% C, class = "PDAG")
+#' shd(cg1, cg2) # 1
 #'
 #' @family metrics
 #' @concept metrics
@@ -41,7 +47,13 @@ shd <- function(cg1, cg2, normalized = FALSE) {
 #' @param normalized Logical; if `TRUE`, returns the normalized Hamming
 #' Distance.
 #'
-#' @returns An integer representing the Hamming Distance between the two graphs.
+#' @returns An integer representing the Hamming Distance between the two graphs,
+#' if `normalized = FALSE`, or a numeric between 0 and 1 if `normalized = TRUE`.
+#'
+#' @examples
+#' cg1 <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+#' cg2 <- caugi(A %-->% B %-->% C, D %---% C, class = "PDAG")
+#' hd(cg1, cg2) # 0
 #'
 #' @family metrics
 #' @concept metrics
@@ -70,7 +82,14 @@ hd <- function(cg1, cg2, normalized = FALSE) {
 #' @param normalized Logical; if `TRUE`, returns the normalized AID. If `FALSE`,
 #' returns the count.
 #'
-#' @returns A list containing the score (normalized) and the count.
+#' @returns A numeric representing the AID between the two graphs, if
+#' `normalized = TRUE`, or an integer count if `normalized = FALSE`.
+#'
+#' @examples
+#' set.seed(1)
+#' truth <- generate_graph(n = 100, m = 200, class = "DAG")
+#' guess <- generate_graph(n = 100, m = 200, class = "DAG")
+#' aid(truth, guess) # 0.0187
 #'
 #' @family metrics
 #' @concept metrics

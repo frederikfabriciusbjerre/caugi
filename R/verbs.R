@@ -3,10 +3,6 @@
 # ──────────────────────────────────────────────────────────────────────────────
 
 #' @title Build the graph now
-#' @export
-build <- S7::new_generic("build", "cg")
-
-#' @title Build the graph now
 #'
 #' @description If a `caugi` has been modified (nodes or edges added or
 #' removed), it is marked as _not built_, i.e `cg@built = FALSE`.
@@ -38,6 +34,9 @@ build <- S7::new_generic("build", "cg")
 #' @family verbs
 #' @concept verbs
 #'
+#' @export
+build <- S7::new_generic("build", "cg")
+
 #' @name build
 #' @export
 S7::method(build, caugi) <- function(cg, ...) {
@@ -349,6 +348,7 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 #' @importFrom data.table `%chin%`
 #'
 #' @returns The updated `caugi` object.
+#'
 #' @keywords internal
 .update_caugi <- function(cg, nodes = NULL, edges = NULL,
                           action = c("add", "remove"),
@@ -399,7 +399,8 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
     # update fastmap
     new_ids <- setdiff(s$nodes$name, s$name_index_map$keys())
     if (length(new_ids) > 0L) {
-      new_id_values <- seq_len(length(new_ids)) - 1L + nrow(s$nodes) - length(new_ids)
+      tmp <- nrow(s$nodes) - length(new_ids)
+      new_id_values <- seq_len(length(new_ids)) - 1L + tmp
       do.call(
         s$name_index_map$mset,
         .set_names(as.list(new_id_values), new_ids)

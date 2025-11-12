@@ -53,7 +53,7 @@ nodes are provided, the graph will not be built and the pointer will be
 state environment.}
 }
 \value{
-A \code{\link{caugi}} S7 object containing the nodes, edges, and a
+A \code{caugi} S7 object containing the nodes, edges, and a
 pointer to the underlying Rust graph structure.
 }
 \description{

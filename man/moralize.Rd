@@ -20,6 +20,11 @@ converting all directed edges into undirected edges.
 This changes the graph from a Directed Acyclic Graph (DAG) to an
 Undirected Graph (UG), also known as a Markov Graph.
 }
+\examples{
+cg <- caugi(A \%-->\% C, B \%-->\% C, class = "DAG")
+moralize(cg) # A -- B, A -- C, B -- C
+
+}
 \seealso{
 Other operations: 
 \code{\link{skeleton}()}

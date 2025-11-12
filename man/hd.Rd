@@ -15,10 +15,17 @@ hd(cg1, cg2, normalized = FALSE)
 Distance.}
 }
 \value{
-An integer representing the Hamming Distance between the two graphs.
+An integer representing the Hamming Distance between the two graphs,
+if \code{normalized = FALSE}, or a numeric between 0 and 1 if \code{normalized = TRUE}.
 }
 \description{
 Compute the Hamming Distance between two graphs.
+}
+\examples{
+cg1 <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
+cg2 <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
+hd(cg1, cg2) # 0
+
 }
 \seealso{
 Other metrics: 
