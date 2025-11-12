@@ -14,10 +14,6 @@ coverage](https://codecov.io/gh/frederikfabriciusbjerre/caugi/graph/badge.svg)](
 > **Causal Graph Interface (for R)** — a blazingly fast, tidy toolbox
 > for building, coercing and analyzing causal graphs.
 
-``` r
-library(caugi)
-```
-
 ## What is `caugi`?
 
 `caugi` (pronounced “corgi”) stands for **Causal Graph Interface**. It
@@ -26,10 +22,28 @@ flexibility. If you are developing scripts or algorithms in the field of
 causality or if you are learning about causal graphs for the first time,
 `caugi` is made for you.
 
+## Installation
+
+You can install the development version of `caugi` from GitHub with:
+
+``` r
+pak::pak("frederikfabriciusbjerre/caugi")
+```
+
+or directly from CRAN with:
+
+``` r
+install.packages("caugi")
+```
+
 ## The basic object: `caugi`
 
 A `caugi` graph object is the bread and butter of the `caugi` package.
 It is easy to create, query, and modify.
+
+``` r
+library(caugi)
+```
 
 You can create simple graphs as well as a number of predefined graph
 classes. Currently, we support `"UNKNOWN"`, `"DAG"`, `"PDAG"`, and
