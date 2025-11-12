@@ -55,8 +55,6 @@ test_that("duplicate glyph triggers operator registration error on second call",
 })
 
 
-
-
 test_that("glyph validation", {
   reset_caugi_registry()
   expect_error(
