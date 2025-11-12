@@ -18,3 +18,5 @@
 ^README\.Rmd$
 ^tools/aaaaa-coding-helpers\.R$
 ^\.vscode$
+^cran-comments\.md$
+^revdep$
