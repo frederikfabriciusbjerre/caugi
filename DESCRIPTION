@@ -1,6 +1,6 @@
 Package: caugi
 Title: Causal Graph Interface
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(
     person(
       given = "Frederik", 
