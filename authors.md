@@ -2,7 +2,7 @@
 
 ## Authors
 
-- **Frederik Fabricius-Bjerre**. Author, maintainer.
+- **Frederik Fabricius-Bjerre**. Author, maintainer, copyright holder.
 
 ## Citation
 
