@@ -1,14 +1,3 @@
-# ──────────────────────────────────────────────────────────────────────────────
-# ───────────────────────────── Load S4 classes ────────────────────────────────
-# ──────────────────────────────────────────────────────────────────────────────
-
-# We load S4 classes from inst as a workaround to avoid putting S4 classes
-# in the Imports field of the DESCRIPTION file, which suggests that the package
-# actually depends on them, which it doesn't.
-
-graphNEL_S4_class <- readRDS("inst/S4_class_definitions/graphNEL_class.rds")
-Matrix_S4_class <- readRDS("inst/S4_class_definitions/Matrix_class.rds")
-
 #' @title Convert to a `caugi`
 #'
 #' @description Convert an object to a `caugi`. The object can be a
@@ -205,79 +194,80 @@ S7::method(
   )
 }
 
-#' @name as_caugi
-#' @export
-S7::method(
-  as_caugi, graphNEL_S4_class
-) <- function(x,
-              class = c("DAG", "PDAG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
-  class <- match.arg(class)
+register_graphnel_s4_class <- function() {
+  S7::method(
+    as_caugi,
+    methods::getClassDef("graphNEL", package = "graph")
+  ) <- function(x,
+                class = c("DAG", "PDAG", "PAG", "UNKNOWN"),
+                simple = TRUE,
+                build = TRUE,
+                collapse = FALSE,
+                collapse_to = "---",
+                ...) {
+    class <- match.arg(class)
 
-  directed <- graph::isDirected(x)
+    directed <- graph::isDirected(x)
 
-  nbrs <- graph::edges(x)
-  lens <- vapply(nbrs, length, integer(1))
-  from <- rep.int(names(nbrs), lens)
-  to <- unlist(nbrs, use.names = FALSE)
-  nm <- x@nodes
-  if (is.null(nm)) nm <- paste0("V", seq_len(length(nbrs)))
+    nbrs <- graph::edges(x)
+    lens <- vapply(nbrs, length, integer(1))
+    from <- rep.int(names(nbrs), lens)
+    to <- unlist(nbrs, use.names = FALSE)
+    nm <- x@nodes
+    if (is.null(nm)) nm <- paste0("V", seq_len(length(nbrs)))
 
-  if (!directed) {
-    canon_from <- pmin(from, to)
-    canon_to <- pmax(from, to)
-    keep <- !duplicated(interaction(canon_from, canon_to, drop = TRUE))
-    from <- canon_from[keep]
-    to <- canon_to[keep]
-  }
+    if (!directed) {
+      canon_from <- pmin(from, to)
+      canon_to <- pmax(from, to)
+      keep <- !duplicated(interaction(canon_from, canon_to, drop = TRUE))
+      from <- canon_from[keep]
+      to <- canon_to[keep]
+    }
 
-  # no edges
-  if (length(from) == 0L) {
-    return(caugi(
-      from = character(),
-      edge = character(),
-      to = character(),
+    # no edges
+    if (length(from) == 0L) {
+      return(caugi(
+        from = character(),
+        edge = character(),
+        to = character(),
+        nodes = nm,
+        simple = isTRUE(simple),
+        build = isTRUE(build),
+        class = class
+      ))
+    }
+
+    glyph <- if (directed) "-->" else "---"
+    edge <- rep_len(glyph, length(from))
+
+    if (collapse && directed) {
+      is_edge_symmetric(collapse_to)
+
+      canon_from <- pmin(from, to)
+      canon_to <- pmax(from, to)
+      key <- interaction(canon_from, canon_to, drop = TRUE)
+
+      pair_key <- interaction(from, to, drop = TRUE)
+      rev_key <- interaction(to, from, drop = TRUE)
+      has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
+
+      keep <- !has_rev | (from == canon_from)
+
+      from <- ifelse(has_rev & keep, canon_from, from)[keep]
+      to <- ifelse(has_rev & keep, canon_to, to)[keep]
+      edge <- ifelse(has_rev & keep, collapse_to, edge)[keep]
+    }
+
+    caugi(
+      from = from,
+      edge = edge,
+      to = to,
       nodes = nm,
       simple = isTRUE(simple),
       build = isTRUE(build),
       class = class
-    ))
+    )
   }
-
-  glyph <- if (directed) "-->" else "---"
-  edge <- rep_len(glyph, length(from))
-
-  if (collapse && directed) {
-    is_edge_symmetric(collapse_to)
-
-    canon_from <- pmin(from, to)
-    canon_to <- pmax(from, to)
-    key <- interaction(canon_from, canon_to, drop = TRUE)
-
-    pair_key <- interaction(from, to, drop = TRUE)
-    rev_key <- interaction(to, from, drop = TRUE)
-    has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
-
-    keep <- !has_rev | (from == canon_from)
-
-    from <- ifelse(has_rev & keep, canon_from, from)[keep]
-    to <- ifelse(has_rev & keep, canon_to, to)[keep]
-    edge <- ifelse(has_rev & keep, collapse_to, edge)[keep]
-  }
-
-  caugi(
-    from = from,
-    edge = edge,
-    to = to,
-    nodes = nm,
-    simple = isTRUE(simple),
-    build = isTRUE(build),
-    class = class
-  )
 }
 
 
@@ -527,29 +517,29 @@ S7::method(
   )
 }
 
-#' @name as_caugi
-#' @export
-S7::method(
-  as_caugi,
-  Matrix_S4_class
-) <- function(x,
-              class = c("DAG", "PDAG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
-  class <- match.arg(class)
-  m <- as.matrix(x)
-  as_caugi(
-    m,
-    class = class,
-    simple = simple,
-    build = build,
-    collapse = collapse,
-    collapse_to = collapse_to,
-    ...
-  )
+register_matrix_s4_class <- function() {
+  S7::method(
+    as_caugi,
+    methods::getClassDef("Matrix", package = "Matrix")
+  ) <- function(x,
+                class = c("DAG", "PDAG", "PAG", "UNKNOWN"),
+                simple = TRUE,
+                build = TRUE,
+                collapse = FALSE,
+                collapse_to = "---",
+                ...) {
+    class <- match.arg(class)
+    m <- as.matrix(x)
+    as_caugi(
+      m,
+      class = class,
+      simple = simple,
+      build = build,
+      collapse = collapse,
+      collapse_to = collapse_to,
+      ...
+    )
+  }
 }
 
 #' @name as_caugi

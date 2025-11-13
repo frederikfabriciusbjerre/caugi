@@ -20,3 +20,4 @@
 ^\.vscode$
 ^cran-comments\.md$
 ^revdep$
+^data-raw$

@@ -36,7 +36,8 @@ Imports:
     data.table,
     fastmap,
     S7,
-    stats
+    stats,
+    methods
 Suggests: 
     bench,
     bnlearn,
