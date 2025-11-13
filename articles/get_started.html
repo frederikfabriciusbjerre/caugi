@@ -117,7 +117,7 @@ other properties.</p>
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span></span>
-<span><span class="co">#&gt; &lt;pointer: 0x55f8c355b970&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;pointer: 0x55f23f626a60&gt;</span></span></code></pre></div>
 <p>This is the pointer to the Rust object that <code>caugi</code>
 utilizes for performance.</p>
 </div>
@@ -213,7 +213,7 @@ the difference between the two graphs – both structurally and
 interventionally.</p>
 <p>For further reading, we recommend the vignettes
 <code><a href="../articles/package_use.html">vignette("package_use")</a></code> and
-<code><a href="../articles/performance.html">vignette("performance")</a></code> to see how to use
+<code>vignette("performance")</code> to see how to use
 <code>caugi</code> in your own packages, and to see how
 <code>caugi</code> performs compared to other graph packages in R. For
 the interested reader, we also recommend
@@ -255,7 +255,7 @@ calls, as the Rust backend uses zero-based indices.</p>
 </h4>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">.state</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x55f8c681b0b0&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;environment: 0x55f23fd894a8&gt;</span></span></code></pre></div>
 <p>This is the internal state of the <code>caugi</code> graph object. It
 is used to ensure that the <code>caugi</code> object can be modified in
 R and, so to speak, <em>saves</em> the modifications you might make to

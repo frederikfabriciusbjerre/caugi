@@ -98,4 +98,4 @@ large graphs, where performance matters, but even for small graphs the
 performance gain is significant to other packages.
 
 You can read more about the performance of `caugi` in
-[`vignette("performance")`](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.md).
+`vignette("performance")`.

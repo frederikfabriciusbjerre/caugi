@@ -61,7 +61,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Performance</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/vignettes/performance.Rmd" class="external-link"><code>vignettes/performance.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/vignettes/articles/performance.Rmd" class="external-link"><code>vignettes/articles/performance.Rmd</code></a></small>
       <div class="d-none name"><code>performance.Rmd</code></div>
     </div>
 
@@ -151,9 +151,10 @@ become prohibitively slow for larger graphs.</p>
 <span><span class="va">bng</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">bng</span></span>
 <span><span class="va">dg</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">dg</span></span>
 <span></span>
-<span><span class="va">test_node_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">test_node_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">test_node_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="va">test_node_index</span><span class="op">)</span></span>
-<span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<span></span>
+<span><span class="va">bm_parents_children</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
 <span>  caugi <span class="op">=</span> <span class="op">{</span></span>
 <span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
 <span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
@@ -176,45 +177,78 @@ become prohibitively slow for larger graphs.</p>
 <span>  <span class="op">}</span>,</span>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># igraph returns igraph object</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Some expressions had a GC in every iteration; so filtering is</span></span>
-<span><span class="co">#&gt; disabled.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 6</span></span></span>
-<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi       63.52µs  67.52µs <span style="text-decoration: underline;">13</span>806.      67.36KB     8.00</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph     513.01µs 549.15µs  <span style="text-decoration: underline;">1</span>301.     371.34KB     6.00</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn      39.8µs  42.72µs <span style="text-decoration: underline;">20</span>851.      38.38KB     8.34</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ggm         18.26ms  22.46ms    35.0     71.08MB    48.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> dagitty       2.67s    2.67s     0.374    5.09MB     0</span></span></code></pre></div>
-<p><code>bnlearn</code> is fastest here, but is only able to handle
-smaller graphs, whereas <code>caugi</code> and <code>igraph</code> can
-handle very large graph objects with almost no time increase:</p>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_parents_children</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="performance_files/figure-html/benchmark-parents-children-1.png" class="r-plt" alt="Benchmarking parents/children queries for different packages." width="480"><p class="caption">
+Benchmarking parents/children queries for different packages.
+</p>
+</div>
+<p>As you can see, <code>bnlearn</code> performs best for this
+particular example. In our next experiment, however, we will examine if
+this extends to different graph sizes and densities, by parameterizing
+our benchmark over <code>n</code> and <code>p</code>. Note that we
+adjust <code>p</code> as a function of <code>n</code> to keep the graphs
+reasonably sparse.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">large_cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/generate_graph.html">generate_graph</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">40000</span>, m <span class="op">=</span> <span class="fl">1000000</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
-<span><span class="va">large_ig</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">large_cg</span><span class="op">)</span></span>
-<span><span class="va">test_node_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="fl">40000</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">test_node_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="va">test_node_index</span><span class="op">)</span></span>
-<span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
-<span>  caugi <span class="op">=</span> <span class="op">{</span></span>
-<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">large_cg</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
-<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">large_cg</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
-<span>  <span class="op">}</span>,</span>
-<span>  igraph <span class="op">=</span> <span class="op">{</span></span>
-<span>    <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">large_ig</span>, <span class="va">test_node_name</span>, mode <span class="op">=</span> <span class="st">"in"</span><span class="op">)</span></span>
-<span>    <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">large_ig</span>, <span class="va">test_node_name</span>, mode <span class="op">=</span> <span class="st">"out"</span><span class="op">)</span></span>
-<span>  <span class="op">}</span>,</span>
-<span>  check <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
-<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi        61.6µs   65.5µs    <span style="text-decoration: underline;">14</span>901.     1008B     8.35</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph      782.1µs  821.6µs     <span style="text-decoration: underline;">1</span>200.    3.05MB    47.6</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">bm_parents_children_np</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/press.html" class="external-link">press</a></span><span class="op">(</span></span>
+<span>    n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, <span class="fl">500</span>, <span class="fl">1000</span>, <span class="fl">5000</span>, <span class="fl">10000</span><span class="op">)</span>,</span>
+<span>    p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
+<span>    <span class="op">{</span></span>
+<span>      <span class="va">p_mod</span> <span class="op">&lt;-</span> <span class="fl">10</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">/</span> <span class="va">n</span> <span class="op">*</span> <span class="va">p</span></span>
+<span>      <span class="va">graphs</span> <span class="op">&lt;-</span> <span class="fu">generate_graphs</span><span class="op">(</span><span class="va">n</span>, p <span class="op">=</span> <span class="va">p_mod</span><span class="op">)</span></span>
+<span>      <span class="va">cg</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">cg</span></span>
+<span>      <span class="va">ig</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">ig</span></span>
+<span>      <span class="va">ggmg</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">ggmg</span></span>
+<span>      <span class="va">bng</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">bng</span></span>
+<span>      <span class="va">dg</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">dg</span></span>
+<span></span>
+<span>      <span class="va">test_node_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="va">test_node_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="va">test_node_index</span><span class="op">)</span></span>
+<span></span>
+<span>      <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<span>        caugi <span class="op">=</span> <span class="op">{</span></span>
+<span>          <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/parents.html">parents</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
+<span>          <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/children.html">children</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
+<span>        <span class="op">}</span>,</span>
+<span>        igraph <span class="op">=</span> <span class="op">{</span></span>
+<span>          <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="va">test_node_name</span>, mode <span class="op">=</span> <span class="st">"in"</span><span class="op">)</span></span>
+<span>          <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/neighbors.html" class="external-link">neighbors</a></span><span class="op">(</span><span class="va">ig</span>, <span class="va">test_node_name</span>, mode <span class="op">=</span> <span class="st">"out"</span><span class="op">)</span></span>
+<span>        <span class="op">}</span>,</span>
+<span>        bnlearn <span class="op">=</span> <span class="op">{</span></span>
+<span>          <span class="fu">bnlearn</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bnlearn/man/mb.html" class="external-link">parents</a></span><span class="op">(</span><span class="va">bng</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
+<span>          <span class="fu">bnlearn</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bnlearn/man/mb.html" class="external-link">children</a></span><span class="op">(</span><span class="va">bng</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
+<span>        <span class="op">}</span>,</span>
+<span>        ggm <span class="op">=</span> <span class="op">{</span></span>
+<span>          <span class="fu">ggm</span><span class="fu">::</span><span class="fu">pa</span><span class="op">(</span><span class="va">test_node_name</span>, <span class="va">ggmg</span><span class="op">)</span></span>
+<span>          <span class="fu">ggm</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggm/man/SimpleGraphOperations.html" class="external-link">ch</a></span><span class="op">(</span><span class="va">test_node_name</span>, <span class="va">ggmg</span><span class="op">)</span></span>
+<span>        <span class="op">}</span>,</span>
+<span>        dagitty <span class="op">=</span> <span class="op">{</span></span>
+<span>          <span class="fu">dagitty</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dagitty/man/AncestralRelations.html" class="external-link">parents</a></span><span class="op">(</span><span class="va">dg</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
+<span>          <span class="fu">dagitty</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dagitty/man/AncestralRelations.html" class="external-link">children</a></span><span class="op">(</span><span class="va">dg</span>, <span class="va">test_node_name</span><span class="op">)</span></span>
+<span>        <span class="op">}</span>,</span>
+<span>        check <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># igraph returns igraph object</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">}</span>,</span>
+<span>    .quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>Next, we plot the benchmark results. As you can see,
+<code>bnlearn</code> performs worse as graph size and density increases,
+whereas <code>caugi</code> is almost unaffected by these parameters,
+outperforming all other packages when graphs get larger and denser.
+<code>dagitty</code> and <code>ggm</code> perform worst overall, quickly
+becoming infeasible for larger graphs.</p>
+<div class="figure" style="text-align: center">
+<img src="performance_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="Parameterized benchmarking of parents/children queries." width="672"><p class="caption">
+Parameterized benchmarking of parents/children queries.
+</p>
+</div>
 <p>For ancestors and descendants, we see that <code>caugi</code>
 outperforms all other packages by a several magnitudes, expect for
-<code>igraph</code>, which it still beats, but by a smaller margin::</p>
+<code>igraph</code>, which it still beats, but by a smaller margin:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">bm_ancestors_descendants</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
 <span>  caugi <span class="op">=</span> <span class="op">{</span></span>
 <span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/ancestors.html">ancestors</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"V500"</span><span class="op">)</span></span>
 <span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/descendants.html">descendants</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"V500"</span><span class="op">)</span></span>
@@ -233,23 +267,26 @@ outperforms all other packages by a several magnitudes, expect for
 <span>  <span class="op">}</span>,</span>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># dagitty returns V500 as well and igraph returns an igraph</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Some expressions had a GC in every iteration; so filtering is</span></span>
-<span><span class="co">#&gt; disabled.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 6</span></span></span>
-<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi      197.27µs 213.04µs  <span style="text-decoration: underline;">4</span>601.      65.26KB     2.00</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph     636.92µs 666.75µs  <span style="text-decoration: underline;">1</span>409.     117.85KB     4.00</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn       1.19s    1.19s     0.838    1.33GB    13.4 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> dagitty       2.61s    2.61s     0.383    5.09MB     0</span></span></code></pre></div>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_ancestors_descendants</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="performance_files/figure-html/benchmark-an-de-1.png" class="r-plt" alt="Benchmarking ancestors/descendants queries for different packages." width="480"><p class="caption">
+Benchmarking ancestors/descendants queries for different packages.
+</p>
+</div>
 </div>
 <div class="section level4">
-<h4 id="d-separation">d-separation<a class="anchor" aria-label="anchor" href="#d-separation"></a>
+<h4 id="d-separation">D-separation<a class="anchor" aria-label="anchor" href="#d-separation"></a>
 </h4>
 <p>Using the graph from before, we obtain a valid adjustment set and
 then check for d-separation.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">valid_adjustment_set</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/adjustment_set.html">adjustment_set</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"V500"</span>, <span class="st">"V681"</span>, type <span class="op">=</span> <span class="st">"backdoor"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">valid_adjustment_set</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/adjustment_set.html">adjustment_set</a></span><span class="op">(</span></span>
+<span>  <span class="va">cg</span>,</span>
+<span>  <span class="st">"V500"</span>,</span>
+<span>  <span class="st">"V681"</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"backdoor"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">valid_adjustment_set</span></span>
 <span><span class="co">#&gt;   [1] "V7"    "V15"   "V18"   "V24"   "V33"   "V34"   "V68"   "V88"   "V93"  </span></span>
 <span><span class="co">#&gt;  [10] "V121"  "V134"  "V157"  "V168"  "V197"  "V202"  "V206"  "V213"  "V232" </span></span>
@@ -264,19 +301,18 @@ then check for d-separation.</p>
 <span><span class="co">#&gt;  [91] "V912"  "V923"  "V924"  "V927"  "V943"  "V950"  "V964"  "V966"  "V973" </span></span>
 <span><span class="co">#&gt; [100] "V974"  "V989"  "V991"  "V996"  "V1000"</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">bm_dsep</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
 <span>  caugi <span class="op">=</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/d_separated.html">d_separated</a></span><span class="op">(</span><span class="va">cg</span>, <span class="st">"V500"</span>, <span class="st">"V681"</span>, <span class="va">valid_adjustment_set</span><span class="op">)</span>,</span>
 <span>  bnlearn <span class="op">=</span> <span class="fu">bnlearn</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bnlearn/man/dsep.html" class="external-link">dsep</a></span><span class="op">(</span><span class="va">bng</span>, <span class="st">"V500"</span>, <span class="st">"V681"</span>, <span class="va">valid_adjustment_set</span><span class="op">)</span>,</span>
 <span>  dagitty <span class="op">=</span> <span class="fu">dagitty</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dagitty/man/dconnected.html" class="external-link">dseparated</a></span><span class="op">(</span><span class="va">dg</span>, <span class="st">"V500"</span>, <span class="st">"V681"</span>, <span class="va">valid_adjustment_set</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Some expressions had a GC in every iteration; so filtering is</span></span>
-<span><span class="co">#&gt; disabled.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
-<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi       34.27ms  34.69ms    28.6     33.02KB     0   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bnlearn       4.18s    4.18s     0.239    3.22GB     4.31</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> dagitty       2.02s    2.02s     0.494    4.19MB     0</span></span></code></pre></div>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_dsep</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="performance_files/figure-html/benchmark-d-sep-1.png" class="r-plt" alt="Benchmarks for obtaining a valid adjustment set for d-separation." width="480"><p class="caption">
+Benchmarks for obtaining a valid adjustment set for d-separation.
+</p>
+</div>
 </div>
 <div class="section level4">
 <h4 id="subgraph-building">Subgraph (building)<a class="anchor" aria-label="anchor" href="#subgraph-building"></a>
@@ -290,7 +326,8 @@ the graph objects themselves, which shows in the subgraph benchmark:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">subgraph_nodes_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">500</span><span class="op">)</span></span>
 <span><span class="va">subgraph_nodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="va">subgraph_nodes_index</span><span class="op">)</span></span>
-<span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<span></span>
+<span><span class="va">bm_subgraph</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
 <span>  caugi <span class="op">=</span> <span class="op">{</span></span>
 <span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/subgraph.html">subgraph</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">subgraph_nodes</span><span class="op">)</span></span>
 <span>  <span class="op">}</span>,</span>
@@ -302,14 +339,13 @@ the graph objects themselves, which shows in the subgraph benchmark:</p>
 <span>  <span class="op">}</span>,</span>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Some expressions had a GC in every iteration; so filtering is</span></span>
-<span><span class="co">#&gt; disabled.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
-<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> caugi        9.85ms   9.98ms    94.8       8.1MB     1.98</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> igraph       1.87ms   1.91ms   503.       81.1KB     0   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bnlearn       1.05s    1.05s     0.956   983.6MB     2.87</span></span></code></pre></div>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_subgraph</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="performance_files/figure-html/benchmark-subgraph-1.png" class="r-plt" alt="Benchmarking subgraph extraction for different packages." width="480"><p class="caption">
+Benchmarking subgraph extraction for different packages.
+</p>
+</div>
 </div>
 </div>
 <div class="section level3">
@@ -337,25 +373,32 @@ the graph objects themselves, which shows in the subgraph benchmark:</p>
 <span><span class="co">#&gt; attached base packages:</span></span>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; other attached packages:</span></span>
+<span><span class="co">#&gt; [1] ggplot2_4.0.0</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] jsonlite_2.0.0      BiocManager_1.30.26 compiler_4.5.2     </span></span>
-<span><span class="co">#&gt;  [4] Rcpp_1.1.0          parallel_4.5.2      jquerylib_0.1.4    </span></span>
-<span><span class="co">#&gt;  [7] systemfonts_1.3.1   textshaping_1.0.4   boot_1.3-32        </span></span>
-<span><span class="co">#&gt; [10] yaml_2.3.10         fastmap_1.2.0       R6_2.6.1           </span></span>
-<span><span class="co">#&gt; [13] generics_0.1.4      curl_7.0.0          igraph_2.2.1       </span></span>
-<span><span class="co">#&gt; [16] knitr_1.50          BiocGenerics_0.56.0 htmlwidgets_1.6.4  </span></span>
-<span><span class="co">#&gt; [19] MASS_7.3-65         graph_1.88.0        tibble_3.3.0       </span></span>
-<span><span class="co">#&gt; [22] desc_1.4.3          bslib_0.9.0         pillar_1.11.1      </span></span>
-<span><span class="co">#&gt; [25] rlang_1.1.6         utf8_1.2.6          V8_8.0.1           </span></span>
-<span><span class="co">#&gt; [28] cachem_1.1.0        bnlearn_5.1         xfun_0.54          </span></span>
-<span><span class="co">#&gt; [31] fs_1.6.6            sass_0.4.10         S7_0.2.0           </span></span>
-<span><span class="co">#&gt; [34] cli_3.6.5           pkgdown_2.2.0       magrittr_2.0.4     </span></span>
-<span><span class="co">#&gt; [37] digest_0.6.37       lifecycle_1.0.4     dagitty_0.3-4      </span></span>
-<span><span class="co">#&gt; [40] caugi_0.2.1         vctrs_0.6.5         bench_1.1.4        </span></span>
-<span><span class="co">#&gt; [43] ggm_2.5.2           evaluate_1.0.5      glue_1.8.0         </span></span>
-<span><span class="co">#&gt; [46] data.table_1.17.8   ragg_1.5.0          stats4_4.5.2       </span></span>
-<span><span class="co">#&gt; [49] profmem_0.7.0       rmarkdown_2.30      tools_4.5.2        </span></span>
-<span><span class="co">#&gt; [52] pkgconfig_2.0.3     htmltools_0.5.8.1</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] tidyr_1.3.1         sass_0.4.10         generics_0.1.4     </span></span>
+<span><span class="co">#&gt;  [4] digest_0.6.37       magrittr_2.0.4      evaluate_1.0.5     </span></span>
+<span><span class="co">#&gt;  [7] grid_4.5.2          RColorBrewer_1.1-3  fastmap_1.2.0      </span></span>
+<span><span class="co">#&gt; [10] jsonlite_2.0.0      graph_1.88.0        bench_1.1.4        </span></span>
+<span><span class="co">#&gt; [13] BiocManager_1.30.26 purrr_1.2.0         dagitty_0.3-4      </span></span>
+<span><span class="co">#&gt; [16] scales_1.4.0        textshaping_1.0.4   jquerylib_0.1.4    </span></span>
+<span><span class="co">#&gt; [19] cli_3.6.5           rlang_1.1.6         ggm_2.5.2          </span></span>
+<span><span class="co">#&gt; [22] bnlearn_5.1         withr_3.0.2         cachem_1.1.0       </span></span>
+<span><span class="co">#&gt; [25] yaml_2.3.10         ggbeeswarm_0.7.2    tools_4.5.2        </span></span>
+<span><span class="co">#&gt; [28] parallel_4.5.2      dplyr_1.1.4         profmem_0.7.0      </span></span>
+<span><span class="co">#&gt; [31] boot_1.3-32         BiocGenerics_0.56.0 curl_7.0.0         </span></span>
+<span><span class="co">#&gt; [34] vctrs_0.6.5         R6_2.6.1            stats4_4.5.2       </span></span>
+<span><span class="co">#&gt; [37] lifecycle_1.0.4     fs_1.6.6            V8_8.0.1           </span></span>
+<span><span class="co">#&gt; [40] htmlwidgets_1.6.4   vipor_0.4.7         MASS_7.3-65        </span></span>
+<span><span class="co">#&gt; [43] ragg_1.5.0          beeswarm_0.4.0      pkgconfig_2.0.3    </span></span>
+<span><span class="co">#&gt; [46] desc_1.4.3          pkgdown_2.2.0       pillar_1.11.1      </span></span>
+<span><span class="co">#&gt; [49] bslib_0.9.0         gtable_0.3.6        data.table_1.17.8  </span></span>
+<span><span class="co">#&gt; [52] glue_1.8.0          Rcpp_1.1.0          systemfonts_1.3.1  </span></span>
+<span><span class="co">#&gt; [55] tidyselect_1.2.1    xfun_0.54           tibble_3.3.0       </span></span>
+<span><span class="co">#&gt; [58] knitr_1.50          farver_2.1.2        htmltools_0.5.8.1  </span></span>
+<span><span class="co">#&gt; [61] igraph_2.2.1        labeling_0.4.3      rmarkdown_2.30     </span></span>
+<span><span class="co">#&gt; [64] caugi_0.2.1         compiler_4.5.2      S7_0.2.0</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
