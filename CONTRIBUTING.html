@@ -184,15 +184,22 @@
 </ul><p>Example:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @title Get parent nodes</span></span>
-<span><span class="co">#' @description Returns all parent nodes of the specified node(s) in the graph.</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @description </span></span>
+<span><span class="co">#' Returns all parent nodes of the specified node(s) in the graph.</span></span>
+<span><span class="co">#'</span></span>
 <span><span class="co">#' @param graph A caugi graph object</span></span>
 <span><span class="co">#' @param nodes Character vector of node names</span></span>
+<span><span class="co">#'</span></span>
 <span><span class="co">#' @returns A character vector of parent node names</span></span>
+<span><span class="co">#'</span></span>
 <span><span class="co">#' @examples</span></span>
 <span><span class="co">#' cg &lt;- caugi(A %--&gt;% B, B %--&gt;% C)</span></span>
 <span><span class="co">#' parents(cg, "C")</span></span>
-<span><span class="co">#' @family query functions</span></span>
-<span><span class="co">#' @concept graph queries</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @family queries</span></span>
+<span><span class="co">#' @concept queries</span></span>
+<span><span class="co">#'</span></span>
 <span><span class="co">#' @export</span></span>
 <span><span class="va">parents</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">graph</span>, <span class="va">nodes</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># implementation</span></span>
@@ -219,7 +226,7 @@
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">/// # Returns</span></span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">/// A vector of parent node indices</span></span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="at">#[</span>extendr<span class="at">]</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> get_parents(node_ids<span class="op">:</span> <span class="dt">Vec</span><span class="op">&lt;</span><span class="dt">usize</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="dt">Vec</span><span class="op">&lt;</span><span class="dt">usize</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> parents_of_ptr(node_ids<span class="op">:</span> <span class="dt">Vec</span><span class="op">&lt;</span><span class="dt">usize</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="dt">Vec</span><span class="op">&lt;</span><span class="dt">usize</span><span class="op">&gt;</span> <span class="op">{</span></span>
 <span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>    <span class="co">// implementation</span></span>
 <span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </div>
@@ -296,11 +303,13 @@
 <li>
 <strong>Reference issues</strong>: If your PR addresses an issue, reference it in the PR description (e.g., “Fixes #123”)</li>
 <li>
-<strong>Update documentation</strong>: Include documentation updates for user-facing changes</li>
+<strong>Update documentation</strong>: Include documentation updates for user-facing changes. Also update vignettes if necessary. Inline comments are encouraged for complex logic.</li>
 <li>
 <strong>Add tests with full coverage</strong>: New features should include comprehensive tests that provide full code coverage for the added code. Non-tested code should not be submitted</li>
 <li>
 <strong>Maintain backward compatibility</strong>: Avoid breaking changes to the public API when possible</li>
+<li>
+<strong>Code coverage</strong>: Aim to maintain or improve code coverage. New functions should be fully tested. Use <code><a href="https://devtools.r-lib.org/reference/test.html" class="external-link">devtools::test_coverage()</a></code> to check coverage levels.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="code-review-process">Code Review Process<a class="anchor" aria-label="anchor" href="#code-review-process"></a></h3>
@@ -332,10 +341,14 @@
 </div>
 </div>
 <div class="section level2">
+<h2 id="code-of-conduct">Code of conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a></h2>
+<p>By participating in this project, you agree to abide by standard community guidelines. Please report any unacceptable behavior to the maintainers.</p>
+</div>
+<div class="section level2">
 <h2 id="additional-resources">Additional Resources<a class="anchor" aria-label="anchor" href="#additional-resources"></a></h2>
 <ul><li><a href="https://frederikfabriciusbjerre.github.io/caugi/">Package documentation</a></li>
-<li><a href="https://frederikfabriciusbjerre.github.io/caugi/articles/performance.html">Performance vignette</a></li>
 <li><a href="https://github.com/frederikfabriciusbjerre/caugi/issues" class="external-link">Issue tracker</a></li>
+<li><a href="https://extendr.github.io/" class="external-link">extendr documentation</a></li>
 </ul></div>
 <div class="section level2">
 <h2 id="questions">Questions?<a class="anchor" aria-label="anchor" href="#questions"></a></h2>
