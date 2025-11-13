@@ -128,15 +128,22 @@ caugi/
 Example:
 ```r
 #' @title Get parent nodes
-#' @description Returns all parent nodes of the specified node(s) in the graph.
+#'
+#' @description 
+#' Returns all parent nodes of the specified node(s) in the graph.
+#'
 #' @param graph A caugi graph object
 #' @param nodes Character vector of node names
+#'
 #' @returns A character vector of parent node names
+#'
 #' @examples
 #' cg <- caugi(A %-->% B, B %-->% C)
 #' parents(cg, "C")
-#' @family query functions
-#' @concept graph queries
+#'
+#' @family queries
+#' @concept queries
+#'
 #' @export
 parents <- function(graph, nodes) {
   # implementation
@@ -161,7 +168,7 @@ Example:
 /// # Returns
 /// A vector of parent node indices
 #[extendr]
-pub fn get_parents(node_ids: Vec<usize>) -> Vec<usize> {
+pub fn parents_of_ptr(node_ids: Vec<usize>) -> Vec<usize> {
     // implementation
 }
 ```
@@ -230,9 +237,10 @@ test_that("parents() returns correct parents", {
 - **Create focused PRs**: Each PR should address a single feature, bug fix, or improvement
 - **Write clear commit messages**: Start with a capital letter and a verb (e.g., "Fix memory leak in graph builder" or "Add support for custom edge types")
 - **Reference issues**: If your PR addresses an issue, reference it in the PR description (e.g., "Fixes #123")
-- **Update documentation**: Include documentation updates for user-facing changes
+- **Update documentation**: Include documentation updates for user-facing changes. Also update vignettes if necessary. Inline comments are encouraged for complex logic.
 - **Add tests with full coverage**: New features should include comprehensive tests that provide full code coverage for the added code. Non-tested code should not be submitted
 - **Maintain backward compatibility**: Avoid breaking changes to the public API when possible
+- **Code coverage**: Aim to maintain or improve code coverage. New functions should be fully tested. Use `devtools::test_coverage()` to check coverage levels.
 
 ### Code Review Process
 
@@ -275,11 +283,15 @@ When requesting a feature:
 - Provide examples of how the feature would be used
 - Discuss any alternative approaches you've considered
 
+## Code of conduct
+
+By participating in this project, you agree to abide by standard community guidelines. Please report any unacceptable behavior to the maintainers.
+
 ## Additional Resources
 
 - [Package documentation](https://frederikfabriciusbjerre.github.io/caugi/)
-- [Performance vignette](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.html)
 - [Issue tracker](https://github.com/frederikfabriciusbjerre/caugi/issues)
+- [extendr documentation](https://extendr.github.io/)
 
 ## Questions?
 
