@@ -141,9 +141,11 @@ for benchmarks.
 
 ## Contribution
 
-Would you like to contribute? Great! Please follow the tidyverse style
-guide for R code. Before opening a PR, run `styler::style_pkg()` for R
-and `cargo fmt` for Rust, and make sure to write tests for new features.
+Would you like to contribute? Great! Please see
+[CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on code
+style, testing, and the development workflow. Quick tips: follow the
+tidyverse style guide for R code, run `styler::style_pkg()` for R and
+`cargo fmt` for Rust before PRs, and write tests for new features.
 
 Did you find run into problems? That’s *paw-ful*! Please report an
 [issue](https://github.com/frederikfabriciusbjerre/caugi/issues).
