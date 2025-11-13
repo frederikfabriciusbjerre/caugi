@@ -112,11 +112,11 @@ bench::mark(
 #> # A tibble: 5 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi       55.55µs  62.23µs 15155.      67.36KB     8.00
-#> 2 igraph     410.74µs 436.29µs  1648.     371.34KB     6.00
-#> 3 bnlearn     34.43µs  37.87µs 24342.      38.38KB     9.74
-#> 4 ggm          19.6ms  24.33ms    33.4     71.08MB    47.2 
-#> 5 dagitty       2.77s    2.77s     0.362    5.09MB     0
+#> 1 caugi       63.52µs  67.52µs 13806.      67.36KB     8.00
+#> 2 igraph     513.01µs 549.15µs  1301.     371.34KB     6.00
+#> 3 bnlearn      39.8µs  42.72µs 20851.      38.38KB     8.34
+#> 4 ggm         18.26ms  22.46ms    35.0     71.08MB    48.6 
+#> 5 dagitty       2.67s    2.67s     0.374    5.09MB     0
 ```
 
 `bnlearn` is fastest here, but is only able to handle smaller graphs,
@@ -142,8 +142,8 @@ bench::mark(
 #> # A tibble: 2 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi        54.3µs   59.2µs    16691.     1008B     8.38
-#> 2 igraph      920.6µs  960.2µs     1034.    3.05MB    40.2
+#> 1 caugi        61.6µs   65.5µs    14901.     1008B     8.35
+#> 2 igraph      782.1µs  821.6µs     1200.    3.05MB    47.6
 ```
 
 For ancestors and descendants, we see that `caugi` outperforms all other
@@ -175,10 +175,10 @@ bench::mark(
 #> # A tibble: 4 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi      137.72µs  152.4µs  6367.      65.26KB     2.00
-#> 2 igraph     642.98µs 670.55µs  1435.     117.85KB     2.00
-#> 3 bnlearn       1.07s    1.07s     0.938    1.33GB    15.0 
-#> 4 dagitty       2.84s    2.84s     0.352    5.09MB     0
+#> 1 caugi      197.27µs 213.04µs  4601.      65.26KB     2.00
+#> 2 igraph     636.92µs 666.75µs  1409.     117.85KB     4.00
+#> 3 bnlearn       1.19s    1.19s     0.838    1.33GB    13.4 
+#> 4 dagitty       2.61s    2.61s     0.383    5.09MB     0
 ```
 
 #### d-separation
@@ -214,9 +214,9 @@ bench::mark(
 #> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi        34.5ms   34.9ms    28.6     33.02KB     0   
-#> 2 bnlearn        3.2s     3.2s     0.312    3.22GB     4.37
-#> 3 dagitty        2.2s     2.2s     0.455    4.19MB     0
+#> 1 caugi       34.27ms  34.69ms    28.6     33.02KB     0   
+#> 2 bnlearn       4.18s    4.18s     0.239    3.22GB     4.31
+#> 3 dagitty       2.02s    2.02s     0.494    4.19MB     0
 ```
 
 #### Subgraph (building)
@@ -247,9 +247,9 @@ bench::mark(
 #> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 caugi       10.55ms  10.93ms    84.5       8.1MB     0   
-#> 2 igraph       2.09ms   2.14ms   464.       81.1KB     0   
-#> 3 bnlearn       1.03s    1.03s     0.972   983.6MB     2.92
+#> 1 caugi        9.85ms   9.98ms    94.8       8.1MB     1.98
+#> 2 igraph       1.87ms   1.91ms   503.       81.1KB     0   
+#> 3 bnlearn       1.05s    1.05s     0.956   983.6MB     2.87
 ```
 
 ### Session info
