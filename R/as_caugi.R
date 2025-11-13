@@ -108,9 +108,6 @@ as_caugi <- S7::new_generic(
   }
 )
 
-
-#' @name as_caugi
-#' @export
 S7::method(
   as_caugi,
   S7::new_S3_class("igraph")
@@ -270,9 +267,6 @@ register_graphnel_s4_class <- function() {
   }
 }
 
-
-#' @name as_caugi
-#' @export
 S7::method(
   as_caugi,
   S7::new_S3_class("integer")
@@ -453,9 +447,6 @@ S7::method(
   )
 }
 
-
-#' @name as_caugi
-#' @export
 S7::method(
   as_caugi,
   S7::new_S3_class("double")
@@ -487,8 +478,6 @@ S7::method(
   )
 }
 
-#' @name as_caugi
-#' @export
 S7::method(
   as_caugi,
   S7::new_S3_class("logical")
@@ -542,8 +531,6 @@ register_matrix_s4_class <- function() {
   }
 }
 
-#' @name as_caugi
-#' @export
 S7::method(
   as_caugi,
   S7::new_S3_class("tidygraph")
@@ -569,8 +556,6 @@ S7::method(
   )
 }
 
-#' @name as_caugi
-#' @export
 S7::method(
   as_caugi,
   S7::new_S3_class("dagitty")
@@ -679,8 +664,6 @@ S7::method(
   )
 }
 
-#' @name as_caugi
-#' @export
 S7::method(
   as_caugi,
   S7::new_S3_class("bn")
