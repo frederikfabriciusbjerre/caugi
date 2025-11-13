@@ -22,20 +22,6 @@ Thank you for your interest in contributing to `caugi`! This document provides g
 - **Tidy**: Following tidyverse principles and conventions
 - **Flexible**: Supporting multiple graph types and custom edge definitions
 
-### Supported Graph Classes
-
-Currently supported:
-- `"UNKNOWN"` - Generic graphs
-- `"DAG"` - Directed Acyclic Graphs
-- `"PDAG"` - Partially Directed Acyclic Graphs
-- `"UG"` - Undirected Graphs
-
-Planned for future releases:
-- `"PAG"` - Partial Ancestral Graphs
-- `"MAG"` - Maximal Ancestral Graphs
-- `"SWIG"` - Summary Graphs with Independent Errors
-- `"ADMG"` - Acyclic Directed Mixed Graphs
-
 ### Key Features
 
 - Fast querying of causal relationships (parents, ancestors, neighbors, etc.)
@@ -51,27 +37,13 @@ Planned for future releases:
 
 To contribute to `caugi`, you'll need:
 
-1. **R** (>= 4.2)
-2. **Rust toolchain** (rustc >= 1.80.0 and Cargo)
-3. **System dependencies**: xz
-
-### Installing R Dependencies
-
-```r
-# Install devtools and related packages
-install.packages(c("devtools", "testthat", "rextendr", "styler"))
-
-# Install package dependencies
-devtools::install_deps()
-```
+1. **R** - See the DESCRIPTION file for minimum version requirements
+2. **Rust toolchain** - See the DESCRIPTION file for minimum version requirements and system dependencies
+3. **Development tools** - Install the package using `pak::pak("frederikfabriciusbjerre/caugi")` which will handle all dependencies
 
 ### Installing Rust
 
-If you don't have Rust installed, get it from [rustup.rs](https://rustup.rs/):
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
+If you don't have Rust installed, visit [rustup.rs](https://rustup.rs/) for installation instructions appropriate for your platform.
 
 ## Development Environment Setup
 
@@ -97,7 +69,7 @@ The Rust compilation happens automatically via `rextendr` when you load or build
 
 `caugi` is built as a hybrid R/Rust codebase:
 
-- **R Package**: Front-end API using S7 objects, following tidyverse principles
+- **R Package**: Front-end API using S7 objects
 - **Rust Backend**: Core graph algorithms and data structures for performance
 - **Graph Storage**: Compressed Sparse Row (CSR) format for efficient querying
 - **Lazy Building**: Graph mutations are batched in R and built in Rust on demand
@@ -143,12 +115,15 @@ caugi/
   - Functions: `snake_case`
   - S7 classes: `snake_case`
   - Internal functions: prefix with `.` (e.g., `.internal_function`)
-- **Documentation**: All exported functions must have comprehensive Roxygen2 documentation:
+- **Documentation**: All exported functions must have comprehensive Roxygen2 documentation (CRAN policy):
   - `@title` - Brief title
   - `@description` - Detailed description
   - `@param` - Parameter descriptions
-  - `@returns` - Return value description
-  - `@examples` - Working examples
+  - `@returns` - Return value description (required)
+  - `@examples` - Working examples (required)
+  - `@family` - Group related functions together
+  - `@concept` - Add conceptual keywords for help search
+  - Update `_pkgdown.yaml` to organize the function appropriately in the documentation website
 
 Example:
 ```r
@@ -160,6 +135,8 @@ Example:
 #' @examples
 #' cg <- caugi(A %-->% B, B %-->% C)
 #' parents(cg, "C")
+#' @family query functions
+#' @concept graph queries
 #' @export
 parents <- function(graph, nodes) {
   # implementation
@@ -196,9 +173,6 @@ pub fn get_parents(node_ids: Vec<usize>) -> Vec<usize> {
 ```r
 # Run all tests
 devtools::test()
-
-# Run tests for a specific file
-testthat::test_file("tests/testthat/test-queries.R")
 
 # Run package check (includes tests, examples, documentation)
 devtools::check()
@@ -245,31 +219,19 @@ test_that("parents() returns correct parents", {
    cargo fmt
    ```
 
-2. **Run tests**:
-   ```r
-   devtools::test()
-   ```
-
-3. **Check the package**:
+2. **Check the package**:
    ```r
    devtools::check()
    ```
-   Ensure there are no errors or warnings.
-
-4. **Update documentation** if you've added or modified exported functions:
-   ```r
-   devtools::document()
-   ```
-
-5. **Write tests** for new features or bug fixes.
+   Ensure there are no errors or warnings. This will run all tests and validate documentation.
 
 ### Pull Request Guidelines
 
 - **Create focused PRs**: Each PR should address a single feature, bug fix, or improvement
-- **Write clear commit messages**: Use descriptive commit messages that explain what and why
+- **Write clear commit messages**: Start with a capital letter and a verb (e.g., "Fix memory leak in graph builder" or "Add support for custom edge types")
 - **Reference issues**: If your PR addresses an issue, reference it in the PR description (e.g., "Fixes #123")
 - **Update documentation**: Include documentation updates for user-facing changes
-- **Add tests**: New features should include tests
+- **Add tests with full coverage**: New features should include comprehensive tests that provide full code coverage for the added code. Non-tested code should not be submitted
 - **Maintain backward compatibility**: Avoid breaking changes to the public API when possible
 
 ### Code Review Process
@@ -313,16 +275,11 @@ When requesting a feature:
 - Provide examples of how the feature would be used
 - Discuss any alternative approaches you've considered
 
-## Code of Conduct
-
-This project follows a standard code of conduct. Please be respectful and constructive in all interactions with other contributors and maintainers.
-
 ## Additional Resources
 
 - [Package documentation](https://frederikfabriciusbjerre.github.io/caugi/)
 - [Performance vignette](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.html)
 - [Issue tracker](https://github.com/frederikfabriciusbjerre/caugi/issues)
-- [extendr documentation](https://extendr.github.io/)
 
 ## Questions?
 
