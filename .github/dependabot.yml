@@ -5,6 +5,6 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "cargo"
-    directory: "/"
+    directory: "/src/rust/"
     schedule:
       interval: "weekly"
