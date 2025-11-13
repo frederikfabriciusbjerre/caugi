@@ -156,13 +156,16 @@ the user-facing API.
 
 ## Contribution Guidelines
 
-1.  Follow the tidyverse style guide for R code
-2.  Run `styler::style_pkg()` for R and `cargo fmt` for Rust before PRs
-3.  Write tests for new features
-4.  Update documentation (Roxygen2 for R)
-5.  Ensure
-    [`devtools::check()`](https://devtools.r-lib.org/reference/check.html)
-    passes without errors or warnings
+For detailed contribution guidelines, see
+[CONTRIBUTING.md](https://frederikfabriciusbjerre.github.io/CONTRIBUTING.md)
+in the repository root.
+
+Quick reference: 1. Follow the tidyverse style guide for R code 2. Run
+`styler::style_pkg()` for R and `cargo fmt` for Rust before PRs 3. Write
+tests for new features 4. Update documentation (Roxygen2 for R) 5.
+Ensure
+[`devtools::check()`](https://devtools.r-lib.org/reference/check.html)
+passes without errors or warnings
 
 ## Common Patterns
 
