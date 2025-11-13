@@ -118,6 +118,9 @@ caugi/
 
 ## Contribution Guidelines
 
+For detailed contribution guidelines, see [CONTRIBUTING.md](/CONTRIBUTING.md) in the repository root.
+
+Quick reference:
 1. Follow the tidyverse style guide for R code
 2. Run `styler::style_pkg()` for R and `cargo fmt` for Rust before PRs
 3. Write tests for new features
