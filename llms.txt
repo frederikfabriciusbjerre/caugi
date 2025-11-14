@@ -76,15 +76,10 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#>      name
-#>    <char>
-#> 1:      A
-#> 2:      B
-#> 3:      C
-#>      from   edge     to
-#>    <char> <char> <char>
-#> 1:      A    -->      B
-#> 2:      B    <--      C
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x555ab03926a0>
+#>   graph_class: DAG
+#>   nodes: A, B, C
+#>   edges: A-->B, B<--C
 
 # reset the registry to default with original edges
 reset_caugi_registry()
