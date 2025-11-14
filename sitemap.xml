@@ -28,6 +28,7 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/children.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/d_separated.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/descendants.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-caugi_fit_on_line.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-cg_state.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-collect_edges_nodes.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/dot-combine_plus.html</loc></url>
@@ -72,10 +73,12 @@
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_edge_symmetric.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_empty_caugi.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_pdag.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_ug.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/is_valid_backdoor.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/length.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/markov_blanket.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/moralize.html</loc></url>
+<url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/mutate_caugi.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.html</loc></url>
 <url><loc>https://frederikfabriciusbjerre.github.io/caugi/reference/parents.html</loc></url>

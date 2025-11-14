@@ -316,7 +316,7 @@ sessionInfo()
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyr_1.3.1         sass_0.4.10         generics_0.1.4     
-#>  [4] digest_0.6.37       magrittr_2.0.4      evaluate_1.0.5     
+#>  [4] digest_0.6.38       magrittr_2.0.4      evaluate_1.0.5     
 #>  [7] grid_4.5.2          RColorBrewer_1.1-3  fastmap_1.2.0      
 #> [10] jsonlite_2.0.0      graph_1.88.0        bench_1.1.4        
 #> [13] BiocManager_1.30.26 purrr_1.2.0         dagitty_0.3-4      

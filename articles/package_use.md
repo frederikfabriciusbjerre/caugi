@@ -107,14 +107,10 @@ Let’s try it out!
 ``` r
 cg <- correlation_implies_causation(df)
 cg
-#>      name
-#>    <char>
-#> 1:     V1
-#> 2:     V2
-#> 3:     V3
-#>      from   edge     to
-#>    <char> <char> <char>
-#> 1:     V1    -->     V2
+#> <caugi object; 3 nodes, 1 edges; simple: TRUE; built: FALSE; ptr=NULL>
+#>   graph_class: UNKNOWN
+#>   nodes: V1, V2, V3
+#>   edges: V1-->V2
 ```
 
 ## Something is up!
@@ -173,9 +169,6 @@ algorithm, as that could sometimes cause your function to throw an
 error. You would rather have it return a graph in any case, but if it
 *is* a DAG, then we return a DAG.
 
-This is not ideal in `caugi`. Because of the way `caugi` works, this is
-a bit slower, but we can still do it!
-
 ``` r
 #' @title Correlation implies causation!
 #'
@@ -198,16 +191,7 @@ correlation_implies_causation <- function(df) {
       }
     }
   }
-  it_is <- is_dag(cg) # this builds, since it is a query
-  if (it_is) {
-    cg <- caugi::caugi(
-      from = caugi::edges(cg)$from,
-      edge = caugi::edges(cg)$edge,
-      to = caugi::edges(cg)$to,
-      nodes = caugi::nodes(cg)$name,
-      class = "DAG"
-    )
-  }
+  if (caugi::is_dag(cg)) cg <- caugi::mutate_caugi(cg, class = "DAG")
   return(cg)
 }
 ```
@@ -218,14 +202,10 @@ Now, when you call `correlation_implies_causation(df)`, it will return a
 ``` r
 cg <- correlation_implies_causation(df)
 cg
-#>      name
-#>    <char>
-#> 1:     V1
-#> 2:     V2
-#> 3:     V3
-#>      from   edge     to
-#>    <char> <char> <char>
-#> 1:     V1    -->     V2
+#> <caugi object; 3 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x560214308640>
+#>   graph_class: DAG
+#>   nodes: V1, V2, V3
+#>   edges: V1-->V2
 cg@graph_class
 #> [1] "DAG"
 ```

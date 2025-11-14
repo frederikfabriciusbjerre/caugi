@@ -1,13 +1,11 @@
-# Get edges of a `caugi`.
+# Is the `caugi` graph an UG?
 
-Get edges of a `caugi`.
+Checks if the given `caugi` graph is an undirected graph (UG).
 
 ## Usage
 
 ``` r
-edges(cg)
-
-E(cg)
+is_ug(cg, force_check = FALSE)
 ```
 
 ## Arguments
@@ -16,9 +14,15 @@ E(cg)
 
   A `caugi` object.
 
+- force_check:
+
+  Logical; if `TRUE`, the function will test if the graph is an UG, if
+  `FALSE` (default), it will look at the graph class and match it, if
+  possible.
+
 ## Value
 
-A `data.table` with columns `from`, `edge`, and `to`.
+A logical value indicating whether the graph is an UG.
 
 ## See also
 
@@ -27,6 +31,7 @@ Other queries:
 [`children()`](https://frederikfabriciusbjerre.github.io/caugi/reference/children.md),
 [`descendants()`](https://frederikfabriciusbjerre.github.io/caugi/reference/descendants.md),
 [`edge_types()`](https://frederikfabriciusbjerre.github.io/caugi/reference/edge_types.md),
+[`edges()`](https://frederikfabriciusbjerre.github.io/caugi/reference/edges.md),
 [`exogenous()`](https://frederikfabriciusbjerre.github.io/caugi/reference/exogenous.md),
 [`is_acyclic()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_acyclic.md),
 [`is_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_caugi.md),
@@ -34,7 +39,6 @@ Other queries:
 [`is_dag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_dag.md),
 [`is_empty_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_empty_caugi.md),
 [`is_pdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_pdag.md),
-[`is_ug()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_ug.md),
 [`markov_blanket()`](https://frederikfabriciusbjerre.github.io/caugi/reference/markov_blanket.md),
 [`neighbors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md),
 [`nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.md),
@@ -45,15 +49,16 @@ Other queries:
 ## Examples
 
 ``` r
-cg <- caugi(
+cg_ug_class <- caugi(
+  A %---% B,
+  class = "UG"
+)
+is_ug(cg_ug_class) # TRUE
+#> [1] TRUE
+cg_not_ug <- caugi(
   A %-->% B,
-  B %-->% C,
-  D,
   class = "DAG"
 )
-edges(cg) # returns the data.table with columns from, edge, to
-#>      from   edge     to
-#>    <char> <char> <char>
-#> 1:      A    -->      B
-#> 2:      B    -->      C
+is_ug(cg_not_ug) # FALSE
+#> [1] FALSE
 ```

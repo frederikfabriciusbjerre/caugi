@@ -44,6 +44,7 @@ Other queries:
 [`is_dag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_dag.md),
 [`is_empty_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_empty_caugi.md),
 [`is_pdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_pdag.md),
+[`is_ug()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_ug.md),
 [`neighbors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md),
 [`nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.md),
 [`parents()`](https://frederikfabriciusbjerre.github.io/caugi/reference/parents.md),

@@ -32,6 +32,7 @@ Other queries:
 [`is_cpdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_cpdag.md),
 [`is_dag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_dag.md),
 [`is_pdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_pdag.md),
+[`is_ug()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_ug.md),
 [`markov_blanket()`](https://frederikfabriciusbjerre.github.io/caugi/reference/markov_blanket.md),
 [`neighbors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md),
 [`nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.md),

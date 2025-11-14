@@ -52,6 +52,18 @@
 <dd><p>A <code>caugi</code> object.</p></dd>
 
 
+<dt id="arg-max-nodes">max_nodes<a class="anchor" aria-label="anchor" href="#arg-max-nodes"></a></dt>
+<dd><p>Optional numeric; maximum number of node names to consider.
+If <code>NULL</code>, the method automatically prints as many as fit on one console
+line (plus a separate truncation line if needed).</p></dd>
+
+
+<dt id="arg-max-edges">max_edges<a class="anchor" aria-label="anchor" href="#arg-max-edges"></a></dt>
+<dd><p>Optional numeric; maximum number of edges to consider.
+If <code>NULL</code>, the method automatically prints as many edges as fit on two
+console lines (plus a separate truncation line if needed).</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Not used.</p></dd>
 
@@ -68,23 +80,12 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>,</span></span>
-<span class="r-in"><span>  nodes <span class="op">=</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>  class <span class="op">=</span> <span class="st">"DAG"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">print</span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;char&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:      A</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:      B</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3:      C</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4:      D</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5:      E</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      from   edge     to</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;char&gt; &lt;char&gt; &lt;char&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:      A    --&gt;      B</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:      A    --&gt;      C</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x55ee0ffc30f0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: DAG</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   edges: A--&gt;B</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

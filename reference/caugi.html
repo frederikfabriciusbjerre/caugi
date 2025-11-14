@@ -81,6 +81,7 @@ infix operators. Nodes can be specified as symbols, strings, or numbers.</p>
 <span>  edge <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  to <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  nodes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  edges_df <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  simple <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  build <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"UNKNOWN"</span>, <span class="st">"DAG"</span>, <span class="st">"PDAG"</span>, <span class="st">"UG"</span><span class="op">)</span>,</span>
@@ -119,6 +120,13 @@ Optional; mutually exclusive with <code>...</code>.</p></dd>
 An optional, but recommended, option is to provide all node names in the
 graph, including those that appear in edges. If <code>nodes</code> is provided, the
 order of nodes in the graph will follow the order in <code>nodes</code>.</p></dd>
+
+
+<dt id="arg-edges-df">edges_df<a class="anchor" aria-label="anchor" href="#arg-edges-df"></a></dt>
+<dd><p>Optional data.frame or data.table with columns
+<code>from</code>, <code>edge</code>, and <code>to</code> to specify edges. Mutually exclusive with <code>...</code>
+and <code>from</code>, <code>edge</code>, <code>to</code>. Can be used to create graphs using <code>edges(cg)</code>
+from another <code>caugi</code> object, <code>cg</code>.</p></dd>
 
 
 <dt id="arg-simple">simple<a class="anchor" aria-label="anchor" href="#arg-simple"></a></dt>

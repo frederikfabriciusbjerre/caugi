@@ -22,18 +22,10 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#>      name
-#>    <char>
-#> 1:      A
-#> 2:      B
-#> 3:      C
-#> 4:      D
-#>      from   edge     to
-#>    <char> <char> <char>
-#> 1:      A    -->      B
-#> 2:      B    -->      C
-#> 3:      B    -->      D
-#> 4:      A    -->      C
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x55a5f35de8a0>
+#>   graph_class: DAG
+#>   nodes: A, B, C, D
+#>   edges: A-->B, B-->C, B-->D, A-->C
 ```
 
 You might scratch your head a bit, when looking at the call above. To
@@ -49,7 +41,7 @@ other *properties*. Let’s check the other properties.
 
 ``` r
 cg@ptr
-#> <pointer: 0x55f23f626a60>
+#> <pointer: 0x55a5f35de8a0>
 ```
 
 This is the pointer to the Rust object that `caugi` utilizes for
@@ -118,17 +110,10 @@ cg_modified <- cg |>
   remove_edges(A %-->% B, B %-->% C + D) |>
   add_edges(B %-->% A, D %-->% C)
 cg_modified
-#>      name
-#>    <char>
-#> 1:      A
-#> 2:      B
-#> 3:      C
-#> 4:      D
-#>      from   edge     to
-#>    <char> <char> <char>
-#> 1:      A    -->      C
-#> 2:      B    -->      A
-#> 3:      D    -->      C
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; built: FALSE; ptr=NULL>
+#>   graph_class: DAG
+#>   nodes: A, B, C, D
+#>   edges: A-->C, B-->A, D-->C
 ```
 
 Would you like to add nodes? Then use
@@ -193,7 +178,7 @@ Rust backend uses zero-based indices.
 
 ``` r
 cg@.state
-#> <environment: 0x55f23fd894a8>
+#> <environment: 0x55a5f3d04588>
 ```
 
 This is the internal state of the `caugi` graph object. It is used to

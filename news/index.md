@@ -1,10 +1,23 @@
 # Changelog
 
+## caugi 0.3.0
+
+- Add `mutate_caugi` function that allows conversion from one graph type
+  to another.
+- Add custom printing method.
+- Add optional `edges_df` argument to `caugi` for easier construction
+  from existing data frames containing the columns `from`, `edge`, and
+  `to`.
+- Update *How to use `caugi` in a package* vignette to use new
+  conversion functionality.
+- Add `CONTRIBUTING.md` to github.
+
 ## caugi 0.2.1
 
 - Update function documentation to make package CRAN ready.
-- Update performance vignette.
+- Update performance vignette and change it to article.
 - Add Michael Sachs and Johan Larsson to Authors in DESCRIPTION.
+- Patch S4 class reading for `as_caugi`.
 
 ## caugi 0.2.0
 

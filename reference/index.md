@@ -70,6 +70,11 @@
 
   Is the `caugi` graph a PDAG?
 
+- [`is_ug()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_ug.md)
+  :
+
+  Is the `caugi` graph an UG?
+
 - [`markov_blanket()`](https://frederikfabriciusbjerre.github.io/caugi/reference/markov_blanket.md)
   :
 
@@ -187,5 +192,11 @@
 
 - [`moralize()`](https://frederikfabriciusbjerre.github.io/caugi/reference/moralize.md)
   : Moralize a DAG
+
+- [`mutate_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/mutate_caugi.md)
+  :
+
+  Mutate `caugi` class
+
 - [`skeleton()`](https://frederikfabriciusbjerre.github.io/caugi/reference/skeleton.md)
   : Get the skeleton of a graph

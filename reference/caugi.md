@@ -29,6 +29,7 @@ caugi(
   edge = NULL,
   to = NULL,
   nodes = NULL,
+  edges_df = NULL,
   simple = TRUE,
   build = TRUE,
   class = c("UNKNOWN", "DAG", "PDAG", "UG"),
@@ -66,6 +67,13 @@ caugi(
   optional, but recommended, option is to provide all node names in the
   graph, including those that appear in edges. If `nodes` is provided,
   the order of nodes in the graph will follow the order in `nodes`.
+
+- edges_df:
+
+  Optional data.frame or data.table with columns `from`, `edge`, and
+  `to` to specify edges. Mutually exclusive with `...` and `from`,
+  `edge`, `to`. Can be used to create graphs using `edges(cg)` from
+  another `caugi` object, `cg`.
 
 - simple:
 

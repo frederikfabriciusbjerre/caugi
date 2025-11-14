@@ -8,6 +8,18 @@ Print a `caugi`
 
   A `caugi` object.
 
+- max_nodes:
+
+  Optional numeric; maximum number of node names to consider. If `NULL`,
+  the method automatically prints as many as fit on one console line
+  (plus a separate truncation line if needed).
+
+- max_edges:
+
+  Optional numeric; maximum number of edges to consider. If `NULL`, the
+  method automatically prints as many edges as fit on two console lines
+  (plus a separate truncation line if needed).
+
 - ...:
 
   Not used.
@@ -24,21 +36,10 @@ Other caugi methods:
 ## Examples
 
 ``` r
-cg <- caugi(
-  A %-->% B + C,
-  nodes = LETTERS[1:5],
-  class = "DAG"
-)
+cg <- caugi(A %-->% B, class = "DAG")
 print(cg)
-#>      name
-#>    <char>
-#> 1:      A
-#> 2:      B
-#> 3:      C
-#> 4:      D
-#> 5:      E
-#>      from   edge     to
-#>    <char> <char> <char>
-#> 1:      A    -->      B
-#> 2:      A    -->      C
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x55ee0ffc30f0>
+#>   graph_class: DAG
+#>   nodes: A, B
+#>   edges: A-->B
 ```
