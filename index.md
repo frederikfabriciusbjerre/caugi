@@ -148,4 +148,4 @@ workflow. Quick tips: follow the tidyverse style guide for R code, run
 write tests for new features.
 
 Did you find run into problems? That’s *paw-ful*! Please report an
-[issue](https://github.com/frederikfabriciusbjerre/caugi/issues).
+[issue](https://github.com/frederikfabriciusbjerre/caugi/issues)!
