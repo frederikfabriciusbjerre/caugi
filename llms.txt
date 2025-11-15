@@ -76,7 +76,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x555ab03926a0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x55d2198239b0>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -136,7 +136,7 @@ for benchmarks.
 ## Contribution
 
 Would you like to contribute? Great! Please see
-[CONTRIBUTING.md](https://frederikfabriciusbjerre.github.io/caugi/CONTRIBUTING.md)
+[CONTRIBUTING.md](https://frederikfabriciusbjerre.github.io/caugi/CONTRIBUTING.html)
 for detailed guidelines on code style, testing, and the development
 workflow. Quick tips: follow the tidyverse style guide for R code, run
 `styler::style_pkg()` for R and `cargo fmt` for Rust before PRs, and
