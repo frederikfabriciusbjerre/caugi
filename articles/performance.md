@@ -180,7 +180,7 @@ queries.](performance_files/figure-html/unnamed-chunk-3-1.png)
 Parameterized benchmarking of parents/children queries.
 
 For ancestors and descendants, we see that `caugi` outperforms all other
-packages by a several magnitudes, expect for `igraph`, which it still
+packages by a several magnitudes, except for `igraph`, which it still
 beats, but by a smaller margin:
 
 ``` r
@@ -319,7 +319,7 @@ sessionInfo()
 #>  [4] digest_0.6.38       magrittr_2.0.4      evaluate_1.0.5     
 #>  [7] grid_4.5.2          RColorBrewer_1.1-3  fastmap_1.2.0      
 #> [10] jsonlite_2.0.0      graph_1.88.0        bench_1.1.4        
-#> [13] BiocManager_1.30.26 purrr_1.2.0         dagitty_0.3-4      
+#> [13] BiocManager_1.30.27 purrr_1.2.0         dagitty_0.3-4      
 #> [16] scales_1.4.0        textshaping_1.0.4   jquerylib_0.1.4    
 #> [19] cli_3.6.5           rlang_1.1.6         ggm_2.5.2          
 #> [22] bnlearn_5.1         withr_3.0.2         cachem_1.1.0       
@@ -336,5 +336,5 @@ sessionInfo()
 #> [55] tidyselect_1.2.1    xfun_0.54           tibble_3.3.0       
 #> [58] knitr_1.50          farver_2.1.2        htmltools_0.5.8.1  
 #> [61] igraph_2.2.1        labeling_0.4.3      rmarkdown_2.30     
-#> [64] caugi_0.3.0         compiler_4.5.2      S7_0.2.0
+#> [64] caugi_0.3.0         compiler_4.5.2      S7_0.2.1
 ```

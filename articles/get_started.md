@@ -22,7 +22,7 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x55a840d79000>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x558eaf0b2a80>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, B-->C, B-->D, A-->C
@@ -30,7 +30,7 @@ cg
 
 You might scratch your head a bit, when looking at the call above. To
 clarify, `A %-->% B` creates the edge `-->` from `A` to `B`. The syntax
-`B %-->% C + D` is equivalent to `B %--> C` *and* `B %-->% D`. Notice
+`B %-->% C + D` is equivalent to `B %-->% C` *and* `B %-->% D`. Notice
 that the graph prints two `tibbles`. The first is equivalent to
 `cg@nodes` and the second `cg@edges`. Besides that, the `caugi` holds
 other *properties*. Let’s check the other properties.
@@ -41,7 +41,7 @@ other *properties*. Let’s check the other properties.
 
 ``` r
 cg@ptr
-#> <pointer: 0x55a840d79000>
+#> <pointer: 0x558eaf0b2a80>
 ```
 
 This is the pointer to the Rust object that `caugi` utilizes for
@@ -178,7 +178,7 @@ Rust backend uses zero-based indices.
 
 ``` r
 cg@.state
-#> <environment: 0x55a8414e75f8>
+#> <environment: 0x558eb02369e0>
 ```
 
 This is the internal state of the `caugi` graph object. It is used to
