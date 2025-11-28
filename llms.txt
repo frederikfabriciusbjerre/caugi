@@ -25,6 +25,11 @@ or directly from CRAN with:
 install.packages("caugi")
 ```
 
+If you don’t have Rust installed, please install `rustc >= 1.80.0` or
+higher from: <https://www.rust-lang.org/tools/install>
+
+Alternatively, you may install Rust from your OS package manager.
+
 ## The basic object: `caugi`
 
 A `caugi` graph object is the bread and butter of the `caugi` package.
@@ -76,7 +81,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x55d2198239b0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x563d52531e30>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
