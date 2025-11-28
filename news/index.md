@@ -1,5 +1,10 @@
 # Changelog
 
+## caugi 0.3.1
+
+- Remove the use of `lockBinding` and `unlockBinding` in the package to
+  silence R CMD check notes.
+
 ## caugi 0.3.0
 
 - Add `mutate_caugi` function that allows conversion from one graph type
