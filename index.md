@@ -25,8 +25,11 @@ or directly from CRAN with:
 install.packages("caugi")
 ```
 
-If you don’t have Rust installed, please install `rustc >= 1.80.0` or
-higher from: <https://rust-lang.org/tools/install/>
+### Installing Rust
+
+Rust is required for `caugi` to work. If you don’t have Rust installed,
+visit [rustup.rs](https://rustup.rs/) for installation instructions
+appropriate for your platform.
 
 Alternatively, you may install Rust from your OS package manager.
 
@@ -81,7 +84,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x5599fd9d62a0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x559b7c1c2410>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -131,17 +134,16 @@ time.
 ## Why?
 
 It’s fast, *dawg* 🐶 See the [vignette on
-performance](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.html)
-for benchmarks.
+performance](https://caugi.org/articles/performance.html) for
+benchmarks.
 
 ## Contribution
 
-Would you like to contribute? Great! Please see
-[CONTRIBUTING.md](https://frederikfabriciusbjerre.github.io/caugi/CONTRIBUTING.html)
-for detailed guidelines on code style, testing, and the development
-workflow. Quick tips: follow the tidyverse style guide for R code, run
-`styler::style_pkg()` for R and `cargo fmt` for Rust before PRs, and
-write tests for new features.
+Would you like to contribute? Great! Please see [Contributing to
+caugi](https://caugi.org/CONTRIBUTING.html) for detailed guidelines on
+code style, testing, and the development workflow. Quick tips: follow
+the tidyverse style guide for R code, run `styler::style_pkg()` for R
+and `cargo fmt` for Rust before PRs, and write tests for new features.
 
 Did you find run into problems? That’s *paw-ful*! Please report an
 [issue](https://github.com/frederikfabriciusbjerre/caugi/issues)!

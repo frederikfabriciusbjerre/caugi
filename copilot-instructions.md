@@ -199,9 +199,7 @@ test_that("feature description", {
 
 ## Resources
 
-- [Package
-  documentation](https://frederikfabriciusbjerre.github.io/caugi/)
-- [Performance
-  vignette](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.html)
+- [Package documentation](https://caugi.org/)
+- [Performance vignette](https://caugi.org/articles/performance.html)
 - [Issue
   tracker](https://github.com/frederikfabriciusbjerre/caugi/issues)

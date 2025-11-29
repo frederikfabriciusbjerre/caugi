@@ -80,8 +80,12 @@
 <p>or directly from CRAN with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"caugi"</span><span class="op">)</span></span></code></pre></div>
-<p>If you don’t have Rust installed, please install <code>rustc &gt;= 1.80.0</code> or higher from: <a href="https://rust-lang.org/tools/install/" class="external-link uri">https://rust-lang.org/tools/install/</a></p>
+<div class="section level3">
+<h3 id="installing-rust">Installing Rust<a class="anchor" aria-label="anchor" href="#installing-rust"></a>
+</h3>
+<p>Rust is required for <code>caugi</code> to work. If you don’t have Rust installed, visit <a href="https://rustup.rs/" class="external-link">rustup.rs</a> for installation instructions appropriate for your platform.</p>
 <p>Alternatively, you may install Rust from your OS package manager.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="the-basic-object-caugi">The basic object: <code>caugi</code>
@@ -89,7 +93,7 @@
 </h2>
 <p>A <code>caugi</code> graph object is the bread and butter of the <code>caugi</code> package. It is easy to create, query, and modify.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://frederikfabriciusbjerre.github.io/caugi/" class="external-link">caugi</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://caugi.org/">caugi</a></span><span class="op">)</span></span></code></pre></div>
 <p>You can create simple graphs as well as a number of predefined graph classes. Currently, we support <code>"UNKNOWN"</code>, <code>"DAG"</code>, <code>"PDAG"</code>, and <code>"UG"</code>. We plan on supporting several other causal graph types in future releases, such as <code>"PAG"</code>, <code>"MAG"</code>, <code>"SWIG"</code>, and <code>"ADMG"</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># a tiny DAG</span></span>
@@ -128,7 +132,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op">%&lt;--%</span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x5599fd9d62a0&gt;</span></span>
+<span><span class="co">#&gt; &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x559b7c1c2410&gt;</span></span>
 <span><span class="co">#&gt;   graph_class: DAG</span></span>
 <span><span class="co">#&gt;   nodes: A, B, C</span></span>
 <span><span class="co">#&gt;   edges: A--&gt;B, B&lt;--C</span></span>
@@ -158,12 +162,12 @@
 <div class="section level2">
 <h2 id="why">Why?<a class="anchor" aria-label="anchor" href="#why"></a>
 </h2>
-<p>It’s fast, <em>dawg</em> 🐶 See the <a href="https://frederikfabriciusbjerre.github.io/caugi/articles/performance.html" class="external-link">vignette on performance</a> for benchmarks.</p>
+<p>It’s fast, <em>dawg</em> 🐶 See the <a href="https://caugi.org/articles/performance.html">vignette on performance</a> for benchmarks.</p>
 </div>
 <div class="section level2">
 <h2 id="contribution">Contribution<a class="anchor" aria-label="anchor" href="#contribution"></a>
 </h2>
-<p>Would you like to contribute? Great! Please see <a href="https://frederikfabriciusbjerre.github.io/caugi/CONTRIBUTING.html" class="external-link">CONTRIBUTING.md</a> for detailed guidelines on code style, testing, and the development workflow. Quick tips: follow the tidyverse style guide for R code, run <code>styler::style_pkg()</code> for R and <code>cargo fmt</code> for Rust before PRs, and write tests for new features.</p>
+<p>Would you like to contribute? Great! Please see <a href="https://caugi.org/CONTRIBUTING.html">Contributing to caugi</a> for detailed guidelines on code style, testing, and the development workflow. Quick tips: follow the tidyverse style guide for R code, run <code>styler::style_pkg()</code> for R and <code>cargo fmt</code> for Rust before PRs, and write tests for new features.</p>
 <p>Did you find run into problems? That’s <em>paw-ful</em>! Please report an <a href="https://github.com/frederikfabriciusbjerre/caugi/issues" class="external-link">issue</a>!</p>
 </div>
 </div>
