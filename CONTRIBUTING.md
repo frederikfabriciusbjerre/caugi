@@ -289,10 +289,11 @@ test_that("parents() returns correct parents", {
 
 ### Code Review Process
 
-All contributions go through code review. Be prepared to: - Respond to
-feedback and make requested changes - Discuss design decisions and
-implementation approaches - Iterate on your implementation based on
-maintainer guidance
+All contributions go through code review. Be prepared to:
+
+- Respond to feedback and make requested changes
+- Discuss design decisions and implementation approaches
+- Iterate on your implementation based on maintainer guidance
 
 ## Reporting Issues
 
@@ -302,9 +303,13 @@ GitHub.
 
 ### Bug Reports
 
-When reporting a bug, please include: - A clear, descriptive title - A
-minimal reproducible example - Your R version and sessionInfo() - Your
-operating system - Expected vs. actual behavior
+When reporting a bug, please include:
+
+- A clear, descriptive title
+- A minimal reproducible example
+- Your R version and sessionInfo()
+- Your operating system
+- Expected vs. actual behavior
 
 Example:
 
@@ -323,9 +328,11 @@ sessionInfo()
 
 ### Feature Requests
 
-When requesting a feature: - Describe the use case and motivation -
-Provide examples of how the feature would be used - Discuss any
-alternative approaches you’ve considered
+When requesting a feature:
+
+- Describe the use case and motivation
+- Provide examples of how the feature would be used
+- Discuss any alternative approaches you’ve considered
 
 ## Code of conduct
 
@@ -342,7 +349,10 @@ maintainers.
 
 ## Questions?
 
-If you have questions about contributing, feel free to: - Open an issue
-for discussion - Ask in your pull request - Contact the maintainers
+If you have questions about contributing, feel free to:
+
+- Open an issue for discussion
+- Ask in your pull request
+- Contact the maintainers
 
 Thank you for contributing to `caugi`! 🐶
