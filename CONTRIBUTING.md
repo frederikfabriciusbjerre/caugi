@@ -244,8 +244,7 @@ test_that("parents() returns correct parents", {
 
 1.  **Lazy building**: Remember that graph mutations are batched. Test
     both before and after explicit
-    [`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md)
-    calls if relevant.
+    [`build()`](https://caugi.org/reference/build.md) calls if relevant.
 2.  **Graph class invariants**: When testing graph classes, ensure that
     operations maintain the class invariants (e.g., DAGs remain
     acyclic).

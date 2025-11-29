@@ -46,7 +46,7 @@ edges.
 ## See also
 
 Other registry:
-[`register_caugi_edge()`](https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.md)
+[`register_caugi_edge()`](https://caugi.org/reference/register_caugi_edge.md)
 
 ## Examples
 

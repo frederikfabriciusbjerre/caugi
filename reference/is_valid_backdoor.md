@@ -41,9 +41,9 @@ Logical value indicating if backdoor is valid or not.
 ## See also
 
 Other adjustment:
-[`adjustment_set()`](https://frederikfabriciusbjerre.github.io/caugi/reference/adjustment_set.md),
-[`all_backdoor_sets()`](https://frederikfabriciusbjerre.github.io/caugi/reference/all_backdoor_sets.md),
-[`d_separated()`](https://frederikfabriciusbjerre.github.io/caugi/reference/d_separated.md)
+[`adjustment_set()`](https://caugi.org/reference/adjustment_set.md),
+[`all_backdoor_sets()`](https://caugi.org/reference/all_backdoor_sets.md),
+[`d_separated()`](https://caugi.org/reference/d_separated.md)
 
 ## Examples
 

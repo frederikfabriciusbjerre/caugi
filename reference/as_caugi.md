@@ -37,7 +37,7 @@ as_caugi(
 
   logical. If `TRUE` (default) build the graph now, otherwise build
   lazily on first query or when using
-  [`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md).
+  [`build()`](https://caugi.org/reference/build.md).
 
 - collapse:
 
@@ -75,10 +75,10 @@ integer codes are as follows (as used in `pcalg`):
 ## See also
 
 Other conversions:
-[`as_adjacency()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_adjacency.md),
-[`as_bnlearn()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_bnlearn.md),
-[`as_dagitty()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_dagitty.md),
-[`as_igraph()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_igraph.md)
+[`as_adjacency()`](https://caugi.org/reference/as_adjacency.md),
+[`as_bnlearn()`](https://caugi.org/reference/as_bnlearn.md),
+[`as_dagitty()`](https://caugi.org/reference/as_dagitty.md),
+[`as_igraph()`](https://caugi.org/reference/as_igraph.md)
 
 ## Examples
 

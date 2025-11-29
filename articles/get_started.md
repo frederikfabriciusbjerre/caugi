@@ -11,9 +11,9 @@ query it, modify it, and then compare it to other `caugi`s.
 ## The `caugi` object
 
 You can create a `caugi` graph object using the
-[`caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi.md)
-function along with infix operators to define edges. Let’s create a
-directed acyclic graph (DAG) with 5 nodes and 5 edges.
+[`caugi()`](https://caugi.org/reference/caugi.md) function along with
+infix operators to define edges. Let’s create a directed acyclic graph
+(DAG) with 5 nodes and 5 edges.
 
 ``` r
 cg <- caugi(
@@ -22,7 +22,7 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x555a16c5e890>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x55f7f5e46f40>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, B-->C, B-->D, A-->C
@@ -41,7 +41,7 @@ other *properties*. Let’s check the other properties.
 
 ``` r
 cg@ptr
-#> <pointer: 0x555a16c5e890>
+#> <pointer: 0x55f7f5e46f40>
 ```
 
 This is the pointer to the Rust object that `caugi` utilizes for
@@ -117,7 +117,7 @@ cg_modified
 ```
 
 Would you like to add nodes? Then use
-[`add_nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_verbs.md).
+[`add_nodes()`](https://caugi.org/reference/caugi_verbs.md).
 
 ## Graph metrics
 
@@ -140,11 +140,11 @@ the difference between the two graphs – both structurally and
 interventionally.
 
 For further reading, we recommend the vignettes
-[`vignette("package_use")`](https://frederikfabriciusbjerre.github.io/caugi/articles/package_use.md)
+[`vignette("package_use")`](https://caugi.org/articles/package_use.md)
 and `vignette("performance")` to see how to use `caugi` in your own
 packages, and to see how `caugi` performs compared to other graph
 packages in R. For the interested reader, we also recommend
-[`vignette("motivation")`](https://frederikfabriciusbjerre.github.io/caugi/articles/motivation.md),
+[`vignette("motivation")`](https://caugi.org/articles/motivation.md),
 which goes deeper into the motivation behind `caugi` and what we aspire
 to do with `caugi`.
 
@@ -178,7 +178,7 @@ Rust backend uses zero-based indices.
 
 ``` r
 cg@.state
-#> <environment: 0x555a172fc9e8>
+#> <environment: 0x55f7f6f51268>
 ```
 
 This is the internal state of the `caugi` graph object. It is used to

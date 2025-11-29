@@ -36,9 +36,8 @@ A numeric representing the AID between the two graphs, if
 
 ## See also
 
-Other metrics:
-[`hd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/hd.md),
-[`shd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/shd.md)
+Other metrics: [`hd()`](https://caugi.org/reference/hd.md),
+[`shd()`](https://caugi.org/reference/shd.md)
 
 ## Examples
 

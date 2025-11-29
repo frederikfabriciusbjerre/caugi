@@ -99,8 +99,7 @@ the user-facing API.
     accomplish the goal
 2.  **Lazy building**: Remember that graph mutations are batched - test
     both before and after explicit
-    [`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md)
-    calls
+    [`build()`](https://caugi.org/reference/build.md) calls
 3.  **Edge registry**: Be careful when modifying the edge registry
     system
 4.  **Backward compatibility**: Maintain API compatibility when possible
@@ -157,8 +156,8 @@ the user-facing API.
 ## Contribution Guidelines
 
 For detailed contribution guidelines, see
-[CONTRIBUTING.md](https://frederikfabriciusbjerre.github.io/CONTRIBUTING.md)
-in the repository root.
+[CONTRIBUTING.md](https://caugi.org/CONTRIBUTING.md) in the repository
+root.
 
 Quick reference: 1. Follow the tidyverse style guide for R code 2. Run
 `styler::style_pkg()` for R and `cargo fmt` for Rust before PRs 3. Write

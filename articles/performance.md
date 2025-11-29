@@ -36,12 +36,11 @@ complexity $\mathcal{O}\left( |V| + |E| \right)$, where $V$ is the
 vertex set and $E$ is the edge set.
 
 However, the graph object will only be rebuilt when the user either
-calls
-[`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md)
-directly or queries the graph. Therefore, you do not need to worry about
-wasting compute time by iteratively making changes to a `caugi` graph
-object, as the graph rebuilds lazily when queried. By doing this,
-`caugi` graphs *feel* mutable, but, in reality, they are not.
+calls [`build()`](https://caugi.org/reference/build.md) directly or
+queries the graph. Therefore, you do not need to worry about wasting
+compute time by iteratively making changes to a `caugi` graph object, as
+the graph rebuilds lazily when queried. By doing this, `caugi` graphs
+*feel* mutable, but, in reality, they are not.
 
 By doing it this way, we ensure - that the graph object is always in a
 consistent state when queried, and - that queries are as fast as

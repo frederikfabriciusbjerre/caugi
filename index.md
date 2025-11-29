@@ -66,7 +66,7 @@ The available edges in `caugi` are listed below:
 - `%o-o%` (partial)
 
 You can register more types with
-[`register_caugi_edge()`](https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.md),
+[`register_caugi_edge()`](https://caugi.org/reference/register_caugi_edge.md),
 if you find that you need a more expressive set of edges. For example,
 if you want to represent a directed edge in the reverse direction, you
 can do so like this:
@@ -99,19 +99,15 @@ releases, and we would love your input if you use this feature!
 objects. Some of the available functions are:
 
 - Relational queries, such as
-  [`parents()`](https://frederikfabriciusbjerre.github.io/caugi/reference/parents.md),
-  [`ancestors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/ancestors.md),
-  [`neighbors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md),
-  and more.
+  [`parents()`](https://caugi.org/reference/parents.md),
+  [`ancestors()`](https://caugi.org/reference/ancestors.md),
+  [`neighbors()`](https://caugi.org/reference/neighbors.md), and more.
 - Structural queries, such as
-  [`is_acyclic()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_acyclic.md),
-  [`is_cpdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_cpdag.md),
-  and more.
+  [`is_acyclic()`](https://caugi.org/reference/is_acyclic.md),
+  [`is_cpdag()`](https://caugi.org/reference/is_cpdag.md), and more.
 - Graph manipulations, such as `add_edge()`, `remove_node()`, and more.
-- Graph metrics, such as
-  [`shd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/shd.md)
-  and
-  [`aid()`](https://frederikfabriciusbjerre.github.io/caugi/reference/aid.md).
+- Graph metrics, such as [`shd()`](https://caugi.org/reference/shd.md)
+  and [`aid()`](https://caugi.org/reference/aid.md).
 
 ## How it works
 

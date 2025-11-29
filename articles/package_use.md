@@ -153,9 +153,8 @@ correlation_implies_causation <- function(df) {
 
 **Hold on, it doesn’t check every iteration?** No, `caugi` is designed
 to be efficient, so it only checks the graph’s validity when you
-explicitly call
-[`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md).
-This allows you to add multiple edges without incurring the overhead of
+explicitly call [`build()`](https://caugi.org/reference/build.md). This
+allows you to add multiple edges without incurring the overhead of
 validation after each addition. You *can* ensure that your algorithm
 breaks, when introducing a faulty edge by building at each step. This is
 computationally expensive, but sometimes necessary for debugging.
@@ -202,7 +201,7 @@ Now, when you call `correlation_implies_causation(df)`, it will return a
 ``` r
 cg <- correlation_implies_causation(df)
 cg
-#> <caugi object; 3 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x55ab5c4a62b0>
+#> <caugi object; 3 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x55ddb1847410>
 #>   graph_class: DAG
 #>   nodes: V1, V2, V3
 #>   edges: V1-->V2

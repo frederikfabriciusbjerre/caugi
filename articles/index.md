@@ -2,9 +2,8 @@
 
 ### All vignettes
 
-- [Get
-  started](https://frederikfabriciusbjerre.github.io/caugi/articles/get_started.md):
-- [Motivation](https://frederikfabriciusbjerre.github.io/caugi/articles/motivation.md):
+- [Get started](https://caugi.org/articles/get_started.md):
+- [Motivation](https://caugi.org/articles/motivation.md):
 - [How to use caugi in a
-  package](https://frederikfabriciusbjerre.github.io/caugi/articles/package_use.md):
-- [Performance](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.md):
+  package](https://caugi.org/articles/package_use.md):
+- [Performance](https://caugi.org/articles/performance.md):

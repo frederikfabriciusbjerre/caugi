@@ -32,8 +32,8 @@ unchanged.
 ## See also
 
 Other operations:
-[`moralize()`](https://frederikfabriciusbjerre.github.io/caugi/reference/moralize.md),
-[`skeleton()`](https://frederikfabriciusbjerre.github.io/caugi/reference/skeleton.md)
+[`moralize()`](https://caugi.org/reference/moralize.md),
+[`skeleton()`](https://caugi.org/reference/skeleton.md)
 
 ## Examples
 

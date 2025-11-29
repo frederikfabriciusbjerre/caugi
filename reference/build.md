@@ -27,8 +27,7 @@ The built `caugi` object.
 
 ## See also
 
-Other verbs:
-[`caugi_verbs`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi_verbs.md)
+Other verbs: [`caugi_verbs`](https://caugi.org/reference/caugi_verbs.md)
 
 ## Examples
 
@@ -48,7 +47,7 @@ cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
 cg@built # FALSE
 #> [1] FALSE
 build(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x561481984210>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x560a8526f5a0>
 #>   graph_class: PDAG
 #>   nodes: A, B
 #>   edges: A-->B
