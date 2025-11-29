@@ -335,5 +335,5 @@ sessionInfo()
 #> [55] tidyselect_1.2.1    xfun_0.54           tibble_3.3.0       
 #> [58] knitr_1.50          farver_2.1.2        htmltools_0.5.8.1  
 #> [61] igraph_2.2.1        labeling_0.4.3      rmarkdown_2.30     
-#> [64] caugi_0.3.1         compiler_4.5.2      S7_0.2.1
+#> [64] caugi_0.3.2         compiler_4.5.2      S7_0.2.1
 ```
