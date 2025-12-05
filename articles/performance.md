@@ -322,7 +322,7 @@ sessionInfo()
 #> [16] scales_1.4.0        textshaping_1.0.4   jquerylib_0.1.4    
 #> [19] cli_3.6.5           rlang_1.1.6         ggm_2.5.2          
 #> [22] bnlearn_5.1         withr_3.0.2         cachem_1.1.0       
-#> [25] yaml_2.3.10         ggbeeswarm_0.7.2    tools_4.5.2        
+#> [25] yaml_2.3.11         ggbeeswarm_0.7.2    tools_4.5.2        
 #> [28] parallel_4.5.2      dplyr_1.1.4         profmem_0.7.0      
 #> [31] boot_1.3-32         BiocGenerics_0.56.0 curl_7.0.0         
 #> [34] vctrs_0.6.5         R6_2.6.1            stats4_4.5.2       
@@ -333,7 +333,7 @@ sessionInfo()
 #> [49] bslib_0.9.0         gtable_0.3.6        data.table_1.17.8  
 #> [52] glue_1.8.0          Rcpp_1.1.0          systemfonts_1.3.1  
 #> [55] tidyselect_1.2.1    xfun_0.54           tibble_3.3.0       
-#> [58] knitr_1.50          farver_2.1.2        htmltools_0.5.8.1  
+#> [58] knitr_1.50          farver_2.1.2        htmltools_0.5.9    
 #> [61] igraph_2.2.1        labeling_0.4.3      rmarkdown_2.30     
 #> [64] caugi_0.3.2         compiler_4.5.2      S7_0.2.1
 ```
