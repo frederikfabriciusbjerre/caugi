@@ -14,12 +14,12 @@ Source:
 [`DESCRIPTION`](https://github.com/frederikfabriciusbjerre/caugi/blob/main/DESCRIPTION)
 
 Fabricius-Bjerre F, Larsson J, Sachs M (2025). *caugi: Causal Graph
-Interface*. R package version 0.3.2, <https://caugi.org/>.
+Interface*. R package version 0.4.0, <https://caugi.org/>.
 
     @Manual{,
       title = {caugi: Causal Graph Interface},
       author = {Frederik Fabricius-Bjerre and Johan Larsson and Michael Sachs},
       year = {2025},
-      note = {R package version 0.3.2},
+      note = {R package version 0.4.0},
       url = {https://caugi.org/},
     }

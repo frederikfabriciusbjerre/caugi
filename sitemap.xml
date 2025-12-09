@@ -14,6 +14,7 @@
 <url><loc>https://caugi.org/news/index.html</loc></url>
 <url><loc>https://caugi.org/reference/adjustment_set.html</loc></url>
 <url><loc>https://caugi.org/reference/aid.html</loc></url>
+<url><loc>https://caugi.org/reference/all_adjustment_sets_admg.html</loc></url>
 <url><loc>https://caugi.org/reference/all_backdoor_sets.html</loc></url>
 <url><loc>https://caugi.org/reference/ancestors.html</loc></url>
 <url><loc>https://caugi.org/reference/as_adjacency.html</loc></url>
@@ -28,6 +29,7 @@
 <url><loc>https://caugi.org/reference/children.html</loc></url>
 <url><loc>https://caugi.org/reference/d_separated.html</loc></url>
 <url><loc>https://caugi.org/reference/descendants.html</loc></url>
+<url><loc>https://caugi.org/reference/districts.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-caugi_fit_on_line.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-cg_state.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-collect_edges_nodes.html</loc></url>
@@ -66,6 +68,7 @@
 <url><loc>https://caugi.org/reference/hd.html</loc></url>
 <url><loc>https://caugi.org/reference/index.html</loc></url>
 <url><loc>https://caugi.org/reference/is_acyclic.html</loc></url>
+<url><loc>https://caugi.org/reference/is_admg.html</loc></url>
 <url><loc>https://caugi.org/reference/is_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/is_cpdag.html</loc></url>
 <url><loc>https://caugi.org/reference/is_dag.html</loc></url>
@@ -73,8 +76,10 @@
 <url><loc>https://caugi.org/reference/is_empty_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/is_pdag.html</loc></url>
 <url><loc>https://caugi.org/reference/is_ug.html</loc></url>
+<url><loc>https://caugi.org/reference/is_valid_adjustment_admg.html</loc></url>
 <url><loc>https://caugi.org/reference/is_valid_backdoor.html</loc></url>
 <url><loc>https://caugi.org/reference/length.html</loc></url>
+<url><loc>https://caugi.org/reference/m_separated.html</loc></url>
 <url><loc>https://caugi.org/reference/markov_blanket.html</loc></url>
 <url><loc>https://caugi.org/reference/moralize.html</loc></url>
 <url><loc>https://caugi.org/reference/mutate_caugi.html</loc></url>
@@ -87,6 +92,7 @@
 <url><loc>https://caugi.org/reference/same_nodes.html</loc></url>
 <url><loc>https://caugi.org/reference/shd.html</loc></url>
 <url><loc>https://caugi.org/reference/skeleton.html</loc></url>
+<url><loc>https://caugi.org/reference/spouses.html</loc></url>
 <url><loc>https://caugi.org/reference/subgraph.html</loc></url>
 </urlset>
 

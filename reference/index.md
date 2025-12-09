@@ -20,6 +20,9 @@
 
   Get descendants of nodes in a `caugi`
 
+- [`districts()`](https://caugi.org/reference/districts.md) : Get
+  districts (c-components) of an ADMG
+
 - [`edge_types()`](https://caugi.org/reference/edge_types.md) :
 
   Get the edge types of a `caugi`.
@@ -36,6 +39,10 @@
 - [`is_acyclic()`](https://caugi.org/reference/is_acyclic.md) :
 
   Is the `caugi` acyclic?
+
+- [`is_admg()`](https://caugi.org/reference/is_admg.md) :
+
+  Is the `caugi` graph an ADMG?
 
 - [`is_caugi()`](https://caugi.org/reference/is_caugi.md) :
 
@@ -61,6 +68,9 @@
 
   Is the `caugi` graph an UG?
 
+- [`m_separated()`](https://caugi.org/reference/m_separated.md) :
+  M-separation test for ADMGs
+
 - [`markov_blanket()`](https://caugi.org/reference/markov_blanket.md) :
 
   Get Markov blanket of nodes in a `caugi`
@@ -83,6 +93,9 @@
 - [`same_nodes()`](https://caugi.org/reference/same_nodes.md) : Same
   nodes?
 
+- [`spouses()`](https://caugi.org/reference/spouses.md) : Get spouses
+  (bidirected neighbors) of nodes in an ADMG
+
 - [`subgraph()`](https://caugi.org/reference/subgraph.md) : Get the
   induced subgraph
 
@@ -103,10 +116,14 @@
 
 - [`adjustment_set()`](https://caugi.org/reference/adjustment_set.md) :
   Compute an adjustment set
+- [`all_adjustment_sets_admg()`](https://caugi.org/reference/all_adjustment_sets_admg.md)
+  : Get all valid adjustment sets in an ADMG
 - [`all_backdoor_sets()`](https://caugi.org/reference/all_backdoor_sets.md)
   : Get all backdoor sets up to a certain size.
 - [`d_separated()`](https://caugi.org/reference/d_separated.md) : Are X
   and Y d-separated given Z?
+- [`is_valid_adjustment_admg()`](https://caugi.org/reference/is_valid_adjustment_admg.md)
+  : Is a set a valid adjustment set in an ADMG?
 - [`is_valid_backdoor()`](https://caugi.org/reference/is_valid_backdoor.md)
   : Is a backdoor set valid?
 
