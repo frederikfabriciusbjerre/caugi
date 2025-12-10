@@ -1,5 +1,36 @@
 # Changelog
 
+## caugi 0.4.0
+
+- Add support for Acyclic Directed Mixed Graphs (ADMGs), which combine
+  directed edges representing causal relationships with bidirected edges
+  representing latent confounding.
+- Add new functions for querying ADMGs:
+  [`is_admg()`](https://caugi.org/reference/is_admg.md),
+  [`spouses()`](https://caugi.org/reference/spouses.md),
+  [`districts()`](https://caugi.org/reference/districts.md), and
+  [`m_separated()`](https://caugi.org/reference/m_separated.md)
+  (generalization of d-separation for graphs with bidirected edges).
+- Add functions for adjustment set validation in ADMGs:
+  [`is_valid_adjustment_admg()`](https://caugi.org/reference/is_valid_adjustment_admg.md)
+  and
+  [`all_adjustment_sets_admg()`](https://caugi.org/reference/all_adjustment_sets_admg.md)
+  implementing the Generalized Adjustment Criterion.
+- Add [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md)
+  function that allows conversion from one graph type to another.
+- Add custom printing method for `caugi` objects.
+- Add optional `edges_df` argument to
+  [`caugi()`](https://caugi.org/reference/caugi.md) for easier
+  construction from existing data frames containing the columns `from`,
+  `edge`, and `to`.
+- Improve error handling across all graph types (DAG, PDAG, UG, ADMG)
+  with more descriptive error messages.
+- Update [`as_adjacency()`](https://caugi.org/reference/as_adjacency.md)
+  and [`as_igraph()`](https://caugi.org/reference/as_igraph.md) to
+  support bidirected edges.
+- Update [`as_caugi()`](https://caugi.org/reference/as_caugi.md)
+  documentation to include “ADMG” as a valid class type for conversion.
+
 ## caugi 0.3.2
 
 - Change website to `caugi.org/`.
