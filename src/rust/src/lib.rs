@@ -402,10 +402,7 @@ fn spouses_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers) -> Robj {
 
 #[extendr]
 fn districts_ptr(g: ExternalPtr<GraphView>) -> Robj {
-    let districts = g
-        .as_ref()
-        .districts()
-        .unwrap_or_else(|e| throw_r_error(e));
+    let districts = g.as_ref().districts().unwrap_or_else(|e| throw_r_error(e));
     let robjs: Vec<Robj> = districts
         .into_iter()
         .map(|v| v.into_iter().map(|u| u as i32).collect_robj())
@@ -868,6 +865,30 @@ fn moralize_ptr(g: ExternalPtr<GraphView>) -> ExternalPtr<GraphView> {
     ExternalPtr::new(out)
 }
 
+// ── Layout ────────────────────────────────────────────────────────────────────
+
+#[extendr]
+fn compute_layout_ptr(g: ExternalPtr<GraphView>, method: &str) -> Robj {
+    use graph::layout::{compute_layout, LayoutMethod};
+    use std::str::FromStr;
+
+    let layout_method = LayoutMethod::from_str(method).unwrap_or_else(|e| throw_r_error(e));
+
+    let coords =
+        compute_layout(g.as_ref().core(), layout_method).unwrap_or_else(|e| throw_r_error(e));
+
+    let n = coords.len();
+    let mut x = Vec::with_capacity(n);
+    let mut y = Vec::with_capacity(n);
+
+    for (xi, yi) in coords {
+        x.push(xi);
+        y.push(yi);
+    }
+
+    list!(x = x, y = y).into_robj()
+}
+
 extendr_module! {
     mod caugi;
     // registry
@@ -948,4 +969,7 @@ extendr_module! {
     // view df
     fn n_ptr;
     fn edges_ptr_df;
+
+    // layout
+    fn compute_layout_ptr;
 }

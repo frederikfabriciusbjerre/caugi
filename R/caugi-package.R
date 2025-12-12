@@ -8,5 +8,6 @@
 #' @docType package
 #' @keywords package internal
 #' @name caugi-package
+#' @importFrom grid makeContent
 #' @aliases caugi-package
 "_PACKAGE"

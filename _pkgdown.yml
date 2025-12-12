@@ -33,3 +33,6 @@ reference:
   - title: Operatoins
     contents:
       - has_concept("operations")
+  - title: Plotting
+    contents:
+      - has_concept("plotting")

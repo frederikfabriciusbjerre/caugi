@@ -35,6 +35,7 @@ Depends:
 Imports:
     data.table,
     fastmap,
+    grid,
     S7,
     stats,
     methods
