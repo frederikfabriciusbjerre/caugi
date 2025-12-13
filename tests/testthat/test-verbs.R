@@ -21,21 +21,26 @@ test_that("build.caugi builds with and without edges", {
   cg1 <- build(cg) # with edges
   expect_true(cg1@built)
   expect_equal(cg1@nodes$name, c("A", "B"))
-  expect_equal(cg1@edges, data.table::data.table(from = "A", edge = "-->", to = "B"))
+  expect_equal(
+    cg1@edges,
+    data.table::data.table(from = "A", edge = "-->", to = "B")
+  )
 
   expect_identical(build(cg1), cg1) # identical if built
 })
 
 test_that("build() errors when breaking simple graph assumptions", {
   cg <- caugi()
-  cg <- add_edges(cg,
+  cg <- add_edges(
+    cg,
     from = c("A", "A"),
     edge = c("o->", "-->"),
     to = c("B", "B")
   )
   expect_error(build(cg), "Parallel edges not allowed")
   cg <- caugi()
-  cg <- add_edges(cg,
+  cg <- add_edges(
+    cg,
     from = c("A", "A"),
     edge = c("-->", "<->"),
     to = c("B", "A")
@@ -67,9 +72,13 @@ test_that("add_edges validates inputs and updates graph", {
   cg1 <- add_edges(cg, from = "A", edge = "-->", to = "B")
   expect_false(cg1@built)
   expect_setequal(cg1@nodes$name, c("A", "B"))
-  expect_equal(cg1@edges, data.table::data.table(from = "A", edge = "-->", to = "B"))
+  expect_equal(
+    cg1@edges,
+    data.table::data.table(from = "A", edge = "-->", to = "B")
+  )
 
-  cg2 <- add_edges(cg1,
+  cg2 <- add_edges(
+    cg1,
     from = c("A", "A"),
     edge = c("-->", "-->"),
     to = c("B", "B")
@@ -86,7 +95,8 @@ test_that("add_edges makes built = FALSE, build(cg) makes it TRUE (back and fort
   cg1_built <- build(cg1)
   expect_true(cg1_built@built)
 
-  cg2 <- add_edges(cg1,
+  cg2 <- add_edges(
+    cg1,
     from = c("A", "A"),
     edge = c("-->", "-->"),
     to = c("B", "B")
@@ -121,16 +131,20 @@ test_that("add_edges expression path (DSL) works (also some + notation)", {
   cg <- add_nodes(cg, A + B)
   cg <- add_edges(cg, A %-->% B + C)
   expect_setequal(cg@nodes$name, c("A", "B", "C"))
-  expect_equal(cg@edges, data.table::data.table(
-    from = "A",
-    edge = c("-->", "-->"),
-    to = c("B", "C")
-  ))
+  expect_equal(
+    cg@edges,
+    data.table::data.table(
+      from = "A",
+      edge = c("-->", "-->"),
+      to = c("B", "C")
+    )
+  )
 })
 
 test_that("remove_edges works and keeps other edges", {
   cg <- caugi()
-  cg <- add_edges(cg,
+  cg <- add_edges(
+    cg,
     from = c("A", "A"),
     edge = c("-->", "-->"),
     to = c("B", "C")
@@ -143,24 +157,32 @@ test_that("remove_edges works and keeps other edges", {
 
   cg1 <- remove_edges(cg, from = "A", edge = "-->", to = "B")
   expect_false(cg1@built)
-  expect_equal(cg1@edges, data.table::data.table(from = "A", edge = "-->", to = "C"))
+  expect_equal(
+    cg1@edges,
+    data.table::data.table(from = "A", edge = "-->", to = "C")
+  )
 })
 
 test_that("set_edges replaces any existing edges for pairs", {
   cg <- caugi()
-  cg <- add_edges(cg,
+  cg <- add_edges(
+    cg,
     from = c("A", "A"),
     edge = c("o->", "-->"),
     to = c("B", "B")
   )
   cg1 <- set_edges(cg, from = "A", edge = "<->", to = "B")
   expect_false(cg1@built)
-  expect_equal(cg1@edges, data.table::data.table(from = "A", edge = "<->", to = "B"))
+  expect_equal(
+    cg1@edges,
+    data.table::data.table(from = "A", edge = "<->", to = "B")
+  )
 })
 
 test_that("set_edges errors whwn both vector and expr paths are given", {
   cg <- caugi()
-  cg <- add_edges(cg,
+  cg <- add_edges(
+    cg,
     from = c("A", "A"),
     edge = c("o->", "-->"),
     to = c("B", "B")
@@ -284,7 +306,9 @@ test_that(".get_edges vector path and error branches", {
 
 test_that(".get_edges expression path branch", {
   res <- caugi:::.get_edges(
-    from = NULL, edge = NULL, to = NULL,
+    from = NULL,
+    edge = NULL,
+    to = NULL,
     calls = list(
       quote(A %-->% B),
       quote(B %---% C)
@@ -298,7 +322,9 @@ test_that(".get_edges expression path branch", {
 
 test_that(".get_edges works with empty input", {
   res <- caugi:::.get_edges(
-    from = NULL, edge = NULL, to = NULL,
+    from = NULL,
+    edge = NULL,
+    to = NULL,
     calls = list()
   )
   expect_equal(nrow(res), 0L)
@@ -322,7 +348,8 @@ test_that(".mark_not_built flips flag", {
 
 test_that(".update_caugi add/remove paths and validations", {
   cg <- caugi()
-  cg1 <- caugi:::.update_caugi(cg,
+  cg1 <- caugi:::.update_caugi(
+    cg,
     nodes = data.table::data.table(
       name = c("A", "B", "B")
     ),
@@ -331,7 +358,8 @@ test_that(".update_caugi add/remove paths and validations", {
   expect_false(cg1@built)
   expect_setequal(cg1@nodes$name, c("A", "B"))
 
-  cg2 <- caugi:::.update_caugi(cg1,
+  cg2 <- caugi:::.update_caugi(
+    cg1,
     edges = data.table::data.table(
       from = c("A", "A"),
       edge = c("-->", "-->"),
@@ -345,12 +373,14 @@ test_that(".update_caugi add/remove paths and validations", {
 
   cg3 <- caugi()
   cg3 <- add_nodes(cg3, name = c("A", "B", "C"))
-  cg3 <- add_edges(cg3,
+  cg3 <- add_edges(
+    cg3,
     from = c("A", "B", "A"),
     edge = c("-->", "<->", "o->"),
     to = c("B", "C", "C")
   )
-  cg4 <- caugi:::.update_caugi(cg3,
+  cg4 <- caugi:::.update_caugi(
+    cg3,
     edges = data.table::data.table(
       from = "A",
       to = "B"
@@ -360,7 +390,8 @@ test_that(".update_caugi add/remove paths and validations", {
   expect_false(any(cg4@edges$from == "A" & cg4@edges$to == "B"))
 
   expect_error(
-    caugi:::.update_caugi(cg4,
+    caugi:::.update_caugi(
+      cg4,
       edges = data.table::data.table(from = "B"),
       action = "remove"
     ),

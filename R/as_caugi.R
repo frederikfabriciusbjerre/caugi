@@ -98,13 +98,15 @@
 as_caugi <- S7::new_generic(
   "as_caugi",
   dispatch_args = "x",
-  fun = function(x,
-                 class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-                 simple = TRUE,
-                 build = TRUE,
-                 collapse = FALSE,
-                 collapse_to = "---",
-                 ...) {
+  fun = function(
+    x,
+    class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+    simple = TRUE,
+    build = TRUE,
+    collapse = FALSE,
+    collapse_to = "---",
+    ...
+  ) {
     S7::S7_dispatch()
   }
 )
@@ -112,20 +114,24 @@ as_caugi <- S7::new_generic(
 S7::method(
   as_caugi,
   S7::new_S3_class("igraph")
-) <- function(x,
-              class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
+) <- function(
+  x,
+  class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+  simple = TRUE,
+  build = TRUE,
+  collapse = FALSE,
+  collapse_to = "---",
+  ...
+) {
   class <- match.arg(class)
 
   n_edges <- igraph::ecount(x)
   directed <- igraph::is_directed(x)
   has_names <- !is.null(igraph::V(x)$name)
   nm <- igraph::V(x)$name
-  if (is.null(nm)) nm <- paste0("V", seq_len(igraph::vcount(x)))
+  if (is.null(nm)) {
+    nm <- paste0("V", seq_len(igraph::vcount(x)))
+  }
 
   if (class == "PAG") {
     stop("PAG class is not supported for igraph objects.", call. = FALSE)
@@ -196,13 +202,15 @@ register_graphnel_s4_class <- function() {
   S7::method(
     as_caugi,
     methods::getClassDef("graphNEL", package = "graph")
-  ) <- function(x,
-                class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-                simple = TRUE,
-                build = TRUE,
-                collapse = FALSE,
-                collapse_to = "---",
-                ...) {
+  ) <- function(
+    x,
+    class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+    simple = TRUE,
+    build = TRUE,
+    collapse = FALSE,
+    collapse_to = "---",
+    ...
+  ) {
     class <- match.arg(class)
 
     directed <- graph::isDirected(x)
@@ -212,7 +220,9 @@ register_graphnel_s4_class <- function() {
     from <- rep.int(names(nbrs), lens)
     to <- unlist(nbrs, use.names = FALSE)
     nm <- x@nodes
-    if (is.null(nm)) nm <- paste0("V", seq_len(length(nbrs)))
+    if (is.null(nm)) {
+      nm <- paste0("V", seq_len(length(nbrs)))
+    }
 
     if (!directed) {
       canon_from <- pmin(from, to)
@@ -271,13 +281,15 @@ register_graphnel_s4_class <- function() {
 S7::method(
   as_caugi,
   S7::new_S3_class("integer")
-) <- function(x,
-              class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
+) <- function(
+  x,
+  class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+  simple = TRUE,
+  build = TRUE,
+  collapse = FALSE,
+  collapse_to = "---",
+  ...
+) {
   if (!is.matrix(x)) {
     stop("`x` must be a matrix.", call. = FALSE)
   }
@@ -298,19 +310,22 @@ S7::method(
     }
   } else if (is.numeric(x)) {
     if (!all(x == floor(x)) || any(x < 0)) {
-      stop("`x` must be a logical or a non-negative integer matrix.",
+      stop(
+        "`x` must be a logical or a non-negative integer matrix.",
         call. = FALSE
       )
     }
     if (class == "PAG" && any(!(x %in% 0:3))) {
-      stop("PAG class is only supported for integer codes 0-3.",
+      stop(
+        "PAG class is only supported for integer codes 0-3.",
         "This is meant to represent PAG edge types as used in `pcalg`.",
         call. = FALSE
       )
     }
     if (class != "PAG" && (any(!(x %in% 0:1)))) {
       if (any(!(x %in% c(0, 2, 3)))) {
-        stop("Only either 0:1 are allowed or 0,2,3 for PAG edge codes in a ",
+        stop(
+          "Only either 0:1 are allowed or 0,2,3 for PAG edge codes in a ",
           "non-PAG matrix.",
           call. = FALSE
         )
@@ -322,7 +337,9 @@ S7::method(
 
   # handle naming
   nm <- colnames(x)
-  if (is.null(nm)) nm <- rownames(x)
+  if (is.null(nm)) {
+    nm <- rownames(x)
+  }
   if (is.null(nm)) {
     if (n > 0) nm <- paste0("V", seq_len(n))
   }
@@ -332,7 +349,8 @@ S7::method(
     # Correct pcalg PAG code mapping:
     # 1 = circle, 2 = arrowhead, 3 = tail (codes refer to the COLUMN end)
     mark_sym <- function(k) {
-      switch(as.character(k),
+      switch(
+        as.character(k),
         "1" = "o", # circle
         "2" = ">", # arrowhead
         "3" = "-", # tail
@@ -348,7 +366,9 @@ S7::method(
       for (j in (i + 1L):n) {
         a <- x[i, j] # mark at j-end
         b <- x[j, i] # mark at i-end
-        if (a == 0L && b == 0L) next
+        if (a == 0L && b == 0L) {
+          next
+        }
 
         lf <- mark_sym(b) # left endpoint (node i)
         rt <- mark_sym(a) # right endpoint (node j)
@@ -357,7 +377,8 @@ S7::method(
         lj <- j # local copies only; never mutate loop indices
 
         # normalize j -> i arrows to i -> j
-        if (lf == ">" && rt == "-") { # i <- j
+        if (lf == ">" && rt == "-") {
+          # i <- j
           lf <- "-"
           rt <- ">"
           tmp <- li
@@ -380,7 +401,8 @@ S7::method(
           lj <- tmp
         }
 
-        glyph <- switch(paste0(lf, rt),
+        glyph <- switch(
+          paste0(lf, rt),
           "--" = "---",
           "->" = "-->",
           "-o" = "--o",
@@ -395,7 +417,8 @@ S7::method(
         edge <- c(edge, glyph)
       }
     }
-  } else { # DAG / PDAG / UNKNOWN: nonzero means directed i -> j
+  } else {
+    # DAG / PDAG / UNKNOWN: nonzero means directed i -> j
     idx <- which(x != 0, arr.ind = TRUE)
     if (nrow(idx) == 0L) {
       return(caugi(
@@ -451,25 +474,29 @@ S7::method(
 S7::method(
   as_caugi,
   S7::new_S3_class("double")
-) <- function(x,
-              class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
+) <- function(
+  x,
+  class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+  simple = TRUE,
+  build = TRUE,
+  collapse = FALSE,
+  collapse_to = "---",
+  ...
+) {
   if (!is.matrix(x)) {
     stop("`x` must be a matrix.", call. = FALSE)
   }
   if (!all(x == floor(x)) || any(x < 0)) {
-    stop("`x` must be a logical or a non-negative integer matrix.",
+    stop(
+      "`x` must be a logical or a non-negative integer matrix.",
       call. = FALSE
     )
   }
   class <- match.arg(class)
 
   storage.mode(x) <- "integer"
-  as_caugi(x,
+  as_caugi(
+    x,
     class = class,
     simple = simple,
     build = build,
@@ -482,13 +509,15 @@ S7::method(
 S7::method(
   as_caugi,
   S7::new_S3_class("logical")
-) <- function(x,
-              class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
+) <- function(
+  x,
+  class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+  simple = TRUE,
+  build = TRUE,
+  collapse = FALSE,
+  collapse_to = "---",
+  ...
+) {
   if (!is.matrix(x)) {
     stop("`x` must be a matrix.", call. = FALSE)
   }
@@ -497,7 +526,8 @@ S7::method(
     stop("PAG class is not supported for logical matrices.", call. = FALSE)
   }
   storage.mode(x) <- "integer"
-  as_caugi(x,
+  as_caugi(
+    x,
     class = class,
     simple = simple,
     build = build,
@@ -511,13 +541,15 @@ register_matrix_s4_class <- function() {
   S7::method(
     as_caugi,
     methods::getClassDef("Matrix", package = "Matrix")
-  ) <- function(x,
-                class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-                simple = TRUE,
-                build = TRUE,
-                collapse = FALSE,
-                collapse_to = "---",
-                ...) {
+  ) <- function(
+    x,
+    class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+    simple = TRUE,
+    build = TRUE,
+    collapse = FALSE,
+    collapse_to = "---",
+    ...
+  ) {
     class <- match.arg(class)
     m <- as.matrix(x)
     as_caugi(
@@ -535,13 +567,15 @@ register_matrix_s4_class <- function() {
 S7::method(
   as_caugi,
   S7::new_S3_class("tidygraph")
-) <- function(x,
-              class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
+) <- function(
+  x,
+  class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+  simple = TRUE,
+  build = TRUE,
+  collapse = FALSE,
+  collapse_to = "---",
+  ...
+) {
   class <- match.arg(class)
   if (class == "PAG") {
     stop("PAG class is not supported for tidygraph objects.", call. = FALSE)
@@ -560,13 +594,15 @@ S7::method(
 S7::method(
   as_caugi,
   S7::new_S3_class("dagitty")
-) <- function(x,
-              class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
+) <- function(
+  x,
+  class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+  simple = TRUE,
+  build = TRUE,
+  collapse = FALSE,
+  collapse_to = "---",
+  ...
+) {
   class <- match.arg(class)
 
   nm <- names(x)
@@ -604,7 +640,8 @@ S7::method(
   }
 
   map_glyph <- function(s) {
-    switch(s,
+    switch(
+      s,
       "->" = "-->",
       "<->" = "<->",
       "--" = "---",
@@ -668,13 +705,15 @@ S7::method(
 S7::method(
   as_caugi,
   S7::new_S3_class("bn")
-) <- function(x,
-              class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
-              simple = TRUE,
-              build = TRUE,
-              collapse = FALSE,
-              collapse_to = "---",
-              ...) {
+) <- function(
+  x,
+  class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
+  simple = TRUE,
+  build = TRUE,
+  collapse = FALSE,
+  collapse_to = "---",
+  ...
+) {
   class <- match.arg(class)
 
   if (class == "PAG") {

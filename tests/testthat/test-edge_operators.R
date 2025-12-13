@@ -24,9 +24,12 @@ test_that(".expand_targets errors on unsupported RHS forms", {
     "Unsupported right-hand side"
   )
   expect_error(
-    .edge_spec(quote(A), quote({
-      B
-    })),
+    .edge_spec(
+      quote(A),
+      quote({
+        B
+      })
+    ),
     "Unsupported right-hand side"
   )
   expect_error(

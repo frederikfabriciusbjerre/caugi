@@ -7,8 +7,12 @@
 
 # Default caugi edge operators
 .caugi_defaults_edge_ops <- c(
-  "%-->%", "%---%", "%<->%",
-  "%--o%", "%o->%", "%o-o%"
+  "%-->%",
+  "%---%",
+  "%<->%",
+  "%--o%",
+  "%o->%",
+  "%o-o%"
 )
 
 # Default caugi edge operator glyph map
@@ -22,7 +26,11 @@
 )
 
 utils::globalVariables(c(
-  "from", "to", "edge", ".", "..keys"
+  "from",
+  "to",
+  "edge",
+  ".",
+  "..keys"
 ))
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -37,9 +45,7 @@ utils::globalVariables(c(
 #'
 #' @keywords internal
 .edge_ops_get <- function() {
-  get0("edge_ops", .caugi_env,
-    ifnotfound = .caugi_defaults_edge_ops
-  )
+  get0("edge_ops", .caugi_env, ifnotfound = .caugi_defaults_edge_ops)
 }
 
 #' @title Get edge operators
@@ -50,7 +56,5 @@ utils::globalVariables(c(
 #'
 #' @keywords internal
 .glyph_map_get <- function() {
-  get0("glyph_map", .caugi_env,
-    ifnotfound = .caugi_defaults_glyph_map
-  )
+  get0("glyph_map", .caugi_env, ifnotfound = .caugi_defaults_glyph_map)
 }

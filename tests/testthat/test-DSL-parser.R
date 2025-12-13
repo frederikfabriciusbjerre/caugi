@@ -329,9 +329,11 @@ test_that("extra + nodes around a chain attach to the ends", {
   )
   # last segment: B --> {C,Y}
   expect_true(
-    any(cg@edges$from == "B" &
-      cg@edges$edge == "-->" &
-      cg@edges$to == "C")
+    any(
+      cg@edges$from == "B" &
+        cg@edges$edge == "-->" &
+        cg@edges$to == "C"
+    )
   )
   expect_true(
     any(
@@ -363,9 +365,11 @@ test_that("parentheses isolate terms inside chain", {
   )
   # segment 2
   expect_true(
-    any(cg@edges$from == "B" &
-      cg@edges$edge == "<->" &
-      cg@edges$to == "D")
+    any(
+      cg@edges$from == "B" &
+        cg@edges$edge == "<->" &
+        cg@edges$to == "D"
+    )
   )
   expect_true(
     any(

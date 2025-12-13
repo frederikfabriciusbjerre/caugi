@@ -255,7 +255,12 @@ test_that("is_valid_adjustment_admg errors when X or Y is missing", {
   )
 
   # Using indices should also work
-  expect_true(is_valid_adjustment_admg(admg, X_index = 2L, Y_index = 3L, Z = "L"))
+  expect_true(is_valid_adjustment_admg(
+    admg,
+    X_index = 2L,
+    Y_index = 3L,
+    Z = "L"
+  ))
 })
 
 test_that("all_adjustment_sets_admg errors when X or Y is missing", {
@@ -285,7 +290,12 @@ test_that("all_adjustment_sets_admg errors when X or Y is missing", {
   )
 
   # Using indices should also work
-  sets <- all_adjustment_sets_admg(admg, X_index = 2L, Y_index = 3L, minimal = TRUE)
+  sets <- all_adjustment_sets_admg(
+    admg,
+    X_index = 2L,
+    Y_index = 3L,
+    minimal = TRUE
+  )
   expect_true(any(sapply(sets, function(s) identical(s, "L"))))
 })
 

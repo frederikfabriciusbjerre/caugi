@@ -27,10 +27,7 @@ test_that("errors on non-caugi input", {
 
 
 test_that("Unknown graph with undirected edges become undirected igraph", {
-  cg <- caugi(A %---% B + C,
-    C %---% D,
-    class = "Unknown"
-  )
+  cg <- caugi(A %---% B + C, C %---% D, class = "Unknown")
   ig <- as_igraph(cg)
   expect_false(igraph::is_directed(ig))
 })
@@ -56,8 +53,12 @@ test_that("all undirected edge types yield undirected igraph", {
   expect_false(igraph::is_directed(ig))
   ed <- igraph::as_data_frame(ig)
   # undirected collapsed
-  expect_true(any(ed$from == "A" & ed$to == "B") || any(ed$from == "B" & ed$to == "A"))
-  expect_true(any(ed$from == "B" & ed$to == "C") || any(ed$from == "C" & ed$to == "B"))
+  expect_true(
+    any(ed$from == "A" & ed$to == "B") || any(ed$from == "B" & ed$to == "A")
+  )
+  expect_true(
+    any(ed$from == "B" & ed$to == "C") || any(ed$from == "C" & ed$to == "B")
+  )
   # no duplicates
   expect_equal(nrow(ed), 2L)
 })
@@ -105,7 +106,9 @@ test_that("conversion from UG --> igraph works", {
 
   expect_false(igraph::is_directed(ig))
   ed <- igraph::as_data_frame(ig)
-  expect_true(any(ed$from == "A" & ed$to == "B") || any(ed$from == "B" & ed$to == "A"))
+  expect_true(
+    any(ed$from == "A" & ed$to == "B") || any(ed$from == "B" & ed$to == "A")
+  )
   expect_equal(nrow(ed), 1L)
 })
 

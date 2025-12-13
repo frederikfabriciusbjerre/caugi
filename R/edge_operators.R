@@ -54,7 +54,9 @@
   if (is.numeric(expr) && length(expr) == 1L) {
     return(as.character(expr))
   }
-  stop("Unsupported right-hand side in edge operator: ", deparse(expr),
+  stop(
+    "Unsupported right-hand side in edge operator: ",
+    deparse(expr),
     call. = FALSE
   )
 }

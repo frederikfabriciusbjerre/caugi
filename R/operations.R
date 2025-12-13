@@ -108,7 +108,8 @@ mutate_caugi <- function(cg, class) {
     return(caugi(class = class))
   }
 
-  is_mutation_possible <- switch(class,
+  is_mutation_possible <- switch(
+    class,
     "DAG" = is_dag(cg),
     "PDAG" = is_pdag(cg),
     "UG" = is_ug(cg),
@@ -118,7 +119,11 @@ mutate_caugi <- function(cg, class) {
 
   if (!is_mutation_possible) {
     stop(paste0(
-      "Cannot convert caugi of class '", old_class, "' to '", class, "'.",
+      "Cannot convert caugi of class '",
+      old_class,
+      "' to '",
+      class,
+      "'.",
       call. = FALSE
     ))
   } else {

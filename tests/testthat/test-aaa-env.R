@@ -56,5 +56,7 @@ test_that("getters return user-set values from .caugi_env", {
 test_that("glyph map and edge ops default shapes are consistent", {
   # same length and named map covering ops
   expect_length(.caugi_defaults_glyph_map, length(.caugi_defaults_edge_ops))
-  expect_true(all(names(.caugi_defaults_glyph_map) %in% .caugi_defaults_edge_ops))
+  expect_true(all(
+    names(.caugi_defaults_glyph_map) %in% .caugi_defaults_edge_ops
+  ))
 })

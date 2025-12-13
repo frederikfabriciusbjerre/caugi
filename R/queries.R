@@ -107,7 +107,8 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
       )
       stop(
         "Graphs must have the same nodes.\n",
-        "Differing nodes are: [", paste(differing_nodes, collapse = ", "),
+        "Differing nodes are: [",
+        paste(differing_nodes, collapse = ", "),
         "]."
       )
     }
@@ -157,8 +158,10 @@ is_acyclic <- function(cg, force_check = FALSE) {
   cg <- build(cg)
   if (force_check) {
     is_it <- is_acyclic_ptr(cg@ptr)
-  } else if (identical(cg@graph_class, "DAG") ||
-    identical(cg@graph_class, "PDAG")) {
+  } else if (
+    identical(cg@graph_class, "DAG") ||
+      identical(cg@graph_class, "PDAG")
+  ) {
     is_it <- TRUE
   } else {
     is_it <- is_acyclic_ptr(cg@ptr)
@@ -541,7 +544,9 @@ parents <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) cg <- build(cg)
+  if (!cg@built) {
+    cg <- build(cg)
+  }
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -556,13 +561,12 @@ parents <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(nodes,
+  index <- cg@name_index_map$mget(
+    nodes,
     missing = stop(
       paste(
         "Non-existant node name:",
-        paste(setdiff(nodes, cg@nodes$name),
-          collapse = ", "
-        )
+        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
       ),
       call. = FALSE
     )
@@ -607,7 +611,9 @@ children <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) cg <- build(cg)
+  if (!cg@built) {
+    cg <- build(cg)
+  }
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -622,13 +628,12 @@ children <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(nodes,
+  index <- cg@name_index_map$mget(
+    nodes,
     missing = stop(
       paste(
         "Non-existant node name:",
-        paste(setdiff(nodes, cg@nodes$name),
-          collapse = ", "
-        )
+        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
       ),
       call. = FALSE
     )
@@ -673,7 +678,9 @@ neighbors <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) cg <- build(cg)
+  if (!cg@built) {
+    cg <- build(cg)
+  }
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -688,13 +695,12 @@ neighbors <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(nodes,
+  index <- cg@name_index_map$mget(
+    nodes,
     missing = stop(
       paste(
         "Non-existant node name:",
-        paste(setdiff(nodes, cg@nodes$name),
-          collapse = ", "
-        )
+        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
       ),
       call. = FALSE
     )
@@ -743,7 +749,9 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) cg <- build(cg)
+  if (!cg@built) {
+    cg <- build(cg)
+  }
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -758,13 +766,12 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(nodes,
+  index <- cg@name_index_map$mget(
+    nodes,
     missing = stop(
       paste(
         "Non-existant node name:",
-        paste(setdiff(nodes, cg@nodes$name),
-          collapse = ", "
-        )
+        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
       ),
       call. = FALSE
     )
@@ -809,7 +816,9 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) cg <- build(cg)
+  if (!cg@built) {
+    cg <- build(cg)
+  }
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -824,13 +833,12 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(nodes,
+  index <- cg@name_index_map$mget(
+    nodes,
     missing = stop(
       paste(
         "Non-existant node name:",
-        paste(setdiff(nodes, cg@nodes$name),
-          collapse = ", "
-        )
+        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
       ),
       call. = FALSE
     )
@@ -875,7 +883,9 @@ markov_blanket <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) cg <- build(cg)
+  if (!cg@built) {
+    cg <- build(cg)
+  }
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -890,13 +900,12 @@ markov_blanket <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(nodes,
+  index <- cg@name_index_map$mget(
+    nodes,
     missing = stop(
       paste(
         "Non-existant node name:",
-        paste(setdiff(nodes, cg@nodes$name),
-          collapse = ", "
-        )
+        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
       ),
       call. = FALSE
     )
@@ -971,7 +980,9 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) cg <- build(cg)
+  if (!cg@built) {
+    cg <- build(cg)
+  }
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -986,13 +997,12 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(nodes,
+  index <- cg@name_index_map$mget(
+    nodes,
     missing = stop(
       paste(
         "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name),
-          collapse = ", "
-        )
+        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
       ),
       call. = FALSE
     )
@@ -1069,19 +1079,34 @@ m_separated <- function(cg, x, y, z = character(0)) {
   }
 
   # Convert node names to indices
-  x_idx <- cg@name_index_map$mget(x,
-    missing = stop(paste("Unknown node in x:", paste(setdiff(x, cg@nodes$name), collapse = ", ")),
+  x_idx <- cg@name_index_map$mget(
+    x,
+    missing = stop(
+      paste(
+        "Unknown node in x:",
+        paste(setdiff(x, cg@nodes$name), collapse = ", ")
+      ),
       call. = FALSE
     )
   )
-  y_idx <- cg@name_index_map$mget(y,
-    missing = stop(paste("Unknown node in y:", paste(setdiff(y, cg@nodes$name), collapse = ", ")),
+  y_idx <- cg@name_index_map$mget(
+    y,
+    missing = stop(
+      paste(
+        "Unknown node in y:",
+        paste(setdiff(y, cg@nodes$name), collapse = ", ")
+      ),
       call. = FALSE
     )
   )
   z_idx <- if (length(z) > 0) {
-    cg@name_index_map$mget(z,
-      missing = stop(paste("Unknown node in z:", paste(setdiff(z, cg@nodes$name), collapse = ", ")),
+    cg@name_index_map$mget(
+      z,
+      missing = stop(
+        paste(
+          "Unknown node in z:",
+          paste(setdiff(z, cg@nodes$name), collapse = ", ")
+        ),
         call. = FALSE
       )
     )
@@ -1089,13 +1114,17 @@ m_separated <- function(cg, x, y, z = character(0)) {
     integer(0)
   }
 
-  m_separated_ptr(cg@ptr, as.integer(x_idx), as.integer(y_idx), as.integer(z_idx))
+  m_separated_ptr(
+    cg@ptr,
+    as.integer(x_idx),
+    as.integer(y_idx),
+    as.integer(z_idx)
+  )
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────────── Subgraph ───────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
-
 
 #' @title Get the induced subgraph
 #'
@@ -1156,7 +1185,9 @@ subgraph <- function(cg, nodes = NULL, index = NULL) {
     pos <- match(nodes, cg@nodes$name)
     if (anyNA(pos)) {
       miss <- nodes[is.na(pos)]
-      stop("Unknown node(s): ", paste(unique(miss), collapse = ", "),
+      stop(
+        "Unknown node(s): ",
+        paste(unique(miss), collapse = ", "),
         call. = FALSE
       )
     }
@@ -1166,7 +1197,8 @@ subgraph <- function(cg, nodes = NULL, index = NULL) {
 
   if (anyDuplicated(keep_idx0)) {
     dpos <- duplicated(keep_idx0) | duplicated(keep_idx0, fromLast = TRUE)
-    stop("`nodes`/`index` contains duplicates: ",
+    stop(
+      "`nodes`/`index` contains duplicates: ",
       paste(unique(keep_names[dpos]), collapse = ", "),
       call. = FALSE
     )

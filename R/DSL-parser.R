@@ -131,7 +131,8 @@
       return(c(.expand_nodes(expr[[2L]], env), .expand_nodes(expr[[3L]], env)))
     }
     if (fn == "c") {
-      return(unlist(lapply(as.list(expr)[-1L], .expand_nodes, env = env),
+      return(unlist(
+        lapply(as.list(expr)[-1L], .expand_nodes, env = env),
         use.names = FALSE
       ))
     }
@@ -180,7 +181,9 @@
     return(terms[[1L]])
   }
   out <- terms[[1L]]
-  for (i in 2:len) out <- call("+", out, terms[[i]])
+  for (i in 2:len) {
+    out <- call("+", out, terms[[i]])
+  }
   out
 }
 
@@ -244,11 +247,14 @@
       if (length(right_nodes_terms)) {
         rhs <- call("+", rhs, .combine_plus(right_nodes_terms))
       }
-      units <- c(units, list(list(
-        lhs = lhs,
-        rhs = rhs,
-        glyph = .glyph_of(edge_term[[1L]])
-      )))
+      units <- c(
+        units,
+        list(list(
+          lhs = lhs,
+          rhs = rhs,
+          glyph = .glyph_of(edge_term[[1L]])
+        ))
+      )
       next
     }
 
@@ -276,9 +282,16 @@
 
     # Emit one unit per segment, left-to-right
     for (j in seq_along(chain_ops)) {
-      units <- c(units, list(
-        .segment_units(chain_terms[[j]], chain_ops[[j]], chain_terms[[j + 1L]])
-      ))
+      units <- c(
+        units,
+        list(
+          .segment_units(
+            chain_terms[[j]],
+            chain_ops[[j]],
+            chain_terms[[j + 1L]]
+          )
+        )
+      )
     }
   }
   units
@@ -334,7 +347,8 @@
     } else if (.is_node_expr(ex)) {
       declared <- c(declared, .expand_nodes(ex))
     } else {
-      stop("Expected an edge (A %-->% B) ",
+      stop(
+        "Expected an edge (A %-->% B) ",
         "or a node expression (C, D, C+D, c(C,D)); got: ",
         deparse(ex),
         call. = FALSE
@@ -413,9 +427,11 @@
 #' @returns A `data.table` object with columns `from`, `edge`, and `to`.
 #'
 #' @keywords internal
-.edge_constructor <- function(from = character(),
-                              edge = character(),
-                              to = character()) {
+.edge_constructor <- function(
+  from = character(),
+  edge = character(),
+  to = character()
+) {
   dt <- data.table::data.table(
     from = from,
     edge = edge,

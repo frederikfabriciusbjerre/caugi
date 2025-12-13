@@ -57,10 +57,12 @@ S7::method(length, caugi) <- function(x) {
 #' @concept methods
 #'
 #' @export
-S7::method(print, caugi) <- function(x,
-                                     max_nodes = getOption("caugi.max_nodes"),
-                                     max_edges = getOption("caugi.max_edges"),
-                                     ...) {
+S7::method(print, caugi) <- function(
+  x,
+  max_nodes = getOption("caugi.max_nodes"),
+  max_edges = getOption("caugi.max_edges"),
+  ...
+) {
   nodes_tbl <- x@nodes
   edges_tbl <- x@edges
 
@@ -86,7 +88,11 @@ S7::method(print, caugi) <- function(x,
   # header split across two lines: main summary + graph_class line
   header <- sprintf(
     "<caugi object; %d nodes, %d edges; simple: %s; built: %s; ptr=%s>",
-    n_nodes, n_edges, simple, built, ptr_str
+    n_nodes,
+    n_edges,
+    simple,
+    built,
+    ptr_str
   )
   header_class <- sprintf("  graph_class: %s", graph_class)
 
@@ -114,7 +120,9 @@ S7::method(print, caugi) <- function(x,
 
     # how many of these names can fit on one line?
     n_fit <- .caugi_fit_on_line(node_names, width = width, indent = node_indent)
-    if (n_fit < 1L) n_fit <- 1L
+    if (n_fit < 1L) {
+      n_fit <- 1L
+    }
 
     shown_nodes <- min(n_fit, length(node_names))
     shown_names <- node_names[seq_len(shown_nodes)]
@@ -157,10 +165,14 @@ S7::method(print, caugi) <- function(x,
   remaining <- edge_labels
 
   for (line_idx in seq_len(max_lines)) {
-    if (length(remaining) == 0L) break
+    if (length(remaining) == 0L) {
+      break
+    }
 
     n_fit <- .caugi_fit_on_line(remaining, width = width, indent = edge_indent)
-    if (n_fit < 1L) n_fit <- 1L
+    if (n_fit < 1L) {
+      n_fit <- 1L
+    }
     take <- seq_len(min(n_fit, length(remaining)))
 
     line_labels <- remaining[take]

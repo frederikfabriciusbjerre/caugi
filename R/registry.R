@@ -54,8 +54,10 @@ NULL
 #'
 #' @export
 caugi_registry <- function() {
-  if (!exists("reg", envir = .caugi_env, inherits = FALSE) ||
-    is.null(.caugi_env$reg)) {
+  if (
+    !exists("reg", envir = .caugi_env, inherits = FALSE) ||
+      is.null(.caugi_env$reg)
+  ) {
     reg <- edge_registry_new()
     edge_registry_register_builtins(reg) # once per session
     .caugi_env$reg <- reg
@@ -118,11 +120,13 @@ seal_caugi_registry <- function() {
 #' @concept registry
 #'
 #' @export
-register_caugi_edge <- function(glyph,
-                                tail_mark,
-                                head_mark,
-                                class,
-                                symmetric = FALSE) {
+register_caugi_edge <- function(
+  glyph,
+  tail_mark,
+  head_mark,
+  class,
+  symmetric = FALSE
+) {
   if (!is.character(glyph) || length(glyph) != 1L) {
     stop("glyph must be a single string")
   }
@@ -132,8 +136,11 @@ register_caugi_edge <- function(glyph,
   if (grepl("%", glyph)) {
     stop("glyph must not contain '%'")
   }
-  if (class %in% c("directed", "partially_directed", "partially_undirected") &&
-    symmetric) {
+  if (
+    class %in%
+      c("directed", "partially_directed", "partially_undirected") &&
+      symmetric
+  ) {
     stop("This class cannot be symmetric")
   }
   if (class %in% c("undirected", "bidirected", "partial") && !symmetric) {
@@ -205,7 +212,10 @@ is_edge_symmetric <- function(glyph) {
   tryCatch(
     code <- edge_registry_code_of(reg, glyph),
     error = function(e) {
-      stop("glyph '", glyph, "' is not registered in caugi",
+      stop(
+        "glyph '",
+        glyph,
+        "' is not registered in caugi",
         " edge registry. Please either register it first with ",
         "register_caugi_edge() or use a glyph from the registry.",
         call. = FALSE
@@ -215,7 +225,10 @@ is_edge_symmetric <- function(glyph) {
   # check if symmetric glyph
   edge_spec <- edge_registry_spec_of_code(reg, code)
   if (!edge_spec$symmetric) {
-    stop("glyph '", glyph, "' is not symmetric. ",
+    stop(
+      "glyph '",
+      glyph,
+      "' is not symmetric. ",
       "Please use a symmetric glyph.",
       call. = FALSE
     )

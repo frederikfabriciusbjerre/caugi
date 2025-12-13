@@ -95,8 +95,12 @@ hd <- function(cg1, cg2, normalized = FALSE) {
 #' @concept metrics
 #'
 #' @export
-aid <- function(truth, guess, type = c("oset", "ancestor", "parent"),
-                normalized = TRUE) {
+aid <- function(
+  truth,
+  guess,
+  type = c("oset", "ancestor", "parent"),
+  normalized = TRUE
+) {
   type <- match.arg(type)
   is_caugi(truth, throw_error = TRUE)
   is_caugi(guess, throw_error = TRUE)
@@ -104,7 +108,8 @@ aid <- function(truth, guess, type = c("oset", "ancestor", "parent"),
   build(truth)
   build(guess)
 
-  res <- switch(type,
+  res <- switch(
+    type,
     oset = oset_aid_of_ptrs(
       truth@ptr,
       truth@nodes$name,

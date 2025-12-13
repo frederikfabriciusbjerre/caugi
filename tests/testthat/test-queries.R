@@ -97,9 +97,7 @@ test_that("is_cpdag works", {
   cg <- caugi(A %-->% B, B %-->% C, C %o->% D, class = "Unknown")
   expect_false(is_cpdag(cg))
 
-  cg <- caugi(A %-->% B, B %-->% C, C %---% D + E %o->% F,
-    class = "Unknown"
-  )
+  cg <- caugi(A %-->% B, B %-->% C, C %---% D + E %o->% F, class = "Unknown")
   expect_false(is_cpdag(cg))
 })
 
@@ -117,7 +115,6 @@ test_that("is_ug works", {
   cg <- caugi(A %---% B, B %---% C, C %---% D, class = "UG")
   expect_true(is_ug(cg))
   expect_true(is_ug(cg, force_check = TRUE))
-
 
   cg <- caugi(A %-->% B, B %---% C, C %---% D, class = "PDAG")
   expect_false(is_ug(cg))
@@ -179,7 +176,10 @@ test_that("queries fail with bad input", {
   expect_error(ancestors(cg, A, index = 1), "Supply either `nodes` or `index`")
   expect_error(ancestors(cg), "Supply one of `nodes` or `index`")
   expect_error(descendants(cg, index = 0), "must be >= 0")
-  expect_error(descendants(cg, A, index = 1), "Supply either `nodes` or `index`")
+  expect_error(
+    descendants(cg, A, index = 1),
+    "Supply either `nodes` or `index`"
+  )
   expect_error(descendants(cg), "Supply one of `nodes` or `index`")
 })
 
@@ -339,7 +339,14 @@ test_that("getter queries errors on non-character input", {
 })
 
 test_that("getter queries builds", {
-  getter_queries <- c(parents, children, neighbors, ancestors, descendants, markov_blanket)
+  getter_queries <- c(
+    parents,
+    children,
+    neighbors,
+    ancestors,
+    descendants,
+    markov_blanket
+  )
   for (getter in getter_queries) {
     cg <- caugi(A %-->% B, B %-->% C, class = "DAG", build = FALSE)
     getter(cg, "B")
@@ -369,7 +376,8 @@ test_that(".getter_output returns data frame with name column", {
 test_that("subgraph selects nodes and errors with none", {
   cg <- caugi()
   cg <- add_nodes(cg, name = c("A", "B", "C"))
-  cg <- add_edges(cg,
+  cg <- add_edges(
+    cg,
     from = c("A", "B"),
     edge = c("-->", "-->"),
     to = c("B", "C")
@@ -378,13 +386,19 @@ test_that("subgraph selects nodes and errors with none", {
 
   sg <- subgraph(cg, nodes = c("A", "B"))
   expect_setequal(sg@nodes$name, c("A", "B"))
-  expect_equal(sg@edges, data.table::data.table(from = "A", edge = "-->", to = "B"))
+  expect_equal(
+    sg@edges,
+    data.table::data.table(from = "A", edge = "-->", to = "B")
+  )
 })
 
 test_that("subgraph errors on invalid arg combos", {
   g <- caugi(
-    from = character(), edge = character(), to = character(),
-    nodes = c("A", "B"), class = "UNKNOWN"
+    from = character(),
+    edge = character(),
+    to = character(),
+    nodes = c("A", "B"),
+    class = "UNKNOWN"
   )
   expect_error(subgraph(g), "Supply one of `nodes` or `index`")
   expect_error(subgraph(g, nodes = "A", index = 1), "not both")
@@ -392,8 +406,11 @@ test_that("subgraph errors on invalid arg combos", {
 
 test_that("subgraph validates index", {
   g <- caugi(
-    from = character(), edge = character(), to = character(),
-    nodes = c("A", "B"), class = "UNKNOWN"
+    from = character(),
+    edge = character(),
+    to = character(),
+    nodes = c("A", "B"),
+    class = "UNKNOWN"
   )
   expect_error(subgraph(g, index = "a"), "`index` must be numeric")
   expect_error(subgraph(g, index = c(1, NA_integer_)), "numeric without NA")
@@ -404,8 +421,11 @@ test_that("subgraph validates index", {
 test_that("subgraph validates nodes", {
   skip_if_not_installed("data.table")
   g <- caugi(
-    from = character(), edge = character(), to = character(),
-    nodes = c("A", "B"), class = "UNKNOWN"
+    from = character(),
+    edge = character(),
+    to = character(),
+    nodes = c("A", "B"),
+    class = "UNKNOWN"
   )
   expect_error(subgraph(g, nodes = 1), "character vector")
   expect_error(subgraph(g, nodes = c("A", NA_character_)), "contains NA")
@@ -414,8 +434,11 @@ test_that("subgraph validates nodes", {
 
 test_that("subgraph catches duplicates (nodes and index)", {
   g <- caugi(
-    from = c("A", "B"), edge = c("-->", "-->"), to = c("C", "D"),
-    nodes = c("A", "B", "C", "D"), class = "DAG"
+    from = c("A", "B"),
+    edge = c("-->", "-->"),
+    to = c("C", "D"),
+    nodes = c("A", "B", "C", "D"),
+    class = "DAG"
   )
   expect_error(subgraph(g, nodes = c("A", "A")), "contains duplicates")
   expect_error(subgraph(g, index = c(1L, 1L)), "contains duplicates")
@@ -423,8 +446,11 @@ test_that("subgraph catches duplicates (nodes and index)", {
 
 test_that("subgraph on graph without edges keeps nodes and empty edges", {
   g <- caugi(
-    from = character(), edge = character(), to = character(),
-    nodes = c("A", "B", "C"), class = "UNKNOWN"
+    from = character(),
+    edge = character(),
+    to = character(),
+    nodes = c("A", "B", "C"),
+    class = "UNKNOWN"
   )
   s <- subgraph(g, nodes = c("C", "A"))
   expect_identical(s@nodes$name, c("C", "A"))

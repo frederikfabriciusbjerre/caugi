@@ -8,7 +8,8 @@ test_that("DAG --> UG with skeleton keeps the skeleton", {
     B %-->% C,
     C %-->% D,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "DAG"
   )
 
@@ -27,7 +28,8 @@ test_that("PDAG --> UG with skeleton keeps the skeleton", {
     B %-->% C,
     C %---% D,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "PDAG"
   )
 
@@ -51,7 +53,8 @@ test_that("moralize works on DAGs", {
     D %-->% C,
     E %-->% C,
     D %-->% B,
-    F, G,
+    F,
+    G,
     nodes = c("A", "B", "C", "D", "E", "F", "G"),
     class = "DAG"
   )
@@ -72,7 +75,8 @@ test_that("moralize works on DAGs", {
     C %---% D,
     C %---% E,
     D %---% E,
-    F, G,
+    F,
+    G,
     nodes = c("A", "B", "C", "D", "E", "F", "G"),
     class = "UG"
   )
@@ -114,7 +118,8 @@ test_that("mutate_caugi throws error, when mutation isn't possible", {
     B %-->% C,
     C %---% D,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "PDAG"
   )
 
@@ -129,14 +134,16 @@ test_that("mutate_caugi works for all classes to UNKNOWN", {
     B %-->% C,
     C %---% D,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "PDAG"
   )
   cg_dag <- caugi(
     A %-->% B,
     B %-->% C,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "DAG"
   )
   cg_ug <- caugi(
@@ -144,7 +151,8 @@ test_that("mutate_caugi works for all classes to UNKNOWN", {
     B %---% C,
     C %---% D,
     D %---% E,
-    F, G,
+    F,
+    G,
     class = "UG"
   )
   cg_unknown_pdag <- mutate_caugi(cg_pdag, class = "UNKNOWN")
@@ -168,7 +176,8 @@ test_that("mutate_caugi works from UNKNOWN to DAG", {
     A %-->% B,
     B %-->% C,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "UNKNOWN"
   )
   is_it <- is_dag(cg_unknown)
@@ -185,7 +194,8 @@ test_that("mutate_caugi works from DAG to PDAG", {
     A %-->% B,
     B %-->% C,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "DAG"
   )
 
@@ -200,7 +210,8 @@ test_that("mutate_caugi works from PDAG to DAG if PDAG is a DAG", {
     A %-->% B,
     B %-->% C,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "PDAG"
   )
   is_it <- is_dag(cg_pdag)
@@ -224,7 +235,8 @@ test_that("mutate_caugi doesn't change class if old class is equal to new class"
     A %-->% B,
     B %-->% C,
     D %-->% E,
-    F, G,
+    F,
+    G,
     class = "DAG"
   )
 

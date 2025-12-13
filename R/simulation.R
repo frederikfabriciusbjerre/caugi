@@ -69,8 +69,9 @@ generate_graph <- function(n, m = NULL, p = NULL, class = c("DAG", "CPDAG")) {
     graph_builder_add_edges(b, from, to, rep.int(code_dir, m))
   }
 
-
   ptr <- graph_builder_build_view(b, "DAG")
-  if (class == "CPDAG") ptr <- to_cpdag_ptr(ptr)
+  if (class == "CPDAG") {
+    ptr <- to_cpdag_ptr(ptr)
+  }
   .view_to_caugi(ptr)
 }

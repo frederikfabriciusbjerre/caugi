@@ -270,7 +270,7 @@ test_that("caugi builds from parallel vectors", {
   cg_vec <- caugi(
     from = c("A", "B", "C"),
     edge = c("-->", "---", "<->"),
-    to   = c("B", "C", "D")
+    to = c("B", "C", "D")
   )
 
   expect_s7_class(cg_vec, caugi)
@@ -290,7 +290,9 @@ test_that("caugi forbids mixing ... with from/edge/to", {
   expect_error(
     caugi(
       A %-->% B,
-      from = "C", edge = "-->", to = "D"
+      from = "C",
+      edge = "-->",
+      to = "D"
     ),
     "Provide edges via infix expressions"
   )
@@ -308,7 +310,7 @@ test_that("caugi requires from, edge, to all present and equal length", {
     caugi(
       from = c("A", "B"),
       edge = c("-->", "---"),
-      to   = "C"
+      to = "C"
     ),
     "`from`, `edge`, and `to` must be equal length."
   )
@@ -326,7 +328,7 @@ test_that("caugi(vector mode) gets the same result as in with DSL", {
   cg1 <- caugi(
     from = c("A"),
     edge = c("-->"),
-    to   = c("B")
+    to = c("B")
   )
   cg2 <- caugi(A %-->% B)
   expect_equal(cg1, cg2)
@@ -404,7 +406,7 @@ test_that("edges_df input works", {
   edges_df <- data.frame(
     from = c("A", "B", "C"),
     edge = c("-->", "---", "<->"),
-    to   = c("B", "C", "D")
+    to = c("B", "C", "D")
   )
 
   cg_df <- caugi(edges_df = edges_df)
@@ -422,7 +424,7 @@ test_that("edges_df input works for empty graph", {
   edges_df <- data.frame(
     from = character(),
     edge = character(),
-    to   = character()
+    to = character()
   )
 
   cg_df <- caugi(edges_df = edges_df)
@@ -435,7 +437,6 @@ test_that("edges_df input works for empty graph", {
 # ──────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────── Errors and warnings ──────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
-
 
 test_that("caugi errors with trailing commas", {
   expect_error(
@@ -562,7 +563,6 @@ test_that("edges df input is not a data.frame or data.table", {
 # ──────────────────────────────────────────────────────────────────────────────
 # ────────────────────────────── .view_to_caugi ────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
-
 
 test_that(".view_to_caugi works as expected", {
   cg <- caugi(

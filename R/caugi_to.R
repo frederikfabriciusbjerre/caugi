@@ -20,7 +20,10 @@ as_igraph <- function(x, ...) {
   is_caugi(x, throw_error = TRUE)
 
   if (!(x@graph_class %in% c("DAG", "PDAG", "ADMG", "UG", "UNKNOWN"))) {
-    stop("caugi graphs of class '", x@graph_class, "' cannot be converted to ",
+    stop(
+      "caugi graphs of class '",
+      x@graph_class,
+      "' cannot be converted to ",
       "igraph objects.",
       call. = FALSE
     )
@@ -32,7 +35,8 @@ as_igraph <- function(x, ...) {
     directed <- FALSE
   } else if (length(et) == 0L) {
     directed <- FALSE
-  } else if (all(et %in% c("---", "<->"))) { # treat both as undirected
+  } else if (all(et %in% c("---", "<->"))) {
+    # treat both as undirected
     directed <- FALSE
   } else {
     directed <- TRUE
@@ -46,14 +50,16 @@ as_igraph <- function(x, ...) {
         to = character(0)
       ),
       vertices = nodes(x),
-      directed = directed, ...
+      directed = directed,
+      ...
     ))
   }
 
   # edge validity for UNKNOWN
   if (x@graph_class == "UNKNOWN") {
     if (any(!(et %in% c("-->", "<->", "---")))) {
-      stop("Conversion to igraph is only supported for 'UNKNOWN' caugi graphs ",
+      stop(
+        "Conversion to igraph is only supported for 'UNKNOWN' caugi graphs ",
         " with '-->', '<->', or '---' edges.",
         call. = FALSE
       )
@@ -67,16 +73,19 @@ as_igraph <- function(x, ...) {
     return(igraph::graph_from_data_frame(
       data.table::data.table(
         from = pmin(e$from, e$to),
-        to   = pmax(e$from, e$to)
+        to = pmax(e$from, e$to)
       ),
       vertices = nodes(x),
-      directed = FALSE, ...
+      directed = FALSE,
+      ...
     ))
   } else if (all(et %in% "-->")) {
     # all directed
     return(igraph::graph_from_data_frame(
       data.table::data.table(from = e$from, to = e$to),
-      vertices = nodes(x), directed = TRUE, ...
+      vertices = nodes(x),
+      directed = TRUE,
+      ...
     ))
   } else {
     # mixed: keep directed as-is, duplicate undirected as bidirected
@@ -99,7 +108,9 @@ as_igraph <- function(x, ...) {
 
     return(igraph::graph_from_data_frame(
       all_df,
-      vertices = nodes(x), directed = TRUE, ...
+      vertices = nodes(x),
+      directed = TRUE,
+      ...
     ))
   }
 }
@@ -138,7 +149,8 @@ as_adjacency <- function(x) {
 
   ok <- e$edge %in% c("-->", "---", "<->")
   if (any(!ok)) {
-    stop("Unsupported edge glyphs in conversion to adjacency: ",
+    stop(
+      "Unsupported edge glyphs in conversion to adjacency: ",
       paste(unique(e$edge[!ok]), collapse = ", "),
       call. = FALSE
     )
@@ -243,16 +255,20 @@ as_dagitty <- function(x) {
   type <-
     if (all(gs %in% "-->")) {
       "dag"
-    } else if (all(gs %in% c("-->", "---"))) { # DAG + undirected
+    } else if (all(gs %in% c("-->", "---"))) {
+      # DAG + undirected
       "pdag"
-    } else if (all(gs %in% c("-->", "---", "<->"))) { # DAG + bidirected
+    } else if (all(gs %in% c("-->", "---", "<->"))) {
+      # DAG + bidirected
       "mag"
-    } else { # any circle marks present
+    } else {
+      # any circle marks present
       "pag"
     }
 
   map_edge <- function(g, a, b) {
-    switch(g,
+    switch(
+      g,
       "-->" = sprintf("%s -> %s", a, b),
       "<->" = {
         aa <- min(a, b)

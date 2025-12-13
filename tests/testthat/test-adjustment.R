@@ -22,11 +22,36 @@ test_that("d-separation checks", {
 
   # now with indexes
   expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L)) # backdoor via A-->K-->Y and causal X-->D-->Y
-  expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L, Z_index = 3L)) # causal path still open
-  expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L, Z_index = 4L)) # causal path still open
-  expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L, Z_index = 5L)) # backdoor still open
-  expect_true(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L, Z_index = c(3L, 5L)))
-  expect_true(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L, Z_index = c(4L, 5L)))
+  expect_false(d_separated(
+    adjustment_set_cg,
+    X_index = 2L,
+    Y_index = 6L,
+    Z_index = 3L
+  )) # causal path still open
+  expect_false(d_separated(
+    adjustment_set_cg,
+    X_index = 2L,
+    Y_index = 6L,
+    Z_index = 4L
+  )) # causal path still open
+  expect_false(d_separated(
+    adjustment_set_cg,
+    X_index = 2L,
+    Y_index = 6L,
+    Z_index = 5L
+  )) # backdoor still open
+  expect_true(d_separated(
+    adjustment_set_cg,
+    X_index = 2L,
+    Y_index = 6L,
+    Z_index = c(3L, 5L)
+  ))
+  expect_true(d_separated(
+    adjustment_set_cg,
+    X_index = 2L,
+    Y_index = 6L,
+    Z_index = c(4L, 5L)
+  ))
 })
 
 test_that("adjustment_set(type = 'parents') returns Pa(X) \\ {X,Y}", {
@@ -50,7 +75,12 @@ test_that("is_valid_backdoor works on canonical choices", {
   expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = "A"))
   expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = "K"))
   expect_false(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = "D"))
-  expect_false(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = c("A", "D")))
+  expect_false(is_valid_backdoor(
+    adjustment_set_cg,
+    X = "X",
+    Y = "Y",
+    Z = c("A", "D")
+  ))
   expect_false(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = NULL))
 })
 
@@ -66,8 +96,11 @@ test_that("all_backdoor_sets respects max_size and minimal", {
   sets <- all_backdoor_sets(adjustment_set_cg, X = "X", Y = "Y", minimal = TRUE)
   expect_equal(length(sets), 2L)
   expect_setequal(sets, c("A", "K"))
-  sets2 <- all_backdoor_sets(adjustment_set_cg,
-    X = "X", Y = "Y", minimal = FALSE,
+  sets2 <- all_backdoor_sets(
+    adjustment_set_cg,
+    X = "X",
+    Y = "Y",
+    minimal = FALSE,
     max_size = 2
   )
   expect_equal(length(sets2), 5L)
@@ -91,20 +124,35 @@ test_that("all_backdoor_sets includes empty set, if valid", {
   # check if empty set is valid
   expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = NULL))
 
-  sets <- all_backdoor_sets(adjustment_set_cg,
-    X = "X", Y = "Y", minimal = FALSE,
+  sets <- all_backdoor_sets(
+    adjustment_set_cg,
+    X = "X",
+    Y = "Y",
+    minimal = FALSE,
     max_size = 2
   )
   valid_sets <- list(
-    character(0), "C", "A", "K", c("A", "K"), c("C", "A"), c("C", "K"),
-    c("A", "L"), c("K", "L")
+    character(0),
+    "C",
+    "A",
+    "K",
+    c("A", "K"),
+    c("C", "A"),
+    c("C", "K"),
+    c("A", "L"),
+    c("K", "L")
   )
   expect_setequal(sets, valid_sets)
 })
 
 test_that("adjustment functions cannot take multiple inputs", {
   expect_error(
-    adjustment_set(adjustment_set_cg, X = c("X", "A"), Y = "Y", type = "parents"),
+    adjustment_set(
+      adjustment_set_cg,
+      X = c("X", "A"),
+      Y = "Y",
+      type = "parents"
+    ),
     "Provide exactly one X and one Y."
   )
   expect_error(
@@ -127,7 +175,13 @@ test_that("adjust functions fails with faulty input", {
     "Either the node name or the node index must be provided"
   )
   expect_error(
-    adjustment_set(adjustment_set_cg, X = "X", Y = "Y", Y_index = 6L, type = "parent"),
+    adjustment_set(
+      adjustment_set_cg,
+      X = "X",
+      Y = "Y",
+      Y_index = 6L,
+      type = "parent"
+    ),
     "Provide either a node name or node index"
   )
   expect_error(
