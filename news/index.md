@@ -39,6 +39,8 @@
 
 ## caugi 0.3.1
 
+CRAN release: 2025-12-04
+
 - Remove the use of `lockBinding` and `unlockBinding` in the package to
   silence R CMD check notes.
 
