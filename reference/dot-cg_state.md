@@ -6,16 +6,7 @@ function is not intended to be used directly by users.
 ## Usage
 
 ``` r
-.cg_state(
-  nodes,
-  edges,
-  ptr,
-  built,
-  simple,
-  class,
-  name_index_map,
-  index_name_map
-)
+.cg_state(nodes, edges, ptr, built, simple, class, name_index_map)
 ```
 
 ## Arguments

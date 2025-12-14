@@ -25,7 +25,7 @@ viewports for proper coordinate handling.
   - Appearance (passed to `gpar()`): `fill`, `col`, `lwd`, `lty`,
     `alpha`
 
-  - Geometry: `padding` (text padding inside nodes in mm, default 0.3),
+  - Geometry: `padding` (text padding inside nodes in mm, default 2),
     `size` (node size multiplier, default 1)
 
 - edge_style:
@@ -34,7 +34,8 @@ viewports for proper coordinate handling.
   per-type options via `directed`, `undirected`, `bidirected`,
   `partial`. Supports:
 
-  - Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`
+  - Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`,
+    `fill`.
 
   - Geometry: `arrow_size` (arrow length in mm, default 3)
 

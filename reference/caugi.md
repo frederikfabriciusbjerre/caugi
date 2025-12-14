@@ -154,6 +154,6 @@ cg5 <- caugi(
   build = FALSE
 )
 
-cg@built # FALSE
-#> [1] TRUE
+cg5@built # FALSE
+#> [1] FALSE
 ```
