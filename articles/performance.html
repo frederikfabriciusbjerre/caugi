@@ -183,7 +183,7 @@ become prohibitively slow for larger graphs.</p>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># igraph returns igraph object</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_parents_children</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_parents_children</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="performance_files/figure-html/benchmark-parents-children-1.png" class="r-plt" alt="Benchmarking parents/children queries for different packages." width="480"><p class="caption">
 Benchmarking parents/children queries for different packages.
@@ -273,7 +273,7 @@ outperforms all other packages by a several magnitudes, except for
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># dagitty returns V500 as well and igraph returns an igraph</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_ancestors_descendants</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_ancestors_descendants</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="performance_files/figure-html/benchmark-an-de-1.png" class="r-plt" alt="Benchmarking ancestors/descendants queries for different packages." width="480"><p class="caption">
 Benchmarking ancestors/descendants queries for different packages.
@@ -312,7 +312,7 @@ then check for d-separation.</p>
 <span>  dagitty <span class="op">=</span> <span class="fu">dagitty</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dagitty/man/dconnected.html" class="external-link">dseparated</a></span><span class="op">(</span><span class="va">dg</span>, <span class="st">"V500"</span>, <span class="st">"V681"</span>, <span class="va">valid_adjustment_set</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_dsep</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_dsep</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="performance_files/figure-html/benchmark-d-sep-1.png" class="r-plt" alt="Benchmarks for obtaining a valid adjustment set for d-separation." width="480"><p class="caption">
 Benchmarks for obtaining a valid adjustment set for d-separation.
@@ -345,7 +345,7 @@ the graph objects themselves, which shows in the subgraph benchmark:</p>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_subgraph</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_subgraph</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="performance_files/figure-html/benchmark-subgraph-1.png" class="r-plt" alt="Benchmarking subgraph extraction for different packages." width="480"><p class="caption">
 Benchmarking subgraph extraction for different packages.

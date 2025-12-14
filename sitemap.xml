@@ -25,6 +25,8 @@
 <url><loc>https://caugi.org/reference/build.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi-package.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_layout.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_plot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_verbs.html</loc></url>
 <url><loc>https://caugi.org/reference/children.html</loc></url>
 <url><loc>https://caugi.org/reference/d_separated.html</loc></url>
@@ -80,12 +82,14 @@
 <url><loc>https://caugi.org/reference/is_valid_backdoor.html</loc></url>
 <url><loc>https://caugi.org/reference/length.html</loc></url>
 <url><loc>https://caugi.org/reference/m_separated.html</loc></url>
+<url><loc>https://caugi.org/reference/makeContent.caugi_edge_grob.html</loc></url>
 <url><loc>https://caugi.org/reference/markov_blanket.html</loc></url>
 <url><loc>https://caugi.org/reference/moralize.html</loc></url>
 <url><loc>https://caugi.org/reference/mutate_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/neighbors.html</loc></url>
 <url><loc>https://caugi.org/reference/nodes.html</loc></url>
 <url><loc>https://caugi.org/reference/parents.html</loc></url>
+<url><loc>https://caugi.org/reference/plot.html</loc></url>
 <url><loc>https://caugi.org/reference/print.html</loc></url>
 <url><loc>https://caugi.org/reference/register_caugi_edge.html</loc></url>
 <url><loc>https://caugi.org/reference/registry.html</loc></url>

@@ -191,3 +191,12 @@
 
 - [`skeleton()`](https://caugi.org/reference/skeleton.md) : Get the
   skeleton of a graph
+
+## Plotting
+
+- [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) :
+  Compute Graph Layout
+- [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md) : S7 Class
+  for caugi Plot
+- [`plot`](https://caugi.org/reference/plot.md) : Create a caugi Graph
+  Plot Object
