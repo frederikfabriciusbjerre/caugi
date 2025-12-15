@@ -51,7 +51,7 @@ be built automatically before computing the layout.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_layout</span><span class="op">(</span><span class="va">x</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sugiyama"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_layout</span><span class="op">(</span><span class="va">x</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"sugiyama"</span>, <span class="st">"force"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -64,8 +64,11 @@ layout.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Character string specifying the layout method. Currently only
-<code>"sugiyama"</code> is supported, which requires graphs with only directed edges.</p></dd>
+<dd><p>Character string specifying the layout method. Options:</p><ul><li><p><code>"auto"</code>: Automatically choose sugiyama for graphs with only directed
+edges, otherwise force (default)</p></li>
+<li><p><code>"sugiyama"</code>: Hierarchical layout for DAGs (requires only directed edges)</p></li>
+<li><p><code>"force"</code>: Force-directed layout (works with all edge types)</p></li>
+</ul></dd>
 
 </dl></div>
     <div class="section level2">

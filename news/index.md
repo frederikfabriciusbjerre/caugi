@@ -5,10 +5,10 @@
 ### New Features
 
 - Add [`plot()`](https://caugi.org/reference/plot.md) method for
-  visualizing DAGs using the Sugiyama hierarchical layout algorithm. The
-  plot is rendered using grid graphics and returns a `caugi_plot` object
-  that can be customized with `node_style`, `edge_style`, and
-  `label_style` arguments.
+  visualizing graphs using the Sugiyama algorithm for DAGs and a
+  force-directed algorithm for other graphs. The plot is rendered using
+  grid graphics and returns a `caugi_plot` object that can be customized
+  with `node_style`, `edge_style`, and `label_style` arguments.
 - Add [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md)
   function to compute node coordinates for graph visualization using the
   Sugiyama layout algorithm.

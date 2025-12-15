@@ -7,7 +7,7 @@ automatically before computing the layout.
 ## Usage
 
 ``` r
-caugi_layout(x, method = c("sugiyama"))
+caugi_layout(x, method = c("auto", "sugiyama", "force"))
 ```
 
 ## Arguments
@@ -19,9 +19,15 @@ caugi_layout(x, method = c("sugiyama"))
 
 - method:
 
-  Character string specifying the layout method. Currently only
-  `"sugiyama"` is supported, which requires graphs with only directed
-  edges.
+  Character string specifying the layout method. Options:
+
+  - `"auto"`: Automatically choose sugiyama for graphs with only
+    directed edges, otherwise force (default)
+
+  - `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
+    edges)
+
+  - `"force"`: Force-directed layout (works with all edge types)
 
 ## Value
 

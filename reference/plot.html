@@ -63,8 +63,11 @@ layout.</p></dd>
 
 
 <dt id="arg-layout">layout<a class="anchor" aria-label="anchor" href="#arg-layout"></a></dt>
-<dd><p>Character string specifying the layout method. Currently only
-<code>"sugiyama"</code> is supported, which requires graphs with only directed edges.</p></dd>
+<dd><p>Character string specifying the layout method. Options:</p><ul><li><p><code>"auto"</code>: Automatically choose sugiyama for graphs with only directed
+edges, otherwise force (default)</p></li>
+<li><p><code>"sugiyama"</code>: Hierarchical layout for DAGs (requires only directed edges)</p></li>
+<li><p><code>"force"</code>: Force-directed layout (works with all edge types)</p></li>
+</ul></dd>
 
 
 <dt id="arg-node-style">node_style<a class="anchor" aria-label="anchor" href="#arg-node-style"></a></dt>

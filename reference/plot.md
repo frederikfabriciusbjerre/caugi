@@ -14,9 +14,15 @@ viewports for proper coordinate handling.
 
 - layout:
 
-  Character string specifying the layout method. Currently only
-  `"sugiyama"` is supported, which requires graphs with only directed
-  edges.
+  Character string specifying the layout method. Options:
+
+  - `"auto"`: Automatically choose sugiyama for graphs with only
+    directed edges, otherwise force (default)
+
+  - `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
+    edges)
+
+  - `"force"`: Force-directed layout (works with all edge types)
 
 - node_style:
 
