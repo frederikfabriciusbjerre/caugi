@@ -4,16 +4,41 @@
 #' specified layout algorithm. If the graph has not been built yet, it will
 #' be built automatically before computing the layout.
 #'
+#' @section Layout Algorithms:
+#'
+#' **Sugiyama (Hierarchical Layout)**
+#'
+#' Optimized for directed acyclic graphs (DAGs). Places nodes in layers to
+#' emphasize hierarchical structure and causal flow from top to bottom. Edges
+#' are routed to minimize crossings. Best for visualizing clear cause-effect
+#' relationships. Only works with directed edges.
+#'
+#' **Fruchterman-Reingold (Spring-Electrical)**
+#'
+#' Fast force-directed layout using a spring-electrical model. Treats edges as
+#' springs and nodes as electrically charged particles. Produces organic,
+#' symmetric layouts with uniform edge lengths. Good for general-purpose
+#' visualization and works with all edge types. Results are deterministic.
+#'
+#' **Kamada-Kawai (Stress Minimization)**
+#'
+#' High-quality force-directed layout that minimizes "stress" by making
+#' Euclidean distances proportional to graph-theoretic distances. Better
+#' preserves the global structure and path lengths compared to
+#' Fruchterman-Reingold. Ideal for publication-quality visualizations where
+#' accurate distance representation matters. Works with all edge types and
+#' produces deterministic results.
+#'
 #' @param x A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
 #' @param method Character string specifying the layout method. Options:
 #'   * `"auto"`: Automatically choose sugiyama for graphs with only directed
 #'     edges, otherwise fruchterman-reingold (default)
 #'   * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed edges)
-#'   * `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical layout
-#'     (fast, works with all edge types).
-#'   * `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality, better
-#'     distance preservation, works with all edge types).
+#'   * `"fruchterman-reingold"`: Fast spring-electrical layout (works with all
+#'     edge types)
+#'   * `"kamada-kawai"`: High-quality stress minimization (works with all edge
+#'     types)
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -25,10 +50,34 @@
 #'   C %-->% D,
 #'   class = "DAG"
 #' )
+#'
+#' # Default: auto-selects best layout
 #' layout <- caugi_layout(cg)
+#'
+#' # Explicitly use hierarchical layout
+#' layout_sug <- caugi_layout(cg, method = "sugiyama")
+#'
+#' # Use force-directed for organic appearance
+#' layout_fr <- caugi_layout(cg, method = "fruchterman-reingold")
+#'
+#' # Use stress minimization for publication quality
+#' layout_kk <- caugi_layout(cg, method = "kamada-kawai")
 #'
 #' @family plotting
 #' @concept plotting
+#'
+#' @source Fruchterman, T. M. J., & Reingold, E. M. (1991). Graph drawing by
+#' force-directed placement. Software: Practice and Experience, 21(11),
+#' 1129-1164. \doi{10.1002/spe.4380211102}
+#'
+#' @source Kamada, T., & Kawai, S. (1989). An algorithm for drawing general
+#' undirected graphs. Information Processing Letters, 31(1), 7-15.
+#' \doi{10.1016/0020-0190(89)90102-6}
+#'
+#' @source Sugiyama, K., Tagawa, S., & Toda, M. (1981). Methods for visual
+#' understanding of hierarchical system structures. IEEE Transactions on
+#' Systems, Man, and Cybernetics, 11(2), 109-125.
+#' \doi{10.1109/TSMC.1981.4308636}
 #'
 #' @export
 caugi_layout <- function(
@@ -113,14 +162,15 @@ get_gpar_params <- function(style) {
 #' @param x A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
 #' @param layout Character string specifying the layout method. Options:
-#'   * `"auto"`: Automatically choose sugiyama for graphs with only directed
-#'     edges, otherwise fruchterman-reingold (default)
-#'   * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed edges)
-#'   * `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical layout
-#'     (fast, works with all edge types). Also accepts `"fr"` as shorthand.
-#'   * `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality, better
-#'     distance preservation, works with all edge types). Also accepts `"kk"` as
-#'     shorthand.
+#'     * `"auto"`: Automatically choose sugiyama for graphs with only directed
+#'       edges, otherwise fruchterman-reingold (default)
+#'     * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
+#'       edges)
+#'     * `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical layout
+#'       (fast, works with all edge types).
+#'     * `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality,
+#'       better distance preservation, works with all edge types).
+#'   See [caugi_layout()] for more details on these algorithms.
 #' @param node_style List of node styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `fill`, `col`, `lwd`, `lty`, `alpha`
 #'   * Geometry: `padding` (text padding inside nodes in mm, default 2),

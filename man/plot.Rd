@@ -8,16 +8,15 @@
 layout.}
 
 \item{layout}{Character string specifying the layout method. Options:
-\itemize{
-\item \code{"auto"}: Automatically choose sugiyama for graphs with only directed
+* \code{"auto"}: Automatically choose sugiyama for graphs with only directed
 edges, otherwise fruchterman-reingold (default)
-\item \code{"sugiyama"}: Hierarchical layout for DAGs (requires only directed edges)
-\item \code{"fruchterman-reingold"}: Fruchterman-Reingold spring-electrical layout
-(fast, works with all edge types). Also accepts \code{"fr"} as shorthand.
-\item \code{"kamada-kawai"}: Kamada-Kawai stress minimization (high quality, better
-distance preservation, works with all edge types). Also accepts \code{"kk"} as
-shorthand.
-}}
+* \code{"sugiyama"}: Hierarchical layout for DAGs (requires only directed
+edges)
+* \code{"fruchterman-reingold"}: Fruchterman-Reingold spring-electrical layout
+(fast, works with all edge types).
+* \code{"kamada-kawai"}: Kamada-Kawai stress minimization (high quality,
+better distance preservation, works with all edge types).
+See \code{\link[=caugi_layout]{caugi_layout()}} for more details on these algorithms.}
 
 \item{node_style}{List of node styling parameters. Supports:
 \itemize{

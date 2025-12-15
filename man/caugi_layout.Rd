@@ -3,6 +3,20 @@
 \name{caugi_layout}
 \alias{caugi_layout}
 \title{Compute Graph Layout}
+\source{
+Fruchterman, T. M. J., & Reingold, E. M. (1991). Graph drawing by
+force-directed placement. Software: Practice and Experience, 21(11),
+1129-1164. \doi{10.1002/spe.4380211102}
+
+Kamada, T., & Kawai, S. (1989). An algorithm for drawing general
+undirected graphs. Information Processing Letters, 31(1), 7-15.
+\doi{10.1016/0020-0190(89)90102-6}
+
+Sugiyama, K., Tagawa, S., & Toda, M. (1981). Methods for visual
+understanding of hierarchical system structures. IEEE Transactions on
+Systems, Man, and Cybernetics, 11(2), 109-125.
+\doi{10.1109/TSMC.1981.4308636}
+}
 \usage{
 caugi_layout(
   x,
@@ -18,10 +32,10 @@ layout.}
 \item \code{"auto"}: Automatically choose sugiyama for graphs with only directed
 edges, otherwise fruchterman-reingold (default)
 \item \code{"sugiyama"}: Hierarchical layout for DAGs (requires only directed edges)
-\item \code{"fruchterman-reingold"}: Fruchterman-Reingold spring-electrical layout
-(fast, works with all edge types).
-\item \code{"kamada-kawai"}: Kamada-Kawai stress minimization (high quality, better
-distance preservation, works with all edge types).
+\item \code{"fruchterman-reingold"}: Fast spring-electrical layout (works with all
+edge types)
+\item \code{"kamada-kawai"}: High-quality stress minimization (works with all edge
+types)
 }}
 }
 \value{
@@ -33,6 +47,33 @@ Computes node coordinates for graph visualization using
 specified layout algorithm. If the graph has not been built yet, it will
 be built automatically before computing the layout.
 }
+\section{Layout Algorithms}{
+
+
+\strong{Sugiyama (Hierarchical Layout)}
+
+Optimized for directed acyclic graphs (DAGs). Places nodes in layers to
+emphasize hierarchical structure and causal flow from top to bottom. Edges
+are routed to minimize crossings. Best for visualizing clear cause-effect
+relationships. Only works with directed edges.
+
+\strong{Fruchterman-Reingold (Spring-Electrical)}
+
+Fast force-directed layout using a spring-electrical model. Treats edges as
+springs and nodes as electrically charged particles. Produces organic,
+symmetric layouts with uniform edge lengths. Good for general-purpose
+visualization and works with all edge types. Results are deterministic.
+
+\strong{Kamada-Kawai (Stress Minimization)}
+
+High-quality force-directed layout that minimizes "stress" by making
+Euclidean distances proportional to graph-theoretic distances. Better
+preserves the global structure and path lengths compared to
+Fruchterman-Reingold. Ideal for publication-quality visualizations where
+accurate distance representation matters. Works with all edge types and
+produces deterministic results.
+}
+
 \examples{
 cg <- caugi(
   A \%-->\% B + C,
@@ -40,7 +81,18 @@ cg <- caugi(
   C \%-->\% D,
   class = "DAG"
 )
+
+# Default: auto-selects best layout
 layout <- caugi_layout(cg)
+
+# Explicitly use hierarchical layout
+layout_sug <- caugi_layout(cg, method = "sugiyama")
+
+# Use force-directed for organic appearance
+layout_fr <- caugi_layout(cg, method = "fruchterman-reingold")
+
+# Use stress minimization for publication quality
+layout_kk <- caugi_layout(cg, method = "kamada-kawai")
 
 }
 \seealso{
