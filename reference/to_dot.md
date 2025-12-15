@@ -1,0 +1,78 @@
+# Export caugi Graph to DOT Format
+
+Converts a caugi graph to the Graphviz DOT format as a string. The DOT
+format can be used with Graphviz tools for visualization and analysis.
+
+## Usage
+
+``` r
+to_dot(x, graph_attrs = list(), node_attrs = list(), edge_attrs = list())
+```
+
+## Arguments
+
+- x:
+
+  A `caugi` object.
+
+- graph_attrs:
+
+  Named list of graph attributes (e.g., `list(rankdir = "LR")`).
+
+- node_attrs:
+
+  Named list of default node attributes.
+
+- edge_attrs:
+
+  Named list of default edge attributes.
+
+## Value
+
+A `caugi_dot` object containing the DOT representation.
+
+## Details
+
+The function handles different edge types:
+
+- Directed edges (`-->`) use `->` in DOT
+
+- Undirected edges (`---`) use `--` in DOT (or `->` with `dir=none` in
+  digraphs)
+
+- Bidirected edges (`<->`) use `->` with `[dir=both]` attribute
+
+- Partial edges (`o->`) use `->` with `[arrowtail=odot, dir=both]`
+  attribute
+
+## See also
+
+Other export: [`caugi_dot()`](https://caugi.org/reference/caugi_dot.md),
+[`caugi_export()`](https://caugi.org/reference/caugi_export.md),
+[`export-classes`](https://caugi.org/reference/export-classes.md),
+[`format-dot`](https://caugi.org/reference/format-dot.md),
+[`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md),
+[`write_dot()`](https://caugi.org/reference/write_dot.md)
+
+## Examples
+
+``` r
+cg <- caugi(
+  A %-->% B + C,
+  B %-->% D,
+  C %-->% D,
+  class = "DAG"
+)
+
+# Get DOT string
+dot <- to_dot(cg)
+dot@content
+#> [1] "digraph {\n\n  // Nodes\n  A;\n  B;\n  C;\n  D;\n\n  // Edges\n  A -> B;\n  A -> C;\n  B -> D;\n  C -> D;\n}"
+
+# With custom attributes
+dot <- to_dot(
+  cg,
+  graph_attrs = list(rankdir = "LR"),
+  node_attrs = list(shape = "box")
+)
+```

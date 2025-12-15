@@ -346,6 +346,23 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 - [`skeleton()`](https://caugi.org/reference/skeleton.md) : Get the
   skeleton of a graph
 
+## Importing and Exporting to and from Other Formats
+
+- [`caugi_dot()`](https://caugi.org/reference/caugi_dot.md) : S7 Class
+  for DOT Export
+- [`caugi_export()`](https://caugi.org/reference/caugi_export.md) : S7
+  Base Class for Caugi Exports
+- [`export-classes`](https://caugi.org/reference/export-classes.md) :
+  Export Format Classes
+- [`format-dot`](https://caugi.org/reference/format-dot.md) : DOT Format
+  Export and Import
+- [`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md)
+  : Knit Print Method for caugi_export
+- [`to_dot()`](https://caugi.org/reference/to_dot.md) : Export caugi
+  Graph to DOT Format
+- [`write_dot()`](https://caugi.org/reference/write_dot.md) : Write
+  caugi Graph to DOT File
+
 ## Plotting
 
 - [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) :

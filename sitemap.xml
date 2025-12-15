@@ -25,6 +25,8 @@
 <url><loc>https://caugi.org/reference/build.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi-package.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_dot.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_export.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_plot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_verbs.html</loc></url>
@@ -66,6 +68,8 @@
 <url><loc>https://caugi.org/reference/edge_types.html</loc></url>
 <url><loc>https://caugi.org/reference/edges.html</loc></url>
 <url><loc>https://caugi.org/reference/exogenous.html</loc></url>
+<url><loc>https://caugi.org/reference/export-classes.html</loc></url>
+<url><loc>https://caugi.org/reference/format-dot.html</loc></url>
 <url><loc>https://caugi.org/reference/generate_graph.html</loc></url>
 <url><loc>https://caugi.org/reference/hd.html</loc></url>
 <url><loc>https://caugi.org/reference/index.html</loc></url>
@@ -80,6 +84,7 @@
 <url><loc>https://caugi.org/reference/is_ug.html</loc></url>
 <url><loc>https://caugi.org/reference/is_valid_adjustment_admg.html</loc></url>
 <url><loc>https://caugi.org/reference/is_valid_backdoor.html</loc></url>
+<url><loc>https://caugi.org/reference/knit_print.caugi_export.html</loc></url>
 <url><loc>https://caugi.org/reference/length.html</loc></url>
 <url><loc>https://caugi.org/reference/m_separated.html</loc></url>
 <url><loc>https://caugi.org/reference/makeContent.caugi_edge_grob.html</loc></url>
@@ -98,5 +103,7 @@
 <url><loc>https://caugi.org/reference/skeleton.html</loc></url>
 <url><loc>https://caugi.org/reference/spouses.html</loc></url>
 <url><loc>https://caugi.org/reference/subgraph.html</loc></url>
+<url><loc>https://caugi.org/reference/to_dot.html</loc></url>
+<url><loc>https://caugi.org/reference/write_dot.html</loc></url>
 </urlset>
 

@@ -12,6 +12,11 @@
 - Add [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md)
   function to compute node coordinates for graph visualization using the
   Sugiyama layout algorithm.
+- Add [`to_dot()`](https://caugi.org/reference/to_dot.md) and
+  [`write_dot()`](https://caugi.org/reference/write_dot.md) functions
+  for exporting caugi graphs to DOT (graphviz) format. The resulting
+  object is a new S7 class, `caugi_export`, which has a `knit_print()`
+  method for rendering DOT graphs in R Markdown and Quarto documents.
 
 ### Improvements
 
