@@ -7,8 +7,13 @@
 \item{x}{A \code{caugi} object. Must contain only directed edges for Sugiyama
 layout.}
 
-\item{layout}{Character string specifying the layout method. Currently only
-\code{"sugiyama"} is supported, which requires graphs with only directed edges.}
+\item{layout}{Character string specifying the layout method. Options:
+\itemize{
+\item \code{"auto"}: Automatically choose sugiyama for graphs with only directed
+edges, otherwise force (default)
+\item \code{"sugiyama"}: Hierarchical layout for DAGs (requires only directed edges)
+\item \code{"force"}: Force-directed layout (works with all edge types)
+}}
 
 \item{node_style}{List of node styling parameters. Supports:
 \itemize{

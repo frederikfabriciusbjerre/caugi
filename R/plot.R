@@ -6,8 +6,11 @@
 #'
 #' @param x A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
-#' @param method Character string specifying the layout method. Currently only
-#'   `"sugiyama"` is supported, which requires graphs with only directed edges.
+#' @param method Character string specifying the layout method. Options:
+#'   * `"auto"`: Automatically choose sugiyama for graphs with only directed
+#'     edges, otherwise force (default)
+#'   * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed edges)
+#'   * `"force"`: Force-directed layout (works with all edge types)
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -25,7 +28,7 @@
 #' @concept plotting
 #'
 #' @export
-caugi_layout <- function(x, method = c("sugiyama")) {
+caugi_layout <- function(x, method = c("auto", "sugiyama", "force")) {
   is_caugi(x, throw_error = TRUE)
 
   method <- match.arg(method)
@@ -35,18 +38,23 @@ caugi_layout <- function(x, method = c("sugiyama")) {
     x <- build(x)
   }
 
-  # Sugiyama layout only works reliably with directed edges
-  # Check if graph has non-directed edges (undirected, bidirected, partial)
   edge_types <- unique(edges(x)[["edge"]])
   non_directed <- setdiff(edge_types, "-->")
 
+  # Auto-select method based on edge types
+  if (method == "auto") {
+    method <- if (length(non_directed) == 0) "sugiyama" else "force"
+  }
+
+  # Sugiyama layout only works reliably with directed edges
+  # Check if graph has non-directed edges (undirected, bidirected, partial)
   if (method == "sugiyama" && length(non_directed) > 0) {
     stop(
       "Sugiyama layout only supports graphs with directed edges. ",
       "Found edge type(s): ",
       paste(non_directed, collapse = ", "),
       ". ",
-      "Only graphs directed edges are currently supported.",
+      "Consider using \"force\" for graphs with mixed edge types.",
       call. = FALSE
     )
   }
@@ -93,8 +101,11 @@ get_gpar_params <- function(style) {
 #'
 #' @param x A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
-#' @param layout Character string specifying the layout method. Currently only
-#'   `"sugiyama"` is supported, which requires graphs with only directed edges.
+#' @param layout Character string specifying the layout method. Options:
+#'   * `"auto"`: Automatically choose sugiyama for graphs with only directed
+#'     edges, otherwise force (default)
+#'   * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed edges)
+#'   * `"force"`: Force-directed layout (works with all edge types)
 #' @param node_style List of node styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `fill`, `col`, `lwd`, `lty`, `alpha`
 #'   * Geometry: `padding` (text padding inside nodes in mm, default 2),
@@ -142,7 +153,7 @@ get_gpar_params <- function(style) {
 #' @export
 S7::method(plot, caugi) <- function(
   x,
-  layout = c("sugiyama"),
+  layout = c("auto", "sugiyama", "force"),
   node_style = list(),
   edge_style = list(),
   label_style = list(),
