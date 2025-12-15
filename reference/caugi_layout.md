@@ -7,7 +7,7 @@ automatically before computing the layout.
 ## Usage
 
 ``` r
-caugi_layout(x, method = c("auto", "sugiyama", "force"))
+caugi_layout(x, method = c("auto", "sugiyama", "force", "kamada-kawai"))
 ```
 
 ## Arguments
@@ -28,6 +28,9 @@ caugi_layout(x, method = c("auto", "sugiyama", "force"))
     edges)
 
   - `"force"`: Force-directed layout (works with all edge types)
+
+  - `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality,
+    works with all edge types)
 
 ## Value
 

@@ -24,6 +24,9 @@ viewports for proper coordinate handling.
 
   - `"force"`: Force-directed layout (works with all edge types)
 
+  - `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality,
+    works with all edge types)
+
 - node_style:
 
   List of node styling parameters. Supports:
