@@ -234,6 +234,47 @@ S7::method(as.character, caugi_dot) <- function(x, ...) {
   x@content
 }
 
+knit_print <- S7::new_external_generic("knitr", "knit_print", "x")
+
+
+# TODO: Roxygen + S7 does not work for documenting this method currently.
+# Once https://github.com/RConsortium/S7/issues/562 is resolved, we should
+# be able to add `#' @export` here.
+
+#' Knit Print Method for caugi_dot
+#'
+#' Renders caugi_dot objects as DOT code blocks in Quarto/R Markdown documents.
+#' This method is automatically invoked when a caugi_dot object is the last
+#' expression in a code chunk.
+#'
+#' @param x A `caugi_dot` object.
+#' @param ... Additional arguments (currently unused).
+#'
+#' @returns A `knit_asis` object for rendering by knitr.
+#'
+#' @details
+#' This method enables seamless rendering of caugi graphs in Quarto and
+#' R Markdown. Simply use `to_dot(cg)` as the last expression in a chunk
+#' with `output: asis`:
+#'
+#' ```
+#' #| output: asis
+#' to_dot(cg)
+#' ```
+#' @name knit_print.caugi_dot
+#' @family export
+#' @concept export
+S7::method(
+  knit_print,
+  caugi_dot
+) <- function(
+  x,
+  ...
+) {
+  knitr::asis_output(paste0("```{dot}\n", x@content, "\n```\n"))
+}
+
+
 # Helper function to format DOT values
 format_dot_value <- function(x) {
   if (is.character(x)) {

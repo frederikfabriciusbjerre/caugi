@@ -56,6 +56,7 @@ dot <- to_dot(
 \seealso{
 Other export: 
 \code{\link{caugi_dot}()},
+\code{\link{knit_print.caugi_dot}},
 \code{\link{write_dot}()}
 }
 \concept{export}

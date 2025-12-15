@@ -15,6 +15,7 @@ When printed interactively, displays the DOT string cleanly.
 }
 \seealso{
 Other export: 
+\code{\link{knit_print.caugi_dot}},
 \code{\link{to_dot}()},
 \code{\link{write_dot}()}
 }
