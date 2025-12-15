@@ -22,6 +22,7 @@ different text formats like DOT, GraphML, JSON, etc.
 
 \itemize{
 \item \code{\link{caugi_dot}}: DOT format for Graphviz visualization
+\item \code{\link{caugi_mermaid}}: Mermaid format for web-based visualization
 }
 }
 
@@ -29,9 +30,13 @@ different text formats like DOT, GraphML, JSON, etc.
 Other export: 
 \code{\link{caugi_dot}()},
 \code{\link{caugi_export}()},
+\code{\link{caugi_mermaid}()},
 \code{\link{format-dot}},
+\code{\link{format-mermaid}},
 \code{\link{knit_print.caugi_export}},
 \code{\link{to_dot}()},
-\code{\link{write_dot}()}
+\code{\link{to_mermaid}()},
+\code{\link{write_dot}()},
+\code{\link{write_mermaid}()}
 }
 \concept{export}

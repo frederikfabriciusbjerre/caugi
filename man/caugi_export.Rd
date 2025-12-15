@@ -18,10 +18,14 @@ and behavior for different export formats (DOT, GraphML, etc.).
 \seealso{
 Other export: 
 \code{\link{caugi_dot}()},
+\code{\link{caugi_mermaid}()},
 \code{\link{export-classes}},
 \code{\link{format-dot}},
+\code{\link{format-mermaid}},
 \code{\link{knit_print.caugi_export}},
 \code{\link{to_dot}()},
-\code{\link{write_dot}()}
+\code{\link{to_mermaid}()},
+\code{\link{write_dot}()},
+\code{\link{write_mermaid}()}
 }
 \concept{export}

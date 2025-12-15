@@ -12,6 +12,7 @@
 #'
 #' @section Subclasses:
 #' * [`caugi_dot`]: DOT format for Graphviz visualization
+#' * [`caugi_mermaid`]: Mermaid format for web-based visualization
 #'
 #' @name export-classes
 #' @family export
