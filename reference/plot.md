@@ -14,21 +14,16 @@ viewports for proper coordinate handling.
 
 - layout:
 
-  Character string specifying the layout method. Options:
-
-  - `"auto"`: Automatically choose sugiyama for graphs with only
-    directed edges, otherwise fruchterman-reingold (default)
-
-  - `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
-    edges)
-
-  - `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical
-    layout (fast, works with all edge types). Also accepts `"fr"` as
-    shorthand.
-
-  - `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality,
-    better distance preservation, works with all edge types). Also
-    accepts `"kk"` as shorthand.
+  Character string specifying the layout method. Options: \* `"auto"`:
+  Automatically choose sugiyama for graphs with only directed edges,
+  otherwise fruchterman-reingold (default) \* `"sugiyama"`: Hierarchical
+  layout for DAGs (requires only directed edges) \*
+  `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical
+  layout (fast, works with all edge types). \* `"kamada-kawai"`:
+  Kamada-Kawai stress minimization (high quality, better distance
+  preservation, works with all edge types). See
+  [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) for
+  more details on these algorithms.
 
 - node_style:
 

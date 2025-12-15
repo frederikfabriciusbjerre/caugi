@@ -63,15 +63,16 @@ layout.</p></dd>
 
 
 <dt id="arg-layout">layout<a class="anchor" aria-label="anchor" href="#arg-layout"></a></dt>
-<dd><p>Character string specifying the layout method. Options:</p><ul><li><p><code>"auto"</code>: Automatically choose sugiyama for graphs with only directed
-edges, otherwise fruchterman-reingold (default)</p></li>
-<li><p><code>"sugiyama"</code>: Hierarchical layout for DAGs (requires only directed edges)</p></li>
-<li><p><code>"fruchterman-reingold"</code>: Fruchterman-Reingold spring-electrical layout
-(fast, works with all edge types). Also accepts <code>"fr"</code> as shorthand.</p></li>
-<li><p><code>"kamada-kawai"</code>: Kamada-Kawai stress minimization (high quality, better
-distance preservation, works with all edge types). Also accepts <code>"kk"</code> as
-shorthand.</p></li>
-</ul></dd>
+<dd><p>Character string specifying the layout method. Options:
+* <code>"auto"</code>: Automatically choose sugiyama for graphs with only directed
+edges, otherwise fruchterman-reingold (default)
+* <code>"sugiyama"</code>: Hierarchical layout for DAGs (requires only directed
+edges)
+* <code>"fruchterman-reingold"</code>: Fruchterman-Reingold spring-electrical layout
+(fast, works with all edge types).
+* <code>"kamada-kawai"</code>: Kamada-Kawai stress minimization (high quality,
+better distance preservation, works with all edge types).
+See <code><a href="caugi_layout.html">caugi_layout()</a></code> for more details on these algorithms.</p></dd>
 
 
 <dt id="arg-node-style">node_style<a class="anchor" aria-label="anchor" href="#arg-node-style"></a></dt>
