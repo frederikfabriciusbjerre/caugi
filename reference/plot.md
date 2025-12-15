@@ -17,15 +17,18 @@ viewports for proper coordinate handling.
   Character string specifying the layout method. Options:
 
   - `"auto"`: Automatically choose sugiyama for graphs with only
-    directed edges, otherwise force (default)
+    directed edges, otherwise fruchterman-reingold (default)
 
   - `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
     edges)
 
-  - `"force"`: Force-directed layout (works with all edge types)
+  - `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical
+    layout (fast, works with all edge types). Also accepts `"fr"` as
+    shorthand.
 
   - `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality,
-    works with all edge types)
+    better distance preservation, works with all edge types). Also
+    accepts `"kk"` as shorthand.
 
 - node_style:
 

@@ -7,7 +7,10 @@ automatically before computing the layout.
 ## Usage
 
 ``` r
-caugi_layout(x, method = c("auto", "sugiyama", "force", "kamada-kawai"))
+caugi_layout(
+  x,
+  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai")
+)
 ```
 
 ## Arguments
@@ -22,15 +25,16 @@ caugi_layout(x, method = c("auto", "sugiyama", "force", "kamada-kawai"))
   Character string specifying the layout method. Options:
 
   - `"auto"`: Automatically choose sugiyama for graphs with only
-    directed edges, otherwise force (default)
+    directed edges, otherwise fruchterman-reingold (default)
 
   - `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
     edges)
 
-  - `"force"`: Force-directed layout (works with all edge types)
+  - `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical
+    layout (fast, works with all edge types).
 
   - `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality,
-    works with all edge types)
+    better distance preservation, works with all edge types).
 
 ## Value
 

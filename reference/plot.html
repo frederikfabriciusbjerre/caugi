@@ -64,11 +64,13 @@ layout.</p></dd>
 
 <dt id="arg-layout">layout<a class="anchor" aria-label="anchor" href="#arg-layout"></a></dt>
 <dd><p>Character string specifying the layout method. Options:</p><ul><li><p><code>"auto"</code>: Automatically choose sugiyama for graphs with only directed
-edges, otherwise force (default)</p></li>
+edges, otherwise fruchterman-reingold (default)</p></li>
 <li><p><code>"sugiyama"</code>: Hierarchical layout for DAGs (requires only directed edges)</p></li>
-<li><p><code>"force"</code>: Force-directed layout (works with all edge types)</p></li>
-<li><p><code>"kamada-kawai"</code>: Kamada-Kawai stress minimization (high quality, works
-with all edge types)</p></li>
+<li><p><code>"fruchterman-reingold"</code>: Fruchterman-Reingold spring-electrical layout
+(fast, works with all edge types). Also accepts <code>"fr"</code> as shorthand.</p></li>
+<li><p><code>"kamada-kawai"</code>: Kamada-Kawai stress minimization (high quality, better
+distance preservation, works with all edge types). Also accepts <code>"kk"</code> as
+shorthand.</p></li>
 </ul></dd>
 
 
