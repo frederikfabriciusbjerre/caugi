@@ -1,8 +1,10 @@
 # Infix operators for edge specifications
 
 These operators are used to specify edges in
-[`caugi()`](https://caugi.org/reference/caugi.md). Should be used
-internally in [`caugi()`](https://caugi.org/reference/caugi.md) calls.
+[`caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi.md).
+Should be used internally in
+[`caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi.md)
+calls.
 
 ## Usage
 

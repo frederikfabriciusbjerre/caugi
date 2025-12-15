@@ -30,14 +30,15 @@ The input `caugi` object, invisibly.
 
 ## See also
 
-Other caugi methods: [`length()`](https://caugi.org/reference/length.md)
+Other caugi methods:
+[`length()`](https://frederikfabriciusbjerre.github.io/caugi/reference/length.md)
 
 ## Examples
 
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 print(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x55f969d105d0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x55d07e4f7fe0>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: A-->B

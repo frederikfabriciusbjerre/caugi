@@ -31,28 +31,24 @@ A new `caugi` that is a subgraph of the selected nodes.
 ## See also
 
 Other queries:
-[`ancestors()`](https://caugi.org/reference/ancestors.md),
-[`children()`](https://caugi.org/reference/children.md),
-[`descendants()`](https://caugi.org/reference/descendants.md),
-[`districts()`](https://caugi.org/reference/districts.md),
-[`edge_types()`](https://caugi.org/reference/edge_types.md),
-[`edges()`](https://caugi.org/reference/edges.md),
-[`exogenous()`](https://caugi.org/reference/exogenous.md),
-[`is_acyclic()`](https://caugi.org/reference/is_acyclic.md),
-[`is_admg()`](https://caugi.org/reference/is_admg.md),
-[`is_caugi()`](https://caugi.org/reference/is_caugi.md),
-[`is_cpdag()`](https://caugi.org/reference/is_cpdag.md),
-[`is_dag()`](https://caugi.org/reference/is_dag.md),
-[`is_empty_caugi()`](https://caugi.org/reference/is_empty_caugi.md),
-[`is_pdag()`](https://caugi.org/reference/is_pdag.md),
-[`is_ug()`](https://caugi.org/reference/is_ug.md),
-[`m_separated()`](https://caugi.org/reference/m_separated.md),
-[`markov_blanket()`](https://caugi.org/reference/markov_blanket.md),
-[`neighbors()`](https://caugi.org/reference/neighbors.md),
-[`nodes()`](https://caugi.org/reference/nodes.md),
-[`parents()`](https://caugi.org/reference/parents.md),
-[`same_nodes()`](https://caugi.org/reference/same_nodes.md),
-[`spouses()`](https://caugi.org/reference/spouses.md)
+[`ancestors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/ancestors.md),
+[`children()`](https://frederikfabriciusbjerre.github.io/caugi/reference/children.md),
+[`descendants()`](https://frederikfabriciusbjerre.github.io/caugi/reference/descendants.md),
+[`edge_types()`](https://frederikfabriciusbjerre.github.io/caugi/reference/edge_types.md),
+[`edges()`](https://frederikfabriciusbjerre.github.io/caugi/reference/edges.md),
+[`exogenous()`](https://frederikfabriciusbjerre.github.io/caugi/reference/exogenous.md),
+[`is_acyclic()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_acyclic.md),
+[`is_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_caugi.md),
+[`is_cpdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_cpdag.md),
+[`is_dag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_dag.md),
+[`is_empty_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_empty_caugi.md),
+[`is_pdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_pdag.md),
+[`is_ug()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_ug.md),
+[`markov_blanket()`](https://frederikfabriciusbjerre.github.io/caugi/reference/markov_blanket.md),
+[`neighbors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md),
+[`nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/nodes.md),
+[`parents()`](https://frederikfabriciusbjerre.github.io/caugi/reference/parents.md),
+[`same_nodes()`](https://frederikfabriciusbjerre.github.io/caugi/reference/same_nodes.md)
 
 ## Examples
 

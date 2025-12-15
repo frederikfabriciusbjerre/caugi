@@ -9,7 +9,7 @@ relationships.
 
 Useful links:
 
-- <https://caugi.org/>
+- <https://frederikfabriciusbjerre.github.io/caugi/>
 
 - Report bugs at
   <https://github.com/frederikfabriciusbjerre/caugi/issues>

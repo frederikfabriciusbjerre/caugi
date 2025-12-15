@@ -26,10 +26,10 @@ An `igraph` object representing the same graph structure.
 ## See also
 
 Other conversions:
-[`as_adjacency()`](https://caugi.org/reference/as_adjacency.md),
-[`as_bnlearn()`](https://caugi.org/reference/as_bnlearn.md),
-[`as_caugi()`](https://caugi.org/reference/as_caugi.md),
-[`as_dagitty()`](https://caugi.org/reference/as_dagitty.md)
+[`as_adjacency()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_adjacency.md),
+[`as_bnlearn()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_bnlearn.md),
+[`as_caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_caugi.md),
+[`as_dagitty()`](https://frederikfabriciusbjerre.github.io/caugi/reference/as_dagitty.md)
 
 ## Examples
 

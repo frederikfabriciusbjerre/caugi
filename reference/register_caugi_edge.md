@@ -36,7 +36,8 @@ TRUE, invisibly.
 
 ## See also
 
-Other registry: [`registry`](https://caugi.org/reference/registry.md)
+Other registry:
+[`registry`](https://frederikfabriciusbjerre.github.io/caugi/reference/registry.md)
 
 ## Examples
 
