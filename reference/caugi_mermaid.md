@@ -1,28 +1,24 @@
-# S7 Base Class for Caugi Exports
+# S7 Class for Mermaid Export
 
-A base class for all caugi export formats. Provides common structure and
-behavior for different export formats (DOT, GraphML, etc.).
+An S7 object that wraps a Mermaid format string for displaying caugi
+graphs. When printed interactively, displays the Mermaid string cleanly.
 
 ## Usage
 
 ``` r
-caugi_export(content = character(0), format = character(0))
+caugi_mermaid(content)
 ```
 
 ## Arguments
 
 - content:
 
-  A character string containing the exported graph.
-
-- format:
-
-  A character string indicating the export format.
+  A character string containing the Mermaid format graph.
 
 ## See also
 
 Other export: [`caugi_dot()`](https://caugi.org/reference/caugi_dot.md),
-[`caugi_mermaid()`](https://caugi.org/reference/caugi_mermaid.md),
+[`caugi_export()`](https://caugi.org/reference/caugi_export.md),
 [`export-classes`](https://caugi.org/reference/export-classes.md),
 [`format-dot`](https://caugi.org/reference/format-dot.md),
 [`format-mermaid`](https://caugi.org/reference/format-mermaid.md),

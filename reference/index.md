@@ -198,16 +198,24 @@
   for DOT Export
 - [`caugi_export()`](https://caugi.org/reference/caugi_export.md) : S7
   Base Class for Caugi Exports
+- [`caugi_mermaid()`](https://caugi.org/reference/caugi_mermaid.md) : S7
+  Class for Mermaid Export
 - [`export-classes`](https://caugi.org/reference/export-classes.md) :
   Export Format Classes
 - [`format-dot`](https://caugi.org/reference/format-dot.md) : DOT Format
   Export and Import
+- [`format-mermaid`](https://caugi.org/reference/format-mermaid.md) :
+  Mermaid Format Export
 - [`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md)
   : Knit Print Method for caugi_export
 - [`to_dot()`](https://caugi.org/reference/to_dot.md) : Export caugi
   Graph to DOT Format
+- [`to_mermaid()`](https://caugi.org/reference/to_mermaid.md) : Export
+  caugi Graph to Mermaid Format
 - [`write_dot()`](https://caugi.org/reference/write_dot.md) : Write
   caugi Graph to DOT File
+- [`write_mermaid()`](https://caugi.org/reference/write_mermaid.md) :
+  Write caugi Graph to Mermaid File
 
 ## Plotting
 

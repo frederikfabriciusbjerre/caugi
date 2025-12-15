@@ -32,7 +32,11 @@ chunk with `output: asis`:
 
 Other export: [`caugi_dot()`](https://caugi.org/reference/caugi_dot.md),
 [`caugi_export()`](https://caugi.org/reference/caugi_export.md),
+[`caugi_mermaid()`](https://caugi.org/reference/caugi_mermaid.md),
 [`export-classes`](https://caugi.org/reference/export-classes.md),
 [`format-dot`](https://caugi.org/reference/format-dot.md),
+[`format-mermaid`](https://caugi.org/reference/format-mermaid.md),
 [`to_dot()`](https://caugi.org/reference/to_dot.md),
-[`write_dot()`](https://caugi.org/reference/write_dot.md)
+[`to_mermaid()`](https://caugi.org/reference/to_mermaid.md),
+[`write_dot()`](https://caugi.org/reference/write_dot.md),
+[`write_mermaid()`](https://caugi.org/reference/write_mermaid.md)

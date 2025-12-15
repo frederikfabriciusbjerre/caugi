@@ -1,11 +1,11 @@
-# Write caugi Graph to DOT File
+# Write caugi Graph to Mermaid File
 
-Writes a caugi graph to a file in Graphviz DOT format.
+Writes a caugi graph to a file in Mermaid format.
 
 ## Usage
 
 ``` r
-write_dot(x, file, ...)
+write_mermaid(x, file, ...)
 ```
 
 ## Arguments
@@ -21,8 +21,8 @@ write_dot(x, file, ...)
 - ...:
 
   Additional arguments passed to
-  [`to_dot()`](https://caugi.org/reference/to_dot.md), such as
-  `graph_attrs`, `node_attrs`, and `edge_attrs`.
+  [`to_mermaid()`](https://caugi.org/reference/to_mermaid.md), such as
+  `direction`.
 
 ## Value
 
@@ -39,7 +39,7 @@ Other export: [`caugi_dot()`](https://caugi.org/reference/caugi_dot.md),
 [`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md),
 [`to_dot()`](https://caugi.org/reference/to_dot.md),
 [`to_mermaid()`](https://caugi.org/reference/to_mermaid.md),
-[`write_mermaid()`](https://caugi.org/reference/write_mermaid.md)
+[`write_dot()`](https://caugi.org/reference/write_dot.md)
 
 ## Examples
 
@@ -53,13 +53,9 @@ cg <- caugi(
 
 if (FALSE) { # \dontrun{
 # Write to file
-write_dot(cg, "graph.dot")
+write_mermaid(cg, "graph.mmd")
 
-# With custom attributes
-write_dot(
-  cg,
-  "graph.dot",
-  graph_attrs = list(rankdir = "LR")
-)
+# With custom direction
+write_mermaid(cg, "graph.mmd", direction = "LR")
 } # }
 ```

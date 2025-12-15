@@ -28,6 +28,7 @@
 <url><loc>https://caugi.org/reference/caugi_dot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_export.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_plot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_verbs.html</loc></url>
 <url><loc>https://caugi.org/reference/children.html</loc></url>
@@ -70,6 +71,7 @@
 <url><loc>https://caugi.org/reference/exogenous.html</loc></url>
 <url><loc>https://caugi.org/reference/export-classes.html</loc></url>
 <url><loc>https://caugi.org/reference/format-dot.html</loc></url>
+<url><loc>https://caugi.org/reference/format-mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/generate_graph.html</loc></url>
 <url><loc>https://caugi.org/reference/hd.html</loc></url>
 <url><loc>https://caugi.org/reference/index.html</loc></url>
@@ -104,6 +106,8 @@
 <url><loc>https://caugi.org/reference/spouses.html</loc></url>
 <url><loc>https://caugi.org/reference/subgraph.html</loc></url>
 <url><loc>https://caugi.org/reference/to_dot.html</loc></url>
+<url><loc>https://caugi.org/reference/to_mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/write_dot.html</loc></url>
+<url><loc>https://caugi.org/reference/write_mermaid.html</loc></url>
 </urlset>
 
