@@ -1,7 +1,7 @@
 # Register a new edge operator
 
 Register a new edge operator for use in
-[`caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi.md).
+[`caugi()`](https://caugi.org/reference/caugi.md).
 
 ## Usage
 

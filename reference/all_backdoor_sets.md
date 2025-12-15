@@ -46,9 +46,11 @@ A list of character vectors, each an adjustment set (possibly empty).
 ## See also
 
 Other adjustment:
-[`adjustment_set()`](https://frederikfabriciusbjerre.github.io/caugi/reference/adjustment_set.md),
-[`d_separated()`](https://frederikfabriciusbjerre.github.io/caugi/reference/d_separated.md),
-[`is_valid_backdoor()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_valid_backdoor.md)
+[`adjustment_set()`](https://caugi.org/reference/adjustment_set.md),
+[`all_adjustment_sets_admg()`](https://caugi.org/reference/all_adjustment_sets_admg.md),
+[`d_separated()`](https://caugi.org/reference/d_separated.md),
+[`is_valid_adjustment_admg()`](https://caugi.org/reference/is_valid_adjustment_admg.md),
+[`is_valid_backdoor()`](https://caugi.org/reference/is_valid_backdoor.md)
 
 ## Examples
 

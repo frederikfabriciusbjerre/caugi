@@ -18,7 +18,7 @@ The following edge operators are supported by default:
 - `%o-o%` for partial edges (A o-o B)
 
 You can register additional edge types using
-[`register_caugi_edge()`](https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.md).
+[`register_caugi_edge()`](https://caugi.org/reference/register_caugi_edge.md).
 
 ## Usage
 
@@ -32,7 +32,7 @@ caugi(
   edges_df = NULL,
   simple = TRUE,
   build = TRUE,
-  class = c("UNKNOWN", "DAG", "PDAG", "UG"),
+  class = c("UNKNOWN", "DAG", "PDAG", "ADMG", "UG"),
   state = NULL
 )
 ```
@@ -86,8 +86,7 @@ caugi(
   Logical; if `TRUE` (default), the graph will be built using the Rust
   backend. If `FALSE`, the graph will not be built, and the Rust backend
   cannot be used. The graph will build, when queries are made to the
-  graph or if calling
-  [`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md).
+  graph or if calling [`build()`](https://caugi.org/reference/build.md).
   **Note**: Even if `build = TRUE`, if no edges or nodes are provided,
   the graph will not be built and the pointer will be `NULL`.
 
@@ -155,6 +154,6 @@ cg5 <- caugi(
   build = FALSE
 )
 
-cg@built # FALSE
-#> [1] TRUE
+cg5@built # FALSE
+#> [1] FALSE
 ```

@@ -25,8 +25,11 @@ or directly from CRAN with:
 install.packages("caugi")
 ```
 
-If you don’t have Rust installed, please install `rustc >= 1.80.0` or
-higher from: <https://www.rust-lang.org/tools/install>
+### Installing Rust
+
+Rust is required for `caugi` to work. If you don’t have Rust installed,
+visit [rustup.rs](https://rustup.rs/) for installation instructions
+appropriate for your platform.
 
 Alternatively, you may install Rust from your OS package manager.
 
@@ -52,7 +55,11 @@ cg <- caugi(
   C %-->% D,
   class = "DAG"
 )
+
+plot(cg)
 ```
+
+![](reference/figures/README-unnamed-chunk-5-1.png)
 
 ### Edge operators
 
@@ -66,7 +73,7 @@ The available edges in `caugi` are listed below:
 - `%o-o%` (partial)
 
 You can register more types with
-[`register_caugi_edge()`](https://frederikfabriciusbjerre.github.io/caugi/reference/register_caugi_edge.md),
+[`register_caugi_edge()`](https://caugi.org/reference/register_caugi_edge.md),
 if you find that you need a more expressive set of edges. For example,
 if you want to represent a directed edge in the reverse direction, you
 can do so like this:
@@ -81,7 +88,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x563d52531e30>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x55f7c802e500>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -99,19 +106,15 @@ releases, and we would love your input if you use this feature!
 objects. Some of the available functions are:
 
 - Relational queries, such as
-  [`parents()`](https://frederikfabriciusbjerre.github.io/caugi/reference/parents.md),
-  [`ancestors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/ancestors.md),
-  [`neighbors()`](https://frederikfabriciusbjerre.github.io/caugi/reference/neighbors.md),
-  and more.
+  [`parents()`](https://caugi.org/reference/parents.md),
+  [`ancestors()`](https://caugi.org/reference/ancestors.md),
+  [`neighbors()`](https://caugi.org/reference/neighbors.md), and more.
 - Structural queries, such as
-  [`is_acyclic()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_acyclic.md),
-  [`is_cpdag()`](https://frederikfabriciusbjerre.github.io/caugi/reference/is_cpdag.md),
-  and more.
+  [`is_acyclic()`](https://caugi.org/reference/is_acyclic.md),
+  [`is_cpdag()`](https://caugi.org/reference/is_cpdag.md), and more.
 - Graph manipulations, such as `add_edge()`, `remove_node()`, and more.
-- Graph metrics, such as
-  [`shd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/shd.md)
-  and
-  [`aid()`](https://frederikfabriciusbjerre.github.io/caugi/reference/aid.md).
+- Graph metrics, such as [`shd()`](https://caugi.org/reference/shd.md)
+  and [`aid()`](https://caugi.org/reference/aid.md).
 
 ## How it works
 
@@ -135,17 +138,16 @@ time.
 ## Why?
 
 It’s fast, *dawg* 🐶 See the [vignette on
-performance](https://frederikfabriciusbjerre.github.io/caugi/articles/performance.html)
-for benchmarks.
+performance](https://caugi.org/articles/performance.html) for
+benchmarks.
 
 ## Contribution
 
-Would you like to contribute? Great! Please see
-[CONTRIBUTING.md](https://frederikfabriciusbjerre.github.io/caugi/CONTRIBUTING.html)
-for detailed guidelines on code style, testing, and the development
-workflow. Quick tips: follow the tidyverse style guide for R code, run
-`styler::style_pkg()` for R and `cargo fmt` for Rust before PRs, and
-write tests for new features.
+Would you like to contribute? Great! Please see [Contributing to
+caugi](https://caugi.org/CONTRIBUTING.html) for detailed guidelines on
+code style, testing, and the development workflow. Quick tips: follow
+the tidyverse style guide for R code, run `styler::style_pkg()` for R
+and `cargo fmt` for Rust before PRs, and write tests for new features.
 
 Did you find run into problems? That’s *paw-ful*! Please report an
 [issue](https://github.com/frederikfabriciusbjerre/caugi/issues)!

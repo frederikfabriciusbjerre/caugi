@@ -85,7 +85,7 @@ for safety and clarity. In `caugi`, we prefer clarity over silent
 misinterpretation. `caugi` will act as your causality guard dog 🐶
 
 We refer to the vignette
-[`vignette("package_use")`](https://frederikfabriciusbjerre.github.io/caugi/articles/package_use.md)
+[`vignette("package_use")`](https://caugi.org/articles/package_use.md)
 to see how to (safely) use `caugi` in your package.
 
 ## Performance

@@ -74,8 +74,7 @@ Caugi graph verbs
 
 ## See also
 
-Other verbs:
-[`build()`](https://frederikfabriciusbjerre.github.io/caugi/reference/build.md)
+Other verbs: [`build()`](https://caugi.org/reference/build.md)
 
 ## Examples
 
@@ -95,7 +94,7 @@ cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
 cg@built # FALSE
 #> [1] FALSE
 build(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x55d07ac558a0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x562516bf9de0>
 #>   graph_class: PDAG
 #>   nodes: A, B
 #>   edges: A-->B

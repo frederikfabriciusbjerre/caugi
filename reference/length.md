@@ -14,8 +14,7 @@ An integer representing the number of nodes.
 
 ## See also
 
-Other caugi methods:
-[`print()`](https://frederikfabriciusbjerre.github.io/caugi/reference/print.md)
+Other caugi methods: [`print()`](https://caugi.org/reference/print.md)
 
 ## Examples
 

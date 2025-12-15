@@ -30,9 +30,8 @@ An integer representing the Hamming Distance between the two graphs, if
 
 ## See also
 
-Other metrics:
-[`aid()`](https://frederikfabriciusbjerre.github.io/caugi/reference/aid.md),
-[`shd()`](https://frederikfabriciusbjerre.github.io/caugi/reference/shd.md)
+Other metrics: [`aid()`](https://caugi.org/reference/aid.md),
+[`shd()`](https://caugi.org/reference/shd.md)
 
 ## Examples
 

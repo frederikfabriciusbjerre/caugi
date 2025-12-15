@@ -1,8 +1,8 @@
 # Edge specification infix operators
 
 These infix operators are used to specify edges in
-[`caugi()`](https://frederikfabriciusbjerre.github.io/caugi/reference/caugi.md).
-This function helps build infix operators.
+[`caugi()`](https://caugi.org/reference/caugi.md). This function helps
+build infix operators.
 
 ## Usage
 

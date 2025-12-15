@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Performance • caugi</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -20,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,7 +66,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Performance</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/v0.3.1/vignettes/articles/performance.Rmd" class="external-link"><code>vignettes/articles/performance.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/vignettes/articles/performance.Rmd" class="external-link"><code>vignettes/articles/performance.Rmd</code></a></small>
       <div class="d-none name"><code>performance.Rmd</code></div>
     </div>
 
@@ -178,7 +183,7 @@ become prohibitively slow for larger graphs.</p>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># igraph returns igraph object</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_parents_children</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_parents_children</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="performance_files/figure-html/benchmark-parents-children-1.png" class="r-plt" alt="Benchmarking parents/children queries for different packages." width="480"><p class="caption">
 Benchmarking parents/children queries for different packages.
@@ -268,7 +273,7 @@ outperforms all other packages by a several magnitudes, except for
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># dagitty returns V500 as well and igraph returns an igraph</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_ancestors_descendants</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_ancestors_descendants</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="performance_files/figure-html/benchmark-an-de-1.png" class="r-plt" alt="Benchmarking ancestors/descendants queries for different packages." width="480"><p class="caption">
 Benchmarking ancestors/descendants queries for different packages.
@@ -307,7 +312,7 @@ then check for d-separation.</p>
 <span>  dagitty <span class="op">=</span> <span class="fu">dagitty</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dagitty/man/dconnected.html" class="external-link">dseparated</a></span><span class="op">(</span><span class="va">dg</span>, <span class="st">"V500"</span>, <span class="st">"V681"</span>, <span class="va">valid_adjustment_set</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_dsep</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_dsep</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="performance_files/figure-html/benchmark-d-sep-1.png" class="r-plt" alt="Benchmarks for obtaining a valid adjustment set for d-separation." width="480"><p class="caption">
 Benchmarks for obtaining a valid adjustment set for d-separation.
@@ -340,7 +345,7 @@ the graph objects themselves, which shows in the subgraph benchmark:</p>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bm_subgraph</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_subgraph</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="performance_files/figure-html/benchmark-subgraph-1.png" class="r-plt" alt="Benchmarking subgraph extraction for different packages." width="480"><p class="caption">
 Benchmarking subgraph extraction for different packages.
@@ -398,7 +403,7 @@ Benchmarking subgraph extraction for different packages.
 <span><span class="co">#&gt; [55] tidyselect_1.2.1    xfun_0.54           tibble_3.3.0       </span></span>
 <span><span class="co">#&gt; [58] knitr_1.50          farver_2.1.2        htmltools_0.5.9    </span></span>
 <span><span class="co">#&gt; [61] igraph_2.2.1        labeling_0.4.3      rmarkdown_2.30     </span></span>
-<span><span class="co">#&gt; [64] caugi_0.3.1         compiler_4.5.2      S7_0.2.1</span></span></code></pre></div>
+<span><span class="co">#&gt; [64] caugi_0.5.0         compiler_4.5.2      S7_0.2.1</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
