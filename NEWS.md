@@ -3,6 +3,10 @@
 
 * Add `plot()` method for visualizing graphs using the Sugiyama algorithm for DAGs and a force-directed algorithm for other graphs. The plot is rendered using grid graphics and returns a `caugi_plot` object that can be customized with `node_style`, `edge_style`, and `label_style` arguments.
 * Add `caugi_layout()` function to compute node coordinates for graph visualization using the Sugiyama layout algorithm.
+* Add `to_dot()` and `write_dot()` functions for exporting caugi graphs to DOT
+  (graphviz) format. The resulting object is a new S7 class, `caugi_export`,
+  which has a `knit_print()` method for rendering DOT graphs in R Markdown and
+  Quarto documents.
 
 ## Improvements
 
