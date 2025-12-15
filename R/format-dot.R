@@ -1,3 +1,33 @@
+#' DOT Format Export and Import
+#'
+#' Functions for converting caugi graphs to and from Graphviz DOT format.
+#' The DOT format is a plain text graph description language used by
+#' Graphviz tools for visualization.
+#'
+#' @name format-dot
+#' @family export
+#' @concept export
+NULL
+
+#' S7 Class for DOT Export
+#'
+#' An S7 object that wraps a DOT format string for displaying caugi graphs.
+#' When printed interactively, displays the DOT string cleanly.
+#'
+#' @param content A character string containing the DOT format graph.
+#'
+#' @family export
+#' @concept export
+#'
+#' @export
+caugi_dot <- S7::new_class(
+  "caugi_dot",
+  parent = caugi_export,
+  constructor = function(content) {
+    S7::new_object(caugi_export, content = content, format = "dot")
+  }
+)
+
 #' Export caugi Graph to DOT Format
 #'
 #' Converts a caugi graph to the Graphviz DOT format as a string.
@@ -10,12 +40,12 @@
 #' @param node_attrs Named list of default node attributes.
 #' @param edge_attrs Named list of default edge attributes.
 #'
-#' @returns A character string containing the graph in DOT format.
+#' @returns A `caugi_dot` object containing the DOT representation.
 #'
 #' @details
 #' The function handles different edge types:
 #' * Directed edges (`-->`) use `->` in DOT
-#' * Undirected edges (`---`) use `--` in DOT
+#' * Undirected edges (`---`) use `--` in DOT (or `->` with `dir=none` in digraphs)
 #' * Bidirected edges (`<->`) use `->` with `[dir=both]` attribute
 #' * Partial edges (`o->`) use `->` with `[arrowtail=odot, dir=both]` attribute
 #'
@@ -165,30 +195,6 @@ to_dot <- function(
   caugi_dot(content = result)
 }
 
-#' S7 Class for DOT Export
-#'
-#' An S7 object that wraps a DOT format string for displaying caugi graphs.
-#' When printed interactively, displays the DOT string cleanly.
-#'
-#' @param content A character string containing the DOT format graph.
-#'
-#' @family export
-#' @concept export
-#'
-#' @export
-caugi_dot <- S7::new_class(
-  "caugi_dot",
-  properties = list(
-    content = S7::class_character
-  )
-)
-
-#' @export
-S7::method(print, caugi_dot) <- function(x, ...) {
-  cat(x@content, "\n", sep = "")
-  invisible(x)
-}
-
 #' Write caugi Graph to DOT File
 #'
 #' Writes a caugi graph to a file in Graphviz DOT format.
@@ -228,52 +234,6 @@ write_dot <- function(x, file, ...) {
   writeLines(dot_obj@content, file)
   invisible(file)
 }
-
-#' @export
-S7::method(as.character, caugi_dot) <- function(x, ...) {
-  x@content
-}
-
-knit_print <- S7::new_external_generic("knitr", "knit_print", "x")
-
-
-# TODO: Roxygen + S7 does not work for documenting this method currently.
-# Once https://github.com/RConsortium/S7/issues/562 is resolved, we should
-# be able to add `#' @export` here.
-
-#' Knit Print Method for caugi_dot
-#'
-#' Renders caugi_dot objects as DOT code blocks in Quarto/R Markdown documents.
-#' This method is automatically invoked when a caugi_dot object is the last
-#' expression in a code chunk.
-#'
-#' @param x A `caugi_dot` object.
-#' @param ... Additional arguments (currently unused).
-#'
-#' @returns A `knit_asis` object for rendering by knitr.
-#'
-#' @details
-#' This method enables seamless rendering of caugi graphs in Quarto and
-#' R Markdown. Simply use `to_dot(cg)` as the last expression in a chunk
-#' with `output: asis`:
-#'
-#' ```
-#' #| output: asis
-#' to_dot(cg)
-#' ```
-#' @name knit_print.caugi_dot
-#' @family export
-#' @concept export
-S7::method(
-  knit_print,
-  caugi_dot
-) <- function(
-  x,
-  ...
-) {
-  knitr::asis_output(paste0("```{dot}\n", x@content, "\n```\n"))
-}
-
 
 # Helper function to format DOT values
 format_dot_value <- function(x) {
