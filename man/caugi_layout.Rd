@@ -4,7 +4,7 @@
 \alias{caugi_layout}
 \title{Compute Graph Layout}
 \usage{
-caugi_layout(x, method = c("auto", "sugiyama", "force"))
+caugi_layout(x, method = c("auto", "sugiyama", "force", "kamada-kawai"))
 }
 \arguments{
 \item{x}{A \code{caugi} object. Must contain only directed edges for Sugiyama
@@ -16,6 +16,8 @@ layout.}
 edges, otherwise force (default)
 \item \code{"sugiyama"}: Hierarchical layout for DAGs (requires only directed edges)
 \item \code{"force"}: Force-directed layout (works with all edge types)
+\item \code{"kamada-kawai"}: Kamada-Kawai stress minimization (high quality, works
+with all edge types)
 }}
 }
 \value{

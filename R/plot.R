@@ -11,6 +11,8 @@
 #'     edges, otherwise force (default)
 #'   * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed edges)
 #'   * `"force"`: Force-directed layout (works with all edge types)
+#'   * `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality, works
+#'     with all edge types)
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -28,7 +30,10 @@
 #' @concept plotting
 #'
 #' @export
-caugi_layout <- function(x, method = c("auto", "sugiyama", "force")) {
+caugi_layout <- function(
+  x,
+  method = c("auto", "sugiyama", "force", "kamada-kawai")
+) {
   is_caugi(x, throw_error = TRUE)
 
   method <- match.arg(method)
@@ -106,6 +111,8 @@ get_gpar_params <- function(style) {
 #'     edges, otherwise force (default)
 #'   * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed edges)
 #'   * `"force"`: Force-directed layout (works with all edge types)
+#'   * `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality, works
+#'     with all edge types)
 #' @param node_style List of node styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `fill`, `col`, `lwd`, `lty`, `alpha`
 #'   * Geometry: `padding` (text padding inside nodes in mm, default 2),
@@ -153,7 +160,7 @@ get_gpar_params <- function(style) {
 #' @export
 S7::method(plot, caugi) <- function(
   x,
-  layout = c("auto", "sugiyama", "force"),
+  layout = c("auto", "sugiyama", "force", "kamada-kawai"),
   node_style = list(),
   edge_style = list(),
   label_style = list(),

@@ -13,6 +13,8 @@ layout.}
 edges, otherwise force (default)
 \item \code{"sugiyama"}: Hierarchical layout for DAGs (requires only directed edges)
 \item \code{"force"}: Force-directed layout (works with all edge types)
+\item \code{"kamada-kawai"}: Kamada-Kawai stress minimization (high quality, works
+with all edge types)
 }}
 
 \item{node_style}{List of node styling parameters. Supports:

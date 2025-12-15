@@ -210,3 +210,40 @@ test_that("auto is the default method", {
   # Default should work for plot too
   expect_s7_class(plot(cg), caugi_plot)
 })
+
+test_that("kamada-kawai layout works with simple DAG", {
+  cg <- caugi(
+    A %-->% B + C,
+    B %-->% D,
+    C %-->% D,
+    class = "DAG"
+  )
+
+  layout <- caugi_layout(cg, method = "kamada-kawai")
+
+  expect_s3_class(layout, "data.frame")
+  expect_equal(nrow(layout), 4L)
+  expect_named(layout, c("name", "x", "y"))
+  expect_equal(layout$name, c("A", "B", "C", "D"))
+  expect_type(layout$x, "double")
+  expect_type(layout$y, "double")
+  expect_true(all(is.finite(layout$x)))
+  expect_true(all(is.finite(layout$y)))
+})
+
+test_that("kamada-kawai layout is deterministic", {
+  cg <- caugi(
+    A %-->% B + C,
+    B %-->% D,
+    C %-->% D,
+    class = "DAG"
+  )
+
+  layout1 <- caugi_layout(cg, method = "kamada-kawai")
+  layout2 <- caugi_layout(cg, method = "kamada-kawai")
+  layout3 <- caugi_layout(cg, method = "kamada-kawai")
+
+  # All three should be identical
+  expect_identical(layout1, layout2)
+  expect_identical(layout2, layout3)
+})
