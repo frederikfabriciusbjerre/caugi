@@ -14,16 +14,18 @@ viewports for proper coordinate handling.
 
 - layout:
 
-  Character string specifying the layout method. Options: \* `"auto"`:
-  Automatically choose sugiyama for graphs with only directed edges,
-  otherwise fruchterman-reingold (default) \* `"sugiyama"`: Hierarchical
-  layout for DAGs (requires only directed edges) \*
-  `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical
-  layout (fast, works with all edge types). \* `"kamada-kawai"`:
-  Kamada-Kawai stress minimization (high quality, better distance
-  preservation, works with all edge types). See
-  [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) for
-  more details on these algorithms.
+  Specifies the graph layout method. Can be:
+
+  - A character string: `"auto"` (default), `"sugiyama"`,
+    `"fruchterman-reingold"`, `"kamada-kawai"`, `"bipartite"`. See
+    [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) for
+    details.
+
+  - A layout function: e.g., `caugi_layout_sugiyama`,
+    `caugi_layout_bipartite`, etc. The function will be called with `x`
+    and any additional arguments passed via `...`.
+
+  - A pre-computed layout data.frame with columns `name`, `x`, and `y`.
 
 - node_style:
 
@@ -66,6 +68,10 @@ The plot is automatically drawn when printed or explicitly plotted.
 
 Other plotting:
 [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md),
+[`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md),
+[`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
+[`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
+[`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
 [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md)
 
 ## Examples
@@ -79,6 +85,25 @@ cg <- caugi(
 )
 
 plot(cg)
+
+
+# Use a specific layout method (as string)
+plot(cg, layout = "kamada-kawai")
+
+
+# Use a layout function
+plot(cg, layout = caugi_layout_sugiyama)
+
+
+# Pre-compute layout and use it
+coords <- caugi_layout_fruchterman_reingold(cg)
+plot(cg, layout = coords)
+
+
+# Bipartite layout with a function
+cg_bp <- caugi(A %-->% X, B %-->% X, C %-->% Y)
+partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE)
+plot(cg_bp, layout = caugi_layout_bipartite, partition = partition)
 
 
 # Customize nodes

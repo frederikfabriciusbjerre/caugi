@@ -378,6 +378,14 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 - [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) :
   Compute Graph Layout
+- [`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md)
+  : Bipartite Graph Layout
+- [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md)
+  : Fruchterman-Reingold Force-Directed Layout
+- [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md)
+  : Kamada-Kawai Stress Minimization Layout
+- [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md)
+  : Sugiyama Hierarchical Layout
 - [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md) : S7 Class
   for caugi Plot
 - [`plot`](https://caugi.org/reference/plot.md) : Create a caugi Graph

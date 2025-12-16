@@ -8,10 +8,23 @@
   visualizing graphs using the Sugiyama algorithm for DAGs and a
   force-directed algorithm for other graphs. The plot is rendered using
   grid graphics and returns a `caugi_plot` object that can be customized
-  with `node_style`, `edge_style`, and `label_style` arguments.
+  with `node_style`, `edge_style`, and `label_style` arguments. The
+  [`plot()`](https://caugi.org/reference/plot.md) method accepts layouts
+  as strings, functions, or pre-computed data.frames.
 - Add [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md)
   function to compute node coordinates for graph visualization using the
   Sugiyama layout algorithm.
+- Add dedicated layout functions:
+  [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
+  [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
+  [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
+  and
+  [`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md).
+  Each function provides a focused API for its specific algorithm.
+- Add bipartite graph layout support with
+  [`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md),
+  which places nodes in two parallel lines (rows or columns) based on a
+  user-provided partition.
 - Add [`to_dot()`](https://caugi.org/reference/to_dot.md) and
   [`write_dot()`](https://caugi.org/reference/write_dot.md) functions
   for exporting caugi graphs to DOT (graphviz) format. The resulting

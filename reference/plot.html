@@ -64,16 +64,14 @@ layout.</p></dd>
 
 
 <dt id="arg-layout">layout<a class="anchor" aria-label="anchor" href="#arg-layout"></a></dt>
-<dd><p>Character string specifying the layout method. Options:
-* <code>"auto"</code>: Automatically choose sugiyama for graphs with only directed
-edges, otherwise fruchterman-reingold (default)
-* <code>"sugiyama"</code>: Hierarchical layout for DAGs (requires only directed
-edges)
-* <code>"fruchterman-reingold"</code>: Fruchterman-Reingold spring-electrical layout
-(fast, works with all edge types).
-* <code>"kamada-kawai"</code>: Kamada-Kawai stress minimization (high quality,
-better distance preservation, works with all edge types).
-See <code><a href="caugi_layout.html">caugi_layout()</a></code> for more details on these algorithms.</p></dd>
+<dd><p>Specifies the graph layout method. Can be:</p><ul><li><p>A character string: <code>"auto"</code> (default), <code>"sugiyama"</code>,
+<code>"fruchterman-reingold"</code>, <code>"kamada-kawai"</code>, <code>"bipartite"</code>.
+See <code><a href="caugi_layout.html">caugi_layout()</a></code> for details.</p></li>
+<li><p>A layout function: e.g., <code>caugi_layout_sugiyama</code>,
+<code>caugi_layout_bipartite</code>, etc. The function will be called with <code>x</code> and
+any additional arguments passed via <code>...</code>.</p></li>
+<li><p>A pre-computed layout data.frame with columns <code>name</code>, <code>x</code>, and <code>y</code>.</p></li>
+</ul></dd>
 
 
 <dt id="arg-node-style">node_style<a class="anchor" aria-label="anchor" href="#arg-node-style"></a></dt>
@@ -111,6 +109,10 @@ plotted.</p>
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other plotting:
 <code><a href="caugi_layout.html">caugi_layout()</a></code>,
+<code><a href="caugi_layout_bipartite.html">caugi_layout_bipartite()</a></code>,
+<code><a href="caugi_layout_fruchterman_reingold.html">caugi_layout_fruchterman_reingold()</a></code>,
+<code><a href="caugi_layout_kamada_kawai.html">caugi_layout_kamada_kawai()</a></code>,
+<code><a href="caugi_layout_sugiyama.html">caugi_layout_sugiyama()</a></code>,
 <code><a href="caugi_plot.html">caugi_plot()</a></code></p></div>
     </div>
 
@@ -126,9 +128,28 @@ plotted.</p>
 <span class="r-in"><span><span class="fu">plot</span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Use a specific layout method (as string)</span></span></span>
+<span class="r-in"><span><span class="fu">plot</span><span class="op">(</span><span class="va">cg</span>, layout <span class="op">=</span> <span class="st">"kamada-kawai"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Use a layout function</span></span></span>
+<span class="r-in"><span><span class="fu">plot</span><span class="op">(</span><span class="va">cg</span>, layout <span class="op">=</span> <span class="va">caugi_layout_sugiyama</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot-3.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Pre-compute layout and use it</span></span></span>
+<span class="r-in"><span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi_layout_fruchterman_reingold.html">caugi_layout_fruchterman_reingold</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot</span><span class="op">(</span><span class="va">cg</span>, layout <span class="op">=</span> <span class="va">coords</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot-4.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Bipartite layout with a function</span></span></span>
+<span class="r-in"><span><span class="va">cg_bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">X</span>, <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">X</span>, <span class="va">C</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">partition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot</span><span class="op">(</span><span class="va">cg_bp</span>, layout <span class="op">=</span> <span class="va">caugi_layout_bipartite</span>, partition <span class="op">=</span> <span class="va">partition</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot-5.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Customize nodes</span></span></span>
 <span class="r-in"><span><span class="fu">plot</span><span class="op">(</span><span class="va">cg</span>, node_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"lightgreen"</span>, padding <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot-2.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Customize edges by type</span></span></span>
 <span class="r-in"><span><span class="fu">plot</span><span class="op">(</span></span></span>
@@ -138,7 +159,7 @@ plotted.</p>
 <span class="r-in"><span>    undirected <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot-3.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot-7.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

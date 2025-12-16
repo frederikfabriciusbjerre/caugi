@@ -29,6 +29,10 @@
 <url><loc>https://caugi.org/reference/caugi_dot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_export.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_layout_bipartite.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_layout_fruchterman_reingold.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_layout_kamada_kawai.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_layout_sugiyama.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_plot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_verbs.html</loc></url>

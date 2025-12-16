@@ -9,7 +9,8 @@ automatically before computing the layout.
 ``` r
 caugi_layout(
   x,
-  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai")
+  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite"),
+  ...
 )
 ```
 
@@ -52,6 +53,14 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
   - `"kamada-kawai"`: High-quality stress minimization (works with all
     edge types)
 
+  - `"bipartite"`: Bipartite layout (requires `partition` parameter)
+
+- ...:
+
+  Additional arguments passed to the specific layout function. For
+  bipartite layouts, use `partition` (logical vector) and `orientation`
+  (`"rows"` or `"columns"`).
+
 ## Value
 
 A `data.frame` with columns `name`, `x`, and `y` containing node names
@@ -86,6 +95,10 @@ produces deterministic results.
 ## See also
 
 Other plotting:
+[`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md),
+[`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
+[`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
+[`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
 [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md),
 [`plot()`](https://caugi.org/reference/plot.md)
 
@@ -110,4 +123,21 @@ layout_fr <- caugi_layout(cg, method = "fruchterman-reingold")
 
 # Use stress minimization for publication quality
 layout_kk <- caugi_layout(cg, method = "kamada-kawai")
+
+# Bipartite layout with auto-detected partition
+cg_bp <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
+layout_bp_rows <- caugi_layout(
+  cg_bp,
+  method = "bipartite",
+  orientation = "rows"
+)
+
+# Explicit partition
+partition <- c(TRUE, TRUE, FALSE, FALSE)
+layout_bp_cols <- caugi_layout(
+  cg_bp,
+  method = "bipartite",
+  partition = partition,
+  orientation = "columns"
+)
 ```

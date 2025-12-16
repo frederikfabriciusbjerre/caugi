@@ -1,0 +1,47 @@
+# Sugiyama Hierarchical Layout
+
+Computes node coordinates using the Sugiyama hierarchical layout
+algorithm. Optimized for directed acyclic graphs (DAGs), placing nodes
+in layers to emphasize hierarchical structure and causal flow from top
+to bottom.
+
+## Usage
+
+``` r
+caugi_layout_sugiyama(x)
+```
+
+## Source
+
+Sugiyama, K., Tagawa, S., & Toda, M. (1981). Methods for visual
+understanding of hierarchical system structures. IEEE Transactions on
+Systems, Man, and Cybernetics, 11(2), 109-125.
+[doi:10.1109/TSMC.1981.4308636](https://doi.org/10.1109/TSMC.1981.4308636)
+
+## Arguments
+
+- x:
+
+  A `caugi` object. Must contain only directed edges.
+
+## Value
+
+A `data.frame` with columns `name`, `x`, and `y` containing node names
+and their coordinates.
+
+## See also
+
+Other plotting:
+[`caugi_layout()`](https://caugi.org/reference/caugi_layout.md),
+[`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md),
+[`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
+[`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
+[`caugi_plot()`](https://caugi.org/reference/caugi_plot.md),
+[`plot()`](https://caugi.org/reference/plot.md)
+
+## Examples
+
+``` r
+cg <- caugi(A %-->% B + C, B %-->% D, C %-->% D, class = "DAG")
+layout <- caugi_layout_sugiyama(cg)
+```

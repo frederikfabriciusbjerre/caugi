@@ -37,7 +37,7 @@ Fruchterman-Reingold force-directed layout.
 
 ## Layout Algorithms
 
-The `caugi` package provides three layout algorithms, each optimized for
+The `caugi` package provides four layout algorithms, each optimized for
 different use cases.
 
 ### Sugiyama (Hierarchical Layout)
@@ -122,6 +122,67 @@ plot(ug, layout = "kamada-kawai")
 representation matters
 
 **Advantages:** Better global structure preservation
+
+### Bipartite Layout
+
+The bipartite layout is designed for graphs with a clear two-group
+structure, such as treatment/outcome or exposure/response relationships.
+It arranges nodes in two parallel lines (rows or columns).
+
+``` r
+# Create a bipartite graph: treatments -> outcomes
+bipartite_graph <- caugi(
+  Treatment_A %-->% Outcome_1 + Outcome_2 + Outcome_3,
+  Treatment_B %-->% Outcome_1 + Outcome_2,
+  Treatment_C %-->% Outcome_2 + Outcome_3,
+  class = "DAG"
+)
+
+# Horizontal rows (treatments on top, outcomes on bottom)
+plot(
+  bipartite_graph,
+  layout = "bipartite",
+  orientation = "rows"
+)
+```
+
+![](visualization_files/figure-html/bipartite-layout-1.png)
+
+``` r
+
+# Vertical columns (treatments on right, outcomes on left)
+plot(
+  bipartite_graph,
+  layout = "bipartite",
+  orientation = "columns"
+)
+```
+
+![](visualization_files/figure-html/bipartite-layout-2.png)
+
+The bipartite layout automatically detects which nodes should be in
+which partition based on incoming edges. Nodes with no incoming edges
+are placed in one group, while nodes with incoming edges are placed in
+the other. You can also specify the partition explicitly:
+
+``` r
+# Create bipartite layout with explicit partition
+partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE)
+plot(
+  bipartite_graph,
+  layout = caugi_layout_bipartite,
+  partition = partition,
+  orientation = "rows"
+)
+```
+
+![](visualization_files/figure-html/bipartite-explicit-1.png)
+
+**Best for:** Treatment-outcome structures, exposure-response models,
+bipartite causal relationships
+
+**Advantages:** Clear visual separation, emphasizes directed
+relationships between groups
 
 ### Comparing Layouts
 
