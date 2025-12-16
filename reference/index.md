@@ -180,7 +180,7 @@
 - [`as_igraph()`](https://caugi.org/reference/as_igraph.md) : Convert a
   caugi to an igraph object
 
-## Operatoins
+## Operations
 
 - [`moralize()`](https://caugi.org/reference/moralize.md) : Moralize a
   DAG
