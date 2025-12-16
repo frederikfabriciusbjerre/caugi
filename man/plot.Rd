@@ -7,16 +7,16 @@
 \item{x}{A \code{caugi} object. Must contain only directed edges for Sugiyama
 layout.}
 
-\item{layout}{Character string specifying the layout method. Options:
-* \code{"auto"}: Automatically choose sugiyama for graphs with only directed
-edges, otherwise fruchterman-reingold (default)
-* \code{"sugiyama"}: Hierarchical layout for DAGs (requires only directed
-edges)
-* \code{"fruchterman-reingold"}: Fruchterman-Reingold spring-electrical layout
-(fast, works with all edge types).
-* \code{"kamada-kawai"}: Kamada-Kawai stress minimization (high quality,
-better distance preservation, works with all edge types).
-See \code{\link[=caugi_layout]{caugi_layout()}} for more details on these algorithms.}
+\item{layout}{Specifies the graph layout method. Can be:
+\itemize{
+\item A character string: \code{"auto"} (default), \code{"sugiyama"},
+\code{"fruchterman-reingold"}, \code{"kamada-kawai"}, \code{"bipartite"}.
+See \code{\link[=caugi_layout]{caugi_layout()}} for details.
+\item A layout function: e.g., \code{caugi_layout_sugiyama},
+\code{caugi_layout_bipartite}, etc. The function will be called with \code{x} and
+any additional arguments passed via \code{...}.
+\item A pre-computed layout data.frame with columns \code{name}, \code{x}, and \code{y}.
+}}
 
 \item{node_style}{List of node styling parameters. Supports:
 \itemize{
@@ -62,6 +62,21 @@ cg <- caugi(
 
 plot(cg)
 
+# Use a specific layout method (as string)
+plot(cg, layout = "kamada-kawai")
+
+# Use a layout function
+plot(cg, layout = caugi_layout_sugiyama)
+
+# Pre-compute layout and use it
+coords <- caugi_layout_fruchterman_reingold(cg)
+plot(cg, layout = coords)
+
+# Bipartite layout with a function
+cg_bp <- caugi(A \%-->\% X, B \%-->\% X, C \%-->\% Y)
+partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE)
+plot(cg_bp, layout = caugi_layout_bipartite, partition = partition)
+
 # Customize nodes
 plot(cg, node_style = list(fill = "lightgreen", padding = 0.8))
 
@@ -78,6 +93,10 @@ plot(
 \seealso{
 Other plotting: 
 \code{\link{caugi_layout}()},
+\code{\link{caugi_layout_bipartite}()},
+\code{\link{caugi_layout_fruchterman_reingold}()},
+\code{\link{caugi_layout_kamada_kawai}()},
+\code{\link{caugi_layout_sugiyama}()},
 \code{\link{caugi_plot}()}
 }
 \concept{plotting}

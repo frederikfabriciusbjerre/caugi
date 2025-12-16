@@ -39,6 +39,10 @@
 #'     edge types)
 #'   * `"kamada-kawai"`: High-quality stress minimization (works with all edge
 #'     types)
+#'   * `"bipartite"`: Bipartite layout (requires `partition` parameter)
+#' @param ... Additional arguments passed to the specific layout function.
+#'   For bipartite layouts, use `partition` (logical vector) and `orientation`
+#'   (`"rows"` or `"columns"`).
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -63,6 +67,23 @@
 #' # Use stress minimization for publication quality
 #' layout_kk <- caugi_layout(cg, method = "kamada-kawai")
 #'
+#' # Bipartite layout with auto-detected partition
+#' cg_bp <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
+#' layout_bp_rows <- caugi_layout(
+#'   cg_bp,
+#'   method = "bipartite",
+#'   orientation = "rows"
+#' )
+#'
+#' # Explicit partition
+#' partition <- c(TRUE, TRUE, FALSE, FALSE)
+#' layout_bp_cols <- caugi_layout(
+#'   cg_bp,
+#'   method = "bipartite",
+#'   partition = partition,
+#'   orientation = "columns"
+#' )
+#'
 #' @family plotting
 #' @concept plotting
 #'
@@ -82,7 +103,14 @@
 #' @export
 caugi_layout <- function(
   x,
-  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai")
+  method = c(
+    "auto",
+    "sugiyama",
+    "fruchterman-reingold",
+    "kamada-kawai",
+    "bipartite"
+  ),
+  ...
 ) {
   is_caugi(x, throw_error = TRUE)
 
@@ -93,33 +121,270 @@ caugi_layout <- function(
     x <- build(x)
   }
 
-  edge_types <- unique(edges(x)[["edge"]])
-  non_directed <- setdiff(edge_types, "-->")
+  # Dispatch to specific layout function
+  layout_fn <- switch(
+    method,
+    "auto" = {
+      edge_types <- unique(edges(x)[["edge"]])
+      non_directed <- setdiff(edge_types, "-->")
+      if (length(non_directed) == 0) {
+        caugi_layout_sugiyama
+      } else {
+        caugi_layout_fruchterman_reingold
+      }
+    },
+    "sugiyama" = caugi_layout_sugiyama,
+    "fruchterman-reingold" = caugi_layout_fruchterman_reingold,
+    "kamada-kawai" = caugi_layout_kamada_kawai,
+    "bipartite" = caugi_layout_bipartite
+  )
 
-  # Auto-select method based on edge types
-  if (method == "auto") {
-    method <- if (length(non_directed) == 0) {
-      "sugiyama"
-    } else {
-      "fruchterman-reingold"
+  layout_fn(x, ...)
+}
+
+#' Bipartite Graph Layout
+#'
+#' Computes node coordinates for bipartite graphs, placing nodes in two
+#' parallel lines (rows or columns) based on a partition. If the graph
+#' has not been built yet, it will be built automatically before computing
+#' the layout.
+#'
+#' @param x A `caugi` object.
+#' @param partition Optional logical vector indicating node partitions.
+#'   Nodes with `TRUE` are placed in one partition and nodes with `FALSE`
+#'   in the other. Length must equal the number of nodes. Both partitions
+#'   must be non-empty. If `NULL` (default), attempts to detect bipartite
+#'   structure automatically by assigning nodes without incoming edges to
+#'   one partition and others to the second partition.
+#' @param orientation Character string specifying the layout orientation:
+#'   * `"rows"`: Two horizontal rows (default). First partition on top (y=1),
+#'     second partition on bottom (y=0).
+#'   * `"columns"`: Two vertical columns. First partition on right (x=1),
+#'     second partition on left (x=0).
+#'
+#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
+#'   names and their coordinates.
+#'
+#' @examples
+#' # Create a bipartite graph (causes -> effects)
+#' cg <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
+#' partition <- c(TRUE, TRUE, FALSE, FALSE)  # A, B = causes, X, Y = effects
+#'
+#' # Two horizontal rows (causes on top)
+#' layout_rows <- caugi_layout_bipartite(cg, partition, orientation = "rows")
+#'
+#' # Two vertical columns (causes on right)
+#' layout_cols <- caugi_layout_bipartite(cg, partition, orientation = "columns")
+#'
+#' @family plotting
+#' @concept plotting
+#'
+#' @export
+caugi_layout_bipartite <- function(
+  x,
+  partition = NULL,
+  orientation = c("rows", "columns")
+) {
+  is_caugi(x, throw_error = TRUE)
+
+  orientation <- match.arg(orientation)
+
+  # Ensure graph is built
+  if (!x@built) {
+    x <- build(x)
+  }
+
+  # Auto-detect partition if not provided
+  if (is.null(partition)) {
+    # Simple heuristic: nodes with no incoming edges vs nodes with
+    # incoming edges
+    edges_df <- edges(x)
+    node_names <- nodes(x)[["name"]]
+
+    # Check which nodes have incoming edges
+    has_incoming <- node_names %in% edges_df$to
+
+    partition <- !has_incoming # TRUE for source nodes, FALSE for others
+
+    # Check if partition is valid (both parts non-empty)
+    if (all(partition) || all(!partition)) {
+      stop(
+        "Could not automatically detect bipartite structure. ",
+        "Please provide a 'partition' argument explicitly.",
+        call. = FALSE
+      )
+    }
+  } else {
+    if (!is.logical(partition)) {
+      stop("partition must be a logical vector", call. = FALSE)
+    }
+
+    if (length(partition) != nrow(nodes(x))) {
+      stop(
+        "partition length (",
+        length(partition),
+        ") ",
+        "does not match number of nodes (",
+        nrow(nodes(x)),
+        ")",
+        call. = FALSE
+      )
     }
   }
 
-  # Sugiyama layout only works reliably with directed edges
-  # Check if graph has non-directed edges (undirected, bidirected, partial)
-  if (method == "sugiyama" && length(non_directed) > 0) {
+  coords <- compute_bipartite_layout_ptr(x@ptr, partition, orientation)
+
+  data.frame(
+    name = nodes(x)[["name"]],
+    x = coords[["x"]],
+    y = coords[["y"]],
+    stringsAsFactors = FALSE
+  )
+}
+
+#' Sugiyama Hierarchical Layout
+#'
+#' Computes node coordinates using the Sugiyama hierarchical layout algorithm.
+#' Optimized for directed acyclic graphs (DAGs), placing nodes in layers to
+#' emphasize hierarchical structure and causal flow from top to bottom.
+#'
+#' @param x A `caugi` object. Must contain only directed edges.
+#'
+#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
+#'   names and their coordinates.
+#'
+#' @examples
+#' cg <- caugi(A %-->% B + C, B %-->% D, C %-->% D, class = "DAG")
+#' layout <- caugi_layout_sugiyama(cg)
+#'
+#' @family plotting
+#' @concept plotting
+#'
+#' @source Sugiyama, K., Tagawa, S., & Toda, M. (1981). Methods for visual
+#' understanding of hierarchical system structures. IEEE Transactions on
+#' Systems, Man, and Cybernetics, 11(2), 109-125.
+#' \doi{10.1109/TSMC.1981.4308636}
+#'
+#' @export
+caugi_layout_sugiyama <- function(x) {
+  is_caugi(x, throw_error = TRUE)
+
+  # Ensure graph is built
+  if (!x@built) {
+    x <- build(x)
+  }
+
+  edge_types <- unique(edges(x)[["edge"]])
+  non_directed <- setdiff(edge_types, "-->")
+
+  if (length(non_directed) > 0) {
     stop(
       "Sugiyama layout only supports graphs with directed edges. ",
       "Found edge type(s): ",
       paste(non_directed, collapse = ", "),
       ". ",
-      "Consider using \"fruchterman-reingold\" or \"kamada-kawai\" ",
-      "for graphs with mixed edge types.",
+      "Consider using caugi_layout_fruchterman_reingold() or ",
+      "caugi_layout_kamada_kawai() for graphs with mixed edge types.",
       call. = FALSE
     )
   }
 
-  coords <- compute_layout_ptr(x@ptr, method)
+  coords <- compute_layout_ptr(x@ptr, "sugiyama")
+
+  data.frame(
+    name = nodes(x)[["name"]],
+    x = coords[["x"]],
+    y = coords[["y"]],
+    stringsAsFactors = FALSE
+  )
+}
+
+#' Fruchterman-Reingold Force-Directed Layout
+#'
+#' Computes node coordinates using the Fruchterman-Reingold force-directed
+#' layout algorithm. Fast spring-electrical model that treats edges as springs
+#' and nodes as electrically charged particles. Produces organic, symmetric
+#' layouts with uniform edge lengths. Works with all edge types and produces
+#' deterministic results.
+#'
+#' @param x A `caugi` object.
+#'
+#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
+#'   names and their coordinates.
+#'
+#' @examples
+#' cg <- caugi(
+#'   A %-->% B,
+#'   B %<->% C,
+#'   C %-->% D
+#' )
+#' layout <- caugi_layout_fruchterman_reingold(cg)
+#'
+#' @family plotting
+#' @concept plotting
+#'
+#' @source Fruchterman, T. M. J., & Reingold, E. M. (1991). Graph drawing by
+#' force-directed placement. Software: Practice and Experience, 21(11),
+#' 1129-1164. \doi{10.1002/spe.4380211102}
+#'
+#' @export
+caugi_layout_fruchterman_reingold <- function(x) {
+  is_caugi(x, throw_error = TRUE)
+
+  # Ensure graph is built
+  if (!x@built) {
+    x <- build(x)
+  }
+
+  coords <- compute_layout_ptr(x@ptr, "fruchterman-reingold")
+
+  data.frame(
+    name = nodes(x)[["name"]],
+    x = coords[["x"]],
+    y = coords[["y"]],
+    stringsAsFactors = FALSE
+  )
+}
+
+#' Kamada-Kawai Stress Minimization Layout
+#'
+#' Computes node coordinates using the Kamada-Kawai stress minimization
+#' algorithm. High-quality force-directed layout that minimizes "stress" by
+#' making Euclidean distances proportional to graph-theoretic distances. Better
+#' preserves global structure and path lengths compared to Fruchterman-Reingold.
+#' Ideal for publication-quality visualizations. Works with all edge types and
+#' produces deterministic results.
+#'
+#' @param x A `caugi` object.
+#'
+#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
+#'   names and their coordinates.
+#'
+#' @examples
+#' cg <- caugi(
+#'   A %-->% B,
+#'   B %<->% C,
+#'   C %-->% D
+#' )
+#' layout <- caugi_layout_kamada_kawai(cg)
+#'
+#' @family plotting
+#' @concept plotting
+#'
+#' @source Kamada, T., & Kawai, S. (1989). An algorithm for drawing general
+#' undirected graphs. Information Processing Letters, 31(1), 7-15.
+#' \doi{10.1016/0020-0190(89)90102-6}
+#'
+#' @export
+caugi_layout_kamada_kawai <- function(x) {
+  is_caugi(x, throw_error = TRUE)
+
+  # Ensure graph is built
+  if (!x@built) {
+    x <- build(x)
+  }
+
+  coords <- compute_layout_ptr(x@ptr, "kamada-kawai")
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -161,16 +426,17 @@ get_gpar_params <- function(style) {
 #'
 #' @param x A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
-#' @param layout Character string specifying the layout method. Options:
-#'     * `"auto"`: Automatically choose sugiyama for graphs with only directed
-#'       edges, otherwise fruchterman-reingold (default)
-#'     * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
-#'       edges)
-#'     * `"fruchterman-reingold"`: Fruchterman-Reingold spring-electrical layout
-#'       (fast, works with all edge types).
-#'     * `"kamada-kawai"`: Kamada-Kawai stress minimization (high quality,
-#'       better distance preservation, works with all edge types).
-#'   See [caugi_layout()] for more details on these algorithms.
+#' @param layout Specifies the graph layout method. Can be:
+#'   * A character string: `"auto"` (default), `"sugiyama"`,
+#'     `"fruchterman-reingold"`, `"kamada-kawai"`, `"bipartite"`.
+#'     See [caugi_layout()] for details.
+#'   * A layout function: e.g., `caugi_layout_sugiyama`,
+#'     `caugi_layout_bipartite`, etc. The function will be called with `x` and
+#'     any additional arguments passed via `...`.
+#'   * A pre-computed layout data.frame with columns `name`, `x`, and `y`.
+#' @param ... Additional arguments passed to [caugi_layout()]. For bipartite
+#'   layouts, include `partition` (logical vector) and `orientation` (`"rows"`
+#'   or `"columns"`).
 #' @param node_style List of node styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `fill`, `col`, `lwd`, `lty`, `alpha`
 #'   * Geometry: `padding` (text padding inside nodes in mm, default 2),
@@ -199,6 +465,21 @@ get_gpar_params <- function(style) {
 #'
 #' plot(cg)
 #'
+#' # Use a specific layout method (as string)
+#' plot(cg, layout = "kamada-kawai")
+#'
+#' # Use a layout function
+#' plot(cg, layout = caugi_layout_sugiyama)
+#'
+#' # Pre-compute layout and use it
+#' coords <- caugi_layout_fruchterman_reingold(cg)
+#' plot(cg, layout = coords)
+#'
+#' # Bipartite layout with a function
+#' cg_bp <- caugi(A %-->% X, B %-->% X, C %-->% Y)
+#' partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE)
+#' plot(cg_bp, layout = caugi_layout_bipartite, partition = partition)
+#'
 #' # Customize nodes
 #' plot(cg, node_style = list(fill = "lightgreen", padding = 0.8))
 #'
@@ -218,7 +499,7 @@ get_gpar_params <- function(style) {
 #' @export
 S7::method(plot, caugi) <- function(
   x,
-  layout = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai"),
+  layout = "auto",
   node_style = list(),
   edge_style = list(),
   label_style = list(),
@@ -226,11 +507,98 @@ S7::method(plot, caugi) <- function(
 ) {
   is_caugi(x, throw_error = TRUE)
 
-  layout <- match.arg(layout)
-
   # Ensure graph is built
   if (!x@built) {
     x <- build(x)
+  }
+
+  # Compute layout coordinates
+  if (is.character(layout)) {
+    # String method name - pass through to caugi_layout
+    coords <- caugi_layout(x, method = layout, ...)
+  } else if (is.function(layout)) {
+    # Layout function - call directly with ...
+    coords <- layout(x, ...)
+  } else if (is.data.frame(layout)) {
+    # Pre-computed layout - validate thoroughly
+    required_cols <- c("name", "x", "y")
+    missing_cols <- setdiff(required_cols, names(layout))
+
+    if (length(missing_cols) > 0) {
+      stop(
+        "Layout data.frame is missing required column",
+        if (length(missing_cols) > 1) "s" else "",
+        ": ",
+        paste(missing_cols, collapse = ", "),
+        call. = FALSE
+      )
+    }
+
+    # Validate data types
+    if (!is.numeric(layout$x)) {
+      stop("Layout column 'x' must be numeric", call. = FALSE)
+    }
+
+    if (!is.numeric(layout$y)) {
+      stop("Layout column 'y' must be numeric", call. = FALSE)
+    }
+
+    # Check for NA/NaN/Inf values
+    if (any(is.na(layout$x) | is.nan(layout$x) | is.infinite(layout$x))) {
+      stop(
+        "Layout column 'x' contains NA, NaN, or infinite values",
+        call. = FALSE
+      )
+    }
+
+    if (any(is.na(layout$y) | is.nan(layout$y) | is.infinite(layout$y))) {
+      stop(
+        "Layout column 'y' contains NA, NaN, or infinite values",
+        call. = FALSE
+      )
+    }
+
+    # Check that number of nodes matches
+    graph_nodes <- nodes(x)[["name"]]
+    if (nrow(layout) != length(graph_nodes)) {
+      stop(
+        "Layout has ",
+        nrow(layout),
+        " row",
+        if (nrow(layout) != 1) "s" else "",
+        " but graph has ",
+        length(graph_nodes),
+        " node",
+        if (length(graph_nodes) != 1) "s" else "",
+        call. = FALSE
+      )
+    }
+
+    # Check that all node names are present
+    missing_nodes <- setdiff(graph_nodes, layout$name)
+    if (length(missing_nodes) > 0) {
+      stop(
+        "Layout is missing coordinate",
+        if (length(missing_nodes) > 1) "s" else "",
+        " for node",
+        if (length(missing_nodes) > 1) "s" else "",
+        ": ",
+        paste(head(missing_nodes, 5), collapse = ", "),
+        if (length(missing_nodes) > 5) {
+          paste0(" (and ", length(missing_nodes) - 5, " more)")
+        } else {
+          ""
+        },
+        call. = FALSE
+      )
+    }
+
+    coords <- layout
+  } else {
+    stop(
+      "layout must be a character string, function, or data.frame",
+      call. = FALSE
+    )
   }
 
   # TODO: Consider letting this be a parameter
@@ -243,8 +611,6 @@ S7::method(plot, caugi) <- function(
   )
 
   labels <- nodes(x)[["name"]]
-
-  coords <- caugi_layout(x, method = layout)
   edges <- edges(x)
 
   nodes_res <- make_nodes(

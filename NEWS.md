@@ -1,8 +1,10 @@
 # caugi 0.5.0
 ## New Features
 
-* Add `plot()` method for visualizing graphs using the Sugiyama algorithm for DAGs and a force-directed algorithm for other graphs. The plot is rendered using grid graphics and returns a `caugi_plot` object that can be customized with `node_style`, `edge_style`, and `label_style` arguments.
+* Add `plot()` method for visualizing graphs using the Sugiyama algorithm for DAGs and a force-directed algorithm for other graphs. The plot is rendered using grid graphics and returns a `caugi_plot` object that can be customized with `node_style`, `edge_style`, and `label_style` arguments. The `plot()` method accepts layouts as strings, functions, or pre-computed data.frames.
 * Add `caugi_layout()` function to compute node coordinates for graph visualization using the Sugiyama layout algorithm.
+* Add dedicated layout functions: `caugi_layout_sugiyama()`, `caugi_layout_fruchterman_reingold()`, `caugi_layout_kamada_kawai()`, and `caugi_layout_bipartite()`. Each function provides a focused API for its specific algorithm.
+* Add bipartite graph layout support with `caugi_layout_bipartite()`, which places nodes in two parallel lines (rows or columns) based on a user-provided partition.
 * Add `to_dot()` and `write_dot()` functions for exporting caugi graphs to DOT
   (graphviz) format. The resulting object is a new S7 class, `caugi_export`,
   which has a `knit_print()` method for rendering DOT graphs in R Markdown and

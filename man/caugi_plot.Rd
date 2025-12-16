@@ -19,6 +19,10 @@ they are displayed.
 \seealso{
 Other plotting: 
 \code{\link{caugi_layout}()},
+\code{\link{caugi_layout_bipartite}()},
+\code{\link{caugi_layout_fruchterman_reingold}()},
+\code{\link{caugi_layout_kamada_kawai}()},
+\code{\link{caugi_layout_sugiyama}()},
 \code{\link{plot}()}
 }
 \concept{plotting}

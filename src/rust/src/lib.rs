@@ -897,6 +897,40 @@ fn compute_layout_ptr(g: ExternalPtr<GraphView>, method: &str) -> Robj {
     list!(x = x, y = y).into_robj()
 }
 
+#[extendr]
+fn compute_bipartite_layout_ptr(
+    g: ExternalPtr<GraphView>,
+    partition: Robj,
+    orientation: &str,
+) -> Robj {
+    use graph::layout::{compute_bipartite_layout, BipartiteOrientation};
+    use std::str::FromStr;
+
+    let orient = BipartiteOrientation::from_str(orientation).unwrap_or_else(|e| throw_r_error(e));
+
+    // Convert logical vector to Vec<bool>
+    let partition_vec: Vec<bool> = partition
+        .as_logical_slice()
+        .unwrap_or_else(|| throw_r_error("partition must be a logical vector"))
+        .iter()
+        .map(|&x| x.is_true())
+        .collect();
+
+    let coords = compute_bipartite_layout(g.as_ref().core(), &partition_vec, orient)
+        .unwrap_or_else(|e| throw_r_error(e));
+
+    let n = coords.len();
+    let mut x = Vec::with_capacity(n);
+    let mut y = Vec::with_capacity(n);
+
+    for (xi, yi) in coords {
+        x.push(xi);
+        y.push(yi);
+    }
+
+    list!(x = x, y = y).into_robj()
+}
+
 extendr_module! {
     mod caugi;
     // registry
@@ -981,4 +1015,5 @@ extendr_module! {
 
     // layout
     fn compute_layout_ptr;
+    fn compute_bipartite_layout_ptr;
 }

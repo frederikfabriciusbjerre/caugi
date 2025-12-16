@@ -48,14 +48,14 @@ Fruchterman-Reingold force-directed layout.
 
 ## Layout Algorithms
 
-The `caugi` package provides three layout algorithms, each optimized for
+The `caugi` package provides four layout algorithms, each optimized for
 different use cases.
 
 ### Sugiyama (Hierarchical Layout)
 
-The Sugiyama layout [@sugiyama1981] is ideal for directed acyclic graphs (DAGs). It arranges
-nodes in layers to emphasize hierarchical structure and causal flow from top to
-bottom, minimizing edge crossings.
+The Sugiyama layout [@sugiyama1981] is ideal for directed acyclic graphs
+(DAGs). It arranges nodes in layers to emphasize hierarchical structure
+and causal flow from top to bottom, minimizing edge crossings.
 
 ```{r sugiyama-layout}
 # Create a more complex DAG
@@ -119,9 +119,62 @@ ug <- caugi(
 plot(ug, layout = "kamada-kawai")
 ```
 
-**Best for:** Publication-quality figures, when accurate distance representation matters
+**Best for:** Publication-quality figures, when accurate distance
+representation matters
 
 **Advantages:** Better global structure preservation
+
+### Bipartite Layout
+
+The bipartite layout is designed for graphs with a clear two-group structure,
+such as treatment/outcome or exposure/response relationships. It arranges
+nodes in two parallel lines (rows or columns).
+
+```{r bipartite-layout}
+# Create a bipartite graph: treatments -> outcomes
+bipartite_graph <- caugi(
+  Treatment_A %-->% Outcome_1 + Outcome_2 + Outcome_3,
+  Treatment_B %-->% Outcome_1 + Outcome_2,
+  Treatment_C %-->% Outcome_2 + Outcome_3,
+  class = "DAG"
+)
+
+# Horizontal rows (treatments on top, outcomes on bottom)
+plot(
+  bipartite_graph,
+  layout = "bipartite",
+  orientation = "rows"
+)
+
+# Vertical columns (treatments on right, outcomes on left)
+plot(
+  bipartite_graph,
+  layout = "bipartite",
+  orientation = "columns"
+)
+```
+
+The bipartite layout automatically detects which nodes should be in which
+partition based on incoming edges. Nodes with no incoming edges are placed
+in one group, while nodes with incoming edges are placed in the other. You
+can also specify the partition explicitly:
+
+```{r bipartite-explicit}
+# Create bipartite layout with explicit partition
+partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE)
+plot(
+  bipartite_graph,
+  layout = caugi_layout_bipartite,
+  partition = partition,
+  orientation = "rows"
+)
+```
+
+**Best for:** Treatment-outcome structures, exposure-response models,
+bipartite causal relationships
+
+**Advantages:** Clear visual separation, emphasizes directed relationships
+between groups
 
 ### Comparing Layouts
 
@@ -139,7 +192,8 @@ head(layout_sug)
 
 ## Customizing Plots
 
-The `plot()` function provides extensive customization options for nodes, edges, and labels.
+The `plot()` function provides extensive customization options for nodes,
+edges, and labels.
 
 ### Node Styling
 

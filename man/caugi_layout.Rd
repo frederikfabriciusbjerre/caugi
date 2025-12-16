@@ -20,7 +20,8 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 \usage{
 caugi_layout(
   x,
-  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai")
+  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite"),
+  ...
 )
 }
 \arguments{
@@ -36,7 +37,12 @@ edges, otherwise fruchterman-reingold (default)
 edge types)
 \item \code{"kamada-kawai"}: High-quality stress minimization (works with all edge
 types)
+\item \code{"bipartite"}: Bipartite layout (requires \code{partition} parameter)
 }}
+
+\item{...}{Additional arguments passed to the specific layout function.
+For bipartite layouts, use \code{partition} (logical vector) and \code{orientation}
+(\code{"rows"} or \code{"columns"}).}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node
@@ -94,9 +100,30 @@ layout_fr <- caugi_layout(cg, method = "fruchterman-reingold")
 # Use stress minimization for publication quality
 layout_kk <- caugi_layout(cg, method = "kamada-kawai")
 
+# Bipartite layout with auto-detected partition
+cg_bp <- caugi(A \%-->\% X, A \%-->\% Y, B \%-->\% X, B \%-->\% Y)
+layout_bp_rows <- caugi_layout(
+  cg_bp,
+  method = "bipartite",
+  orientation = "rows"
+)
+
+# Explicit partition
+partition <- c(TRUE, TRUE, FALSE, FALSE)
+layout_bp_cols <- caugi_layout(
+  cg_bp,
+  method = "bipartite",
+  partition = partition,
+  orientation = "columns"
+)
+
 }
 \seealso{
 Other plotting: 
+\code{\link{caugi_layout_bipartite}()},
+\code{\link{caugi_layout_fruchterman_reingold}()},
+\code{\link{caugi_layout_kamada_kawai}()},
+\code{\link{caugi_layout_sugiyama}()},
 \code{\link{caugi_plot}()},
 \code{\link{plot}()}
 }
