@@ -1,32 +1,24 @@
-# Is the `caugi` graph an ADMG?
+# Get a topological ordering of a DAG
 
-Checks if the given `caugi` graph is an Acyclic Directed Mixed Graph
-(ADMG).
-
-An ADMG contains only directed (`-->`) and bidirected (`<->`) edges, and
-the directed part must be acyclic.
+Returns a topological ordering of the nodes in a DAG. For every directed
+edge u -\> v in the graph, u will appear before v in the returned
+ordering.
 
 ## Usage
 
 ``` r
-is_admg(cg, force_check = FALSE)
+topological_sort(cg)
 ```
 
 ## Arguments
 
 - cg:
 
-  A `caugi` object.
-
-- force_check:
-
-  Logical; if `TRUE`, the function will test if the graph is an ADMG, if
-  `FALSE` (default), it will look at the graph class and match it, if
-  possible.
+  A `caugi` object of class DAG.
 
 ## Value
 
-A logical value indicating whether the graph is an ADMG.
+A character vector of node names in topological order.
 
 ## See also
 
@@ -39,6 +31,7 @@ Other queries:
 [`edges()`](https://caugi.org/reference/edges.md),
 [`exogenous()`](https://caugi.org/reference/exogenous.md),
 [`is_acyclic()`](https://caugi.org/reference/is_acyclic.md),
+[`is_admg()`](https://caugi.org/reference/is_admg.md),
 [`is_caugi()`](https://caugi.org/reference/is_caugi.md),
 [`is_cpdag()`](https://caugi.org/reference/is_cpdag.md),
 [`is_dag()`](https://caugi.org/reference/is_dag.md),
@@ -52,24 +45,27 @@ Other queries:
 [`parents()`](https://caugi.org/reference/parents.md),
 [`same_nodes()`](https://caugi.org/reference/same_nodes.md),
 [`spouses()`](https://caugi.org/reference/spouses.md),
-[`subgraph()`](https://caugi.org/reference/subgraph.md),
-[`topological_sort()`](https://caugi.org/reference/topological_sort.md)
+[`subgraph()`](https://caugi.org/reference/subgraph.md)
 
 ## Examples
 
 ``` r
-cg_admg <- caugi(
+# Simple DAG: A -> B -> C
+cg <- caugi(
   A %-->% B,
-  A %<->% C,
-  class = "ADMG"
-)
-is_admg(cg_admg) # TRUE
-#> [1] TRUE
-
-cg_dag <- caugi(
-  A %-->% B,
+  B %-->% C,
   class = "DAG"
 )
-is_admg(cg_dag) # TRUE (DAGs are valid ADMGs)
-#> [1] TRUE
+topological_sort(cg) # Returns c("A", "B", "C") or equivalent valid ordering
+#> [1] "A" "B" "C"
+
+# DAG with multiple valid orderings
+cg2 <- caugi(
+  A %-->% C,
+  B %-->% C,
+  class = "DAG"
+)
+# Could return c("A", "B", "C") or c("B", "A", "C")
+topological_sort(cg2)
+#> [1] "B" "A" "C"
 ```

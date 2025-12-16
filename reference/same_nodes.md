@@ -51,7 +51,8 @@ Other queries:
 [`nodes()`](https://caugi.org/reference/nodes.md),
 [`parents()`](https://caugi.org/reference/parents.md),
 [`spouses()`](https://caugi.org/reference/spouses.md),
-[`subgraph()`](https://caugi.org/reference/subgraph.md)
+[`subgraph()`](https://caugi.org/reference/subgraph.md),
+[`topological_sort()`](https://caugi.org/reference/topological_sort.md)
 
 ## Examples
 

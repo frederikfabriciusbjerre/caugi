@@ -99,6 +99,9 @@
 - [`subgraph()`](https://caugi.org/reference/subgraph.md) : Get the
   induced subgraph
 
+- [`topological_sort()`](https://caugi.org/reference/topological_sort.md)
+  : Get a topological ordering of a DAG
+
 ## Verbs
 
 - [`build()`](https://caugi.org/reference/build.md) : Build the graph

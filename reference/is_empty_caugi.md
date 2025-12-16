@@ -42,7 +42,8 @@ Other queries:
 [`parents()`](https://caugi.org/reference/parents.md),
 [`same_nodes()`](https://caugi.org/reference/same_nodes.md),
 [`spouses()`](https://caugi.org/reference/spouses.md),
-[`subgraph()`](https://caugi.org/reference/subgraph.md)
+[`subgraph()`](https://caugi.org/reference/subgraph.md),
+[`topological_sort()`](https://caugi.org/reference/topological_sort.md)
 
 ## Examples
 
