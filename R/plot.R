@@ -449,7 +449,15 @@ get_gpar_params <- function(style) {
 #' @param label_style List of label styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
 #'     `fontfamily`, `cex`
-#' @param ... Additional arguments (currently unused).
+#' @param main Optional character string for plot title. If `NULL` (default),
+#'   no title is displayed.
+#' @param title_style List of title styling parameters. Supports:
+#'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
+#'     `fontfamily`, `cex`
+#' @param outer_margin Grid unit specifying outer margin around the plot.
+#'   Default is `grid::unit(2, "mm")`.
+#' @param title_gap Grid unit specifying gap between title and graph.
+#'   Default is `grid::unit(1, "lines")`.
 #'
 #' @returns A `caugi_plot` object that wraps a `gTree` for grid graphics
 #'   display. The plot is automatically drawn when printed or explicitly
@@ -492,6 +500,16 @@ get_gpar_params <- function(style) {
 #'   )
 #' )
 #'
+#' # Add a title
+#' plot(cg, main = "Causal Graph")
+#'
+#' # Customize title
+#' plot(
+#'   cg,
+#'   main = "My Graph",
+#'   title_style = list(fontsize = 18, col = "blue", fontface = "italic")
+#' )
+#'
 #' @name plot
 #' @family plotting
 #' @concept plotting
@@ -503,6 +521,10 @@ S7::method(plot, caugi) <- function(
   node_style = list(),
   edge_style = list(),
   label_style = list(),
+  main = NULL,
+  title_style = list(),
+  outer_margin = grid::unit(2, "mm"),
+  title_gap = grid::unit(1, "lines"),
   ...
 ) {
   is_caugi(x, throw_error = TRUE)
@@ -601,13 +623,11 @@ S7::method(plot, caugi) <- function(
     )
   }
 
-  # TODO: Consider letting this be a parameter
-  margin <- grid::unit(2, "mm")
-
   styles <- make_styles(
     edge_style = edge_style,
     node_style = node_style,
-    label_style = label_style
+    label_style = label_style,
+    title_style = title_style
   )
 
   labels <- nodes(x)[["name"]]
@@ -647,31 +667,85 @@ S7::method(plot, caugi) <- function(
     name = "node_gtree"
   )
 
-  final_vp <- grid::viewport(
+  # TODO: Find the actual node in each direction to size viewport better
+  graph_vp <- grid::viewport(
     xscale = x_range,
     yscale = y_range,
-    width = grid::unit(1, "npc") - max(grid::grobWidth(circle_grobs)) - margin,
+    width = grid::unit(1, "npc") - max(grid::grobWidth(circle_grobs)),
     height = grid::unit(1, "npc") -
-      max(grid::grobHeight(circle_grobs)) -
-      margin,
+      max(grid::grobHeight(circle_grobs)),
     name = "caugi.vp"
   )
 
-  children <- grid::gList(
+  graph_children <- grid::gList(
     edge_grobs,
     node_gtree
   )
 
-  grob <- grid::gTree(
-    children = children,
-    vp = final_vp,
-    name = "caugi.grob"
+  graph_grob <- grid::gTree(
+    children = graph_children,
+    vp = graph_vp,
+    name = "caugi.graph"
   )
 
-  caugi_plot(grob = grob)
+  title_grob <- if (is.null(main)) {
+    grid::nullGrob(name = "title")
+  } else {
+    title_gpar <- do.call(grid::gpar, get_gpar_params(styles$title_style))
+    grid::textGrob(
+      label = main,
+      gp = title_gpar,
+      name = "title"
+    )
+  }
+
+  title_height <- grid::unit(1, "grobheight", list(title_grob))
+
+  if (is.null(main)) {
+    title_gap <- grid::unit(0, "mm")
+  }
+
+  layout_vp <- grid::viewport(
+    layout = grid::grid.layout(
+      nrow = 5,
+      ncol = 3,
+      heights = grid::unit.c(
+        outer_margin,
+        title_height,
+        title_gap,
+        grid::unit(1, "null"),
+        outer_margin
+      ),
+      widths = grid::unit.c(
+        outer_margin,
+        grid::unit(1, "null"),
+        outer_margin
+      )
+    ),
+    name = "layout"
+  )
+
+  title_grob$vp <- grid::vpStack(
+    layout_vp,
+    grid::viewport(layout.pos.row = 2, layout.pos.col = 2)
+  )
+
+  graph_grob$vp <- grid::vpStack(
+    layout_vp,
+    grid::viewport(layout.pos.row = 4, layout.pos.col = 2),
+    graph_vp
+  )
+
+  # Wrap in gTree (viewport already on children)
+  final_grob <- grid::gTree(
+    children = grid::gList(title_grob, graph_grob),
+    name = "caugi.titled"
+  )
+
+  caugi_plot(grob = final_grob)
 }
 
-make_styles <- function(edge_style, node_style, label_style) {
+make_styles <- function(edge_style, node_style, label_style, title_style) {
   # Default styles
   node_defaults <- list(
     fill = "lightgrey",
@@ -685,6 +759,12 @@ make_styles <- function(edge_style, node_style, label_style) {
   )
 
   label_defaults <- list()
+
+  main_defaults <- list(
+    col = "black",
+    fontface = "bold",
+    fontsize = 14.4
+  )
 
   # Merge with user-provided styles
   node_style <- utils::modifyList(node_defaults, node_style)
@@ -717,11 +797,13 @@ make_styles <- function(edge_style, node_style, label_style) {
   )
 
   label_style <- utils::modifyList(label_defaults, label_style)
+  title_style <- utils::modifyList(main_defaults, title_style)
 
   list(
     edge_styles = edge_styles,
     node_style = node_style,
-    label_style = label_style
+    label_style = label_style,
+    title_style = title_style
   )
 }
 

@@ -69,7 +69,7 @@ dag <- caugi(
 )
 
 # Use Sugiyama layout explicitly
-plot(dag, layout = "sugiyama")
+plot(dag, layout = "sugiyama", main = "Sugiyama")
 ```
 
 **Best for:** DAGs, causal models, hierarchical structures
@@ -92,7 +92,7 @@ admg <- caugi(
 )
 
 # Fruchterman-Reingold handles all edge types
-plot(admg, layout = "fruchterman-reingold")
+plot(admg, layout = "fruchterman-reingold", main = "Fruchterman-Reingold")
 ```
 
 **Best for:** General-purpose visualization, graphs with mixed edge types
@@ -116,7 +116,7 @@ ug <- caugi(
 )
 
 # Kamada-Kawai for publication-quality visualization
-plot(ug, layout = "kamada-kawai")
+plot(ug, layout = "kamada-kawai", main = "Kamada-Kawai")
 ```
 
 **Best for:** Publication-quality figures, when accurate distance
@@ -261,6 +261,7 @@ Customize node labels with the `label_style` parameter:
 # Customize label appearance
 plot(
   cg,
+  main = "Customized Labels",
   label_style = list(
     col = "white", # Text color
     fontsize = 12, # Font size

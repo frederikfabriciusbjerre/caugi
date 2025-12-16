@@ -98,6 +98,62 @@ test_that("plot.caugi builds graph if needed", {
   expect_s7_class(plot(cg), caugi_plot)
 })
 
+test_that("plot.caugi applies margins and title padding", {
+  cg <- caugi(A %-->% B)
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  p <- plot(cg, main = "Title")
+  graph <- grid::getGrob(p@grob, "caugi.graph")
+  layout <- graph$vp[[1]]$layout
+
+  margin_widths <- grid::convertWidth(
+    layout$widths[c(1, 3)],
+    "mm",
+    valueOnly = TRUE
+  )
+  expect_true(all(margin_widths > 0))
+  expect_equal(margin_widths[1], margin_widths[2])
+
+  top_bottom_margins <- grid::convertHeight(
+    layout$heights[c(1, 5)],
+    "mm",
+    valueOnly = TRUE
+  )
+  expect_true(all(top_bottom_margins > 0))
+  expect_equal(top_bottom_margins[1], top_bottom_margins[2])
+
+  expect_gt(
+    grid::convertHeight(layout$heights[[2]], "mm", valueOnly = TRUE),
+    0
+  )
+  expect_gt(
+    grid::convertHeight(layout$heights[[3]], "mm", valueOnly = TRUE),
+    0
+  )
+})
+
+test_that("plot.caugi omits title spacing when main is NULL", {
+  cg <- caugi(A %-->% B)
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  p <- plot(cg)
+  graph <- grid::getGrob(p@grob, "caugi.graph")
+  layout <- graph$vp[[1]]$layout
+
+  expect_equal(
+    grid::convertHeight(layout$heights[[2]], "mm", valueOnly = TRUE),
+    0
+  )
+  expect_equal(
+    grid::convertHeight(layout$heights[[3]], "mm", valueOnly = TRUE),
+    0
+  )
+})
+
 test_that("caugi_layout works with fruchterman-reingold method", {
   cg <- caugi(
     A %-->% B + C,

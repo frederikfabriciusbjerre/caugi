@@ -18,6 +18,10 @@ any additional arguments passed via \code{...}.
 \item A pre-computed layout data.frame with columns \code{name}, \code{x}, and \code{y}.
 }}
 
+\item{...}{Additional arguments passed to \code{\link[=caugi_layout]{caugi_layout()}}. For bipartite
+layouts, include \code{partition} (logical vector) and \code{orientation} (\code{"rows"}
+or \code{"columns"}).}
+
 \item{node_style}{List of node styling parameters. Supports:
 \itemize{
 \item Appearance (passed to \code{gpar()}): \code{fill}, \code{col}, \code{lwd}, \code{lty}, \code{alpha}
@@ -39,7 +43,20 @@ Supports:
 \code{fontfamily}, \code{cex}
 }}
 
-\item{...}{Additional arguments (currently unused).}
+\item{main}{Optional character string for plot title. If \code{NULL} (default),
+no title is displayed.}
+
+\item{title_style}{List of title styling parameters. Supports:
+\itemize{
+\item Appearance (passed to \code{gpar()}): \code{col}, \code{fontsize}, \code{fontface},
+\code{fontfamily}, \code{cex}
+}}
+
+\item{outer_margin}{Grid unit specifying outer margin around the plot.
+Default is \code{grid::unit(2, "mm")}.}
+
+\item{title_gap}{Grid unit specifying gap between title and graph.
+Default is \code{grid::unit(1, "lines")}.}
 }
 \value{
 A \code{caugi_plot} object that wraps a \code{gTree} for grid graphics
@@ -87,6 +104,16 @@ plot(
     directed = list(col = "blue", arrow_size = 4),
     undirected = list(col = "red")
   )
+)
+
+# Add a title
+plot(cg, main = "Causal Graph")
+
+# Customize title
+plot(
+  cg,
+  main = "My Graph",
+  title_style = list(fontsize = 18, col = "blue", fontface = "italic")
 )
 
 }
