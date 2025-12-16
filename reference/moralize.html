@@ -9,7 +9,7 @@ converting all directed edges into undirected edges."><meta property="og:image" 
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,7 +79,7 @@ Undirected Graph (UG), also known as a Markov Graph.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>, <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">moralize</span><span class="op">(</span><span class="va">cg</span><span class="op">)</span> <span class="co"># A -- B, A -- C, B -- C</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x55880411d0b0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x559a9ccd3710&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: UG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, C</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: A---B, A---C, B---C</span>
