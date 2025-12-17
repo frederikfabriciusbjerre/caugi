@@ -43,9 +43,9 @@ library(caugi)
 ```
 
 You can create simple graphs as well as a number of predefined graph
-classes. Currently, we support `"UNKNOWN"`, `"DAG"`, `"PDAG"`, and
-`"UG"`. We plan on supporting several other causal graph types in future
-releases, such as `"PAG"`, `"MAG"`, `"SWIG"`, and `"ADMG"`.
+classes. Currently, we support `"UNKNOWN"`, `"DAG"`, `"PDAG"`, `"ADMG"`,
+and `"UG"`. We plan on supporting several other causal graph types in
+future releases, such as `"PAG"`, `"MAG"`, and `"SWIG"`.
 
 ``` r
 # a tiny DAG
@@ -88,7 +88,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x55f7c802e500>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x576e04ebe990>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
