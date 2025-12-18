@@ -48,6 +48,10 @@
 <li>Add dedicated layout functions: <code><a href="../reference/caugi_layout_sugiyama.html">caugi_layout_sugiyama()</a></code>, <code><a href="../reference/caugi_layout_fruchterman_reingold.html">caugi_layout_fruchterman_reingold()</a></code>, <code><a href="../reference/caugi_layout_kamada_kawai.html">caugi_layout_kamada_kawai()</a></code>, and <code><a href="../reference/caugi_layout_bipartite.html">caugi_layout_bipartite()</a></code>. Each function provides a focused API for its specific algorithm.</li>
 <li>Add bipartite graph layout support with <code><a href="../reference/caugi_layout_bipartite.html">caugi_layout_bipartite()</a></code>, which places nodes in two parallel lines (rows or columns) based on a user-provided partition.</li>
 <li>Add <code><a href="../reference/to_dot.html">to_dot()</a></code> and <code><a href="../reference/write_dot.html">write_dot()</a></code> functions for exporting caugi graphs to DOT (graphviz) format. The resulting object is a new S7 class, <code>caugi_export</code>, which has a <code>knit_print()</code> method for rendering DOT graphs in R Markdown and Quarto documents.</li>
+<li>Add plot composition operators for creating multi-plot layouts: <code>+</code> and <code>|</code> for horizontal arrangement, <code>/</code> for vertical stacking. Compositions can be nested arbitrarily (e.g., <code>(p1 + p2) / p3</code>).</li>
+<li>Add <code><a href="../reference/caugi_options.html">caugi_options()</a></code> function for setting global defaults for plot appearance, including composition spacing and default styles for nodes, edges, labels, and titles.</li>
+<li>Add <code><a href="../reference/caugi_default_options.html">caugi_default_options()</a></code> function to query or reset to package default options.</li>
+<li>Add a new vignette, “Graph Visualization with caugi”, demonstrating the new plotting capabilities and customization options.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="improvements-0-5-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-5-0"></a></h3>

@@ -13,6 +13,7 @@
 <url><loc>https://caugi.org/copilot-instructions.html</loc></url>
 <url><loc>https://caugi.org/index.html</loc></url>
 <url><loc>https://caugi.org/news/index.html</loc></url>
+<url><loc>https://caugi.org/reference/add-caugi_plot-caugi_plot.html</loc></url>
 <url><loc>https://caugi.org/reference/adjustment_set.html</loc></url>
 <url><loc>https://caugi.org/reference/aid.html</loc></url>
 <url><loc>https://caugi.org/reference/all_adjustment_sets_admg.html</loc></url>
@@ -26,6 +27,7 @@
 <url><loc>https://caugi.org/reference/build.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi-package.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_default_options.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_dot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_export.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout.html</loc></url>
@@ -34,12 +36,14 @@
 <url><loc>https://caugi.org/reference/caugi_layout_kamada_kawai.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout_sugiyama.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_mermaid.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_options.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_plot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_verbs.html</loc></url>
 <url><loc>https://caugi.org/reference/children.html</loc></url>
 <url><loc>https://caugi.org/reference/d_separated.html</loc></url>
 <url><loc>https://caugi.org/reference/descendants.html</loc></url>
 <url><loc>https://caugi.org/reference/districts.html</loc></url>
+<url><loc>https://caugi.org/reference/divide-caugi_plot-caugi_plot.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-caugi_fit_on_line.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-cg_state.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-collect_edges_nodes.html</loc></url>

@@ -92,12 +92,14 @@ The plot is automatically drawn when printed or explicitly plotted.
 ## See also
 
 Other plotting:
+[`add-caugi_plot-caugi_plot`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md),
 [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md),
 [`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md),
 [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
 [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
 [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
-[`caugi_plot()`](https://caugi.org/reference/caugi_plot.md)
+[`caugi_plot()`](https://caugi.org/reference/caugi_plot.md),
+[`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md)
 
 ## Examples
 

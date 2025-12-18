@@ -222,6 +222,9 @@
 
 ## Plotting
 
+- [`add-caugi_plot-caugi_plot`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
+  [`pipe-caugi_plot-caugi_plot`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
+  : Compose Plots Horizontally
 - [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) :
   Compute Graph Layout
 - [`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md)
@@ -234,5 +237,14 @@
   : Sugiyama Hierarchical Layout
 - [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md) : S7 Class
   for caugi Plot
+- [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md)
+  : Compose Plots Vertically
 - [`plot`](https://caugi.org/reference/plot.md) : Create a caugi Graph
   Plot Object
+
+## Options
+
+- [`caugi_default_options()`](https://caugi.org/reference/caugi_default_options.md)
+  : Default options for caugi
+- [`caugi_options()`](https://caugi.org/reference/caugi_options.md) :
+  Get or set global options for caugi
