@@ -1,33 +1,26 @@
-# Serialize caugi Graph to JSON String
+# Write caugi Graph to GraphML File
 
-Converts a caugi graph to a JSON string in the native caugi format. This
-is a lower-level function; consider using
-[`write_caugi()`](https://caugi.org/reference/write_caugi.md) for
-writing to files.
+Exports a caugi graph to a GraphML file.
 
 ## Usage
 
 ``` r
-caugi_serialize(x, comment = NULL, tags = NULL)
+write_graphml(x, path)
 ```
 
 ## Arguments
 
 - x:
 
-  A `caugi` object or an object coercible to `caugi`.
+  A `caugi` object.
 
-- comment:
+- path:
 
-  Optional character string with a comment about the graph.
-
-- tags:
-
-  Optional character vector of tags for categorizing the graph.
+  File path for the output GraphML file.
 
 ## Value
 
-A character string containing the JSON representation.
+Invisibly returns `NULL`. Called for side effects.
 
 ## See also
 
@@ -37,6 +30,7 @@ Other export:
 [`caugi_export()`](https://caugi.org/reference/caugi_export.md),
 [`caugi_graphml()`](https://caugi.org/reference/caugi_graphml.md),
 [`caugi_mermaid()`](https://caugi.org/reference/caugi_mermaid.md),
+[`caugi_serialize()`](https://caugi.org/reference/caugi_serialize.md),
 [`export-classes`](https://caugi.org/reference/export-classes.md),
 [`format-caugi`](https://caugi.org/reference/format-caugi.md),
 [`format-dot`](https://caugi.org/reference/format-dot.md),
@@ -50,32 +44,19 @@ Other export:
 [`to_mermaid()`](https://caugi.org/reference/to_mermaid.md),
 [`write_caugi()`](https://caugi.org/reference/write_caugi.md),
 [`write_dot()`](https://caugi.org/reference/write_dot.md),
-[`write_graphml()`](https://caugi.org/reference/write_graphml.md),
 [`write_mermaid()`](https://caugi.org/reference/write_mermaid.md)
 
 ## Examples
 
 ``` r
-cg <- caugi(A %-->% B, class = "DAG")
-json <- caugi_serialize(cg)
-cat(json)
-#> {
-#>   "$schema": "https://caugi.org/schemas/caugi-v1.schema.json",
-#>   "format": "caugi",
-#>   "version": "1.0.0",
-#>   "graph": {
-#>     "class": "DAG",
-#>     "nodes": [
-#>       "A",
-#>       "B"
-#>     ],
-#>     "edges": [
-#>       {
-#>         "from": "A",
-#>         "to": "B",
-#>         "edge": "-->"
-#>       }
-#>     ]
-#>   }
-#> }
+cg <- caugi(A %-->% B + C, class = "DAG")
+
+tmp <- tempfile(fileext = ".graphml")
+write_graphml(cg, tmp)
+
+# Read it back
+cg2 <- read_graphml(tmp)
+
+# Clean up
+unlink(tmp)
 ```

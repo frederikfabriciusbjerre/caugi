@@ -1,33 +1,18 @@
-# Serialize caugi Graph to JSON String
+# S7 Class for GraphML Export
 
-Converts a caugi graph to a JSON string in the native caugi format. This
-is a lower-level function; consider using
-[`write_caugi()`](https://caugi.org/reference/write_caugi.md) for
-writing to files.
+An S7 object that wraps a GraphML format string for caugi graphs.
 
 ## Usage
 
 ``` r
-caugi_serialize(x, comment = NULL, tags = NULL)
+caugi_graphml(content)
 ```
 
 ## Arguments
 
-- x:
+- content:
 
-  A `caugi` object or an object coercible to `caugi`.
-
-- comment:
-
-  Optional character string with a comment about the graph.
-
-- tags:
-
-  Optional character vector of tags for categorizing the graph.
-
-## Value
-
-A character string containing the JSON representation.
+  A character string containing the GraphML format graph.
 
 ## See also
 
@@ -35,8 +20,8 @@ Other export:
 [`caugi_deserialize()`](https://caugi.org/reference/caugi_deserialize.md),
 [`caugi_dot()`](https://caugi.org/reference/caugi_dot.md),
 [`caugi_export()`](https://caugi.org/reference/caugi_export.md),
-[`caugi_graphml()`](https://caugi.org/reference/caugi_graphml.md),
 [`caugi_mermaid()`](https://caugi.org/reference/caugi_mermaid.md),
+[`caugi_serialize()`](https://caugi.org/reference/caugi_serialize.md),
 [`export-classes`](https://caugi.org/reference/export-classes.md),
 [`format-caugi`](https://caugi.org/reference/format-caugi.md),
 [`format-dot`](https://caugi.org/reference/format-dot.md),
@@ -52,30 +37,3 @@ Other export:
 [`write_dot()`](https://caugi.org/reference/write_dot.md),
 [`write_graphml()`](https://caugi.org/reference/write_graphml.md),
 [`write_mermaid()`](https://caugi.org/reference/write_mermaid.md)
-
-## Examples
-
-``` r
-cg <- caugi(A %-->% B, class = "DAG")
-json <- caugi_serialize(cg)
-cat(json)
-#> {
-#>   "$schema": "https://caugi.org/schemas/caugi-v1.schema.json",
-#>   "format": "caugi",
-#>   "version": "1.0.0",
-#>   "graph": {
-#>     "class": "DAG",
-#>     "nodes": [
-#>       "A",
-#>       "B"
-#>     ],
-#>     "edges": [
-#>       {
-#>         "from": "A",
-#>         "to": "B",
-#>         "edge": "-->"
-#>       }
-#>     ]
-#>   }
-#> }
-```

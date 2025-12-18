@@ -357,6 +357,8 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   for DOT Export
 - [`caugi_export()`](https://caugi.org/reference/caugi_export.md) : S7
   Base Class for Caugi Exports
+- [`caugi_graphml()`](https://caugi.org/reference/caugi_graphml.md) : S7
+  Class for GraphML Export
 - [`caugi_mermaid()`](https://caugi.org/reference/caugi_mermaid.md) : S7
   Class for Mermaid Export
 - [`caugi_serialize()`](https://caugi.org/reference/caugi_serialize.md)
@@ -367,20 +369,28 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   Native Format Serialization
 - [`format-dot`](https://caugi.org/reference/format-dot.md) : DOT Format
   Export and Import
+- [`format-graphml`](https://caugi.org/reference/format-graphml.md) :
+  GraphML Format Export and Import
 - [`format-mermaid`](https://caugi.org/reference/format-mermaid.md) :
   Mermaid Format Export
 - [`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md)
   : Knit Print Method for caugi_export
 - [`read_caugi()`](https://caugi.org/reference/read_caugi.md) : Read
   caugi Graph from File
+- [`read_graphml()`](https://caugi.org/reference/read_graphml.md) : Read
+  GraphML File to caugi Graph
 - [`to_dot()`](https://caugi.org/reference/to_dot.md) : Export caugi
   Graph to DOT Format
+- [`to_graphml()`](https://caugi.org/reference/to_graphml.md) : Export
+  caugi Graph to GraphML Format
 - [`to_mermaid()`](https://caugi.org/reference/to_mermaid.md) : Export
   caugi Graph to Mermaid Format
 - [`write_caugi()`](https://caugi.org/reference/write_caugi.md) : Write
   caugi Graph to File
 - [`write_dot()`](https://caugi.org/reference/write_dot.md) : Write
   caugi Graph to DOT File
+- [`write_graphml()`](https://caugi.org/reference/write_graphml.md) :
+  Write caugi Graph to GraphML File
 - [`write_mermaid()`](https://caugi.org/reference/write_mermaid.md) :
   Write caugi Graph to Mermaid File
 

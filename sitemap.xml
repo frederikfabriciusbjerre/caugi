@@ -32,6 +32,7 @@
 <url><loc>https://caugi.org/reference/caugi_deserialize.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_dot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_export.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_graphml.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout_bipartite.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout_fruchterman_reingold.html</loc></url>
@@ -84,6 +85,7 @@
 <url><loc>https://caugi.org/reference/export-classes.html</loc></url>
 <url><loc>https://caugi.org/reference/format-caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/format-dot.html</loc></url>
+<url><loc>https://caugi.org/reference/format-graphml.html</loc></url>
 <url><loc>https://caugi.org/reference/format-mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/generate_graph.html</loc></url>
 <url><loc>https://caugi.org/reference/hd.html</loc></url>
@@ -112,6 +114,7 @@
 <url><loc>https://caugi.org/reference/plot.html</loc></url>
 <url><loc>https://caugi.org/reference/print.html</loc></url>
 <url><loc>https://caugi.org/reference/read_caugi.html</loc></url>
+<url><loc>https://caugi.org/reference/read_graphml.html</loc></url>
 <url><loc>https://caugi.org/reference/register_caugi_edge.html</loc></url>
 <url><loc>https://caugi.org/reference/registry.html</loc></url>
 <url><loc>https://caugi.org/reference/same_nodes.html</loc></url>
@@ -120,10 +123,12 @@
 <url><loc>https://caugi.org/reference/spouses.html</loc></url>
 <url><loc>https://caugi.org/reference/subgraph.html</loc></url>
 <url><loc>https://caugi.org/reference/to_dot.html</loc></url>
+<url><loc>https://caugi.org/reference/to_graphml.html</loc></url>
 <url><loc>https://caugi.org/reference/to_mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/topological_sort.html</loc></url>
 <url><loc>https://caugi.org/reference/write_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/write_dot.html</loc></url>
+<url><loc>https://caugi.org/reference/write_graphml.html</loc></url>
 <url><loc>https://caugi.org/reference/write_mermaid.html</loc></url>
 </urlset>
 

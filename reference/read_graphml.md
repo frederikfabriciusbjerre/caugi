@@ -1,33 +1,43 @@
-# Serialize caugi Graph to JSON String
+# Read GraphML File to caugi Graph
 
-Converts a caugi graph to a JSON string in the native caugi format. This
-is a lower-level function; consider using
-[`write_caugi()`](https://caugi.org/reference/write_caugi.md) for
-writing to files.
+Imports a GraphML file as a caugi graph. Supports GraphML files exported
+from caugi with full edge type information.
 
 ## Usage
 
 ``` r
-caugi_serialize(x, comment = NULL, tags = NULL)
+read_graphml(path, class = NULL)
 ```
 
 ## Arguments
 
-- x:
+- path:
 
-  A `caugi` object or an object coercible to `caugi`.
+  File path to the GraphML file.
 
-- comment:
+- class:
 
-  Optional character string with a comment about the graph.
-
-- tags:
-
-  Optional character vector of tags for categorizing the graph.
+  Graph class to assign. If `NULL` (default), attempts to read from the
+  GraphML metadata. If not present, defaults to "UNKNOWN".
 
 ## Value
 
-A character string containing the JSON representation.
+A `caugi` object.
+
+## Details
+
+This function provides basic GraphML import support. It reads:
+
+- Nodes and their IDs
+
+- Edges with source and target
+
+- Edge types (if present in `edge_type` attribute)
+
+- Graph class (if present in graph data)
+
+For GraphML files not created by caugi, edge types default to "–\>" for
+directed graphs and "—" for undirected graphs.
 
 ## See also
 
@@ -37,6 +47,7 @@ Other export:
 [`caugi_export()`](https://caugi.org/reference/caugi_export.md),
 [`caugi_graphml()`](https://caugi.org/reference/caugi_graphml.md),
 [`caugi_mermaid()`](https://caugi.org/reference/caugi_mermaid.md),
+[`caugi_serialize()`](https://caugi.org/reference/caugi_serialize.md),
 [`export-classes`](https://caugi.org/reference/export-classes.md),
 [`format-caugi`](https://caugi.org/reference/format-caugi.md),
 [`format-dot`](https://caugi.org/reference/format-dot.md),
@@ -44,7 +55,6 @@ Other export:
 [`format-mermaid`](https://caugi.org/reference/format-mermaid.md),
 [`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md),
 [`read_caugi()`](https://caugi.org/reference/read_caugi.md),
-[`read_graphml()`](https://caugi.org/reference/read_graphml.md),
 [`to_dot()`](https://caugi.org/reference/to_dot.md),
 [`to_graphml()`](https://caugi.org/reference/to_graphml.md),
 [`to_mermaid()`](https://caugi.org/reference/to_mermaid.md),
@@ -56,26 +66,19 @@ Other export:
 ## Examples
 
 ``` r
-cg <- caugi(A %-->% B, class = "DAG")
-json <- caugi_serialize(cg)
-cat(json)
-#> {
-#>   "$schema": "https://caugi.org/schemas/caugi-v1.schema.json",
-#>   "format": "caugi",
-#>   "version": "1.0.0",
-#>   "graph": {
-#>     "class": "DAG",
-#>     "nodes": [
-#>       "A",
-#>       "B"
-#>     ],
-#>     "edges": [
-#>       {
-#>         "from": "A",
-#>         "to": "B",
-#>         "edge": "-->"
-#>       }
-#>     ]
-#>   }
-#> }
+# Create and export a graph
+cg <- caugi(
+  A %-->% B,
+  B %-->% C,
+  class = "DAG"
+)
+
+tmp <- tempfile(fileext = ".graphml")
+write_graphml(cg, tmp)
+
+# Read it back
+cg2 <- read_graphml(tmp)
+
+# Clean up
+unlink(tmp)
 ```

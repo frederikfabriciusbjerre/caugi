@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="edge_type" for="edge" attr.name="edge_type" attr.type="string"/>
+  <key id="graph_class" for="graph" attr.name="graph_class" attr.type="string"/>
+  <graph id="G" edgedefault="directed">
+    <data key="graph_class">DAG</data>
+    <node id="A"/>
+    <node id="B"/>
+    <node id="C"/>
+    <node id="D"/>
+    <edge source="A" target="B">
+      <data key="edge_type">--&gt;</data>
+    </edge>
+    <edge source="A" target="C">
+      <data key="edge_type">--&gt;</data>
+    </edge>
+    <edge source="B" target="D">
+      <data key="edge_type">--&gt;</data>
+    </edge>
+    <edge source="C" target="D">
+      <data key="edge_type">--&gt;</data>
+    </edge>
+  </graph>
+</graphml>

@@ -1,33 +1,8 @@
-# Serialize caugi Graph to JSON String
+# GraphML Format Export and Import
 
-Converts a caugi graph to a JSON string in the native caugi format. This
-is a lower-level function; consider using
-[`write_caugi()`](https://caugi.org/reference/write_caugi.md) for
-writing to files.
-
-## Usage
-
-``` r
-caugi_serialize(x, comment = NULL, tags = NULL)
-```
-
-## Arguments
-
-- x:
-
-  A `caugi` object or an object coercible to `caugi`.
-
-- comment:
-
-  Optional character string with a comment about the graph.
-
-- tags:
-
-  Optional character vector of tags for categorizing the graph.
-
-## Value
-
-A character string containing the JSON representation.
+Functions for converting caugi graphs to and from GraphML format.
+GraphML is an XML-based file format for graphs supported by many graph
+tools and libraries.
 
 ## See also
 
@@ -37,10 +12,10 @@ Other export:
 [`caugi_export()`](https://caugi.org/reference/caugi_export.md),
 [`caugi_graphml()`](https://caugi.org/reference/caugi_graphml.md),
 [`caugi_mermaid()`](https://caugi.org/reference/caugi_mermaid.md),
+[`caugi_serialize()`](https://caugi.org/reference/caugi_serialize.md),
 [`export-classes`](https://caugi.org/reference/export-classes.md),
 [`format-caugi`](https://caugi.org/reference/format-caugi.md),
 [`format-dot`](https://caugi.org/reference/format-dot.md),
-[`format-graphml`](https://caugi.org/reference/format-graphml.md),
 [`format-mermaid`](https://caugi.org/reference/format-mermaid.md),
 [`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md),
 [`read_caugi()`](https://caugi.org/reference/read_caugi.md),
@@ -52,30 +27,3 @@ Other export:
 [`write_dot()`](https://caugi.org/reference/write_dot.md),
 [`write_graphml()`](https://caugi.org/reference/write_graphml.md),
 [`write_mermaid()`](https://caugi.org/reference/write_mermaid.md)
-
-## Examples
-
-``` r
-cg <- caugi(A %-->% B, class = "DAG")
-json <- caugi_serialize(cg)
-cat(json)
-#> {
-#>   "$schema": "https://caugi.org/schemas/caugi-v1.schema.json",
-#>   "format": "caugi",
-#>   "version": "1.0.0",
-#>   "graph": {
-#>     "class": "DAG",
-#>     "nodes": [
-#>       "A",
-#>       "B"
-#>     ],
-#>     "edges": [
-#>       {
-#>         "from": "A",
-#>         "to": "B",
-#>         "edge": "-->"
-#>       }
-#>     ]
-#>   }
-#> }
-```
