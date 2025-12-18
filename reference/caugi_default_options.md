@@ -42,6 +42,9 @@ caugi_default_options()
 #> $plot$edge_style$arrow_size
 #> [1] 3
 #> 
+#> $plot$edge_style$circle_size
+#> [1] 1.5
+#> 
 #> $plot$edge_style$fill
 #> [1] "black"
 #> 

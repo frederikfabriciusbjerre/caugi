@@ -277,9 +277,41 @@ Available edge style parameters:
 - **Appearance (passed to
   [`gpar()`](https://rdrr.io/r/grid/gpar.html))**: `col`, `lwd`, `lty`,
   `alpha`, `fill`
-- **Geometry**: `arrow_size` (arrow length in mm)
+- **Geometry**: `arrow_size` (arrow length in mm), `circle_size` (radius
+  of endpoint circles for partial edges in mm)
 - **Per-type options**: `directed`, `undirected`, `bidirected`,
   `partial`
+
+#### Partial Edges
+
+Partial edges (`o->` and `o-o`) are rendered with circles at their
+endpoints to indicate uncertainty about edge orientation. These edges
+appear in PAGs (Partial Ancestral Graphs). You can customize the circle
+size:
+
+``` r
+# Create a graph with partial edges (using UNKNOWN class since PAG not yet implemented)
+g <- caugi(
+  A %o->% B,
+  B %-->% C,
+  C %o-o% D,
+  class = "UNKNOWN"
+)
+
+# Customize circle size for partial edges
+plot(
+  g,
+  edge_style = list(
+    partial = list(
+      col = "purple",
+      lwd = 2,
+      circle_size = 2.5 # Larger circles (default is 1.5)
+    )
+  )
+)
+```
+
+![](visualization_files/figure-html/partial-edges-1.png)
 
 ### Label Styling
 
@@ -606,6 +638,9 @@ caugi_options()
 #> $plot$edge_style$arrow_size
 #> [1] 3
 #> 
+#> $plot$edge_style$circle_size
+#> [1] 1.5
+#> 
 #> $plot$edge_style$fill
 #> [1] "black"
 #> 
@@ -643,6 +678,9 @@ caugi_options("plot")
 #> $plot$edge_style
 #> $plot$edge_style$arrow_size
 #> [1] 3
+#> 
+#> $plot$edge_style$circle_size
+#> [1] 1.5
 #> 
 #> $plot$edge_style$fill
 #> [1] "black"

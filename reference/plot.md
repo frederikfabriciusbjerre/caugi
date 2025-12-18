@@ -53,7 +53,9 @@ viewports for proper coordinate handling.
   - Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`,
     `fill`.
 
-  - Geometry: `arrow_size` (arrow length in mm, default 3)
+  - Geometry: `arrow_size` (arrow length in mm, default 3),
+    `circle_size` (radius of endpoint circles for partial edges in mm,
+    default 1.5)
 
 - label_style:
 

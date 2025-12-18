@@ -42,6 +42,9 @@ Currently supported options are nested under the `plot` key:
 
   - `arrow_size`: Arrow size in mm (default: `3`)
 
+  - `circle_size`: Radius of endpoint circles for partial edges in mm
+    (default: `1.5`)
+
   - `fill`: Arrow/line color (default: `"black"`)
 
 - `label_style`: List of label text parameters (see
@@ -89,6 +92,9 @@ caugi_options()
 #> $plot$edge_style$arrow_size
 #> [1] 3
 #> 
+#> $plot$edge_style$circle_size
+#> [1] 1.5
+#> 
 #> $plot$edge_style$fill
 #> [1] "black"
 #> 
@@ -129,6 +135,9 @@ caugi_options("plot")
 #> $plot$edge_style
 #> $plot$edge_style$arrow_size
 #> [1] 3
+#> 
+#> $plot$edge_style$circle_size
+#> [1] 1.5
 #> 
 #> $plot$edge_style$fill
 #> [1] "black"
