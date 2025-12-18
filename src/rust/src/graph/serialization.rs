@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 
 /// Deserialized graph data
+#[derive(Debug)]
 pub struct DeserializedGraph {
     pub nodes: Vec<String>,
     pub edges_from: Vec<String>,

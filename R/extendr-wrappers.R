@@ -128,5 +128,9 @@ serialize_caugi_ptr <- function(g, reg, graph_class, node_names, comment, tags) 
 
 deserialize_caugi_ptr <- function(json, reg) .Call(wrap__deserialize_caugi_ptr, json, reg)
 
+serialize_graphml_ptr <- function(g, reg, graph_class, node_names) .Call(wrap__serialize_graphml_ptr, g, reg, graph_class, node_names)
+
+deserialize_graphml_ptr <- function(xml, reg) .Call(wrap__deserialize_graphml_ptr, xml, reg)
+
 
 # nolint end

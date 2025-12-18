@@ -21,6 +21,7 @@ pub use view::GraphView;
 pub mod layout;
 pub mod metrics;
 pub mod serialization;
+pub mod graphml;
 
 #[derive(Debug, Clone)]
 pub struct RegistrySnapshot {

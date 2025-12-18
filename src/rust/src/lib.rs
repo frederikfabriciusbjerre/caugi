@@ -869,6 +869,34 @@ fn deserialize_caugi_ptr(json: &str, reg: ExternalPtr<EdgeRegistry>) -> Robj {
     .into_robj()
 }
 
+#[extendr]
+fn serialize_graphml_ptr(
+    g: ExternalPtr<GraphView>,
+    reg: ExternalPtr<EdgeRegistry>,
+    graph_class: &str,
+    node_names: Strings,
+) -> String {
+    let node_names_vec: Vec<String> = node_names.iter().map(|s| s.to_string()).collect();
+
+    graph::graphml::serialize_graphml(g.as_ref(), reg.as_ref(), graph_class, node_names_vec)
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
+fn deserialize_graphml_ptr(xml: &str, reg: ExternalPtr<EdgeRegistry>) -> Robj {
+    let data = graph::graphml::deserialize_graphml(xml, reg.as_ref())
+        .unwrap_or_else(|e| throw_r_error(e));
+
+    list!(
+        nodes = data.nodes,
+        edges_from = data.edges_from,
+        edges_to = data.edges_to,
+        edges_type = data.edges_type,
+        graph_class = data.graph_class
+    )
+    .into_robj()
+}
+
 // ── Subgraph ────────────────────────────────────────────────────────────────
 
 #[extendr]
@@ -1108,4 +1136,6 @@ extendr_module! {
     fn read_caugi_file_ptr;
     fn serialize_caugi_ptr;
     fn deserialize_caugi_ptr;
+    fn serialize_graphml_ptr;
+    fn deserialize_graphml_ptr;
 }
