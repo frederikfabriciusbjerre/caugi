@@ -445,7 +445,8 @@ get_gpar_params <- function(style) {
 #'   or per-type options via `directed`, `undirected`, `bidirected`, `partial`.
 #'   Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`, `fill`.
-#'   * Geometry: `arrow_size` (arrow length in mm, default 3)
+#'   * Geometry: `arrow_size` (arrow length in mm, default 3), `circle_size`
+#'     (radius of endpoint circles for partial edges in mm, default 1.5)
 #' @param label_style List of label styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
 #'     `fontfamily`, `cex`
@@ -751,27 +752,10 @@ make_styles <- function(edge_style, node_style, label_style, title_style) {
   plot_opts <- opts$plot %||% list()
 
   # Default styles from options (with fallbacks)
-  node_defaults <- plot_opts$node_style %||%
-    list(
-      fill = "lightgrey",
-      padding = 2,
-      size = 1
-    )
-
-  edge_defaults <- plot_opts$edge_style %||%
-    list(
-      arrow_size = 3,
-      fill = "black"
-    )
-
-  label_defaults <- plot_opts$label_style %||% list()
-
-  main_defaults <- plot_opts$title_style %||%
-    list(
-      col = "black",
-      fontface = "bold",
-      fontsize = 14.4
-    )
+  node_defaults <- plot_opts$node_style
+  edge_defaults <- plot_opts$edge_style
+  label_defaults <- plot_opts$label_style
+  main_defaults <- plot_opts$title_style
 
   # Merge with user-provided styles
   node_style <- utils::modifyList(node_defaults, node_style)
@@ -796,7 +780,7 @@ make_styles <- function(edge_style, node_style, label_style, title_style) {
     ),
     partial = utils::modifyList(
       utils::modifyList(
-        utils::modifyList(edge_defaults, list(lty = 2)),
+        edge_defaults,
         global_edge_opts
       ),
       edge_style$partial %||% list()
@@ -889,7 +873,9 @@ make_edge_grob <- function(
   r_to,
   arrow = NULL,
   gp = grid::gpar(),
-  name = NULL
+  name = NULL,
+  edge_type = NULL,
+  circle_size = 1.5
 ) {
   grid::gTree(
     x0 = x0,
@@ -901,6 +887,8 @@ make_edge_grob <- function(
     arrow = arrow,
     gp = gp,
     name = name,
+    edge_type = edge_type,
+    circle_size = circle_size,
     cl = "caugi_edge_grob"
   )
 }
@@ -929,6 +917,10 @@ makeContent.caugi_edge_grob <- function(x) {
   dy_mm <- grid::convertHeight(y1_unit - y0_unit, "mm", valueOnly = TRUE)
 
   length_mm <- sqrt(dx_mm^2 + dy_mm^2)
+
+  # Initialize direction variables
+  ux_mm <- 0
+  uy_mm <- 0
 
   if (length_mm > 0) {
     # Normalized direction in absolute coordinates
@@ -961,17 +953,77 @@ makeContent.caugi_edge_grob <- function(x) {
     y1_adj <- y1_unit
   }
 
-  grid::setChildren(
-    x,
-    grid::gList(
-      grid::linesGrob(
-        x = grid::unit.c(x0_adj, x1_adj),
-        y = grid::unit.c(y0_adj, y1_adj),
-        arrow = x$arrow,
-        gp = x$gp
-      )
-    )
+  # Create line grob
+  line_grob <- grid::linesGrob(
+    x = grid::unit.c(x0_adj, x1_adj),
+    y = grid::unit.c(y0_adj, y1_adj),
+    arrow = x$arrow,
+    gp = x$gp
   )
+
+  # Add circles for o-> and o-o edges
+  grob_list <- grid::gList(line_grob)
+
+  if (!is.null(x$edge_type)) {
+    circle_radius <- grid::unit(x$circle_size %||% 1.5, "mm")
+    circle_radius_mm <- grid::convertWidth(
+      circle_radius,
+      "mm",
+      valueOnly = TRUE
+    )
+
+    # Place circle centers just outside the node boundary.
+    # x0_adj/x1_adj are already at the node boundary, so we offset by the
+    # circle radius.
+    if (length_mm > 0) {
+      circle_x0 <- x0_adj +
+        grid::convertWidth(grid::unit(ux_mm * circle_radius_mm, "mm"), "native")
+      circle_y0 <- y0_adj +
+        grid::convertHeight(
+          grid::unit(uy_mm * circle_radius_mm, "mm"),
+          "native"
+        )
+
+      circle_x1 <- x1_adj -
+        grid::convertWidth(grid::unit(ux_mm * circle_radius_mm, "mm"), "native")
+      circle_y1 <- y1_adj -
+        grid::convertHeight(
+          grid::unit(uy_mm * circle_radius_mm, "mm"),
+          "native"
+        )
+    } else {
+      circle_x0 <- x0_adj
+      circle_y0 <- y0_adj
+      circle_x1 <- x1_adj
+      circle_y1 <- y1_adj
+    }
+
+    if (x$edge_type == "o->" || x$edge_type == "o-o") {
+      grob_list <- grid::gList(
+        grob_list,
+        grid::circleGrob(
+          x = circle_x0,
+          y = circle_y0,
+          r = circle_radius,
+          gp = grid::gpar(col = x$gp$col, fill = "white", lwd = x$gp$lwd)
+        )
+      )
+    }
+
+    if (x$edge_type == "o-o") {
+      grob_list <- grid::gList(
+        grob_list,
+        grid::circleGrob(
+          x = circle_x1,
+          y = circle_y1,
+          r = circle_radius,
+          gp = grid::gpar(col = x$gp$col, fill = "white", lwd = x$gp$lwd)
+        )
+      )
+    }
+  }
+
+  grid::setChildren(x, grob_list)
 }
 
 make_edges <- function(edges, coords, node_radii, edge_styles) {
@@ -1002,6 +1054,7 @@ make_edges <- function(edges, coords, node_radii, edge_styles) {
         "---" = edge_styles$undirected,
         "<->" = edge_styles$bidirected,
         "o->" = edge_styles$partial,
+        "o-o" = edge_styles$partial,
         edge_styles$undirected
       )
 
@@ -1016,11 +1069,11 @@ make_edges <- function(edges, coords, node_radii, edge_styles) {
           ends = "both",
           type = "closed"
         ),
-        # TODO: Partial edges (o->) should have a circle at the tail
         "o->" = grid::arrow(
           length = grid::unit(style$arrow_size, "mm"),
-          type = "open"
+          type = "closed"
         ),
+        "o-o" = NULL,
         NULL
       )
 
@@ -1036,7 +1089,9 @@ make_edges <- function(edges, coords, node_radii, edge_styles) {
         r_to = r_to,
         arrow = arrow,
         gp = edge_gpar,
-        name = paste0("edge.", i)
+        name = paste0("edge.", i),
+        edge_type = edge_type,
+        circle_size = style$circle_size
       )
     }
   }

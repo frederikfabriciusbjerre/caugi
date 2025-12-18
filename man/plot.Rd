@@ -34,7 +34,8 @@ or per-type options via \code{directed}, \code{undirected}, \code{bidirected}, \
 Supports:
 \itemize{
 \item Appearance (passed to \code{gpar()}): \code{col}, \code{lwd}, \code{lty}, \code{alpha}, \code{fill}.
-\item Geometry: \code{arrow_size} (arrow length in mm, default 3)
+\item Geometry: \code{arrow_size} (arrow length in mm, default 3), \code{circle_size}
+(radius of endpoint circles for partial edges in mm, default 1.5)
 }}
 
 \item{label_style}{List of label styling parameters. Supports:

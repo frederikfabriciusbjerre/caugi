@@ -30,6 +30,7 @@ caugi_default_options <- function() {
       ),
       edge_style = list(
         arrow_size = 3,
+        circle_size = 1.5,
         fill = "black"
       ),
       label_style = list(),
@@ -65,6 +66,7 @@ caugi_default_options <- function() {
 #'   - `size`: Size multiplier (default: `1`)
 #' - `edge_style`: List of default edge appearance parameters:
 #'   - `arrow_size`: Arrow size in mm (default: `3`)
+#'   - `circle_size`: Radius of endpoint circles for partial edges in mm (default: `1.5`)
 #'   - `fill`: Arrow/line color (default: `"black"`)
 #' - `label_style`: List of label text parameters (see [grid::gpar()])
 #' - `title_style`: List of title text parameters:

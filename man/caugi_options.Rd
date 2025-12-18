@@ -33,6 +33,7 @@ Currently supported options are nested under the \code{plot} key:
 \item \code{edge_style}: List of default edge appearance parameters:
 \itemize{
 \item \code{arrow_size}: Arrow size in mm (default: \code{3})
+\item \code{circle_size}: Radius of endpoint circles for partial edges in mm (default: \code{1.5})
 \item \code{fill}: Arrow/line color (default: \code{"black"})
 }
 \item \code{label_style}: List of label text parameters (see \code{\link[grid:gpar]{grid::gpar()}})

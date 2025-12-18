@@ -400,3 +400,54 @@ test_that("plot arguments override global options", {
   p <- plot(cg, node_style = list(fill = "pink"))
   expect_s7_class(p, caugi_plot)
 })
+
+test_that("plot.caugi renders o-> edges with circles", {
+  cg <- caugi(A %o->% B, class = "UNKNOWN")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Test that plot completes without error and renders circles
+  expect_s7_class(plot(cg), caugi_plot)
+})
+
+test_that("plot.caugi renders o-o edges with circles on both ends", {
+  cg <- caugi(A %o-o% B, class = "UNKNOWN")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Test that plot completes without error and renders circles
+  expect_s7_class(plot(cg), caugi_plot)
+})
+
+test_that("plot.caugi accepts circle_size for partial edges", {
+  cg <- caugi(A %o->% B, B %o-o% C, class = "UNKNOWN")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Test that custom circle_size is accepted
+  p <- plot(
+    cg,
+    edge_style = list(
+      partial = list(circle_size = 2.5)
+    )
+  )
+  expect_s7_class(p, caugi_plot)
+})
+
+test_that("plot.caugi with mixed edge types including partial", {
+  cg <- caugi(
+    A %-->% B,
+    B %o->% C,
+    C %o-o% D,
+    class = "UNKNOWN"
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Test that mixed edge types render correctly
+  expect_s7_class(plot(cg), caugi_plot)
+})
