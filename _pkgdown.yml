@@ -53,3 +53,6 @@ reference:
   - title: Plotting
     contents:
       - has_concept("plotting")
+  - title: Options
+    contents:
+      - has_concept("options")

@@ -378,6 +378,152 @@ plot(
 )
 ```
 
+## Plot Composition
+
+The `caugi` package provides intuitive operators for composing multiple plots
+into complex layouts, similar to the patchwork package.
+
+### Basic Composition
+
+Use `+` or `|` for horizontal arrangement and `/` for vertical stacking:
+
+```{r composition-basic}
+# Create two different graphs
+g1 <- caugi(
+  A %-->% B,
+  B %-->% C,
+  class = "DAG"
+)
+
+g2 <- caugi(
+  X %-->% Y,
+  Y %-->% Z,
+  X %-->% Z,
+  class = "DAG"
+)
+
+# Create plots
+p1 <- plot(g1, main = "Graph 1")
+p2 <- plot(g2, main = "Graph 2")
+
+# Horizontal composition (side-by-side)
+p1 + p2
+```
+
+The `|` operator is an alias for `+`:
+
+```{r composition-pipe}
+# Equivalent to p1 + p2
+p1 | p2
+```
+
+For vertical stacking, use the `/` operator:
+
+```{r composition-vertical}
+# Stack plots vertically
+p1 / p2
+```
+
+### Nested Compositions
+
+Compositions can be nested to create complex multi-plot layouts:
+
+```{r composition-nested}
+# Create a third graph
+g3 <- caugi(
+  M1 %-->% M2,
+  M2 %-->% M3,
+  class = "DAG"
+)
+
+p3 <- plot(g3, main = "Graph 3")
+
+# Complex layout: two plots on top, one below
+(p1 + p2) / p3
+```
+
+You can mix operators freely:
+
+```{r composition-mixed}
+# Three plots in various arrangements
+(p1 + p2) / (p3 + p1)
+```
+
+### Configuring Spacing
+
+The spacing between composed plots is controlled globally via `caugi_options()`:
+
+```{r composition-spacing}
+# Set custom spacing
+caugi_options(plot = list(spacing = grid::unit(2, "lines")))
+
+# Plots will now have more space between them
+p1 + p2
+
+# Reset to default
+caugi_options(plot = list(spacing = grid::unit(1, "lines")))
+```
+
+## Global Plot Options
+
+The `caugi_options()` function allows you to set global defaults for plot
+appearance, which can be overridden on a per-plot basis.
+
+### Setting Default Styles
+
+```{r global-options}
+# Configure global defaults
+caugi_options(plot = list(
+  node_style = list(fill = "lightblue", padding = 3),
+  edge_style = list(arrow_size = 4, fill = "darkgray"),
+  title_style = list(col = "blue", fontsize = 16)
+))
+
+# This plot uses the global defaults
+plot(cg, main = "Using Global Defaults")
+
+# Reset to package defaults
+caugi_options(caugi_default_options())
+```
+
+### Per-Plot Overrides
+
+Global options serve as defaults that can be overridden:
+
+```{r override-options}
+# Set global node color
+caugi_options(plot = list(
+  node_style = list(fill = "lightblue")
+))
+
+# Override for this specific plot
+plot(cg,
+  main = "Custom Colors",
+  node_style = list(fill = "pink")
+)
+
+# Reset
+caugi_options(caugi_default_options())
+```
+
+### Available Options
+
+The following options can be configured under `plot`:
+
+- **`spacing`**: A `grid::unit()` controlling space between composed plots
+- **`node_style`**: List with `fill`, `padding`, and `size`
+- **`edge_style`**: List with `arrow_size` and `fill`
+- **`label_style`**: List of text parameters (see `grid::gpar()`)
+- **`title_style`**: List with `col`, `fontface`, and `fontsize`
+
+```{r query-options}
+# View all current options
+caugi_options()
+
+# Query specific option
+caugi_options("plot")
+```
+
 ## Advanced Usage
 
 ### Manual Layouts
@@ -417,8 +563,8 @@ grid.draw(p@grob)
 popViewport()
 ```
 
-This also allows you to arrange multiple `caugi` plots using packages like
-[gridExtra](https://cran.r-project.org/package=gridExtra).
+The composition operators work by manipulating these grid grobs, creating
+flexible and performant multi-plot layouts without requiring external packages.
 
 ## References
 

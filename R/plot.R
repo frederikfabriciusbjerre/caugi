@@ -746,25 +746,32 @@ S7::method(plot, caugi) <- function(
 }
 
 make_styles <- function(edge_style, node_style, label_style, title_style) {
-  # Default styles
-  node_defaults <- list(
-    fill = "lightgrey",
-    padding = 2,
-    size = 1
-  )
+  # Get global options
+  opts <- get0("options", .caugi_env, ifnotfound = caugi_default_options())
+  plot_opts <- opts$plot %||% list()
 
-  edge_defaults <- list(
-    arrow_size = 3,
-    fill = "black"
-  )
+  # Default styles from options (with fallbacks)
+  node_defaults <- plot_opts$node_style %||%
+    list(
+      fill = "lightgrey",
+      padding = 2,
+      size = 1
+    )
 
-  label_defaults <- list()
+  edge_defaults <- plot_opts$edge_style %||%
+    list(
+      arrow_size = 3,
+      fill = "black"
+    )
 
-  main_defaults <- list(
-    col = "black",
-    fontface = "bold",
-    fontsize = 14.4
-  )
+  label_defaults <- plot_opts$label_style %||% list()
+
+  main_defaults <- plot_opts$title_style %||%
+    list(
+      col = "black",
+      fontface = "bold",
+      fontsize = 14.4
+    )
 
   # Merge with user-provided styles
   node_style <- utils::modifyList(node_defaults, node_style)
@@ -1070,4 +1077,185 @@ S7::method(plot, caugi_plot) <- function(x, newpage = TRUE, ...) {
   }
   grid::grid.draw(x@grob)
   invisible(x)
+}
+
+#' Compose Plots Horizontally
+#'
+#' Arrange two plots side-by-side with configurable spacing. The `+` and `|`
+#' operators are equivalent and can be used interchangeably. Compositions can
+#' be nested to create complex multi-plot layouts.
+#'
+#' @param e1 A `caugi_plot` object (left plot)
+#' @param e2 A `caugi_plot` object (right plot)
+#'
+#' @returns A `caugi_plot` object containing the composed layout
+#'
+#' @details
+#' The spacing between plots is controlled by the global option
+#' `caugi_options()$plot$spacing`, which defaults to `grid::unit(1, "lines")`.
+#' Compositions can be nested arbitrarily:
+#'
+#' - `p1 + p2` - two plots side-by-side
+#' - `(p1 + p2) + p3` - three plots in a row
+#' - `(p1 + p2) / p3` - two plots on top, one below
+#'
+#' @family plotting
+#' @seealso [caugi_options()] for configuring spacing and default styles
+#'
+#' @examples
+#' cg1 <- caugi(A %-->% B, B %-->% C)
+#' cg2 <- caugi(X %-->% Y, Y %-->% Z)
+#'
+#' p1 <- plot(cg1, main = "Graph 1")
+#' p2 <- plot(cg2, main = "Graph 2")
+#'
+#' # Horizontal composition
+#' p1 + p2
+#' p1 | p2  # equivalent
+#'
+#' # Adjust spacing
+#' caugi_options(plot = list(spacing = grid::unit(2, "lines")))
+#' p1 + p2
+#'
+#' @name add-caugi_plot-caugi_plot
+NULL
+
+S7::method(`+`, list(caugi_plot, caugi_plot)) <- function(e1, e2) {
+  compose_plots(e1, e2, horizontal = TRUE)
+}
+
+#' @rdname add-caugi_plot-caugi_plot
+#' @name pipe-caugi_plot-caugi_plot
+NULL
+
+S7::method(`|`, list(caugi_plot, caugi_plot)) <- function(e1, e2) {
+  e1 + e2
+}
+
+#' Compose Plots Vertically
+#'
+#' Stack two plots vertically with configurable spacing. Compositions can
+#' be nested to create complex multi-plot layouts.
+#'
+#' @param e1 A `caugi_plot` object (top plot)
+#' @param e2 A `caugi_plot` object (bottom plot)
+#'
+#' @returns A `caugi_plot` object containing the composed layout
+#'
+#' @details
+#' The spacing between plots is controlled by the global option
+#' `caugi_options()$plot$spacing`, which defaults to `grid::unit(1, "lines")`.
+#' Compositions can be nested arbitrarily:
+#'
+#' - `p1 / p2` - two plots stacked vertically
+#' - `p1 / p2 / p3` - three plots in a column
+#' - `(p1 + p2) / p3` - two plots on top, one below
+#'
+#' @family plotting
+#' @seealso [caugi_options()] for configuring spacing and default styles
+#'
+#' @examples
+#' cg1 <- caugi(A %-->% B, B %-->% C)
+#' cg2 <- caugi(X %-->% Y, Y %-->% Z)
+#'
+#' p1 <- plot(cg1, main = "Graph 1")
+#' p2 <- plot(cg2, main = "Graph 2")
+#'
+#' # Vertical composition
+#' p1 / p2
+#'
+#' # Mixed composition
+#' (p1 + p2) / p1
+#'
+#' @name divide-caugi_plot-caugi_plot
+NULL
+
+S7::method(`/`, list(caugi_plot, caugi_plot)) <- function(e1, e2) {
+  compose_plots(e1, e2, horizontal = FALSE)
+}
+
+#' Internal function for plot composition
+#'
+#' @param e1 First caugi_plot
+#' @param e2 Second caugi_plot
+#' @param horizontal Logical, TRUE for horizontal, FALSE for vertical
+#' @keywords internal
+#' @noRd
+compose_plots <- function(e1, e2, horizontal = TRUE) {
+  # Compose using a fixed layout to avoid grob size conversions
+  # (which can fail for nested viewports).
+  opts <- get0("options", .caugi_env, ifnotfound = caugi_default_options())
+  spacing <- opts$plot$spacing
+  if (is.null(spacing)) {
+    spacing <- grid::unit(1, "lines")
+  }
+  if (!inherits(spacing, "unit")) {
+    stop("`caugi_options()$plot$spacing` must be a grid::unit()", call. = FALSE)
+  }
+
+  if (horizontal) {
+    layout_vp <- grid::viewport(
+      layout = grid::grid.layout(
+        nrow = 1,
+        ncol = 3,
+        widths = grid::unit.c(
+          grid::unit(1, "null"),
+          spacing,
+          grid::unit(1, "null")
+        )
+      )
+    )
+
+    first <- grid::gTree(
+      children = grid::gList(e1@grob),
+      vp = grid::viewport(layout.pos.col = 1),
+      name = "caugi.composed.left"
+    )
+
+    spacer_grob <- grid::nullGrob(
+      vp = grid::viewport(layout.pos.col = 2)
+    )
+
+    second <- grid::gTree(
+      children = grid::gList(e2@grob),
+      vp = grid::viewport(layout.pos.col = 3),
+      name = "caugi.composed.right"
+    )
+  } else {
+    layout_vp <- grid::viewport(
+      layout = grid::grid.layout(
+        nrow = 3,
+        ncol = 1,
+        heights = grid::unit.c(
+          grid::unit(1, "null"),
+          spacing,
+          grid::unit(1, "null")
+        )
+      )
+    )
+
+    first <- grid::gTree(
+      children = grid::gList(e1@grob),
+      vp = grid::viewport(layout.pos.row = 1),
+      name = "caugi.composed.top"
+    )
+
+    spacer_grob <- grid::nullGrob(
+      vp = grid::viewport(layout.pos.row = 2)
+    )
+
+    second <- grid::gTree(
+      children = grid::gList(e2@grob),
+      vp = grid::viewport(layout.pos.row = 3),
+      name = "caugi.composed.bottom"
+    )
+  }
+
+  final_grob <- grid::gTree(
+    children = grid::gList(first, spacer_grob, second),
+    vp = layout_vp,
+    name = "caugi.composed"
+  )
+
+  caugi_plot(grob = final_grob)
 }

@@ -9,6 +9,11 @@
   (graphviz) format. The resulting object is a new S7 class, `caugi_export`,
   which has a `knit_print()` method for rendering DOT graphs in R Markdown and
   Quarto documents.
+* Add plot composition operators for creating multi-plot layouts: `+` and `|` for horizontal arrangement, `/` for vertical stacking. Compositions can be nested arbitrarily (e.g., `(p1 + p2) / p3`).
+* Add `caugi_options()` function for setting global defaults for plot appearance, including composition spacing and default styles for nodes, edges, labels, and titles.
+* Add `caugi_default_options()` function to query or reset to package default options.
+* Add a new vignette, "Graph Visualization with caugi", demonstrating the new
+  plotting capabilities and customization options.
 
 ## Improvements
 

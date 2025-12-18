@@ -24,6 +24,7 @@
     }
   )
 
+  caugi_options(caugi_default_options())
   S7::methods_register()
 }
 

@@ -303,3 +303,100 @@ test_that("kamada-kawai layout is deterministic", {
   expect_identical(layout1, layout2)
   expect_identical(layout2, layout3)
 })
+
+test_that("caugi_options can be queried", {
+  opts <- caugi_options()
+
+  expect_type(opts, "list")
+  expect_true("plot" %in% names(opts))
+  expect_type(opts$plot, "list")
+})
+
+test_that("caugi_options can set and get plot spacing", {
+  old_opts <- caugi_options()
+  on.exit(caugi_options(old_opts))
+
+  # Set new spacing
+  caugi_options(plot = list(spacing = grid::unit(2, "lines")))
+
+  # Verify it was set
+  opts <- caugi_options()
+  expect_s3_class(opts$plot$spacing, "unit")
+  expect_equal(as.numeric(opts$plot$spacing), 2)
+})
+
+test_that("caugi_options can set node_style defaults", {
+  old_opts <- caugi_options()
+  on.exit(caugi_options(old_opts))
+
+  # Set node style
+  caugi_options(
+    plot = list(
+      node_style = list(fill = "lightblue", padding = 3)
+    )
+  )
+
+  opts <- caugi_options()
+  expect_equal(opts$plot$node_style$fill, "lightblue")
+  expect_equal(opts$plot$node_style$padding, 3)
+})
+
+test_that("caugi_options can set edge_style defaults", {
+  old_opts <- caugi_options()
+  on.exit(caugi_options(old_opts))
+
+  # Set edge style
+  caugi_options(
+    plot = list(
+      edge_style = list(arrow_size = 5, fill = "darkgray")
+    )
+  )
+
+  opts <- caugi_options()
+  expect_equal(opts$plot$edge_style$arrow_size, 5)
+  expect_equal(opts$plot$edge_style$fill, "darkgray")
+})
+
+test_that("plot respects global node_style options", {
+  old_opts <- caugi_options()
+  on.exit(caugi_options(old_opts))
+
+  # Set global node style
+  caugi_options(
+    plot = list(
+      node_style = list(fill = "lightblue")
+    )
+  )
+
+  cg <- caugi(A %-->% B)
+
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+
+  p <- plot(cg)
+  expect_s7_class(p, caugi_plot)
+
+  # Verify grob was created (basic check that options didn't break plotting)
+  expect_true(!is.null(p@grob))
+})
+
+test_that("plot arguments override global options", {
+  old_opts <- caugi_options()
+  on.exit(caugi_options(old_opts))
+
+  # Set global node style
+  caugi_options(
+    plot = list(
+      node_style = list(fill = "lightblue")
+    )
+  )
+
+  cg <- caugi(A %-->% B)
+
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+
+  # Override with argument
+  p <- plot(cg, node_style = list(fill = "pink"))
+  expect_s7_class(p, caugi_plot)
+})
