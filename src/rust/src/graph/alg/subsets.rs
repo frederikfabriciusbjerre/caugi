@@ -95,6 +95,6 @@ mod tests {
         k_subsets(&u, 0, 0, &mut cur, &mut out);
 
         // Only the empty set
-        assert_eq!(out, vec![vec![]]);
+        assert_eq!(out, vec![vec![] as Vec<u32>]);
     }
 }

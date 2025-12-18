@@ -1,6 +1,7 @@
 # caugi 0.5.0
 ## New Features
 
+* Add native caugi serialization format for saving and loading graphs. New functions: `write_caugi()`, `read_caugi()`, `caugi_serialize()`, and `caugi_deserialize()`. The format is a versioned JSON schema that captures graph structure, class, and optional metadata (comments and tags).
 * Add `plot()` method for visualizing graphs using the Sugiyama algorithm for DAGs and a force-directed algorithm for other graphs. The plot is rendered using grid graphics and returns a `caugi_plot` object that can be customized with `node_style`, `edge_style`, and `label_style` arguments. The `plot()` method accepts layouts as strings, functions, or pre-computed data.frames.
 * Add `caugi_layout()` function to compute node coordinates for graph visualization using the Sugiyama layout algorithm.
 * Add dedicated layout functions: `caugi_layout_sugiyama()`, `caugi_layout_fruchterman_reingold()`, `caugi_layout_kamada_kawai()`, and `caugi_layout_bipartite()`. Each function provides a focused API for its specific algorithm.

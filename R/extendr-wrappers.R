@@ -120,5 +120,13 @@ compute_layout_ptr <- function(g, method) .Call(wrap__compute_layout_ptr, g, met
 
 compute_bipartite_layout_ptr <- function(g, partition, orientation) .Call(wrap__compute_bipartite_layout_ptr, g, partition, orientation)
 
+write_caugi_file_ptr <- function(g, reg, graph_class, node_names, path, comment, tags) invisible(.Call(wrap__write_caugi_file_ptr, g, reg, graph_class, node_names, path, comment, tags))
+
+read_caugi_file_ptr <- function(path, reg) .Call(wrap__read_caugi_file_ptr, path, reg)
+
+serialize_caugi_ptr <- function(g, reg, graph_class, node_names, comment, tags) .Call(wrap__serialize_caugi_ptr, g, reg, graph_class, node_names, comment, tags)
+
+deserialize_caugi_ptr <- function(json, reg) .Call(wrap__deserialize_caugi_ptr, json, reg)
+
 
 # nolint end

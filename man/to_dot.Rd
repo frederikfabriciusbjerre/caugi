@@ -55,14 +55,19 @@ dot <- to_dot(
 }
 \seealso{
 Other export: 
+\code{\link{caugi_deserialize}()},
 \code{\link{caugi_dot}()},
 \code{\link{caugi_export}()},
 \code{\link{caugi_mermaid}()},
+\code{\link{caugi_serialize}()},
 \code{\link{export-classes}},
+\code{\link{format-caugi}},
 \code{\link{format-dot}},
 \code{\link{format-mermaid}},
 \code{\link{knit_print.caugi_export}},
+\code{\link{read_caugi}()},
 \code{\link{to_mermaid}()},
+\code{\link{write_caugi}()},
 \code{\link{write_dot}()},
 \code{\link{write_mermaid}()}
 }

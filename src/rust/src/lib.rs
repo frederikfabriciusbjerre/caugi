@@ -783,6 +783,92 @@ fn ancestral_reduction_ptr(g: ExternalPtr<GraphView>, seeds: Integers) -> Extern
     ExternalPtr::new(out)
 }
 
+// ── Serialization ──────────────────────────────────────────────────────────────
+
+#[extendr]
+fn write_caugi_file_ptr(
+    g: ExternalPtr<GraphView>,
+    reg: ExternalPtr<EdgeRegistry>,
+    graph_class: &str,
+    node_names: Strings,
+    path: &str,
+    comment: Nullable<&str>,
+    tags: Nullable<Strings>,
+) {
+    let node_names_vec: Vec<String> = node_names.iter().map(|s| s.to_string()).collect();
+    let comment_opt = comment.into_option().map(|s| s.to_string());
+    let tags_opt = tags
+        .into_option()
+        .map(|strs| strs.iter().map(|s| s.to_string()).collect::<Vec<_>>());
+
+    graph::serialization::write_caugi_file(
+        g.as_ref(),
+        reg.as_ref(),
+        graph_class,
+        node_names_vec,
+        path,
+        comment_opt,
+        tags_opt,
+    )
+    .unwrap_or_else(|e| throw_r_error(e));
+}
+
+#[extendr]
+fn read_caugi_file_ptr(path: &str, reg: ExternalPtr<EdgeRegistry>) -> Robj {
+    let data = graph::serialization::read_caugi_file(path, reg.as_ref())
+        .unwrap_or_else(|e| throw_r_error(e));
+
+    list!(
+        nodes = data.nodes,
+        edges_from = data.edges_from,
+        edges_to = data.edges_to,
+        edges_type = data.edges_type,
+        graph_class = data.graph_class
+    )
+    .into_robj()
+}
+
+#[extendr]
+fn serialize_caugi_ptr(
+    g: ExternalPtr<GraphView>,
+    reg: ExternalPtr<EdgeRegistry>,
+    graph_class: &str,
+    node_names: Strings,
+    comment: Nullable<&str>,
+    tags: Nullable<Strings>,
+) -> String {
+    let node_names_vec: Vec<String> = node_names.iter().map(|s| s.to_string()).collect();
+    let comment_opt = comment.into_option().map(|s| s.to_string());
+    let tags_opt = tags
+        .into_option()
+        .map(|strs| strs.iter().map(|s| s.to_string()).collect::<Vec<_>>());
+
+    graph::serialization::serialize_caugi(
+        g.as_ref(),
+        reg.as_ref(),
+        graph_class,
+        node_names_vec,
+        comment_opt,
+        tags_opt,
+    )
+    .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
+fn deserialize_caugi_ptr(json: &str, reg: ExternalPtr<EdgeRegistry>) -> Robj {
+    let data = graph::serialization::deserialize_caugi(json, reg.as_ref())
+        .unwrap_or_else(|e| throw_r_error(e));
+
+    list!(
+        nodes = data.nodes,
+        edges_from = data.edges_from,
+        edges_to = data.edges_to,
+        edges_type = data.edges_type,
+        graph_class = data.graph_class
+    )
+    .into_robj()
+}
+
 // ── Subgraph ────────────────────────────────────────────────────────────────
 
 #[extendr]
@@ -1016,4 +1102,10 @@ extendr_module! {
     // layout
     fn compute_layout_ptr;
     fn compute_bipartite_layout_ptr;
+
+    // serialization
+    fn write_caugi_file_ptr;
+    fn read_caugi_file_ptr;
+    fn serialize_caugi_ptr;
+    fn deserialize_caugi_ptr;
 }

@@ -656,7 +656,7 @@ mod tests {
 
     #[test]
     fn admg_msep_m_bias() {
-        let (reg, dir, bid) = setup();
+        let (reg, dir, _bid) = setup();
         let mut b = GraphBuilder::new_with_registry(5, true, &reg);
         // M-bias structure:
         // U1 -> X, U1 -> M, U2 -> M, U2 -> Y
@@ -679,7 +679,7 @@ mod tests {
 
     #[test]
     fn admg_adjustment_simple_confounding() {
-        let (reg, dir, bid) = setup();
+        let (reg, dir, _bid) = setup();
         let mut b = GraphBuilder::new_with_registry(3, true, &reg);
         // Classic confounding: L -> X -> Y, L -> Y
         // 0:L, 1:X, 2:Y

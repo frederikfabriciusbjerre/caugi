@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://caugi.org/schemas/caugi-v1.schema.json",
+  "title": "Caugi Graph Format",
+  "description": "JSON schema for causal graph serialization format version 1",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "graph"
+  ],
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "caugi",
+      "description": "Format identifier, must be 'caugi'"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^1\\.\\d+\\.\\d+$",
+      "description": "Schema version (semantic versioning: 1.x.x)"
+    },
+    "graph": {
+      "type": "object",
+      "required": [
+        "class",
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "DAG",
+            "PDAG",
+            "ADMG",
+            "UG",
+            "UNKNOWN"
+          ],
+          "description": "Graph class/type"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Array of unique node names"
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "from",
+              "to",
+              "edge"
+            ],
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Source node name"
+              },
+              "to": {
+                "type": "string",
+                "description": "Target node name"
+              },
+              "edge": {
+                "type": "string",
+                "description": "Edge type using DSL operator (e.g., '-->', '<->', '---', 'o->', '--o', 'o-o')"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Array of edges between nodes"
+        }
+      },
+      "additionalProperties": false
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "string",
+          "description": "Optional comment describing the graph"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional tags for categorizing the graph"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
