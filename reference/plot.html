@@ -74,6 +74,12 @@ any additional arguments passed via <code>...</code>.</p></li>
 </ul></dd>
 
 
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments passed to <code><a href="caugi_layout.html">caugi_layout()</a></code>. For bipartite
+layouts, include <code>partition</code> (logical vector) and <code>orientation</code> (<code>"rows"</code>
+or <code>"columns"</code>).</p></dd>
+
+
 <dt id="arg-node-style">node_style<a class="anchor" aria-label="anchor" href="#arg-node-style"></a></dt>
 <dd><p>List of node styling parameters. Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>fill</code>, <code>col</code>, <code>lwd</code>, <code>lty</code>, <code>alpha</code></p></li>
 <li><p>Geometry: <code>padding</code> (text padding inside nodes in mm, default 2),
@@ -95,8 +101,25 @@ Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>col</c
 </ul></dd>
 
 
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments (currently unused).</p></dd>
+<dt id="arg-main">main<a class="anchor" aria-label="anchor" href="#arg-main"></a></dt>
+<dd><p>Optional character string for plot title. If <code>NULL</code> (default),
+no title is displayed.</p></dd>
+
+
+<dt id="arg-title-style">title_style<a class="anchor" aria-label="anchor" href="#arg-title-style"></a></dt>
+<dd><p>List of title styling parameters. Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>col</code>, <code>fontsize</code>, <code>fontface</code>,
+<code>fontfamily</code>, <code>cex</code></p></li>
+</ul></dd>
+
+
+<dt id="arg-outer-margin">outer_margin<a class="anchor" aria-label="anchor" href="#arg-outer-margin"></a></dt>
+<dd><p>Grid unit specifying outer margin around the plot.
+Default is <code>grid::unit(2, "mm")</code>.</p></dd>
+
+
+<dt id="arg-title-gap">title_gap<a class="anchor" aria-label="anchor" href="#arg-title-gap"></a></dt>
+<dd><p>Grid unit specifying gap between title and graph.
+Default is <code>grid::unit(1, "lines")</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -160,6 +183,18 @@ plotted.</p>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot-7.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Add a title</span></span></span>
+<span class="r-in"><span><span class="fu">plot</span><span class="op">(</span><span class="va">cg</span>, main <span class="op">=</span> <span class="st">"Causal Graph"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot-8.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Customize title</span></span></span>
+<span class="r-in"><span><span class="fu">plot</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">cg</span>,</span></span>
+<span class="r-in"><span>  main <span class="op">=</span> <span class="st">"My Graph"</span>,</span></span>
+<span class="r-in"><span>  title_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fontsize <span class="op">=</span> <span class="fl">18</span>, col <span class="op">=</span> <span class="st">"blue"</span>, fontface <span class="op">=</span> <span class="st">"italic"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot-9.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

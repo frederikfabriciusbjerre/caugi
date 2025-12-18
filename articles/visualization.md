@@ -59,7 +59,7 @@ dag <- caugi(
 )
 
 # Use Sugiyama layout explicitly
-plot(dag, layout = "sugiyama")
+plot(dag, layout = "sugiyama", main = "Sugiyama")
 ```
 
 ![](visualization_files/figure-html/sugiyama-layout-1.png)
@@ -85,7 +85,7 @@ admg <- caugi(
 )
 
 # Fruchterman-Reingold handles all edge types
-plot(admg, layout = "fruchterman-reingold")
+plot(admg, layout = "fruchterman-reingold", main = "Fruchterman-Reingold")
 ```
 
 ![](visualization_files/figure-html/fruchterman-reingold-1.png)
@@ -113,7 +113,7 @@ ug <- caugi(
 )
 
 # Kamada-Kawai for publication-quality visualization
-plot(ug, layout = "kamada-kawai")
+plot(ug, layout = "kamada-kawai", main = "Kamada-Kawai")
 ```
 
 ![](visualization_files/figure-html/kamada-kawai-1.png)
@@ -289,6 +289,7 @@ Customize node labels with the `label_style` parameter:
 # Customize label appearance
 plot(
   cg,
+  main = "Customized Labels",
   label_style = list(
     col = "white", # Text color
     fontsize = 12, # Font size

@@ -125,7 +125,7 @@ flow from top to bottom, minimizing edge crossings.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Use Sugiyama layout explicitly</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dag</span>, layout <span class="op">=</span> <span class="st">"sugiyama"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dag</span>, layout <span class="op">=</span> <span class="st">"sugiyama"</span>, main <span class="op">=</span> <span class="st">"Sugiyama"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/sugiyama-layout-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
 <p><strong>Best for:</strong> DAGs, causal models, hierarchical
 structures</p>
@@ -148,7 +148,7 @@ organic, symmetric layouts with relatively uniform edge lengths.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fruchterman-Reingold handles all edge types</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">admg</span>, layout <span class="op">=</span> <span class="st">"fruchterman-reingold"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">admg</span>, layout <span class="op">=</span> <span class="st">"fruchterman-reingold"</span>, main <span class="op">=</span> <span class="st">"Fruchterman-Reingold"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/fruchterman-reingold-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
 <p><strong>Best for:</strong> General-purpose visualization, graphs with
 mixed edge types</p>
@@ -173,7 +173,7 @@ to Fruchterman-Reingold.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Kamada-Kawai for publication-quality visualization</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">ug</span>, layout <span class="op">=</span> <span class="st">"kamada-kawai"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">ug</span>, layout <span class="op">=</span> <span class="st">"kamada-kawai"</span>, main <span class="op">=</span> <span class="st">"Kamada-Kawai"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/kamada-kawai-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
 <p><strong>Best for:</strong> Publication-quality figures, when accurate
 distance representation matters</p>
@@ -339,6 +339,7 @@ parameter:</p>
 <code class="sourceCode R"><span><span class="co"># Customize label appearance</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">cg</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Customized Labels"</span>,</span>
 <span>  label_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    col <span class="op">=</span> <span class="st">"white"</span>, <span class="co"># Text color</span></span>
 <span>    fontsize <span class="op">=</span> <span class="fl">12</span>, <span class="co"># Font size</span></span>

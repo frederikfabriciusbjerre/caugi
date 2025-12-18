@@ -27,6 +27,13 @@ viewports for proper coordinate handling.
 
   - A pre-computed layout data.frame with columns `name`, `x`, and `y`.
 
+- ...:
+
+  Additional arguments passed to
+  [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md). For
+  bipartite layouts, include `partition` (logical vector) and
+  `orientation` (`"rows"` or `"columns"`).
+
 - node_style:
 
   List of node styling parameters. Supports:
@@ -55,9 +62,27 @@ viewports for proper coordinate handling.
   - Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
     `fontfamily`, `cex`
 
-- ...:
+- main:
 
-  Additional arguments (currently unused).
+  Optional character string for plot title. If `NULL` (default), no
+  title is displayed.
+
+- title_style:
+
+  List of title styling parameters. Supports:
+
+  - Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
+    `fontfamily`, `cex`
+
+- outer_margin:
+
+  Grid unit specifying outer margin around the plot. Default is
+  `grid::unit(2, "mm")`.
+
+- title_gap:
+
+  Grid unit specifying gap between title and graph. Default is
+  `grid::unit(1, "lines")`.
 
 ## Value
 
@@ -117,6 +142,18 @@ plot(
     directed = list(col = "blue", arrow_size = 4),
     undirected = list(col = "red")
   )
+)
+
+
+# Add a title
+plot(cg, main = "Causal Graph")
+
+
+# Customize title
+plot(
+  cg,
+  main = "My Graph",
+  title_style = list(fontsize = 18, col = "blue", fontface = "italic")
 )
 
 ```
