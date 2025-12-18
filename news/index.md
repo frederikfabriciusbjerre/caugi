@@ -4,6 +4,15 @@
 
 ### New Features
 
+- Add native caugi serialization format for saving and loading graphs.
+  New functions:
+  [`write_caugi()`](https://caugi.org/reference/write_caugi.md),
+  [`read_caugi()`](https://caugi.org/reference/read_caugi.md),
+  [`caugi_serialize()`](https://caugi.org/reference/caugi_serialize.md),
+  and
+  [`caugi_deserialize()`](https://caugi.org/reference/caugi_deserialize.md).
+  The format is a versioned JSON schema that captures graph structure,
+  class, and optional metadata (comments and tags).
 - Add [`plot()`](https://caugi.org/reference/plot.md) method for
   visualizing graphs using the Sugiyama algorithm for DAGs and a
   force-directed algorithm for other graphs. The plot is rendered using

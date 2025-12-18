@@ -1,0 +1,43 @@
+{
+  "$schema": "https://caugi.org/schemas/caugi-v1.schema.json",
+  "format": "caugi",
+  "version": "1.0.0",
+  "graph": {
+    "class": "DAG",
+    "nodes": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "edges": [
+      {
+        "from": "A",
+        "to": "B",
+        "edge": "-->"
+      },
+      {
+        "from": "A",
+        "to": "C",
+        "edge": "-->"
+      },
+      {
+        "from": "B",
+        "to": "D",
+        "edge": "-->"
+      },
+      {
+        "from": "C",
+        "to": "D",
+        "edge": "-->"
+      }
+    ]
+  },
+  "meta": {
+    "comment": "Example DAG",
+    "tags": [
+      "example",
+      "dag"
+    ]
+  }
+}

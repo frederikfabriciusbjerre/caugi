@@ -8,6 +8,7 @@
 <url><loc>https://caugi.org/articles/motivation.html</loc></url>
 <url><loc>https://caugi.org/articles/package_use.html</loc></url>
 <url><loc>https://caugi.org/articles/performance.html</loc></url>
+<url><loc>https://caugi.org/articles/serialization.html</loc></url>
 <url><loc>https://caugi.org/articles/visualization.html</loc></url>
 <url><loc>https://caugi.org/authors.html</loc></url>
 <url><loc>https://caugi.org/copilot-instructions.html</loc></url>
@@ -28,6 +29,7 @@
 <url><loc>https://caugi.org/reference/caugi-package.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_default_options.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_deserialize.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_dot.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_export.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout.html</loc></url>
@@ -38,6 +40,7 @@
 <url><loc>https://caugi.org/reference/caugi_mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_options.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_plot.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_serialize.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_verbs.html</loc></url>
 <url><loc>https://caugi.org/reference/children.html</loc></url>
 <url><loc>https://caugi.org/reference/d_separated.html</loc></url>
@@ -79,6 +82,7 @@
 <url><loc>https://caugi.org/reference/edges.html</loc></url>
 <url><loc>https://caugi.org/reference/exogenous.html</loc></url>
 <url><loc>https://caugi.org/reference/export-classes.html</loc></url>
+<url><loc>https://caugi.org/reference/format-caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/format-dot.html</loc></url>
 <url><loc>https://caugi.org/reference/format-mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/generate_graph.html</loc></url>
@@ -107,6 +111,7 @@
 <url><loc>https://caugi.org/reference/parents.html</loc></url>
 <url><loc>https://caugi.org/reference/plot.html</loc></url>
 <url><loc>https://caugi.org/reference/print.html</loc></url>
+<url><loc>https://caugi.org/reference/read_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/register_caugi_edge.html</loc></url>
 <url><loc>https://caugi.org/reference/registry.html</loc></url>
 <url><loc>https://caugi.org/reference/same_nodes.html</loc></url>
@@ -117,6 +122,7 @@
 <url><loc>https://caugi.org/reference/to_dot.html</loc></url>
 <url><loc>https://caugi.org/reference/to_mermaid.html</loc></url>
 <url><loc>https://caugi.org/reference/topological_sort.html</loc></url>
+<url><loc>https://caugi.org/reference/write_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/write_dot.html</loc></url>
 <url><loc>https://caugi.org/reference/write_mermaid.html</loc></url>
 </urlset>

@@ -22,6 +22,7 @@
     <li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
     <li><a class="dropdown-item" href="../articles/package_use.html">How to use caugi in a package</a></li>
     <li><a class="dropdown-item" href="../articles/performance.html">Performance</a></li>
+    <li><a class="dropdown-item" href="../articles/serialization.html">Saving and Sharing Graphs with the Caugi Format</a></li>
     <li><a class="dropdown-item" href="../articles/visualization.html">Visualizing Causal Graphs with caugi</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -43,7 +44,8 @@
 <h2 class="pkg-version" data-toc-text="0.5.0" id="caugi-050">caugi 0.5.0<a class="anchor" aria-label="anchor" href="#caugi-050"></a></h2>
 <div class="section level3">
 <h3 id="new-features-0-5-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0"></a></h3>
-<ul><li>Add <code><a href="../reference/plot.html">plot()</a></code> method for visualizing graphs using the Sugiyama algorithm for DAGs and a force-directed algorithm for other graphs. The plot is rendered using grid graphics and returns a <code>caugi_plot</code> object that can be customized with <code>node_style</code>, <code>edge_style</code>, and <code>label_style</code> arguments. The <code><a href="../reference/plot.html">plot()</a></code> method accepts layouts as strings, functions, or pre-computed data.frames.</li>
+<ul><li>Add native caugi serialization format for saving and loading graphs. New functions: <code><a href="../reference/write_caugi.html">write_caugi()</a></code>, <code><a href="../reference/read_caugi.html">read_caugi()</a></code>, <code><a href="../reference/caugi_serialize.html">caugi_serialize()</a></code>, and <code><a href="../reference/caugi_deserialize.html">caugi_deserialize()</a></code>. The format is a versioned JSON schema that captures graph structure, class, and optional metadata (comments and tags).</li>
+<li>Add <code><a href="../reference/plot.html">plot()</a></code> method for visualizing graphs using the Sugiyama algorithm for DAGs and a force-directed algorithm for other graphs. The plot is rendered using grid graphics and returns a <code>caugi_plot</code> object that can be customized with <code>node_style</code>, <code>edge_style</code>, and <code>label_style</code> arguments. The <code><a href="../reference/plot.html">plot()</a></code> method accepts layouts as strings, functions, or pre-computed data.frames.</li>
 <li>Add <code><a href="../reference/caugi_layout.html">caugi_layout()</a></code> function to compute node coordinates for graph visualization using the Sugiyama layout algorithm.</li>
 <li>Add dedicated layout functions: <code><a href="../reference/caugi_layout_sugiyama.html">caugi_layout_sugiyama()</a></code>, <code><a href="../reference/caugi_layout_fruchterman_reingold.html">caugi_layout_fruchterman_reingold()</a></code>, <code><a href="../reference/caugi_layout_kamada_kawai.html">caugi_layout_kamada_kawai()</a></code>, and <code><a href="../reference/caugi_layout_bipartite.html">caugi_layout_bipartite()</a></code>. Each function provides a focused API for its specific algorithm.</li>
 <li>Add bipartite graph layout support with <code><a href="../reference/caugi_layout_bipartite.html">caugi_layout_bipartite()</a></code>, which places nodes in two parallel lines (rows or columns) based on a user-provided partition.</li>
