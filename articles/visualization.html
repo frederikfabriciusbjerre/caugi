@@ -96,7 +96,7 @@ customize their appearance.</p>
 <span></span>
 <span><span class="co"># Plot with default settings</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/basic-plot-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/basic-plot-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>By default, <code><a href="../reference/plot.html">plot()</a></code> automatically selects the best layout
 algorithm based on your graph type. For graphs with only directed edges,
 it uses the Sugiyama hierarchical layout. For graphs with other edge
@@ -127,7 +127,7 @@ flow from top to bottom, minimizing edge crossings.</p>
 <span></span>
 <span><span class="co"># Use Sugiyama layout explicitly</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dag</span>, layout <span class="op">=</span> <span class="st">"sugiyama"</span>, main <span class="op">=</span> <span class="st">"Sugiyama"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/sugiyama-layout-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/sugiyama-layout-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p><strong>Best for:</strong> DAGs, causal models, hierarchical
 structures</p>
 <p><strong>Limitations:</strong> Only works with directed edges</p>
@@ -150,7 +150,7 @@ organic, symmetric layouts with relatively uniform edge lengths.</p>
 <span></span>
 <span><span class="co"># Fruchterman-Reingold handles all edge types</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">admg</span>, layout <span class="op">=</span> <span class="st">"fruchterman-reingold"</span>, main <span class="op">=</span> <span class="st">"Fruchterman-Reingold"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/fruchterman-reingold-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/fruchterman-reingold-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p><strong>Best for:</strong> General-purpose visualization, graphs with
 mixed edge types</p>
 <p><strong>Advantages:</strong> Fast, works with all edge types,
@@ -175,7 +175,7 @@ to Fruchterman-Reingold.</p>
 <span></span>
 <span><span class="co"># Kamada-Kawai for publication-quality visualization</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">ug</span>, layout <span class="op">=</span> <span class="st">"kamada-kawai"</span>, main <span class="op">=</span> <span class="st">"Kamada-Kawai"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/kamada-kawai-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/kamada-kawai-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p><strong>Best for:</strong> Publication-quality figures, when accurate
 distance representation matters</p>
 <p><strong>Advantages:</strong> Better global structure preservation</p>
@@ -201,7 +201,7 @@ It arranges nodes in two parallel lines (rows or columns).</p>
 <span>  layout <span class="op">=</span> <span class="st">"bipartite"</span>,</span>
 <span>  orientation <span class="op">=</span> <span class="st">"rows"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/bipartite-layout-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/bipartite-layout-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Vertical columns (treatments on right, outcomes on left)</span></span>
@@ -210,7 +210,7 @@ It arranges nodes in two parallel lines (rows or columns).</p>
 <span>  layout <span class="op">=</span> <span class="st">"bipartite"</span>,</span>
 <span>  orientation <span class="op">=</span> <span class="st">"columns"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/bipartite-layout-2.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/bipartite-layout-2.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>The bipartite layout automatically detects which nodes should be in
 which partition based on incoming edges. Nodes with no incoming edges
 are placed in one group, while nodes with incoming edges are placed in
@@ -224,7 +224,7 @@ the other. You can also specify the partition explicitly:</p>
 <span>  partition <span class="op">=</span> <span class="va">partition</span>,</span>
 <span>  orientation <span class="op">=</span> <span class="st">"rows"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/bipartite-explicit-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/bipartite-explicit-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p><strong>Best for:</strong> Treatment-outcome structures,
 exposure-response models, bipartite causal relationships</p>
 <p><strong>Advantages:</strong> Clear visual separation, emphasizes
@@ -274,7 +274,7 @@ parameter:</p>
 <span>    size <span class="op">=</span> <span class="fl">1.2</span> <span class="co"># Size multiplier</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/node-styling-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/node-styling-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>Available node style parameters:</p>
 <ul>
 <li>
@@ -302,7 +302,7 @@ You can set global options or customize each edge type separately:</p>
 <span>    arrow_size <span class="op">=</span> <span class="fl">4</span> <span class="co"># Arrow size (mm)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/edge-styling-global-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/edge-styling-global-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Per-type edge styling for ADMG</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
@@ -313,7 +313,7 @@ You can set global options or customize each edge type separately:</p>
 <span>    bidirected <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"red"</span>, lwd <span class="op">=</span> <span class="fl">2</span>, lty <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/edge-styling-per-type-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/edge-styling-per-type-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>Available edge style parameters:</p>
 <ul>
 <li>
@@ -358,7 +358,7 @@ can customize the circle size:</p>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/partial-edges-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/partial-edges-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level3">
@@ -381,7 +381,7 @@ parameter:</p>
 <span>    fill <span class="op">=</span> <span class="st">"navy"</span> <span class="co"># Dark background for white text</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/label-styling-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/label-styling-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>Available label style parameters (passed to <code><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar()</a></code>):</p>
 <ul>
 <li>
@@ -417,7 +417,7 @@ parameter:</p>
 <span>    fontface <span class="op">=</span> <span class="st">"bold"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/full-customization-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/full-customization-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level2">
@@ -444,7 +444,7 @@ types.</p>
 <span>    undirected <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"gray"</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/pdag-plot-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/pdag-plot-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="acyclic-directed-mixed-graphs-admgs">Acyclic Directed Mixed Graphs (ADMGs)<a class="anchor" aria-label="anchor" href="#acyclic-directed-mixed-graphs-admgs"></a>
@@ -468,7 +468,7 @@ types.</p>
 <span>    bidirected <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"red"</span>, lwd <span class="op">=</span> <span class="fl">1.5</span>, lty <span class="op">=</span> <span class="st">"dashed"</span>, arrow_size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/admg-plot-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/admg-plot-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="undirected-graphs-ugs">Undirected Graphs (UGs)<a class="anchor" aria-label="anchor" href="#undirected-graphs-ugs"></a>
@@ -493,7 +493,7 @@ types.</p>
 <span>  <span class="op">)</span>,</span>
 <span>  edge_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"orange"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/ug-plot-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/ug-plot-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level2">
@@ -528,17 +528,17 @@ package.</p>
 <span></span>
 <span><span class="co"># Horizontal composition (side-by-side)</span></span>
 <span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/composition-basic-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/composition-basic-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>The <code>|</code> operator is an alias for <code>+</code>:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Equivalent to p1 + p2</span></span>
 <span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/composition-pipe-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/composition-pipe-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>For vertical stacking, use the <code>/</code> operator:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Stack plots vertically</span></span>
 <span><span class="va">p1</span> <span class="op">/</span> <span class="va">p2</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/composition-vertical-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/composition-vertical-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="nested-compositions">Nested Compositions<a class="anchor" aria-label="anchor" href="#nested-compositions"></a>
@@ -556,12 +556,12 @@ package.</p>
 <span></span>
 <span><span class="co"># Complex layout: two plots on top, one below</span></span>
 <span><span class="op">(</span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="va">p3</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/composition-nested-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/composition-nested-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>You can mix operators freely:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Three plots in various arrangements</span></span>
 <span><span class="op">(</span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p3</span> <span class="op">+</span> <span class="va">p1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/composition-mixed-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/composition-mixed-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="configuring-spacing">Configuring Spacing<a class="anchor" aria-label="anchor" href="#configuring-spacing"></a>
@@ -574,7 +574,7 @@ package.</p>
 <span></span>
 <span><span class="co"># Plots will now have more space between them</span></span>
 <span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/composition-spacing-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/composition-spacing-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Reset to default</span></span>
@@ -600,7 +600,7 @@ basis.</p>
 <span></span>
 <span><span class="co"># This plot uses the global defaults</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">cg</span>, main <span class="op">=</span> <span class="st">"Using Global Defaults"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/global-options-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/global-options-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Reset to package defaults</span></span>
@@ -621,7 +621,7 @@ basis.</p>
 <span>  main <span class="op">=</span> <span class="st">"Custom Colors"</span>,</span>
 <span>  node_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"pink"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/override-options-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/override-options-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Reset</span></span>
@@ -758,7 +758,7 @@ controlling space between composed plots</li>
 <span></span>
 <span><span class="co"># Plot uses the same layout, calling caugi_layout internally</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dag</span>, layout <span class="op">=</span> <span class="st">"sugiyama"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/manual-layout-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/manual-layout-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="integration-with-grid-graphics">Integration with Grid Graphics<a class="anchor" aria-label="anchor" href="#integration-with-grid-graphics"></a>
@@ -782,7 +782,7 @@ customization using grid functions.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/grid/viewports.html" class="external-link">pushViewport</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/grid/viewport.html" class="external-link">viewport</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/grid/grid.draw.html" class="external-link">grid.draw</a></span><span class="op">(</span><span class="va">p</span><span class="op">@</span><span class="va">grob</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/grid/viewports.html" class="external-link">popViewport</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualization_files/figure-html/grid-integration-1.png" class="r-plt" width="700" style="display: block; margin: auto;"></p>
+<p><img src="visualization_files/figure-html/grid-integration-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>The composition operators work by manipulating these grid grobs,
 creating flexible and performant multi-plot layouts without requiring
 external packages.</p>

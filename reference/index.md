@@ -185,6 +185,9 @@
 
 ## Operations
 
+- [`latent_project()`](https://caugi.org/reference/latent_project.md) :
+  Project latent variables from a DAG to an ADMG
+
 - [`moralize()`](https://caugi.org/reference/moralize.md) : Moralize a
   DAG
 

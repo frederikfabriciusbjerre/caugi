@@ -4,6 +4,8 @@
 
 ### New Features
 
+- Add `latent_project` function that does latent projection from DAGs to
+  ADMGs.
 - Add native caugi serialization format for saving and loading graphs.
   New functions:
   [`write_caugi()`](https://caugi.org/reference/write_caugi.md),

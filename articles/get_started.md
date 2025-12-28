@@ -22,7 +22,7 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x55f5709966c0>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x55b792d43d20>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, B-->C, B-->D, A-->C
@@ -41,7 +41,7 @@ other *properties*. Let’s check the other properties.
 
 ``` r
 cg@ptr
-#> <pointer: 0x55f5709966c0>
+#> <pointer: 0x55b792d43d20>
 ```
 
 This is the pointer to the Rust object that `caugi` utilizes for
@@ -59,7 +59,8 @@ a non-simple graph:
 
 ``` r
 caugi(A %-->% B, B %-->% A)
-#> Error in graph_builder_add_edges(b, as.integer(unname(id[edges$from])), : Parallel edges not allowed in simple graphs (0 -> 1)
+#> Error in `graph_builder_add_edges()`:
+#> ! Parallel edges not allowed in simple graphs (0 -> 1)
 ```
 
 This cannot be done unless you initialize the graph with
@@ -178,7 +179,7 @@ Rust backend uses zero-based indices.
 
 ``` r
 cg@.state
-#> <environment: 0x55f5721125f8>
+#> <environment: 0x55b793a57de0>
 ```
 
 This is the internal state of the `caugi` graph object. It is used to

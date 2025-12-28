@@ -27,6 +27,7 @@ Undirected Graph (UG), also known as a Markov Graph.
 ## See also
 
 Other operations:
+[`latent_project()`](https://caugi.org/reference/latent_project.md),
 [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md),
 [`skeleton()`](https://caugi.org/reference/skeleton.md)
 
@@ -35,7 +36,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% C, B %-->% C, class = "DAG")
 moralize(cg) # A -- B, A -- C, B -- C
-#> <caugi object; 3 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x55c858d69990>
+#> <caugi object; 3 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x5634dabcd480>
 #>   graph_class: UG
 #>   nodes: A, B, C
 #>   edges: A---B, A---C, B---C

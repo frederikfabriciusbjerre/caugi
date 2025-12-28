@@ -32,6 +32,7 @@ unchanged.
 ## See also
 
 Other operations:
+[`latent_project()`](https://caugi.org/reference/latent_project.md),
 [`moralize()`](https://caugi.org/reference/moralize.md),
 [`skeleton()`](https://caugi.org/reference/skeleton.md)
 
