@@ -5,7 +5,7 @@ Internal helper to build edges `data.table` from verb call.
 ## Usage
 
 ``` r
-.get_edges(from, edge, to, calls)
+.get_edges(from, edge, to, calls, simple = TRUE)
 ```
 
 ## Arguments
@@ -25,6 +25,10 @@ Internal helper to build edges `data.table` from verb call.
 - calls:
 
   List of calls from `...`.
+
+- simple:
+
+  Logical, whether the graph is simple or not.
 
 ## Value
 

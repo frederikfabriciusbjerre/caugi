@@ -4,8 +4,13 @@
 
 ### New Features
 
-- Add `latent_project` function that does latent projection from DAGs to
-  ADMGs.
+- Add [`exogenize()`](https://caugi.org/reference/exogenize.md) function
+  that exogenizes variables for any graph type. Current implementation
+  is written in R, but it is so simple that it might be preferable over
+  a Rust implementation. This might be changed later.
+- Add
+  [`latent_project()`](https://caugi.org/reference/latent_project.md)
+  function that does latent projection from DAGs to ADMGs.
 - Add native caugi serialization format for saving and loading graphs.
   New functions:
   [`write_caugi()`](https://caugi.org/reference/write_caugi.md),

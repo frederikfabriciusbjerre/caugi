@@ -71,27 +71,9 @@ Acyclic Directed Mixed Graph (ADMG) over the observed variables.</p>
 variables.</p>
     </div>
     <div class="section level2">
-    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The latent projection is a fundamental operation in causal inference for
-converting a DAG with latent variables to an ADMG representing the marginal
-independence structure over observed variables only.</p>
-<p>Uses the vertex elimination algorithm: for each latent vertex v to eliminate:</p><ol><li><p>Add directed edge p -&gt; c for all p in Pa(v), c in Ch(v)</p></li>
-<li><p>Add bidirected edge s &lt;-&gt; c for all s in Sib(v), c in Ch(v)</p></li>
-<li><p>Add bidirected edge a &lt;-&gt; b for all pairs a, b in Ch(v)</p></li>
-<li><p>Remove v</p></li>
-</ol><p>Note: The result may have both directed and bidirected edges between the
-same pair of nodes (e.g., X -&gt; Y and X &lt;-&gt; Y), which is valid in ADMGs.</p>
-<p>Note: The resulting ADMG will have nodes re-indexed, preserving the
-relative order of observed nodes from the original DAG.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Evans, R. J. (2015). <em>Graphs for Margins of Bayesian Networks</em>.
-arXiv:1408.1809, Sections 3-4.</p>
-    </div>
-    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other operations:
+<code><a href="exogenize.html">exogenize()</a></code>,
 <code><a href="moralize.html">moralize()</a></code>,
 <code><a href="mutate_caugi.html">mutate_caugi()</a></code>,
 <code><a href="skeleton.html">skeleton()</a></code></p></div>
@@ -109,7 +91,7 @@ arXiv:1408.1809, Sections 3-4.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Project out the latent variable</span></span></span>
 <span class="r-in"><span><span class="va">admg</span> <span class="op">&lt;-</span> <span class="fu">latent_project</span><span class="op">(</span><span class="va">dag</span>, latents <span class="op">=</span> <span class="st">"U"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Result: X -&gt; Y AND X &lt;-&gt; Y (children of U become bidirected-connected)</span></span></span>
+<span class="r-in"><span><span class="co"># Result: X -&gt; Y, X &lt;-&gt; Y (children of U become bidirected-connected)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="edges.html">edges</a></span><span class="op">(</span><span class="va">admg</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      from   edge     to</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;char&gt; &lt;char&gt; &lt;char&gt;</span>
