@@ -46,6 +46,9 @@
   for exporting caugi graphs to DOT (graphviz) format. The resulting
   object is a new S7 class, `caugi_export`, which has a `knit_print()`
   method for rendering DOT graphs in R Markdown and Quarto documents.
+- Add GraphML and Mermaid import/export support: `to_graphml`,
+  `write_graphml`, `read_graphml`, `to_mermaid`, `write_mermaid`, and
+  `read_mermaid`
 - Add plot composition operators for creating multi-plot layouts: `+`
   and `|` for horizontal arrangement, `/` for vertical stacking.
   Compositions can be nested arbitrarily (e.g., `(p1 + p2) / p3`).
