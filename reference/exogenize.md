@@ -1,7 +1,8 @@
 # Exogenize a graph
 
 Exogenize a graph by removing all ingoing edges to the set of nodes
-specified.
+specified (i.e., make the nodes exogenous), as well as joining the
+parents of the nodes specified to the children of the nodes specified.
 
 ## Usage
 
@@ -13,7 +14,7 @@ exogenize(cg, nodes)
 
 - cg:
 
-  A `caugi` object.
+  A `caugi` object of class `"DAG"`.
 
 - nodes:
 
@@ -23,10 +24,6 @@ exogenize(cg, nodes)
 ## Value
 
 A `caugi` object representing the exogenized graph.
-
-## Details
-
-This function removes all ingoing edges to the set of nodes specified.
 
 ## See also
 
@@ -41,7 +38,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 exogenize(cg, nodes = "B") # A, B
-#> <caugi object; 2 nodes, 0 edges; simple: TRUE; built: FALSE; ptr=0x55f54f080ec0>
+#> <caugi object; 2 nodes, 0 edges; simple: TRUE; built: FALSE; ptr=0x55e898f306c0>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: (none)
