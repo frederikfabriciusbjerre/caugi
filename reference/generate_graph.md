@@ -33,6 +33,11 @@ generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"))
 
 The sampled `caugi` object.
 
+## See also
+
+Other simulation functions:
+[`simulate_data()`](https://caugi.org/reference/simulate_data.md)
+
 ## Examples
 
 ``` r

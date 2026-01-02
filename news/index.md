@@ -4,6 +4,9 @@
 
 ### New Features
 
+- Add [`simulate_data()`](https://caugi.org/reference/simulate_data.md)
+  that enables simulation from DAGs using SEMs. Standard linear Gaussian
+  SEMs are defaults, but more importantly custom SEMs are available.
 - Add `"AUTO"` parameter for `class` in `caugi` objects. This
   automatically picks the graph class in order `DAG`, `UG`, `PDAG`,
   `ADMG`.

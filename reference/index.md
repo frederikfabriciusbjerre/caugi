@@ -136,6 +136,10 @@
 
   Generate a `caugi` using Erdős-Rényi.
 
+- [`simulate_data()`](https://caugi.org/reference/simulate_data.md) :
+
+  Simulate data from a `caugi` DAG.
+
 ## Metrics
 
 - [`aid()`](https://caugi.org/reference/aid.md) : Adjustment
