@@ -4,6 +4,9 @@
 
 ### New Features
 
+- Add `"AUTO"` parameter for `class` in `caugi` objects. This
+  automatically picks the graph class in order `DAG`, `UG`, `PDAG`,
+  `ADMG`.
 - Add [`exogenize()`](https://caugi.org/reference/exogenize.md) function
   that exogenizes variables for any graph type. Current implementation
   is written in R, but it is so simple that it might be preferable over
