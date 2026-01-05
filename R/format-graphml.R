@@ -56,7 +56,9 @@ caugi_graphml <- S7::new_class(
 #' cat(graphml@content)
 #'
 #' # Write to file
+#' \dontrun{
 #' write_graphml(cg, "graph.graphml")
+#' }
 #'
 #' @family export
 #' @export

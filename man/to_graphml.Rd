@@ -40,7 +40,9 @@ graphml <- to_graphml(cg)
 cat(graphml@content)
 
 # Write to file
+\dontrun{
 write_graphml(cg, "graph.graphml")
+}
 
 }
 \seealso{
