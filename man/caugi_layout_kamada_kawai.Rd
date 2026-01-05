@@ -9,10 +9,17 @@ undirected graphs. Information Processing Letters, 31(1), 7-15.
 \doi{10.1016/0020-0190(89)90102-6}
 }
 \usage{
-caugi_layout_kamada_kawai(x)
+caugi_layout_kamada_kawai(x, packing_ratio = 1.618034, ...)
 }
 \arguments{
 \item{x}{A \code{caugi} object.}
+
+\item{packing_ratio}{Aspect ratio for packing disconnected components
+(width/height). Default is the golden ratio (≈1.618) which works well with
+widescreen displays. Use \code{1.0} for square grid, \code{2.0} for wider layouts,
+\code{0.5} for taller layouts, \code{Inf} for single row, or \code{0.0} for single column.}
+
+\item{...}{Ignored. For future extensibility.}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node

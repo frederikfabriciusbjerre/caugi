@@ -40,6 +40,10 @@
 #'   * `"kamada-kawai"`: High-quality stress minimization (works with all edge
 #'     types)
 #'   * `"bipartite"`: Bipartite layout (requires `partition` parameter)
+#' @param packing_ratio Aspect ratio for packing disconnected components
+#'   (width/height). Default is the golden ratio (≈1.618) which works well with
+#'   widescreen displays. Use `1.0` for square grid, `2.0` for wider layouts,
+#'   `0.5` for taller layouts, `Inf` for single row, or `0.0` for single column.
 #' @param ... Additional arguments passed to the specific layout function.
 #'   For bipartite layouts, use `partition` (logical vector) and `orientation`
 #'   (`"rows"` or `"columns"`).
@@ -110,6 +114,7 @@ caugi_layout <- function(
     "kamada-kawai",
     "bipartite"
   ),
+  packing_ratio = 1.618034,
   ...
 ) {
   is_caugi(x, throw_error = TRUE)
@@ -139,7 +144,13 @@ caugi_layout <- function(
     "bipartite" = caugi_layout_bipartite
   )
 
-  layout_fn(x, ...)
+  # Call the layout function with packing_ratio parameter
+  if (method == "bipartite") {
+    # Bipartite doesn't use packing_ratio
+    layout_fn(x, ...)
+  } else {
+    layout_fn(x, packing_ratio = packing_ratio, ...)
+  }
 }
 
 #' Bipartite Graph Layout
@@ -249,6 +260,8 @@ caugi_layout_bipartite <- function(
 #' emphasize hierarchical structure and causal flow from top to bottom.
 #'
 #' @param x A `caugi` object. Must contain only directed edges.
+#' @param ... Ignored. For future extensibility.
+#' @inheritParams caugi_layout
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -266,7 +279,7 @@ caugi_layout_bipartite <- function(
 #' \doi{10.1109/TSMC.1981.4308636}
 #'
 #' @export
-caugi_layout_sugiyama <- function(x) {
+caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
@@ -289,7 +302,7 @@ caugi_layout_sugiyama <- function(x) {
     )
   }
 
-  coords <- compute_layout_ptr(x@ptr, "sugiyama")
+  coords <- compute_layout_ptr(x@ptr, "sugiyama", packing_ratio)
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -308,6 +321,8 @@ caugi_layout_sugiyama <- function(x) {
 #' deterministic results.
 #'
 #' @param x A `caugi` object.
+#' @inheritParams caugi_layout
+#' @param ... Ignored. For future extensibility.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -328,7 +343,11 @@ caugi_layout_sugiyama <- function(x) {
 #' 1129-1164. \doi{10.1002/spe.4380211102}
 #'
 #' @export
-caugi_layout_fruchterman_reingold <- function(x) {
+caugi_layout_fruchterman_reingold <- function(
+  x,
+  packing_ratio = 1.618034,
+  ...
+) {
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
@@ -336,7 +355,7 @@ caugi_layout_fruchterman_reingold <- function(x) {
     x <- build(x)
   }
 
-  coords <- compute_layout_ptr(x@ptr, "fruchterman-reingold")
+  coords <- compute_layout_ptr(x@ptr, "fruchterman-reingold", packing_ratio)
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -356,6 +375,8 @@ caugi_layout_fruchterman_reingold <- function(x) {
 #' produces deterministic results.
 #'
 #' @param x A `caugi` object.
+#' @inheritParams caugi_layout
+#' @param ... Ignored. For future extensibility.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -376,7 +397,7 @@ caugi_layout_fruchterman_reingold <- function(x) {
 #' \doi{10.1016/0020-0190(89)90102-6}
 #'
 #' @export
-caugi_layout_kamada_kawai <- function(x) {
+caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
@@ -384,7 +405,7 @@ caugi_layout_kamada_kawai <- function(x) {
     x <- build(x)
   }
 
-  coords <- compute_layout_ptr(x@ptr, "kamada-kawai")
+  coords <- compute_layout_ptr(x@ptr, "kamada-kawai", packing_ratio)
 
   data.frame(
     name = nodes(x)[["name"]],

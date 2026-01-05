@@ -2,6 +2,7 @@
 //! Graph layout algorithms.
 
 mod bipartite;
+mod components;
 mod force_directed;
 mod kamada_kawai;
 mod normalize;
@@ -9,6 +10,7 @@ mod optimizer;
 mod sugiyama;
 
 use crate::graph::CaugiGraph;
+use components::{detect_components, group_by_component, pack_component_layouts};
 use normalize::{normalize_to_unit_box, rotate_to_principal_axes};
 
 pub use bipartite::{bipartite_columns_layout, bipartite_rows_layout};
@@ -60,7 +62,12 @@ impl std::str::FromStr for LayoutMethod {
 /// Returns a vector of (x, y) pairs, one for each node in order.
 /// Coordinates are normalized to [0, 1] range, with the largest dimension scaled to [0, 1].
 /// Force-directed layouts are also rotated using PCA to align the first principal component.
-pub fn compute_layout(graph: &CaugiGraph, method: LayoutMethod) -> Result<Vec<(f64, f64)>, String> {
+/// Graphs with multiple connected components are laid out separately and packed according to the aspect ratio.
+pub fn compute_layout(
+    graph: &CaugiGraph,
+    method: LayoutMethod,
+    packing_ratio: f64,
+) -> Result<Vec<(f64, f64)>, String> {
     if matches!(method, LayoutMethod::Bipartite) {
         return Err(
             "Bipartite layouts require a partition and orientation. Use compute_bipartite_layout instead."
@@ -68,22 +75,105 @@ pub fn compute_layout(graph: &CaugiGraph, method: LayoutMethod) -> Result<Vec<(f
         );
     }
 
-    let mut coords = match method {
-        LayoutMethod::Sugiyama => sugiyama_layout(graph)?,
-        LayoutMethod::ForceDirected => force_directed_layout(graph)?,
-        LayoutMethod::KamadaKawai => kamada_kawai_layout(graph)?,
-        _ => unreachable!(),
-    };
-
-    // Apply PCA rotation to force-directed layouts for standardized orientation
-    if matches!(
-        method,
-        LayoutMethod::ForceDirected | LayoutMethod::KamadaKawai
-    ) {
-        rotate_to_principal_axes(&mut coords);
+    let n = graph.n() as usize;
+    if n == 0 {
+        return Ok(Vec::new());
     }
 
-    // Normalize all layouts to [0, 1] box
+    // Detect connected components
+    let components = detect_components(graph);
+    let groups = group_by_component(&components);
+
+    // If single component, use standard layout
+    if groups.len() == 1 {
+        let mut coords = match method {
+            LayoutMethod::Sugiyama => sugiyama_layout(graph)?,
+            LayoutMethod::ForceDirected => force_directed_layout(graph)?,
+            LayoutMethod::KamadaKawai => kamada_kawai_layout(graph)?,
+            _ => unreachable!(),
+        };
+
+        // Apply PCA rotation to force-directed layouts for standardized orientation
+        if matches!(
+            method,
+            LayoutMethod::ForceDirected | LayoutMethod::KamadaKawai
+        ) {
+            rotate_to_principal_axes(&mut coords);
+        }
+
+        // Normalize all layouts to [0, 1] box
+        normalize_to_unit_box(&mut coords);
+
+        return Ok(coords);
+    }
+
+    // Multiple components: layout each separately and pack
+    let mut component_layouts = Vec::new();
+
+    for group in groups {
+        if group.is_empty() {
+            continue;
+        }
+
+        // Create node mapping for this subgraph
+        let node_map: std::collections::HashMap<usize, usize> = group
+            .iter()
+            .enumerate()
+            .map(|(i, &node)| (node, i))
+            .collect();
+
+        // Build subgraph - we need to create a temporary registry from the snapshot
+        let mut temp_registry = crate::edges::EdgeRegistry::new();
+        for spec in graph.registry.specs.iter() {
+            let _ = temp_registry.register(spec.clone());
+        }
+
+        let mut subgraph_builder = crate::graph::builder::GraphBuilder::new_with_registry(
+            group.len() as u32,
+            true,
+            &temp_registry,
+        );
+
+        for &u in &group {
+            let range = graph.row_range(u as u32);
+            for idx in range {
+                let v = graph.col_index[idx] as usize;
+                if let (Some(&u_mapped), Some(&v_mapped)) = (node_map.get(&u), node_map.get(&v)) {
+                    let etype = graph.etype[idx];
+                    let _ = subgraph_builder.add_edge(u_mapped as u32, v_mapped as u32, etype);
+                }
+            }
+        }
+
+        let subgraph = std::sync::Arc::new(subgraph_builder.finalize()?);
+
+        // Layout this component
+        let mut coords = match method {
+            LayoutMethod::Sugiyama => sugiyama_layout(&subgraph)?,
+            LayoutMethod::ForceDirected => force_directed_layout(&subgraph)?,
+            LayoutMethod::KamadaKawai => kamada_kawai_layout(&subgraph)?,
+            _ => unreachable!(),
+        };
+
+        // Apply PCA rotation to force-directed layouts
+        if matches!(
+            method,
+            LayoutMethod::ForceDirected | LayoutMethod::KamadaKawai
+        ) {
+            rotate_to_principal_axes(&mut coords);
+        }
+
+        // Normalize this component to [0, 1] box
+        normalize_to_unit_box(&mut coords);
+
+        component_layouts.push((group, coords));
+    }
+
+    // Pack all component layouts with padding
+    let padding = 0.1; // 10% padding between components
+    let mut coords = pack_component_layouts(component_layouts, padding, packing_ratio);
+
+    // Final normalization of the entire packed layout
     normalize_to_unit_box(&mut coords);
 
     Ok(coords)
@@ -192,7 +282,7 @@ mod tests {
             LayoutMethod::ForceDirected,
             LayoutMethod::KamadaKawai,
         ] {
-            let coords = compute_layout(&core, method).unwrap();
+            let coords = compute_layout(&core, method, 1.0).unwrap();
 
             // All coordinates should be in [0, 1]
             for &(x, y) in &coords {
@@ -245,8 +335,8 @@ mod tests {
             LayoutMethod::ForceDirected,
             LayoutMethod::KamadaKawai,
         ] {
-            let coords1 = compute_layout(&core, method).unwrap();
-            let coords2 = compute_layout(&core, method).unwrap();
+            let coords1 = compute_layout(&core, method, 1.0).unwrap();
+            let coords2 = compute_layout(&core, method, 1.0).unwrap();
 
             assert_eq!(coords1, coords2, "Layout {:?} not deterministic", method);
         }
@@ -268,7 +358,7 @@ mod tests {
             LayoutMethod::ForceDirected,
             LayoutMethod::KamadaKawai,
         ] {
-            let coords = compute_layout(&core, method).unwrap();
+            let coords = compute_layout(&core, method, 1.0).unwrap();
             assert!(coords.is_empty(), "Empty graph should have no coordinates");
         }
     }
@@ -289,7 +379,7 @@ mod tests {
             LayoutMethod::ForceDirected,
             LayoutMethod::KamadaKawai,
         ] {
-            let coords = compute_layout(&core, method).unwrap();
+            let coords = compute_layout(&core, method, 1.0).unwrap();
             assert_eq!(coords.len(), 1);
             assert!(coords[0].0.is_finite() && coords[0].1.is_finite());
         }
@@ -314,9 +404,9 @@ mod tests {
 
         // Test that rotation is applied (coordinates should be different from raw layout)
         // This is a qualitative test - we're just ensuring the rotation happens
-        let coords_fr = compute_layout(&core, LayoutMethod::ForceDirected).unwrap();
-        let coords_kk = compute_layout(&core, LayoutMethod::KamadaKawai).unwrap();
-        let coords_sug = compute_layout(&core, LayoutMethod::Sugiyama).unwrap();
+        let coords_fr = compute_layout(&core, LayoutMethod::ForceDirected, 1.0).unwrap();
+        let coords_kk = compute_layout(&core, LayoutMethod::KamadaKawai, 1.0).unwrap();
+        let coords_sug = compute_layout(&core, LayoutMethod::Sugiyama, 1.0).unwrap();
 
         // All should produce valid, normalized coordinates
         assert_eq!(coords_fr.len(), 5);
@@ -335,6 +425,64 @@ mod tests {
     }
 
     #[test]
+    fn test_compute_layout_disconnected_components() {
+        use crate::edges::EdgeRegistry;
+        use crate::graph::builder::GraphBuilder;
+        use std::sync::Arc;
+
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cdir = reg.code_of("-->").unwrap();
+
+        // Create graph with disconnected components: A --> B --> C and D (isolated)
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, cdir).unwrap();
+        b.add_edge(1, 2, cdir).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+
+        for method in [
+            LayoutMethod::Sugiyama,
+            LayoutMethod::ForceDirected,
+            LayoutMethod::KamadaKawai,
+        ] {
+            let coords = compute_layout(&core, method, 1.0).unwrap();
+            assert_eq!(coords.len(), 4);
+
+            // All coordinates should be in [0,1]
+            for &(x, y) in &coords {
+                assert!(
+                    (0.0..=1.0).contains(&x),
+                    "x={} out of range for {:?}",
+                    x,
+                    method
+                );
+                assert!(
+                    (0.0..=1.0).contains(&y),
+                    "y={} out of range for {:?}",
+                    y,
+                    method
+                );
+            }
+
+            // At least one coordinate should be ~1.0
+            let max_coord = coords
+                .iter()
+                .map(|&(x, y)| x.max(y))
+                .fold(0.0_f64, |a, b| a.max(b));
+            assert!(
+                max_coord > 0.9,
+                "max_coord={} too small for {:?}",
+                max_coord,
+                method
+            );
+
+            // Isolated node (D) should have valid, finite coordinates
+            assert!(coords[3].0.is_finite());
+            assert!(coords[3].1.is_finite());
+        }
+    }
+
+    #[test]
     fn test_compute_layout_bipartite_error() {
         use crate::edges::EdgeRegistry;
         use crate::graph::builder::GraphBuilder;
@@ -346,7 +494,7 @@ mod tests {
         let core = Arc::new(b.finalize().unwrap());
 
         // Calling compute_layout with Bipartite method should return an error
-        let result = compute_layout(&core, LayoutMethod::Bipartite);
+        let result = compute_layout(&core, LayoutMethod::Bipartite, 1.0);
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
@@ -369,7 +517,8 @@ mod tests {
         let core = Arc::new(b.finalize().unwrap());
 
         let partition = vec![true, true, false, false]; // A, B in one partition; X, Y in other
-        let coords = compute_bipartite_layout(&core, &partition, BipartiteOrientation::Rows).unwrap();
+        let coords =
+            compute_bipartite_layout(&core, &partition, BipartiteOrientation::Rows).unwrap();
 
         assert_eq!(coords.len(), 4);
         // Verify all coordinates are normalized
@@ -401,7 +550,8 @@ mod tests {
         let core = Arc::new(b.finalize().unwrap());
 
         let partition = vec![true, true, false, false];
-        let coords = compute_bipartite_layout(&core, &partition, BipartiteOrientation::Columns).unwrap();
+        let coords =
+            compute_bipartite_layout(&core, &partition, BipartiteOrientation::Columns).unwrap();
 
         assert_eq!(coords.len(), 4);
         // Verify all coordinates are normalized

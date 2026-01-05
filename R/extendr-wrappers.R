@@ -118,7 +118,7 @@ n_ptr <- function(g) .Call(wrap__n_ptr, g)
 
 edges_ptr_df <- function(g) .Call(wrap__edges_ptr_df, g)
 
-compute_layout_ptr <- function(g, method) .Call(wrap__compute_layout_ptr, g, method)
+compute_layout_ptr <- function(g, method, packing_ratio) .Call(wrap__compute_layout_ptr, g, method, packing_ratio)
 
 compute_bipartite_layout_ptr <- function(g, partition, orientation) .Call(wrap__compute_bipartite_layout_ptr, g, partition, orientation)
 

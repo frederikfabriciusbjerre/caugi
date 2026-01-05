@@ -451,3 +451,54 @@ test_that("plot.caugi with mixed edge types including partial", {
   # Test that mixed edge types render correctly
   expect_s7_class(plot(cg), caugi_plot)
 })
+
+test_that("caugi_layout handles disconnected components", {
+  # Single isolated node
+  cg1 <- caugi(
+    A %-->% B + C,
+    D
+  )
+
+  layout1 <- caugi_layout(cg1, method = "fruchterman-reingold")
+  expect_s3_class(layout1, "data.frame")
+  expect_equal(nrow(layout1), 4L)
+  expect_true(all(is.finite(layout1$x)))
+  expect_true(all(is.finite(layout1$y)))
+
+  # Multiple disconnected components
+  cg2 <- caugi(
+    A %-->% B,
+    C %-->% D,
+    E
+  )
+
+  layout2 <- caugi_layout(cg2, method = "kamada-kawai")
+  expect_s3_class(layout2, "data.frame")
+  expect_equal(nrow(layout2), 5L)
+  expect_true(all(is.finite(layout2$x)))
+  expect_true(all(is.finite(layout2$y)))
+
+  # Sugiyama with disconnected components
+  layout3 <- caugi_layout(cg1, method = "sugiyama")
+  expect_s3_class(layout3, "data.frame")
+  expect_equal(nrow(layout3), 4L)
+  expect_true(all(is.finite(layout3$x)))
+  expect_true(all(is.finite(layout3$y)))
+})
+
+test_that("plot.caugi renders disconnected components", {
+  cg <- caugi(
+    A %-->% B + C,
+    D,
+    E %-->% F
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Should work with all layout methods
+  expect_s7_class(plot(cg, layout = "fruchterman-reingold"), caugi_plot)
+  expect_s7_class(plot(cg, layout = "kamada-kawai"), caugi_plot)
+  expect_s7_class(plot(cg, layout = "sugiyama"), caugi_plot)
+  expect_s7_class(plot(cg, layout = "auto"), caugi_plot)
+})

@@ -21,6 +21,7 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 caugi_layout(
   x,
   method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite"),
+  packing_ratio = 1.618034,
   ...
 )
 }
@@ -39,6 +40,11 @@ edge types)
 types)
 \item \code{"bipartite"}: Bipartite layout (requires \code{partition} parameter)
 }}
+
+\item{packing_ratio}{Aspect ratio for packing disconnected components
+(width/height). Default is the golden ratio (≈1.618) which works well with
+widescreen displays. Use \code{1.0} for square grid, \code{2.0} for wider layouts,
+\code{0.5} for taller layouts, \code{Inf} for single row, or \code{0.0} for single column.}
 
 \item{...}{Additional arguments passed to the specific layout function.
 For bipartite layouts, use \code{partition} (logical vector) and \code{orientation}

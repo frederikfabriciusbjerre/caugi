@@ -1016,14 +1016,14 @@ fn latent_project_ptr(g: ExternalPtr<GraphView>, latents: Integers) -> ExternalP
 // ── Layout ────────────────────────────────────────────────────────────────────
 
 #[extendr]
-fn compute_layout_ptr(g: ExternalPtr<GraphView>, method: &str) -> Robj {
+fn compute_layout_ptr(g: ExternalPtr<GraphView>, method: &str, packing_ratio: f64) -> Robj {
     use graph::layout::{compute_layout, LayoutMethod};
     use std::str::FromStr;
 
     let layout_method = LayoutMethod::from_str(method).unwrap_or_else(|e| throw_r_error(e));
 
-    let coords =
-        compute_layout(g.as_ref().core(), layout_method).unwrap_or_else(|e| throw_r_error(e));
+    let coords = compute_layout(g.as_ref().core(), layout_method, packing_ratio)
+        .unwrap_or_else(|e| throw_r_error(e));
 
     let n = coords.len();
     let mut x = Vec::with_capacity(n);
