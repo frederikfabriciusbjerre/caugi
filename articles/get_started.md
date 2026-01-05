@@ -22,7 +22,7 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x55c4795c7770>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x5605e028e030>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, B-->C, B-->D, A-->C
@@ -41,7 +41,7 @@ other *properties*. Let’s check the other properties.
 
 ``` r
 cg@ptr
-#> <pointer: 0x55c4795c7770>
+#> <pointer: 0x5605e028e030>
 ```
 
 This is the pointer to the Rust object that `caugi` utilizes for
@@ -179,7 +179,7 @@ Rust backend uses zero-based indices.
 
 ``` r
 cg@.state
-#> <environment: 0x55c47c42adc8>
+#> <environment: 0x5605deea46b8>
 ```
 
 This is the internal state of the `caugi` graph object. It is used to
