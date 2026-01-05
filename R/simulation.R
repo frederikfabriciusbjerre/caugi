@@ -240,7 +240,7 @@ simulate_data <- function(
 
   if (standardize) {
     out <- as.data.frame(lapply(out, function(x) {
-      (x - mean(x)) / sd(x)
+      (x - mean(x)) / stats::sd(x)
     }))
   }
 
