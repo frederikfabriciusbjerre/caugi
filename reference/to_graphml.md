@@ -95,5 +95,7 @@ cat(graphml@content)
 #> </graphml>
 
 # Write to file
+if (FALSE) { # \dontrun{
 write_graphml(cg, "graph.graphml")
+} # }
 ```
