@@ -670,7 +670,8 @@ S7::method(plot, caugi) <- function(
     edges = edges,
     coords = coords,
     node_radii = node_radii,
-    edge_styles = styles$edge_styles
+    edge_styles = styles$edge_styles,
+    edge_by_edge = styles$edge_by_edge
   )
 
   x_range <- range(coords$x)
@@ -779,11 +780,21 @@ make_styles <- function(edge_style, node_style, label_style, title_style) {
   main_defaults <- plot_opts$title_style
 
   # Merge with user-provided styles
-  node_style <- utils::modifyList(node_defaults, node_style)
+  node_style_global <- utils::modifyList(node_defaults, node_style)
+
+  # Extract by-node overrides
+  by_node <- node_style$by_node %||% list()
+  node_style <- list(
+    global = node_style_global,
+    by_node = by_node
+  )
 
   # Handle edge styles - support both global and per-type
   edge_type_names <- c("directed", "undirected", "bidirected", "partial")
-  global_edge_opts <- edge_style[setdiff(names(edge_style), edge_type_names)]
+  global_edge_opts <- edge_style[setdiff(
+    names(edge_style),
+    c(edge_type_names, "by_edge")
+  )]
 
   # Create per-type edge styles
   edge_styles <- list(
@@ -800,22 +811,20 @@ make_styles <- function(edge_style, node_style, label_style, title_style) {
       edge_style$bidirected %||% list()
     ),
     partial = utils::modifyList(
-      utils::modifyList(
-        edge_defaults,
-        global_edge_opts
-      ),
+      utils::modifyList(edge_defaults, global_edge_opts),
       edge_style$partial %||% list()
     )
   )
 
-  label_style <- utils::modifyList(label_defaults, label_style)
-  title_style <- utils::modifyList(main_defaults, title_style)
+  # Extract by-edge overrides
+  by_edge <- edge_style$by_edge %||% list()
 
   list(
     edge_styles = edge_styles,
+    edge_by_edge = by_edge,
     node_style = node_style,
-    label_style = label_style,
-    title_style = title_style
+    label_style = utils::modifyList(label_defaults, label_style),
+    title_style = utils::modifyList(main_defaults, title_style)
   )
 }
 
@@ -826,18 +835,32 @@ make_nodes <- function(coords, labels, node_style, label_style) {
   label_grobs <- grid::gList()
   node_radii <- vector("list", n_nodes)
 
-  padding <- grid::unit(node_style$padding, "mm")
-
-  node_gpar <- do.call(grid::gpar, get_gpar_params(node_style))
-  label_gpar <- do.call(grid::gpar, get_gpar_params(label_style))
-
+  padding_global <- grid::unit(node_style$padding %||% 2, "mm")
+  size_global <- node_style$size %||% 1
   do_labels <- !is.null(labels) && length(labels) > 0
 
   for (i in seq_len(n_nodes)) {
-    r <- (0.5 * grid::stringWidth(labels[i]) + padding) * node_style$size
+    node_name <- coords$name[i]
+
+    # Start with global node style
+    style <- node_style$global
+
+    # Apply per-node override if it exists
+    if (!is.null(node_style$by_node[[node_name]])) {
+      style <- utils::modifyList(style, node_style$by_node[[node_name]])
+    }
+
+    # Compute radius
+    padding <- grid::unit(style$padding %||% padding_global, "mm")
+    size <- style$size %||% size_global
+    r <- (0.5 * grid::stringWidth(labels[i]) + padding) * size
+
+    # Convert coords to grid units
     x <- grid::unit(coords$x[i], "native")
     y <- grid::unit(coords$y[i], "native")
 
+    # Build grobs
+    node_gpar <- do.call(grid::gpar, get_gpar_params(style))
     circle_grob <- grid::circleGrob(
       x = x,
       y = y,
@@ -846,6 +869,7 @@ make_nodes <- function(coords, labels, node_style, label_style) {
       name = paste0("node.", i)
     )
 
+    label_gpar <- do.call(grid::gpar, get_gpar_params(label_style))
     label_grob <- if (do_labels) {
       grid::textGrob(
         labels[i],
@@ -1047,9 +1071,14 @@ makeContent.caugi_edge_grob <- function(x) {
   grid::setChildren(x, grob_list)
 }
 
-make_edges <- function(edges, coords, node_radii, edge_styles) {
+make_edges <- function(
+  edges,
+  coords,
+  node_radii,
+  edge_styles,
+  edge_by_edge = list()
+) {
   n_edges <- nrow(edges)
-
   edge_grobs <- grid::gList()
 
   if (n_edges > 0) {
@@ -1062,13 +1091,12 @@ make_edges <- function(edges, coords, node_radii, edge_styles) {
       x1 <- coords$x[to_idx]
       y1 <- coords$y[to_idx]
 
-      # Get node radii
       r_from <- node_radii[[from_idx]]
       r_to <- node_radii[[to_idx]]
 
-      # Determine edge style based on type
       edge_type <- edges$edge[i]
 
+      # Base style per edge type
       style <- switch(
         edge_type,
         "-->" = edge_styles$directed,
@@ -1079,26 +1107,75 @@ make_edges <- function(edges, coords, node_radii, edge_styles) {
         edge_styles$undirected
       )
 
+      # ----- Apply nested by_edge overrides -----
+      override <- list()
+
+      # Specific edge override: from → to
+      if (
+        !is.null(edge_by_edge[[edges$from[i]]]) &&
+          !is.null(edge_by_edge[[edges$from[i]]][[edges$to[i]]])
+      ) {
+        override <- utils::modifyList(
+          override,
+          edge_by_edge[[edges$from[i]]][[edges$to[i]]]
+        )
+      } else if (
+        !is.null(edge_by_edge[[edges$to[i]]]) &&
+          !is.null(edge_by_edge[[edges$to[i]]][[edges$from[i]]])
+      ) {
+        # Specific edge override: to → from
+        override <- utils::modifyList(
+          override,
+          edge_by_edge[[edges$to[i]]][[edges$from[i]]]
+        )
+      }
+
+      # Node-wide override for 'from'
+      if (!is.null(edge_by_edge[[edges$from[i]]])) {
+        node_wide <- edge_by_edge[[edges$from[i]]]
+        # Only keep top-level non-list entries (styles, not nested edges)
+        node_wide <- node_wide[!sapply(node_wide, is.list)]
+        if (length(node_wide) > 0) {
+          override <- utils::modifyList(node_wide, override)
+          # node-wide entries are merged before specific edges, so specific edge takes precedence
+        }
+      }
+
+      # Node-wide override for 'to'
+      if (!is.null(edge_by_edge[[edges$to[i]]])) {
+        node_wide <- edge_by_edge[[edges$to[i]]]
+        node_wide <- node_wide[!sapply(node_wide, is.list)]
+        if (length(node_wide) > 0) {
+          override <- utils::modifyList(node_wide, override)
+        }
+      }
+
+      if (length(override) > 0) {
+        style <- utils::modifyList(style, override)
+      }
+
+      # ------------------------------------------
+
+      # Arrow
       arrow <- switch(
         edge_type,
         "-->" = grid::arrow(
-          length = grid::unit(style$arrow_size, "mm"),
+          length = grid::unit(style$arrow_size %||% 2, "mm"),
           type = "closed"
         ),
         "<->" = grid::arrow(
-          length = grid::unit(style$arrow_size, "mm"),
+          length = grid::unit(style$arrow_size %||% 2, "mm"),
           ends = "both",
           type = "closed"
         ),
         "o->" = grid::arrow(
-          length = grid::unit(style$arrow_size, "mm"),
+          length = grid::unit(style$arrow_size %||% 2, "mm"),
           type = "closed"
         ),
         "o-o" = NULL,
         NULL
       )
 
-      # Get gpar for this edge type
       edge_gpar <- do.call(grid::gpar, get_gpar_params(style))
 
       edge_grobs[[i]] <- make_edge_grob(
@@ -1119,6 +1196,7 @@ make_edges <- function(edges, coords, node_radii, edge_styles) {
 
   edge_grobs
 }
+
 
 #' S7 Class for caugi Plot
 #'
