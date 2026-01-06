@@ -10,6 +10,7 @@ automatically before computing the layout.
 caugi_layout(
   x,
   method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite"),
+  packing_ratio = 1.618034,
   ...
 )
 ```
@@ -54,6 +55,13 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
     edge types)
 
   - `"bipartite"`: Bipartite layout (requires `partition` parameter)
+
+- packing_ratio:
+
+  Aspect ratio for packing disconnected components (width/height).
+  Default is the golden ratio (≈1.618) which works well with widescreen
+  displays. Use `1.0` for square grid, `2.0` for wider layouts, `0.5`
+  for taller layouts, `Inf` for single row, or `0.0` for single column.
 
 - ...:
 

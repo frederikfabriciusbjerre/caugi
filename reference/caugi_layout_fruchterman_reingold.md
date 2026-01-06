@@ -9,7 +9,7 @@ and produces deterministic results.
 ## Usage
 
 ``` r
-caugi_layout_fruchterman_reingold(x)
+caugi_layout_fruchterman_reingold(x, packing_ratio = 1.618034, ...)
 ```
 
 ## Source
@@ -24,6 +24,17 @@ force-directed placement. Software: Practice and Experience, 21(11),
 - x:
 
   A `caugi` object.
+
+- packing_ratio:
+
+  Aspect ratio for packing disconnected components (width/height).
+  Default is the golden ratio (≈1.618) which works well with widescreen
+  displays. Use `1.0` for square grid, `2.0` for wider layouts, `0.5`
+  for taller layouts, `Inf` for single row, or `0.0` for single column.
+
+- ...:
+
+  Ignored. For future extensibility.
 
 ## Value
 

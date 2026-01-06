@@ -56,6 +56,7 @@ be built automatically before computing the layout.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_layout</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"sugiyama"</span>, <span class="st">"fruchterman-reingold"</span>, <span class="st">"kamada-kawai"</span>, <span class="st">"bipartite"</span><span class="op">)</span>,</span>
+<span>  packing_ratio <span class="op">=</span> <span class="fl">1.618034</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -92,6 +93,13 @@ edge types)</p></li>
 types)</p></li>
 <li><p><code>"bipartite"</code>: Bipartite layout (requires <code>partition</code> parameter)</p></li>
 </ul></dd>
+
+
+<dt id="arg-packing-ratio">packing_ratio<a class="anchor" aria-label="anchor" href="#arg-packing-ratio"></a></dt>
+<dd><p>Aspect ratio for packing disconnected components
+(width/height). Default is the golden ratio (≈1.618) which works well with
+widescreen displays. Use <code>1.0</code> for square grid, <code>2.0</code> for wider layouts,
+<code>0.5</code> for taller layouts, <code>Inf</code> for single row, or <code>0.0</code> for single column.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
