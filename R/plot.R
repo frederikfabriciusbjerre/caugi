@@ -476,8 +476,10 @@ get_gpar_params <- function(style) {
 #'         `A = list(col = "red", lwd = 2)`
 #'       - Specific edges: nested named lists for particular edges, e.g.
 #'         `A = list(B = list(col = "blue", lwd = 4))`
-#'       Multiple levels can be combined: node-wide styles are applied to all
-#'       edges, and specific edge styles override them for the corresponding edge.
+#'
+#'       Multiple levels can be combined: **Style precedence** (highest to lowest):
+#'       specific edge settings > node-wide settings > edge type settings > global
+#'       settings.
 #' @param label_style List of label styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
 #'     `fontfamily`, `cex`

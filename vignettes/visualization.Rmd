@@ -288,6 +288,13 @@ plot(
 )
 ```
 
+The style precedence is as follows (highest to lowest):
+
+1. Specific edge (`by_edge` with both from and to nodes)
+2. All edges from a node (`by_edge` with only from node)
+3. Per-type edge styles (`directed`, `undirected`, etc.)
+4. Global edge styles
+
 Available edge style parameters:
 
 - **Appearance (passed to `gpar()`)**: `col`, `lwd`, `lty`, `alpha`, `fill`

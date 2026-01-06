@@ -45,9 +45,11 @@ Supports:
 \code{A = list(col = "red", lwd = 2)}
 \item Specific edges: nested named lists for particular edges, e.g.
 \code{A = list(B = list(col = "blue", lwd = 4))}
-Multiple levels can be combined: node-wide styles are applied to all
-edges, and specific edge styles override them for the corresponding edge.
 }
+
+Multiple levels can be combined: \strong{Style precedence} (highest to lowest):
+specific edge settings > node-wide settings > edge type settings > global
+settings.
 }}
 
 \item{label_style}{List of label styling parameters. Supports:
