@@ -199,8 +199,8 @@ edges, and labels.
 
 Customize node appearance with the `node_style` parameter:
 
-```{r node-styling}
-# Customize node colors and sizes
+```{r node-styling-global}
+# Customize node colors and sizes globally
 plot(
   cg,
   node_style = list(
@@ -209,6 +209,19 @@ plot(
     lwd = 2, # Border width
     padding = 4, # Text padding (mm)
     size = 1.2 # Size multiplier
+  )
+)
+```
+
+```{r node-styling-locally}
+# Customize node colors and sizes locally
+plot(
+  cg,
+  node_style = list(
+    by_node = list(
+      A = list(fill = "red", col = "blue", lwd = 2),
+      B = list(padding = "2")
+    )
   )
 )
 ```
@@ -243,6 +256,34 @@ plot(
   edge_style = list(
     directed = list(col = "blue", lwd = 2),
     bidirected = list(col = "red", lwd = 2, lty = "dashed")
+  )
+)
+```
+
+```{r edge-styling-per-node}
+# Style all edges from a specific node
+plot(
+  admg,
+  layout = "fruchterman-reingold",
+  edge_style = list(
+    by_edge = list(
+      A = list(col = "green", lwd = 2)
+    )
+  )
+)
+```
+
+```{r edge-styling-per-specific-edge}
+# Style a specific edge
+plot(
+  admg,
+  layout = "fruchterman-reingold",
+  edge_style = list(
+    by_edge = list(
+      A = list(
+        B = list(col = "orange", lwd = 3)
+      )
+    )
   )
 )
 ```

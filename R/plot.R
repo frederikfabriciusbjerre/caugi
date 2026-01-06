@@ -462,12 +462,22 @@ get_gpar_params <- function(style) {
 #'   * Appearance (passed to `gpar()`): `fill`, `col`, `lwd`, `lty`, `alpha`
 #'   * Geometry: `padding` (text padding inside nodes in mm, default 2),
 #'     `size` (node size multiplier, default 1)
+#'   * Local overrides via `by_node`: a named list of nodes with their
+#'     own style lists, e.g.
+#'     `by_node = list(A = list(fill = "red"), B = list(col = "blue"))`
 #' @param edge_style List of edge styling parameters. Can specify global options
 #'   or per-type options via `directed`, `undirected`, `bidirected`, `partial`.
 #'   Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`, `fill`.
 #'   * Geometry: `arrow_size` (arrow length in mm, default 3), `circle_size`
 #'     (radius of endpoint circles for partial edges in mm, default 1.5)
+#'   * Local overrides via `by_edge`: a named list with:
+#'       - Node-wide styles: applied to all edges touching a node, e.g.
+#'         `A = list(col = "red", lwd = 2)`
+#'       - Specific edges: nested named lists for particular edges, e.g.
+#'         `A = list(B = list(col = "blue", lwd = 4))`
+#'       Multiple levels can be combined: node-wide styles are applied to all
+#'       edges, and specific edge styles override them for the corresponding edge.
 #' @param label_style List of label styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
 #'     `fontfamily`, `cex`
