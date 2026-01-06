@@ -65,6 +65,26 @@ test_that("plot.caugi accepts node_style arguments", {
   )
 })
 
+test_that("plot.caugi accepts local node_style arguments", {
+  cg <- caugi(A %-->% B + C)
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(
+    plot(
+      cg,
+      node_style = list(
+        by_node = list(
+          A = list(fill = "lightblue", col = "darkblue", lwd = 2),
+          B = list(fill = "red")
+        )
+      )
+    ),
+    caugi_plot
+  )
+})
+
 test_that("plot.caugi accepts edge_style arguments", {
   cg <- caugi(A %-->% B)
 
@@ -75,6 +95,87 @@ test_that("plot.caugi accepts edge_style arguments", {
     plot(
       cg,
       edge_style = list(col = "blue", arrow_size = 4)
+    ),
+    caugi_plot
+  )
+})
+
+test_that("plot.caugi accepts local edge_style arguments", {
+  cg <- caugi(A %-->% B + C)
+
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_s7_class(
+    plot(
+      cg,
+      edge_style = list(
+        by_edge = list(
+          A = list(
+            # Node-wide settings for A
+            col = "red",
+            lwd = 5
+          )
+        )
+      )
+    ),
+    caugi_plot
+  )
+
+  expect_s7_class(
+    plot(
+      cg,
+      edge_style = list(
+        by_edge = list(
+          A = list(
+            # Node-wide settings for A
+            col = "red",
+            lwd = 5,
+            B = list(
+              # Specific edge overwrite A -> B
+              col = "blue",
+              lwd = 4
+            )
+          )
+        )
+      )
+    ),
+    caugi_plot
+  )
+
+  expect_s7_class(
+    plot(
+      cg,
+      edge_style = list(
+        by_edge = list(
+          # Node-wide settings for A
+          A = list(
+            col = "red",
+            lwd = 5
+          ),
+          # Specific edge overwrite also works for BA
+          B = list(
+            A = list(
+              col = "blue",
+              lwd = 4
+            )
+          )
+        )
+      )
+    ),
+    caugi_plot
+  )
+  expect_s7_class(
+    plot(
+      cg,
+      edge_style = list(
+        by_edge = list(
+          # Node-wide settings for B, A -> C uses global settings
+          B = list(
+            col = "red",
+            lwd = 5
+          )
+        )
+      )
     ),
     caugi_plot
   )
