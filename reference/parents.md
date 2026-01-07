@@ -1,7 +1,10 @@
 # Get parents of nodes in a `caugi`
 
-Get parents of node in a graph. Note that not both nodes and index can
-be given.
+Get parents of nodes in a graph (nodes with directed edges pointing INTO
+the target node). This is equivalent to
+`neighbors(cg, nodes, mode = "in")`.
+
+Note that not both nodes and index can be given.
 
 ## Usage
 

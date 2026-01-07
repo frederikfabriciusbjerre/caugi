@@ -4,6 +4,13 @@
 
 ### New Features
 
+- Add `mode` argument to
+  [`neighbors()`](https://caugi.org/reference/neighbors.md)/[`neighbours()`](https://caugi.org/reference/neighbors.md)
+  to filter neighbors by edge direction or type (`"all"`, `"in"`,
+  `"out"`, `"undirected"`, `"bidirected"`, `"partial"`). This is a
+  structural query, and not a semantic query!
+- [`neighbors()`](https://caugi.org/reference/neighbors.md) now supports
+  `class = "UNKNOWN"` graphs, including `mode`-based filtering.
 - Add [`simulate_data()`](https://caugi.org/reference/simulate_data.md)
   that enables simulation from DAGs using SEMs. Standard linear Gaussian
   SEMs are defaults, but more importantly custom SEMs are available.
@@ -81,6 +88,10 @@
 - Fix typo in error messages and documentation examples.
 - Remove unused `index_name_map` parameter from internal
   [`.cg_state()`](https://caugi.org/reference/dot-cg_state.md) function.
+- Fix interpretation of directed edge endpoint positions in the Rust
+  backend, improving correctness of direction-dependent
+  algorithms/metrics (e.g. topological sorting and structural Hamming
+  distance computations).
 
 ## caugi 0.4.0
 

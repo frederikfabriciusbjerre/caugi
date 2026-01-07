@@ -1,13 +1,25 @@
 # Get neighbors of nodes in a `caugi`
 
-Get neighbors of nodes in a `caugi`
+Get neighbors of a node in the graph, optionally filtered by edge
+direction or type. This function works for all graph classes including
+`UNKNOWN`.
 
 ## Usage
 
 ``` r
-neighbors(cg, nodes = NULL, index = NULL)
+neighbors(
+  cg,
+  nodes = NULL,
+  index = NULL,
+  mode = c("all", "in", "out", "undirected", "bidirected", "partial")
+)
 
-neighbours(cg, nodes = NULL, index = NULL)
+neighbours(
+  cg,
+  nodes = NULL,
+  index = NULL,
+  mode = c("all", "in", "out", "undirected", "bidirected", "partial")
+)
 ```
 
 ## Arguments
@@ -25,6 +37,52 @@ neighbours(cg, nodes = NULL, index = NULL)
 - index:
 
   A vector of node indexes.
+
+- mode:
+
+  Character; specifies which types of neighbors to return:
+
+  `"all"`
+
+  :   All neighbors (default)
+
+  `"in"`
+
+  :   Parents: nodes with directed edges pointing INTO the target node
+      (equivalent to
+      [`parents()`](https://caugi.org/reference/parents.md))
+
+  `"out"`
+
+  :   Children: nodes with directed edges pointing OUT from the target
+      node (equivalent to
+      [`children()`](https://caugi.org/reference/children.md))
+
+  `"undirected"`
+
+  :   Nodes connected via undirected (`---`) edges
+
+  `"bidirected"`
+
+  :   Nodes connected via bidirected (`<->`) edges (equivalent to
+      [`spouses()`](https://caugi.org/reference/spouses.md) for ADMGs)
+
+  `"partial"`
+
+  :   Nodes connected via partial edges (edges with circle endpoints:
+      `o-o`, `o->`, `--o`)
+
+  Not all modes are valid for all graph classes:
+
+  - DAG: `"in"`, `"out"`, `"all"` only
+
+  - PDAG: `"in"`, `"out"`, `"undirected"`, `"all"`
+
+  - UG: `"undirected"`, `"all"` only
+
+  - ADMG: `"in"`, `"out"`, `"bidirected"`, `"all"`
+
+  - UNKNOWN: all modes allowed
 
 ## Value
 
@@ -84,4 +142,24 @@ neighbors(cg, c("B", "C"))
 #>
 #> $C
 #> [1] "B"
+
+# Using mode to filter by edge direction
+neighbors(cg, "B", mode = "in") # "A" (parents)
+#> [1] "A"
+neighbors(cg, "B", mode = "out") # "C" (children)
+#> [1] "C"
+
+# Works for UNKNOWN graphs too
+cg_unknown <- caugi(
+  A %-->% B,
+  B %---% C,
+  C %o->% D,
+  class = "UNKNOWN"
+)
+neighbors(cg_unknown, "B", mode = "in") # "A"
+#> [1] "A"
+neighbors(cg_unknown, "B", mode = "undirected") # "C"
+#> [1] "C"
+neighbors(cg_unknown, "C", mode = "partial") # "D"
+#> [1] "D"
 ```

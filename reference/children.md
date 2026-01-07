@@ -1,6 +1,8 @@
 # Get children of nodes in a `caugi`
 
-Get children of nodes in a `caugi`
+Get children of nodes in a graph (nodes with directed edges pointing OUT
+from the target nodes). This is equivalent to
+`neighbors(cg, nodes, mode = "out")`.
 
 ## Usage
 
