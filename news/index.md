@@ -92,6 +92,8 @@
   backend, improving correctness of direction-dependent
   algorithms/metrics (e.g. topological sorting and structural Hamming
   distance computations).
+- Fix bug in `is_cpdag` function that return `TRUE` on non-complete
+  PDAGs.
 
 ## caugi 0.4.0
 
