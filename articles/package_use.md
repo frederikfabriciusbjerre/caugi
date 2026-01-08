@@ -201,7 +201,7 @@ Now, when you call `correlation_implies_causation(df)`, it will return a
 ``` r
 cg <- correlation_implies_causation(df)
 cg
-#> <caugi object; 3 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x5609d90a65c0>
+#> <caugi object; 3 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x563476a69d30>
 #>   graph_class: DAG
 #>   nodes: V1, V2, V3
 #>   edges: V1-->V2

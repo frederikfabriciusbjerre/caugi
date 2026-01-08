@@ -85,6 +85,9 @@ or <code>"columns"</code>).</p></dd>
 <dd><p>List of node styling parameters. Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>fill</code>, <code>col</code>, <code>lwd</code>, <code>lty</code>, <code>alpha</code></p></li>
 <li><p>Geometry: <code>padding</code> (text padding inside nodes in mm, default 2),
 <code>size</code> (node size multiplier, default 1)</p></li>
+<li><p>Local overrides via <code>by_node</code>: a named list of nodes with their
+own style lists, e.g.
+<code>by_node = list(A = list(fill = "red"), B = list(col = "blue"))</code></p></li>
 </ul></dd>
 
 
@@ -94,6 +97,13 @@ or per-type options via <code>directed</code>, <code>undirected</code>, <code>bi
 Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>col</code>, <code>lwd</code>, <code>lty</code>, <code>alpha</code>, <code>fill</code>.</p></li>
 <li><p>Geometry: <code>arrow_size</code> (arrow length in mm, default 3), <code>circle_size</code>
 (radius of endpoint circles for partial edges in mm, default 1.5)</p></li>
+<li><p>Local overrides via <code>by_edge</code>: a named list with:</p><ul><li><p>Node-wide styles: applied to all edges touching a node, e.g.
+<code>A = list(col = "red", lwd = 2)</code></p></li>
+<li><p>Specific edges: nested named lists for particular edges, e.g.
+<code>A = list(B = list(col = "blue", lwd = 4))</code></p></li>
+</ul><p>Multiple levels can be combined: <strong>Style precedence</strong> (highest to lowest):
+specific edge settings &gt; node-wide settings &gt; edge type settings &gt; global
+settings.</p></li>
 </ul></dd>
 
 
