@@ -56,7 +56,7 @@ cg_cpdag <- caugi(
   class = "PDAG"
 )
 is_cpdag(cg_cpdag) # TRUE
-#> [1] TRUE
+#> [1] FALSE
 
 cg_not_cpdag <- caugi(
   A %---% B,
