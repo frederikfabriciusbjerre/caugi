@@ -864,8 +864,7 @@ make_nodes <- function(coords, labels, node_style, label_style) {
 
     # Compute radius
     padding <- grid::unit(style$padding %||% padding_global, "mm")
-    size <- style$size %||% size_global
-    r <- (0.5 * grid::stringWidth(labels[i]) + padding) * size
+    r <- (0.5 * grid::stringWidth(labels[i]) + padding) * style$size
 
     # Convert coords to grid units
     x <- grid::unit(coords$x[i], "native")
@@ -1172,16 +1171,16 @@ make_edges <- function(
       arrow <- switch(
         edge_type,
         "-->" = grid::arrow(
-          length = grid::unit(style$arrow_size %||% 2, "mm"),
+          length = grid::unit(style$arrow_size, "mm"),
           type = "closed"
         ),
         "<->" = grid::arrow(
-          length = grid::unit(style$arrow_size %||% 2, "mm"),
+          length = grid::unit(style$arrow_size, "mm"),
           ends = "both",
           type = "closed"
         ),
         "o->" = grid::arrow(
-          length = grid::unit(style$arrow_size %||% 2, "mm"),
+          length = grid::unit(style$arrow_size, "mm"),
           type = "closed"
         ),
         "o-o" = NULL,

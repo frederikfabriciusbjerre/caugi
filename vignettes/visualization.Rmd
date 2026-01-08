@@ -197,10 +197,12 @@ edges, and labels.
 
 ### Node Styling
 
-Customize node appearance with the `node_style` parameter:
+You can customize the appearance of nodes using the `node_style` parameter.
+Styles may be applied globally (to all nodes) or locally (to specific nodes).
+
+Apply the same style to all nodes:
 
 ```{r node-styling-global}
-# Customize node colors and sizes globally
 plot(
   cg,
   node_style = list(
@@ -213,8 +215,9 @@ plot(
 )
 ```
 
+Customize styles for individual nodes using the `by_node` option:
+
 ```{r node-styling-locally}
-# Customize node colors and sizes locally
 plot(
   cg,
   node_style = list(
@@ -233,11 +236,12 @@ Available node style parameters:
 
 ### Edge Styling
 
-Customize edge appearance with the `edge_style` parameter. You can set global
-options or customize each edge type separately:
+You can customize edge appearance using the `edge_style` parameter.
+Styles can be applied globally, by edge type, by source node, or to individual edges.
+
+Apply the same styling to all edges in the graph:
 
 ```{r edge-styling-global}
-# Global edge styling
 plot(
   dag,
   edge_style = list(
@@ -248,8 +252,9 @@ plot(
 )
 ```
 
+Customize different edge types (e.g., directed vs. bidirected edges):
+
 ```{r edge-styling-per-type}
-# Per-type edge styling for ADMG
 plot(
   admg,
   layout = "fruchterman-reingold",
@@ -260,8 +265,9 @@ plot(
 )
 ```
 
+Apply styling to all edges from a given node:
+
 ```{r edge-styling-per-node}
-# Style all edges from a specific node
 plot(
   admg,
   layout = "fruchterman-reingold",
@@ -273,8 +279,9 @@ plot(
 )
 ```
 
+Target an individual edge between two nodes:
+
 ```{r edge-styling-per-specific-edge}
-# Style a specific edge
 plot(
   admg,
   layout = "fruchterman-reingold",
@@ -294,6 +301,39 @@ The style precedence is as follows (highest to lowest):
 2. All edges from a node (`by_edge` with only from node)
 3. Per-type edge styles (`directed`, `undirected`, etc.)
 4. Global edge styles
+
+The example below combines global, per-type, per-node, and per-edge styling in a single plot.
+More specific styles override more general ones according to the precedence rules above.
+
+```{r edge-styling-combined}
+plot(
+  admg,
+  layout = "fruchterman-reingold",
+  edge_style = list(
+    # Global defaults
+    col = "gray80",
+    lwd = 1,
+    
+    # Per-type styling
+    directed = list(col = "blue"),
+    bidirected = list(col = "red", lty = "dashed"),
+    
+    # All edges from node A
+    by_edge = list(
+      A = list(
+        col = "green",
+        lwd = 2,
+        
+        # Specific edge A -> B
+        B = list(
+          col = "orange",
+          lwd = 3
+        )
+      )
+    )
+  )
+)
+```
 
 Available edge style parameters:
 
