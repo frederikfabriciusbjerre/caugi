@@ -12,6 +12,10 @@
 
   Get ancestors of nodes in a `caugi`
 
+- [`anteriors()`](https://caugi.org/reference/anteriors.md) :
+
+  Get anteriors of nodes in a `caugi`
+
 - [`children()`](https://caugi.org/reference/children.md) :
 
   Get children of nodes in a `caugi`

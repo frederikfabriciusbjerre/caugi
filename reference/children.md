@@ -35,6 +35,7 @@ or a list of character vectors (if multiple nodes are requested).
 
 Other queries:
 [`ancestors()`](https://caugi.org/reference/ancestors.md),
+[`anteriors()`](https://caugi.org/reference/anteriors.md),
 [`descendants()`](https://caugi.org/reference/descendants.md),
 [`districts()`](https://caugi.org/reference/districts.md),
 [`edge_types()`](https://caugi.org/reference/edge_types.md),

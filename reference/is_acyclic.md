@@ -35,6 +35,7 @@ function allows to force a check of acyclicity, if needed.
 
 Other queries:
 [`ancestors()`](https://caugi.org/reference/ancestors.md),
+[`anteriors()`](https://caugi.org/reference/anteriors.md),
 [`children()`](https://caugi.org/reference/children.md),
 [`descendants()`](https://caugi.org/reference/descendants.md),
 [`districts()`](https://caugi.org/reference/districts.md),

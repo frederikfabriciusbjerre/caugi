@@ -1,18 +1,24 @@
-# Get the induced subgraph
+# Get anteriors of nodes in a `caugi`
 
-Get the induced subgraph
+Get the anterior set of nodes in a graph. The anterior set (Richardson
+and Spirtes, 2002) includes all nodes reachable by following paths where
+every edge is either undirected or directed toward the target node.
+
+For DAGs, the anterior set equals the ancestor set (since there are no
+undirected edges). For PDAGs, it includes both ancestors and nodes
+reachable via undirected edges.
 
 ## Usage
 
 ``` r
-subgraph(cg, nodes = NULL, index = NULL)
+anteriors(cg, nodes = NULL, index = NULL)
 ```
 
 ## Arguments
 
 - cg:
 
-  A `caugi` object.
+  A `caugi` object of class DAG or PDAG.
 
 - nodes:
 
@@ -26,13 +32,18 @@ subgraph(cg, nodes = NULL, index = NULL)
 
 ## Value
 
-A new `caugi` that is a subgraph of the selected nodes.
+Either a character vector of node names (if a single node is requested)
+or a list of character vectors (if multiple nodes are requested).
+
+## References
+
+Richardson, T. and Spirtes, P. (2002). Ancestral graph Markov models.
+*The Annals of Statistics*, 30(4):962-1030.
 
 ## See also
 
 Other queries:
 [`ancestors()`](https://caugi.org/reference/ancestors.md),
-[`anteriors()`](https://caugi.org/reference/anteriors.md),
 [`children()`](https://caugi.org/reference/children.md),
 [`descendants()`](https://caugi.org/reference/descendants.md),
 [`districts()`](https://caugi.org/reference/districts.md),
@@ -54,20 +65,30 @@ Other queries:
 [`parents()`](https://caugi.org/reference/parents.md),
 [`same_nodes()`](https://caugi.org/reference/same_nodes.md),
 [`spouses()`](https://caugi.org/reference/spouses.md),
+[`subgraph()`](https://caugi.org/reference/subgraph.md),
 [`topological_sort()`](https://caugi.org/reference/topological_sort.md)
 
 ## Examples
 
 ``` r
+# PDAG example with directed and undirected edges
 cg <- caugi(
-  A %-->% B,
-  B %-->% C,
+  A %-->% B %---% C,
+  B %-->% D,
+  class = "PDAG"
+)
+anteriors(cg, "A") # NULL (no anteriors)
+#> NULL
+anteriors(cg, "C") # A, B
+#> [1] "A" "B"
+anteriors(cg, "D") # A, B, C
+#> [1] "A" "B" "C"
+
+# For DAGs, anteriors equals ancestors
+cg_dag <- caugi(
+  A %-->% B %-->% C,
   class = "DAG"
 )
-sub_cg <- subgraph(cg, c("B", "C"))
-cg2 <- caugi(B %-->% C, class = "DAG")
-all(nodes(sub_cg) == nodes(cg2)) # TRUE
-#> [1] TRUE
-all(edges(sub_cg) == edges(cg2)) # TRUE
-#> [1] TRUE
+anteriors(cg_dag, "C") # A, B
+#> [1] "A" "B"
 ```

@@ -93,6 +93,7 @@ or a list of character vectors (if multiple nodes are requested).
 
 Other queries:
 [`ancestors()`](https://caugi.org/reference/ancestors.md),
+[`anteriors()`](https://caugi.org/reference/anteriors.md),
 [`children()`](https://caugi.org/reference/children.md),
 [`descendants()`](https://caugi.org/reference/descendants.md),
 [`districts()`](https://caugi.org/reference/districts.md),
