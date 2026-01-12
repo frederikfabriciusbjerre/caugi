@@ -37,7 +37,7 @@ Other caugi methods: [`length()`](https://caugi.org/reference/length.md)
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 print(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x565008b17c00>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x555977a659e0>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: A-->B
