@@ -41,9 +41,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.0" id="caugi-050">caugi 0.5.0<a class="anchor" aria-label="anchor" href="#caugi-050"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.0.0" id="caugi-100">caugi 1.0.0<a class="anchor" aria-label="anchor" href="#caugi-100"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-5-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0"></a></h3>
+<h3 id="new-features-1-0-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-0-0"></a></h3>
 <ul><li>Add <code>mode</code> argument to <code><a href="../reference/neighbors.html">neighbors()</a></code>/<code><a href="../reference/neighbors.html">neighbours()</a></code> to filter neighbors by edge direction or type (<code>"all"</code>, <code>"in"</code>, <code>"out"</code>, <code>"undirected"</code>, <code>"bidirected"</code>, <code>"partial"</code>). This is a structural query, and not a semantic query!</li>
 <li>
 <code><a href="../reference/neighbors.html">neighbors()</a></code> now supports <code>class = "UNKNOWN"</code> graphs, including <code>mode</code>-based filtering.</li>
@@ -65,17 +65,18 @@
 <li>Add a new vignette, “Graph Visualization with caugi”, demonstrating the new plotting capabilities and customization options.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="improvements-0-5-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-5-0"></a></h3>
+<h3 id="improvements-1-0-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-0-0"></a></h3>
 <ul><li>Add favicons for the package website.</li>
 <li>Standardize <code><a href="../reference/is_caugi.html">is_caugi()</a></code> validation calls internally.</li>
 <li>Adopt <a href="https://github.com/posit-dev/air" class="external-link">air</a> as the R code formatter for the package.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-0-5-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-0"></a></h3>
+<h3 id="bug-fixes-1-0-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-0-0"></a></h3>
 <ul><li>Fix typo in error messages and documentation examples.</li>
 <li>Remove unused <code>index_name_map</code> parameter from internal <code><a href="../reference/dot-cg_state.html">.cg_state()</a></code> function.</li>
 <li>Fix interpretation of directed edge endpoint positions in the Rust backend, improving correctness of direction-dependent algorithms/metrics (e.g. topological sorting and structural Hamming distance computations).</li>
 <li>Fix bug in <code>is_cpdag</code> function that return <code>TRUE</code> on non-complete PDAGs.</li>
+<li>Fix bug in <code>shd</code> returning positive values for equivalent graphs given in shuffled order.</li>
 </ul></div>
 </div>
     <div class="section level2">

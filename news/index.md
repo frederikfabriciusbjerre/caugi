@@ -1,6 +1,6 @@
 # Changelog
 
-## caugi 0.5.0
+## caugi 1.0.0
 
 ### New Features
 
@@ -94,6 +94,8 @@
   distance computations).
 - Fix bug in `is_cpdag` function that return `TRUE` on non-complete
   PDAGs.
+- Fix bug in `shd` returning positive values for equivalent graphs given
+  in shuffled order.
 
 ## caugi 0.4.0
 
