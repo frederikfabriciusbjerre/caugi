@@ -45,6 +45,7 @@
 <url><loc>https://caugi.org/reference/caugi_serialize.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_verbs.html</loc></url>
 <url><loc>https://caugi.org/reference/children.html</loc></url>
+<url><loc>https://caugi.org/reference/condition_marginalize.html</loc></url>
 <url><loc>https://caugi.org/reference/d_separated.html</loc></url>
 <url><loc>https://caugi.org/reference/descendants.html</loc></url>
 <url><loc>https://caugi.org/reference/districts.html</loc></url>
@@ -58,6 +59,7 @@
 <url><loc>https://caugi.org/reference/dot-edge_constructor_idx.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-edge_ops_get.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-edge_spec.html</loc></url>
+<url><loc>https://caugi.org/reference/dot-edge_type_from_anteriors.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-edge_units_to_dt.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-expand_nodes.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-expand_targets.html</loc></url>
@@ -71,6 +73,7 @@
 <url><loc>https://caugi.org/reference/dot-is_node_expr.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-mark_not_built.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-node_constructor.html</loc></url>
+<url><loc>https://caugi.org/reference/dot-not_m_separated_for_all_subsets.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-parse_edge_arg.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-register_edge.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-resolve_idx0_get.html</loc></url>

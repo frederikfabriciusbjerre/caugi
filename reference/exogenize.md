@@ -28,6 +28,7 @@ A `caugi` object representing the exogenized graph.
 ## See also
 
 Other operations:
+[`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md),
 [`latent_project()`](https://caugi.org/reference/latent_project.md),
 [`moralize()`](https://caugi.org/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md),
@@ -38,7 +39,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 exogenize(cg, nodes = "B") # A, B
-#> <caugi object; 2 nodes, 0 edges; simple: TRUE; built: FALSE; ptr=0x5627f01e9b80>
+#> <caugi object; 2 nodes, 0 edges; simple: TRUE; built: FALSE; ptr=0x55bc94e59cb0>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: (none)

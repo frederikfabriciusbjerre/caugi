@@ -27,6 +27,7 @@ variables.
 ## See also
 
 Other operations:
+[`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md),
 [`exogenize()`](https://caugi.org/reference/exogenize.md),
 [`moralize()`](https://caugi.org/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md),

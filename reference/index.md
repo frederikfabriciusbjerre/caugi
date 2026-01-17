@@ -201,6 +201,9 @@
 
 ## Operations
 
+- [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md)
+  : Marginalize and/or condition on variables in an ancestral graph (AG)
+
 - [`exogenize()`](https://caugi.org/reference/exogenize.md) : Exogenize
   a graph
 
