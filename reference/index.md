@@ -48,6 +48,10 @@
 
   Is the `caugi` graph an ADMG?
 
+- [`is_ag()`](https://caugi.org/reference/is_ag.md) :
+
+  Is the `caugi` graph an AG?
+
 - [`is_caugi()`](https://caugi.org/reference/is_caugi.md) :
 
   Is it a `caugi` graph?
@@ -64,6 +68,10 @@
 
   Is the `caugi` graph empty?
 
+- [`is_mag()`](https://caugi.org/reference/is_mag.md) :
+
+  Is the `caugi` graph a MAG?
+
 - [`is_pdag()`](https://caugi.org/reference/is_pdag.md) :
 
   Is the `caugi` graph a PDAG?
@@ -73,7 +81,7 @@
   Is the `caugi` graph an UG?
 
 - [`m_separated()`](https://caugi.org/reference/m_separated.md) :
-  M-separation test for ADMGs
+  M-separation test for AGs and ADMGs
 
 - [`markov_blanket()`](https://caugi.org/reference/markov_blanket.md) :
 

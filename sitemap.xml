@@ -94,11 +94,13 @@
 <url><loc>https://caugi.org/reference/index.html</loc></url>
 <url><loc>https://caugi.org/reference/is_acyclic.html</loc></url>
 <url><loc>https://caugi.org/reference/is_admg.html</loc></url>
+<url><loc>https://caugi.org/reference/is_ag.html</loc></url>
 <url><loc>https://caugi.org/reference/is_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/is_cpdag.html</loc></url>
 <url><loc>https://caugi.org/reference/is_dag.html</loc></url>
 <url><loc>https://caugi.org/reference/is_edge_symmetric.html</loc></url>
 <url><loc>https://caugi.org/reference/is_empty_caugi.html</loc></url>
+<url><loc>https://caugi.org/reference/is_mag.html</loc></url>
 <url><loc>https://caugi.org/reference/is_pdag.html</loc></url>
 <url><loc>https://caugi.org/reference/is_ug.html</loc></url>
 <url><loc>https://caugi.org/reference/is_valid_adjustment_admg.html</loc></url>

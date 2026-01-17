@@ -86,7 +86,7 @@ infix operators. Nodes can be specified as symbols, strings, or numbers.</p>
 <span>  edges_df <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  simple <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  build <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AUTO"</span>, <span class="st">"DAG"</span>, <span class="st">"UG"</span>, <span class="st">"PDAG"</span>, <span class="st">"ADMG"</span>, <span class="st">"UNKNOWN"</span><span class="op">)</span>,</span>
+<span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AUTO"</span>, <span class="st">"DAG"</span>, <span class="st">"UG"</span>, <span class="st">"PDAG"</span>, <span class="st">"ADMG"</span>, <span class="st">"AG"</span>, <span class="st">"UNKNOWN"</span><span class="op">)</span>,</span>
 <span>  state <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -148,8 +148,9 @@ nodes are provided, the graph will not be built and the pointer will be
 
 <dt id="arg-class">class<a class="anchor" aria-label="anchor" href="#arg-class"></a></dt>
 <dd><p>Character; one of <code>"AUTO"</code>, <code>"DAG"</code>, <code>"UG"</code>, <code>"PDAG"</code>, <code>"ADMG"</code>,
-or <code>"UNKNOWN"</code>. <code>"AUTO"</code> will automatically pick the appropriate class based
-on the first match in the order of <code>"DAG"</code>, <code>"UG"</code>, <code>"PDAG"</code>, and <code>"ADMG"</code>.
+<code>"AG"</code>, or <code>"UNKNOWN"</code>. <code>"AUTO"</code> will automatically pick the appropriate
+class based on the first match in the order of <code>"DAG"</code>, <code>"UG"</code>, <code>"PDAG"</code>,
+<code>"ADMG"</code>, and <code>"AG"</code>.
 It will default to <code>"UNKNOWN"</code> if no match is found.</p></dd>
 
 

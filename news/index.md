@@ -4,6 +4,11 @@
 
 ### New Features
 
+- Add support for Ancestral Graphs (AGs), which combine directed
+  (`-->`), bidirected (`<->`), and undirected (`---`) edges while
+  satisfying ancestral graph constraints. New functions:
+  [`is_ag()`](https://caugi.org/reference/is_ag.md),
+  [`is_mag()`](https://caugi.org/reference/is_mag.md).
 - Add `mode` argument to
   [`neighbors()`](https://caugi.org/reference/neighbors.md)/[`neighbours()`](https://caugi.org/reference/neighbors.md)
   to filter neighbors by edge direction or type (`"all"`, `"in"`,
@@ -16,7 +21,12 @@
   SEMs are defaults, but more importantly custom SEMs are available.
 - Add `"AUTO"` parameter for `class` in `caugi` objects. This
   automatically picks the graph class in order `DAG`, `UG`, `PDAG`,
-  `ADMG`.
+  `ADMG`, `AG`.
+- Add Ancestral Graphs (AG) with support for directed, bidirected, and
+  undirected edges, plus new queries
+  [`is_ag()`](https://caugi.org/reference/is_ag.md) and
+  [`is_mag()`](https://caugi.org/reference/is_mag.md) and m-separation
+  for AGs.
 - Add [`exogenize()`](https://caugi.org/reference/exogenize.md) function
   that exogenizes variables for any graph type. Current implementation
   is written in R, but it is so simple that it might be preferable over

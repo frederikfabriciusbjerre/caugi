@@ -32,7 +32,7 @@ caugi(
   edges_df = NULL,
   simple = TRUE,
   build = TRUE,
-  class = c("AUTO", "DAG", "UG", "PDAG", "ADMG", "UNKNOWN"),
+  class = c("AUTO", "DAG", "UG", "PDAG", "ADMG", "AG", "UNKNOWN"),
   state = NULL
 )
 ```
@@ -92,10 +92,11 @@ caugi(
 
 - class:
 
-  Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`, or
-  `"UNKNOWN"`. `"AUTO"` will automatically pick the appropriate class
-  based on the first match in the order of `"DAG"`, `"UG"`, `"PDAG"`,
-  and `"ADMG"`. It will default to `"UNKNOWN"` if no match is found.
+  Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`,
+  `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick the
+  appropriate class based on the first match in the order of `"DAG"`,
+  `"UG"`, `"PDAG"`, `"ADMG"`, and `"AG"`. It will default to `"UNKNOWN"`
+  if no match is found.
 
 - state:
 

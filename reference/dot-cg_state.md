@@ -35,7 +35,8 @@ function is not intended to be used directly by users.
 
 - class:
 
-  Character; one of `"UNKNOWN"`, `"DAG"`, or `"PDAG"`.
+  Character; one of `"UNKNOWN"`, `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`, or
+  `"AG"`.
 
 - name_index_map:
 
