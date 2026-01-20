@@ -376,7 +376,6 @@ pub fn deserialize_graphml(
     })
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

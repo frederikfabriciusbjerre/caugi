@@ -38,6 +38,16 @@ caugi_default_options <- function() {
         col = "black",
         fontface = "bold",
         fontsize = 14.4
+      ),
+      tier_style = list(
+        boxes = TRUE,
+        labels = TRUE,
+        fill = "lightsteelblue",
+        col = "transparent",
+        label_style = list(),
+        lwd = 1,
+        alpha = 1,
+        padding = grid::unit(4, "mm")
       )
     )
   )

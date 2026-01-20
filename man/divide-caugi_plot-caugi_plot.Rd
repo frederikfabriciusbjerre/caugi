@@ -49,6 +49,7 @@ Other plotting:
 \code{\link{caugi_layout_fruchterman_reingold}()},
 \code{\link{caugi_layout_kamada_kawai}()},
 \code{\link{caugi_layout_sugiyama}()},
+\code{\link{caugi_layout_tiered}()},
 \code{\link{caugi_plot}()},
 \code{\link{plot}()}
 }

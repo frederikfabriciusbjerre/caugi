@@ -224,7 +224,10 @@ mod tests {
         };
 
         // Anteriors of 0: none (no parents, no undirected neighbors)
-        assert_eq!(anteriors_of(4, 0, parents_of, undirected_of), Vec::<u32>::new());
+        assert_eq!(
+            anteriors_of(4, 0, parents_of, undirected_of),
+            Vec::<u32>::new()
+        );
         // Anteriors of 1: 0 (parent) and 2 (undirected)
         assert_eq!(anteriors_of(4, 1, parents_of, undirected_of), vec![0, 2]);
         // Anteriors of 2: 1 (undirected) -> 0 (parent of 1)

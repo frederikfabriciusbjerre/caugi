@@ -306,10 +306,7 @@ mod tests {
     #[test]
     fn ag_error_display_directed_cycle() {
         let err = AgError::DirectedCycle;
-        assert_eq!(
-            err.to_string(),
-            "Ancestral graph contains a directed cycle"
-        );
+        assert_eq!(err.to_string(), "Ancestral graph contains a directed cycle");
     }
 
     #[test]

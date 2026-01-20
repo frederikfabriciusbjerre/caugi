@@ -252,4 +252,3 @@ mod tests {
         assert!(pos.contains_key(&2));
     }
 }
-

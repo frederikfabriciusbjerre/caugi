@@ -164,5 +164,7 @@ graph_session_serialize_graphml <- function(session, reg, graph_class) .Call(wra
 
 deserialize_graphml <- function(xml, reg) .Call(wrap__deserialize_graphml, xml, reg)
 
+graph_session_compute_tiered_layout <- function(session, tier_assignments, num_tiers, orientation) .Call(wrap__graph_session_compute_tiered_layout, session, tier_assignments, num_tiers, orientation)
+
 
 # nolint end

@@ -20,7 +20,8 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 \usage{
 caugi_layout(
   x,
-  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite"),
+  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite",
+    "tiered"),
   packing_ratio = 1.618034,
   ...
 )
@@ -31,14 +32,20 @@ layout.}
 
 \item{method}{Character string specifying the layout method. Options:
 \itemize{
-\item \code{"auto"}: Automatically choose sugiyama for graphs with only directed
-edges, otherwise fruchterman-reingold (default)
+\item \code{"auto"}: Automatically choose the best layout (default). Selection order:
+\enumerate{
+\item If \code{tiers} is provided, uses \code{"tiered"}
+\item If \code{partition} is provided, uses \code{"bipartite"}
+\item If graph has only directed edges, uses \code{"sugiyama"}
+\item Otherwise, uses \code{"fruchterman-reingold"}
+}
 \item \code{"sugiyama"}: Hierarchical layout for DAGs (requires only directed edges)
 \item \code{"fruchterman-reingold"}: Fast spring-electrical layout (works with all
 edge types)
 \item \code{"kamada-kawai"}: High-quality stress minimization (works with all edge
 types)
 \item \code{"bipartite"}: Bipartite layout (requires \code{partition} parameter)
+\item \code{"tiered"}: Multi-tier layout (requires \code{tiers} parameter)
 }}
 
 \item{packing_ratio}{Aspect ratio for packing disconnected components
@@ -48,7 +55,9 @@ widescreen displays. Use \code{1.0} for square grid, \code{2.0} for wider layout
 
 \item{...}{Additional arguments passed to the specific layout function.
 For bipartite layouts, use \code{partition} (logical vector) and \code{orientation}
-(\code{"rows"} or \code{"columns"}).}
+(\code{"columns"} or \code{"rows"}).
+For tiered layouts, use \code{tiers} (list, named vector, or data.frame) and
+\code{orientation} (\code{"rows"} or \code{"columns"}).}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node
@@ -97,6 +106,11 @@ cg <- caugi(
 # Default: auto-selects best layout
 layout <- caugi_layout(cg)
 
+# Auto-selects tiered when tiers provided
+cg_tiered <- caugi(X1 \%-->\% M1, X2 \%-->\% M2, M1 \%-->\% Y, M2 \%-->\% Y)
+tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+layout_auto <- caugi_layout(cg_tiered, tiers = tiers) # Uses "tiered"
+
 # Explicitly use hierarchical layout
 layout_sug <- caugi_layout(cg, method = "sugiyama")
 
@@ -123,6 +137,21 @@ layout_bp_cols <- caugi_layout(
   orientation = "columns"
 )
 
+# Tiered layout with three tiers
+cg_tiered <- caugi(
+  X1 \%-->\% M1 + M2,
+  X2 \%-->\% M1 + M2,
+  M1 \%-->\% Y,
+  M2 \%-->\% Y
+)
+tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+layout_tiered <- caugi_layout(
+  cg_tiered,
+  method = "tiered",
+  tiers = tiers,
+  orientation = "rows"
+)
+
 }
 \seealso{
 Other plotting: 
@@ -131,6 +160,7 @@ Other plotting:
 \code{\link{caugi_layout_fruchterman_reingold}()},
 \code{\link{caugi_layout_kamada_kawai}()},
 \code{\link{caugi_layout_sugiyama}()},
+\code{\link{caugi_layout_tiered}()},
 \code{\link{caugi_plot}()},
 \code{\link{divide-caugi_plot-caugi_plot}},
 \code{\link{plot}()}

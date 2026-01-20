@@ -262,7 +262,7 @@ fn graph_builder_add_edges(
 // ── Constructors for class views ────────────────────────────────────────────────────────────────
 fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<GraphView> {
     let core_arc = Arc::new(core.as_ref().clone());
-    
+
     match class.trim().to_ascii_uppercase().as_str() {
         "DAG" => {
             let dag = Dag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
@@ -1261,8 +1261,8 @@ fn serialize_graphml_ptr(
 
 #[extendr]
 fn deserialize_graphml_ptr(xml: &str, reg: ExternalPtr<EdgeRegistry>) -> Robj {
-    let data = graph::graphml::deserialize_graphml(xml, reg.as_ref())
-        .unwrap_or_else(|e| throw_r_error(e));
+    let data =
+        graph::graphml::deserialize_graphml(xml, reg.as_ref()).unwrap_or_else(|e| throw_r_error(e));
 
     list!(
         nodes = data.nodes,
@@ -1507,7 +1507,7 @@ fn graph_session_layout(mut session: ExternalPtr<GraphSession>, method: &str) ->
         .as_mut()
         .layout(method)
         .unwrap_or_else(|e| throw_r_error(e));
-    
+
     let mut x: Vec<f64> = Vec::with_capacity(coords.len());
     let mut y: Vec<f64> = Vec::with_capacity(coords.len());
     for (xi, yi) in coords {
@@ -1560,6 +1560,45 @@ fn graph_session_compute_bipartite_layout(
         .unwrap_or_else(|e| throw_r_error(e));
 
     let coords = compute_bipartite_layout(core.as_ref(), &partition_vec, orient)
+        .unwrap_or_else(|e| throw_r_error(e));
+    coords_to_list(coords)
+}
+
+#[extendr]
+fn graph_session_compute_tiered_layout(
+    mut session: ExternalPtr<GraphSession>,
+    tier_assignments: Robj,
+    num_tiers: i32,
+    orientation: &str,
+) -> Robj {
+    use graph::layout::{compute_tiered_layout, TieredOrientation};
+    use std::str::FromStr;
+
+    let orient = TieredOrientation::from_str(orientation).unwrap_or_else(|e| throw_r_error(e));
+
+    if num_tiers <= 0 {
+        throw_r_error("Number of tiers must be positive");
+    }
+
+    // Convert integer vector to Vec<usize>
+    let tier_vec: Vec<usize> = tier_assignments
+        .as_integer_slice()
+        .unwrap_or_else(|| throw_r_error("tier_assignments must be an integer vector"))
+        .iter()
+        .map(|&x| {
+            if x < 0 {
+                throw_r_error(&format!("Tier assignment cannot be negative: {}", x));
+            }
+            x as usize
+        })
+        .collect();
+
+    let core = session
+        .as_mut()
+        .core()
+        .unwrap_or_else(|e| throw_r_error(e));
+
+    let coords = compute_tiered_layout(core.as_ref(), &tier_vec, num_tiers as usize, orient)
         .unwrap_or_else(|e| throw_r_error(e));
     coords_to_list(coords)
 }
@@ -2314,6 +2353,9 @@ extendr_module! {
     fn graph_builder_new;
     fn graph_builder_add_edges;
     fn graph_builder_resolve_class;
+
+    // session tiered layout
+    fn graph_session_compute_tiered_layout;
 
     // serialization
     fn graph_session_write_caugi_file;
