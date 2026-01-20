@@ -214,31 +214,43 @@ mod tests {
         // Wrong size - rows
         let result = bipartite_rows_layout(&core, &[false, false]);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Partition size 2 does not match node count 4"));
+        assert!(result
+            .unwrap_err()
+            .contains("Partition size 2 does not match node count 4"));
 
         // Wrong size - columns
         let result = bipartite_columns_layout(&core, &[false, false]);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Partition size 2 does not match node count 4"));
+        assert!(result
+            .unwrap_err()
+            .contains("Partition size 2 does not match node count 4"));
 
         // All in one partition (all false) - rows
         let result = bipartite_rows_layout(&core, &[false, false, false, false]);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Both partitions must be non-empty"));
+        assert!(result
+            .unwrap_err()
+            .contains("Both partitions must be non-empty"));
 
         // All in one partition (all true) - rows
         let result = bipartite_rows_layout(&core, &[true, true, true, true]);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Both partitions must be non-empty"));
+        assert!(result
+            .unwrap_err()
+            .contains("Both partitions must be non-empty"));
 
         // All in one partition (all false) - columns
         let result = bipartite_columns_layout(&core, &[false, false, false, false]);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Both partitions must be non-empty"));
+        assert!(result
+            .unwrap_err()
+            .contains("Both partitions must be non-empty"));
 
         // All in one partition (all true) - columns
         let result = bipartite_columns_layout(&core, &[true, true, true, true]);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Both partitions must be non-empty"));
+        assert!(result
+            .unwrap_err()
+            .contains("Both partitions must be non-empty"));
     }
 }

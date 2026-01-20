@@ -169,7 +169,7 @@ fn graph_builder_add_edges(
 // ── Constructors for class views ────────────────────────────────────────────────────────────────
 fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<GraphView> {
     let core_arc = Arc::new(core.as_ref().clone());
-    
+
     match class.trim().to_ascii_uppercase().as_str() {
         "DAG" => {
             let dag = Dag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
@@ -950,8 +950,8 @@ fn serialize_graphml_ptr(
 
 #[extendr]
 fn deserialize_graphml_ptr(xml: &str, reg: ExternalPtr<EdgeRegistry>) -> Robj {
-    let data = graph::graphml::deserialize_graphml(xml, reg.as_ref())
-        .unwrap_or_else(|e| throw_r_error(e));
+    let data =
+        graph::graphml::deserialize_graphml(xml, reg.as_ref()).unwrap_or_else(|e| throw_r_error(e));
 
     list!(
         nodes = data.nodes,
@@ -1124,6 +1124,50 @@ fn compute_bipartite_layout_ptr(
     list!(x = x, y = y).into_robj()
 }
 
+#[extendr]
+fn compute_tiered_layout_ptr(
+    g: ExternalPtr<GraphView>,
+    tier_assignments: Robj,
+    num_tiers: i32,
+    orientation: &str,
+) -> Robj {
+    use graph::layout::{compute_tiered_layout, TieredOrientation};
+    use std::str::FromStr;
+
+    let orient = TieredOrientation::from_str(orientation).unwrap_or_else(|e| throw_r_error(e));
+
+    if num_tiers <= 0 {
+        throw_r_error("Number of tiers must be positive");
+    }
+
+    // Convert integer vector to Vec<usize>
+    let tier_vec: Vec<usize> = tier_assignments
+        .as_integer_slice()
+        .unwrap_or_else(|| throw_r_error("tier_assignments must be an integer vector"))
+        .iter()
+        .map(|&x| {
+            if x < 0 {
+                throw_r_error(&format!("Tier assignment cannot be negative: {}", x));
+            }
+            x as usize
+        })
+        .collect();
+
+    let coords = compute_tiered_layout(g.as_ref().core(), &tier_vec, num_tiers as usize, orient)
+        .unwrap_or_else(|e| throw_r_error(e));
+
+    let n = coords.len();
+    let mut x = Vec::with_capacity(n);
+    let mut y = Vec::with_capacity(n);
+
+    for (xi, yi) in coords {
+        x.push(xi);
+        y.push(yi);
+    }
+
+    list!(x = x, y = y).into_robj()
+}
+
 extendr_module! {
     mod caugi;
     // registry
@@ -1213,6 +1257,7 @@ extendr_module! {
     // layout
     fn compute_layout_ptr;
     fn compute_bipartite_layout_ptr;
+    fn compute_tiered_layout_ptr;
 
     // serialization
     fn write_caugi_file_ptr;

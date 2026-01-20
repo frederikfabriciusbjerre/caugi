@@ -20,10 +20,10 @@ pub mod ug;
 pub mod view;
 pub use view::GraphView;
 pub use view::NeighborMode;
+pub mod graphml;
 pub mod layout;
 pub mod metrics;
 pub mod serialization;
-pub mod graphml;
 
 #[derive(Debug, Clone)]
 pub struct RegistrySnapshot {

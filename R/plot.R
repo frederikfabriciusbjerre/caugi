@@ -32,21 +32,27 @@
 #' @param x A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
 #' @param method Character string specifying the layout method. Options:
-#'   * `"auto"`: Automatically choose sugiyama for graphs with only directed
-#'     edges, otherwise fruchterman-reingold (default)
+#'   * `"auto"`: Automatically choose the best layout (default). Selection order:
+#'     1. If `tiers` is provided, uses `"tiered"`
+#'     2. If `partition` is provided, uses `"bipartite"`
+#'     3. If graph has only directed edges, uses `"sugiyama"`
+#'     4. Otherwise, uses `"fruchterman-reingold"`
 #'   * `"sugiyama"`: Hierarchical layout for DAGs (requires only directed edges)
 #'   * `"fruchterman-reingold"`: Fast spring-electrical layout (works with all
 #'     edge types)
 #'   * `"kamada-kawai"`: High-quality stress minimization (works with all edge
 #'     types)
 #'   * `"bipartite"`: Bipartite layout (requires `partition` parameter)
+#'   * `"tiered"`: Multi-tier layout (requires `tiers` parameter)
 #' @param packing_ratio Aspect ratio for packing disconnected components
 #'   (width/height). Default is the golden ratio (≈1.618) which works well with
 #'   widescreen displays. Use `1.0` for square grid, `2.0` for wider layouts,
 #'   `0.5` for taller layouts, `Inf` for single row, or `0.0` for single column.
 #' @param ... Additional arguments passed to the specific layout function.
 #'   For bipartite layouts, use `partition` (logical vector) and `orientation`
-#'   (`"rows"` or `"columns"`).
+#'   (`"columns"` or `"rows"`).
+#'   For tiered layouts, use `tiers` (list, named vector, or data.frame) and
+#'   `orientation` (`"rows"` or `"columns"`).
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -61,6 +67,11 @@
 #'
 #' # Default: auto-selects best layout
 #' layout <- caugi_layout(cg)
+#'
+#' # Auto-selects tiered when tiers provided
+#' cg_tiered <- caugi(X1 %-->% M1, X2 %-->% M2, M1 %-->% Y, M2 %-->% Y)
+#' tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+#' layout_auto <- caugi_layout(cg_tiered, tiers = tiers) # Uses "tiered"
 #'
 #' # Explicitly use hierarchical layout
 #' layout_sug <- caugi_layout(cg, method = "sugiyama")
@@ -88,6 +99,21 @@
 #'   orientation = "columns"
 #' )
 #'
+#' # Tiered layout with three tiers
+#' cg_tiered <- caugi(
+#'   X1 %-->% M1 + M2,
+#'   X2 %-->% M1 + M2,
+#'   M1 %-->% Y,
+#'   M2 %-->% Y
+#' )
+#' tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+#' layout_tiered <- caugi_layout(
+#'   cg_tiered,
+#'   method = "tiered",
+#'   tiers = tiers,
+#'   orientation = "rows"
+#' )
+#'
 #' @family plotting
 #' @concept plotting
 #'
@@ -112,7 +138,8 @@ caugi_layout <- function(
     "sugiyama",
     "fruchterman-reingold",
     "kamada-kawai",
-    "bipartite"
+    "bipartite",
+    "tiered"
   ),
   packing_ratio = 1.618034,
   ...
@@ -130,23 +157,39 @@ caugi_layout <- function(
   layout_fn <- switch(
     method,
     "auto" = {
-      edge_types <- unique(edges(x)[["edge"]])
-      non_directed <- setdiff(edge_types, "-->")
-      if (length(non_directed) == 0) {
-        caugi_layout_sugiyama
+      # Check for special layout parameters in ...
+      dots <- list(...)
+
+      # If tiers provided, use tiered layout
+      if (!is.null(dots$tiers)) {
+        caugi_layout_tiered
+      } else if (!is.null(dots$partition)) {
+        # If partition provided, use bipartite layout
+        caugi_layout_bipartite
       } else {
-        caugi_layout_fruchterman_reingold
+        # Otherwise, choose based on edge types
+        edge_types <- unique(edges(x)[["edge"]])
+        non_directed <- setdiff(edge_types, "-->")
+        if (length(non_directed) == 0) {
+          caugi_layout_sugiyama
+        } else {
+          caugi_layout_fruchterman_reingold
+        }
       }
     },
     "sugiyama" = caugi_layout_sugiyama,
     "fruchterman-reingold" = caugi_layout_fruchterman_reingold,
     "kamada-kawai" = caugi_layout_kamada_kawai,
-    "bipartite" = caugi_layout_bipartite
+    "bipartite" = caugi_layout_bipartite,
+    "tiered" = caugi_layout_tiered
   )
 
-  # Call the layout function with packing_ratio parameter
-  if (method == "bipartite") {
-    # Bipartite doesn't use packing_ratio
+  # Call the layout function with appropriate parameters
+  # Bipartite and tiered layouts don't use packing_ratio
+  if (
+    identical(layout_fn, caugi_layout_bipartite) ||
+      identical(layout_fn, caugi_layout_tiered)
+  ) {
     layout_fn(x, ...)
   } else {
     layout_fn(x, packing_ratio = packing_ratio, ...)
@@ -168,10 +211,10 @@ caugi_layout <- function(
 #'   structure automatically by assigning nodes without incoming edges to
 #'   one partition and others to the second partition.
 #' @param orientation Character string specifying the layout orientation:
-#'   * `"rows"`: Two horizontal rows (default). First partition on top (y=1),
-#'     second partition on bottom (y=0).
 #'   * `"columns"`: Two vertical columns. First partition on right (x=1),
 #'     second partition on left (x=0).
+#'   * `"rows"`: Two horizontal rows. First partition on top (y=1),
+#'     second partition on bottom (y=0).
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -179,7 +222,7 @@ caugi_layout <- function(
 #' @examples
 #' # Create a bipartite graph (causes -> effects)
 #' cg <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
-#' partition <- c(TRUE, TRUE, FALSE, FALSE)  # A, B = causes, X, Y = effects
+#' partition <- c(TRUE, TRUE, FALSE, FALSE) # A, B = causes, X, Y = effects
 #'
 #' # Two horizontal rows (causes on top)
 #' layout_rows <- caugi_layout_bipartite(cg, partition, orientation = "rows")
@@ -194,7 +237,7 @@ caugi_layout <- function(
 caugi_layout_bipartite <- function(
   x,
   partition = NULL,
-  orientation = c("rows", "columns")
+  orientation = c("columns", "rows")
 ) {
   is_caugi(x, throw_error = TRUE)
 
@@ -251,6 +294,237 @@ caugi_layout_bipartite <- function(
     y = coords[["y"]],
     stringsAsFactors = FALSE
   )
+}
+
+#' Tiered Graph Layout
+#'
+#' Computes node coordinates for graphs with multiple tiers (layers), placing
+#' nodes in parallel rows or columns based on tier assignments. If the graph
+#' has not been built yet, it will be built automatically before computing
+#' the layout.
+#'
+#' @param x A `caugi` object.
+#' @param tiers Tier assignments specifying which tier each node belongs to.
+#'   Can be provided in multiple formats:
+#'   * **Named list**: List where each element is a character vector of node
+#'     names belonging to that tier. Element names are ignored; tier order is
+#'     determined by list order (first element = tier 0, etc.).
+#'   * **Named numeric vector**: Vector where names are node names and values
+#'     are tier indices (starting from 0 or 1).
+#'   * **Data.frame**: Must contain columns `name` (node names) and `tier`
+#'     (tier indices).
+#'
+#'   All nodes must be assigned to a tier, all tiers must be non-empty, and
+#'   tier indices must be consecutive starting from 0 or 1.
+#' @param orientation Character string specifying the layout orientation:
+#'   * `"columns"`: Vertical tiers. First tier at left (x=0),
+#'     subsequent tiers to the right, last tier at right (x=1).
+#'   * `"rows"`: Horizontal tiers. First tier at top (y=1),
+#'     subsequent tiers below, last tier at bottom (y=0).
+#'
+#' @returns A `data.frame` with columns `name`, `x`, `y`, and `tier` containing
+#'   node names, their coordinates, and tier assignments (0-indexed). The
+#'   returned data.frame also has an `orientation` attribute storing the
+#'   orientation used. When passed to `plot()`, tier information is
+#'   automatically extracted, so you don't need to specify `tiers` again.
+#'
+#' @examples
+#' # Create a three-tier causal graph (exposures -> mediators -> outcome)
+#' cg <- caugi(
+#'   X1 %-->% M1 + M2,
+#'   X2 %-->% M1 + M2,
+#'   M1 %-->% Y,
+#'   M2 %-->% Y
+#' )
+#'
+#' # Option 1: Named list (tier names are just labels)
+#' tiers <- list(
+#'   exposures = c("X1", "X2"),
+#'   mediators = c("M1", "M2"),
+#'   outcome = "Y"
+#' )
+#' layout_rows <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+#'
+#' # Option 2: Named numeric vector (0-indexed or 1-indexed both work)
+#' tiers <- c(X1 = 1, X2 = 1, M1 = 2, M2 = 2, Y = 3)
+#' layout_cols <- caugi_layout_tiered(cg, tiers, orientation = "columns")
+#'
+#' # Option 3: Data.frame
+#' tiers <- data.frame(
+#'   name = c("X1", "X2", "M1", "M2", "Y"),
+#'   tier = c(1, 1, 2, 2, 3)
+#' )
+#' layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+#'
+#' # The layout includes tier information, so plot() works without passing tiers
+#' plot(cg, layout = layout)
+#'
+#' @family plotting
+#' @concept plotting
+#'
+#' @export
+caugi_layout_tiered <- function(
+  x,
+  tiers,
+  orientation = c("columns", "rows")
+) {
+  is_caugi(x, throw_error = TRUE)
+
+  orientation <- match.arg(orientation)
+
+  # Ensure graph is built
+  if (!x@built) {
+    x <- build(x)
+  }
+
+  node_names <- nodes(x)[["name"]]
+  n_nodes <- length(node_names)
+
+  # Normalize tiers to a named integer vector (node name -> tier index)
+  tier_assignments <- NULL
+
+  if (is.list(tiers) && !is.data.frame(tiers)) {
+    # Named list format: list(tier1 = c("A", "B"), tier2 = c("C"))
+    tier_assignments <- integer(n_nodes)
+    names(tier_assignments) <- node_names
+
+    for (tier_idx in seq_along(tiers)) {
+      tier_nodes <- tiers[[tier_idx]]
+      if (!is.character(tier_nodes)) {
+        stop(
+          "Each tier in the list must be a character vector of node names",
+          call. = FALSE
+        )
+      }
+      for (node_name in tier_nodes) {
+        if (!(node_name %in% node_names)) {
+          stop(
+            "Node '",
+            node_name,
+            "' in tier ",
+            tier_idx,
+            " is not in the graph",
+            call. = FALSE
+          )
+        }
+        tier_assignments[node_name] <- tier_idx - 1 # 0-indexed
+      }
+    }
+  } else if (is.numeric(tiers) && !is.null(names(tiers))) {
+    # Named numeric vector format: c(A = 0, B = 0, C = 1)
+    tier_assignments <- as.integer(tiers)
+    names(tier_assignments) <- names(tiers)
+
+    # Check all nodes are present
+    if (!all(node_names %in% names(tier_assignments))) {
+      missing <- setdiff(node_names, names(tier_assignments))
+      stop(
+        "Missing tier assignments for nodes: ",
+        paste(missing, collapse = ", "),
+        call. = FALSE
+      )
+    }
+
+    # Reorder to match node order
+    tier_assignments <- tier_assignments[node_names]
+  } else if (is.data.frame(tiers)) {
+    # Data.frame format with columns 'name' and 'tier'
+    if (!all(c("name", "tier") %in% colnames(tiers))) {
+      stop(
+        "Data.frame must have columns 'name' and 'tier'",
+        call. = FALSE
+      )
+    }
+
+    tier_assignments <- integer(n_nodes)
+    names(tier_assignments) <- node_names
+
+    for (i in seq_len(nrow(tiers))) {
+      node_name <- as.character(tiers$name[i])
+      tier_idx <- as.integer(tiers$tier[i])
+
+      if (!(node_name %in% node_names)) {
+        stop(
+          "Node '",
+          node_name,
+          "' in tiers data.frame is not in the graph",
+          call. = FALSE
+        )
+      }
+
+      tier_assignments[node_name] <- tier_idx
+    }
+  } else {
+    stop(
+      "tiers must be a named list, named numeric vector, or data.frame ",
+      "with 'name' and 'tier' columns",
+      call. = FALSE
+    )
+  }
+
+  # Normalize tier indices to start from 0
+  min_tier <- min(tier_assignments)
+  if (min_tier < 0) {
+    stop("Tier indices must be non-negative", call. = FALSE)
+  }
+  if (min_tier > 0) {
+    tier_assignments <- as.integer(tier_assignments - min_tier)
+  }
+
+  # Validate: all nodes assigned, tiers are consecutive
+  if (anyNA(tier_assignments)) {
+    unassigned <- node_names[is.na(tier_assignments)]
+    stop(
+      "Nodes without tier assignments: ",
+      paste(unassigned, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  unique_tiers <- sort(unique(tier_assignments))
+  num_tiers <- length(unique_tiers)
+  expected_tiers <- seq(from = unique_tiers[1], length.out = num_tiers)
+
+  if (!identical(unique_tiers, expected_tiers)) {
+    stop(
+      "Tier indices must be consecutive integers. ",
+      "Found tiers: ",
+      paste(sort(unique(tier_assignments + min_tier)), collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  # Check all tiers are non-empty (this should already be guaranteed by unique_tiers)
+  tier_counts <- table(tier_assignments)
+  if (any(tier_counts == 0)) {
+    empty_tiers <- which(tier_counts == 0)
+    stop(
+      "Tiers cannot be empty. Empty tiers: ",
+      paste(empty_tiers, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  # Call Rust function
+  coords <- compute_tiered_layout_ptr(
+    x@ptr,
+    as.integer(tier_assignments),
+    as.integer(num_tiers),
+    orientation
+  )
+
+  result <- data.frame(
+    name = node_names,
+    x = coords[["x"]],
+    y = coords[["y"]],
+    tier = as.integer(tier_assignments),
+    stringsAsFactors = FALSE
+  )
+
+  # Store orientation as attribute for plot() to use
+  attr(result, "orientation") <- orientation
+
+  result
 }
 
 #' Sugiyama Hierarchical Layout
@@ -438,6 +712,217 @@ get_gpar_params <- function(style) {
   params
 }
 
+make_tiers <- function(
+  circle_grobs,
+  coords,
+  tiers,
+  tier_style,
+  orientation = "rows"
+) {
+  # Reconstruct tier assignments from tiers_arg
+  node_names <- coords$name
+  n_nodes <- length(node_names)
+  assignments <- integer(n_nodes)
+  names(assignments) <- node_names
+
+  if (is.list(tiers) && !is.data.frame(tiers)) {
+    # Named list format
+    for (tier_idx in seq_along(tiers)) {
+      tier_nodes <- tiers[[tier_idx]]
+      for (node_name in tier_nodes) {
+        assignments[node_name] <- tier_idx - 1 # 0-indexed
+      }
+    }
+  } else if (is.numeric(tiers) && !is.null(names(tiers))) {
+    # Named numeric vector
+    assignments <- as.integer(tiers[node_names])
+  } else if (is.data.frame(tiers)) {
+    # Data.frame format
+    for (i in seq_len(nrow(tiers))) {
+      node_name <- as.character(tiers$name[i])
+      tier_idx <- as.integer(tiers$tier[i])
+      assignments[node_name] <- tier_idx
+    }
+  }
+
+  # Normalize to 0-indexed
+  min_tier <- min(assignments)
+  if (min_tier > 0) {
+    assignments <- assignments - min_tier
+  }
+
+  # Extract components
+  by_tier <- tier_style$by_tier
+
+  padding <- tier_style$global$padding
+
+  do_labels <- tier_style$global$labels
+  do_boxes <- tier_style$global$boxes
+
+  # Extract tier names if tiers_arg is a named list
+  tier_names <- NULL
+  if (
+    is.list(tiers) &&
+      !is.null(names(tiers)) &&
+      any(names(tiers) != "")
+  ) {
+    tier_names <- names(tiers)
+  }
+
+  # Determine tier assignments based on user-specified orientation
+  # For rows orientation: tiers are horizontal (group by y coordinate)
+  # For columns orientation: tiers are vertical (group by x coordinate)
+
+  n_tiers <- length(unique(assignments))
+
+  if (n_tiers == 0) {
+    return(list(grobs = grid::gList(grid::nullGrob())))
+  }
+
+  label_grobs <- NULL
+  tier_labels <- NULL
+
+  if (!is.null(do_labels)) {
+    if (is.logical(do_labels) && do_labels[1]) {
+      # Use tier names if available
+      if (!is.null(tier_names) && length(tier_names) >= n_tiers) {
+        tier_labels <- tier_names[seq_len(n_tiers)]
+      }
+    } else if (is.character(do_labels)) {
+      # Use custom labels
+      tier_labels <- do_labels
+      if (length(tier_labels) < n_tiers) {
+        # Recycle if needed
+        tier_labels <- rep_len(tier_labels, n_tiers)
+      }
+    }
+
+    label_grobs <- grid::gList()
+  }
+
+  # Create grobs for each tier
+  tier_grobs <- grid::gList()
+
+  for (i in seq_len(n_tiers)) {
+    ind <- which((assignments + 1L) %in% i)
+
+    if (!any(ind)) {
+      next
+    }
+
+    circle_grobs_i <- circle_grobs[ind]
+
+    x_min <- min(grid::grobX(circle_grobs_i, "west")) - padding
+    x_max <- max(grid::grobX(circle_grobs_i, 0)) + padding
+
+    y_min <- min(grid::grobY(circle_grobs_i, "south")) - padding
+    y_max <- max(grid::grobY(circle_grobs_i, "north")) + padding
+    y_mid <- (y_min + y_max) / 2
+
+    h <- y_max - y_min
+    w <- x_max - x_min
+
+    # Calculate bounding box for this tier
+    tier_coords <- coords[ind, , drop = FALSE]
+
+    # Get style for this tier
+    # Start with global/vector style
+    style <- lapply(tier_style$global, function(val) {
+      if (length(val) >= i) val[i] else val[1]
+    })
+
+    # Apply by_tier overrides (try both index and name)
+    tier_override <- NULL
+
+    # Try numeric index first
+    if (!is.null(by_tier[[as.character(i)]])) {
+      tier_override <- by_tier[[as.character(i)]]
+    }
+
+    # Try tier name if available
+    if (!is.null(tier_names) && i <= length(tier_names)) {
+      tier_name <- tier_names[i]
+      if (!is.null(by_tier[[tier_name]])) {
+        tier_override <- utils::modifyList(
+          tier_override %||% list(),
+          by_tier[[tier_name]]
+        )
+      }
+    }
+
+    if (!is.null(tier_override)) {
+      style <- utils::modifyList(style, tier_override)
+    }
+
+    gpar_params <- get_gpar_params(style)
+
+    # Only create box grob if boxes are enabled
+    if (isTRUE(do_boxes)) {
+      tier_grobs[[i]] <- grid::rectGrob(
+        x = x_min,
+        y = y_mid,
+        width = w,
+        height = h,
+        just = c("left", "center"),
+        gp = do.call(grid::gpar, gpar_params),
+        name = paste0("tier_box_", i)
+      )
+    }
+
+    # TODO: Make this padding configurable
+    tier_label_padding <- grid::unit(3, "mm")
+
+    # Create label grob if labels are enabled
+    if (!is.null(tier_labels) && i <= length(tier_labels)) {
+      label_text <- tier_labels[i]
+      label_style <- tier_style$global$label_style
+
+      if (!is.null(tier_style$by_tier[[label_text]]$label_style)) {
+        label_style <- utils::modifyList(
+          label_style,
+          tier_style$by_tier[[label_text]]$label_style
+        )
+      }
+
+      if (!is.na(label_text) && label_text != "") {
+        label_gpar <- do.call(grid::gpar, get_gpar_params(label_style))
+
+        if (orientation == "rows") {
+          # Rows: horizontal tiers stacked vertically, label to the right
+          label_x <- x_max + tier_label_padding
+          label_y <- y_mid
+          label_just <- c("left", "center")
+        } else {
+          # Columns: vertical tiers side-by-side, label above
+          label_x <- (x_min + x_max) / 2
+          label_y <- y_max + tier_label_padding
+          label_just <- c("center", "bottom")
+        }
+
+        label_grobs[[i]] <- grid::textGrob(
+          label = label_text,
+          x = label_x,
+          y = label_y,
+          just = label_just,
+          gp = label_gpar,
+          name = paste0("tier_label_", i)
+        )
+      }
+    }
+  }
+
+  if (length(tier_grobs) == 0) {
+    return(list(grobs = NULL, label_grobs = NULL))
+  }
+
+  # Return grobs and bounding box
+  list(
+    grobs = tier_grobs,
+    label_grobs = label_grobs,
+    orientation = orientation
+  )
+}
+
 #' Create a caugi Graph Plot Object
 #'
 #' Creates a grid graphics object (gTree) representing a `caugi` graph.
@@ -483,6 +968,22 @@ get_gpar_params <- function(style) {
 #' @param label_style List of label styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
 #'     `fontfamily`, `cex`
+#' @param tier_style List of tier box styling parameters. Tier boxes are shown
+#'   when `boxes = TRUE` is set within this list. Supports:
+#'   * Appearance (passed to `gpar()`): `fill`, `col` (border color), `lwd`,
+#'     `lty`, `alpha`
+#'   * Geometry: `padding` (padding around tier nodes as proportion of plot range,
+#'     default 0.05)
+#'   * Labels: `labels` (logical or character vector). If `TRUE`, uses tier names
+#'     from `tiers` argument. If a character vector, uses custom labels (one per
+#'     tier). If `FALSE` or `NULL` (default), no labels are shown.
+#'   * Label styling: `label_style` (list with `col`, `fontsize`, `fontface`, etc.)
+#'   * Values can be scalars (applied to all tiers) or vectors (auto-expanded to
+#'     each tier in order)
+#'   * Local overrides via `by_tier`: a named list (using tier names from `tiers`
+#'     argument) or indexed list for per-tier customization, e.g.
+#'     `by_tier = list(exposures = list(fill = "lightblue"), outcome = list(fill = "yellow"))`
+#'     or `by_tier = list(`1` = list(fill = "lightblue"))`
 #' @param main Optional character string for plot title. If `NULL` (default),
 #'   no title is displayed.
 #' @param title_style List of title styling parameters. Supports:
@@ -555,6 +1056,7 @@ S7::method(plot, caugi) <- function(
   node_style = list(),
   edge_style = list(),
   label_style = list(),
+  tier_style = list(),
   main = NULL,
   title_style = list(),
   outer_margin = grid::unit(2, "mm"),
@@ -567,6 +1069,8 @@ S7::method(plot, caugi) <- function(
   if (!x@built) {
     x <- build(x)
   }
+
+  dots <- list(...)
 
   # Compute layout coordinates
   if (is.character(layout)) {
@@ -650,6 +1154,18 @@ S7::method(plot, caugi) <- function(
     }
 
     coords <- layout
+
+    # Extract tier information from layout if present
+    if ("tier" %in% names(layout) && is.null(dots$tiers)) {
+      # Reconstruct tiers from tier column
+      tier_vec <- stats::setNames(layout$tier, layout$name)
+      dots$tiers <- tier_vec
+
+      # Extract orientation from attribute if present
+      if (is.null(dots$orientation) && !is.null(attr(layout, "orientation"))) {
+        dots$orientation <- attr(layout, "orientation")
+      }
+    }
   } else {
     stop(
       "layout must be a character string, function, or data.frame",
@@ -661,30 +1177,18 @@ S7::method(plot, caugi) <- function(
     edge_style = edge_style,
     node_style = node_style,
     label_style = label_style,
-    title_style = title_style
+    title_style = title_style,
+    tier_style = tier_style
   )
 
   labels <- nodes(x)[["name"]]
   edges <- edges(x)
 
-  nodes_res <- make_nodes(
-    coords = coords,
-    labels = labels,
-    node_style = styles$node_style,
-    label_style = styles$label_style
-  )
-
-  circle_grobs <- nodes_res$circle_grobs
-  label_grobs <- nodes_res$label_grobs
-  node_radii <- nodes_res$node_radii
-
-  edge_grobs <- make_edges(
-    edges = edges,
-    coords = coords,
-    node_radii = node_radii,
-    edge_styles = styles$edge_styles,
-    edge_by_edge = styles$edge_by_edge
-  )
+  # Set up viewport parameters
+  vp_x <- grid::unit(0.5, "npc")
+  vp_y <- grid::unit(0.5, "npc")
+  vp_width <- grid::unit(1, "npc")
+  vp_height <- grid::unit(1, "npc")
 
   x_range <- range(coords$x)
   y_range <- range(coords$y)
@@ -696,26 +1200,120 @@ S7::method(plot, caugi) <- function(
     y_range <- y_range + c(-1, 1)
   }
 
+  # Nodes
+  nodes_res <- make_nodes(
+    coords = coords,
+    labels = labels,
+    node_style = styles$node_style,
+    label_style = styles$label_style
+  )
+
+  circle_grobs <- nodes_res$circle_grobs
+  label_grobs <- nodes_res$label_grobs
+  node_radii <- nodes_res$node_radii
+
+  # Edges
+  edge_grobs <- make_edges(
+    edges = edges,
+    coords = coords,
+    node_radii = node_radii,
+    edge_styles = styles$edge_styles,
+    edge_by_edge = styles$edge_by_edge
+  )
+
+  do_tier_boxes <- isTRUE(styles$tier_style$global$boxes)
+  do_tier_labels <- isTRUE(styles$tier_style$global$labels) ||
+    is.character(styles$tier_style$global$labels)
+  do_tiers <- (do_tier_boxes || do_tier_labels) && !is.null(dots$tiers)
+
+  tier_box_grobs <- NULL
+  tier_label_grobs <- NULL
+
+  if (do_tiers) {
+    orientation <- dots$orientation %||% "columns"
+
+    tier_box_result <- make_tiers(
+      circle_grobs,
+      coords = coords,
+      tiers = dots$tiers,
+      tier_style = styles$tier_style,
+      orientation = orientation
+    )
+
+    tier_box_grobs <- tier_box_result$grobs
+    tier_label_grobs <- tier_box_result$label_grobs
+  }
+
+  # Figure out viewport center and size
+  # This is a piece of intricate voodoo, but basically we are
+  # starting out with a viewport that is [0, 1] x [0, 1] in npc units,
+  # and then shrink it based on how much the nodes (circles) protrude
+  # beyond this box, or how much the tier boxes/labels protrude beyond
+  # this box.
+  #
+  # TODO: For some reason, we cannot use the same logic for just the
+  # circle grobs as for the tier boxes/labels - if we do that, the
+  # viewport ends up being wrongly placed and/or too small. It would
+  # be nice to understand why and fix this.
+  if (!is.null(tier_box_grobs)) {
+    x0 <- min(grid::grobX(tier_box_grobs, "west"))
+    x1 <- max(grid::grobX(tier_box_grobs, "east"))
+    y0 <- min(grid::grobY(tier_box_grobs, "south"))
+    y1 <- max(grid::grobY(tier_box_grobs, "north"))
+
+    if (!is.null(tier_label_grobs) && length(tier_label_grobs) > 0) {
+      x0 <- min(x0, min(grid::grobX(tier_label_grobs, "west")))
+      x1 <- max(x1, max(grid::grobX(tier_label_grobs, "east")))
+      y0 <- min(y0, min(grid::grobY(tier_label_grobs, "south")))
+      y1 <- max(y1, max(grid::grobY(tier_label_grobs, "north")))
+    }
+
+    vp_width <- 2 * grid::unit(1, "npc") - (x1 - x0)
+    vp_height <- 2 * grid::unit(1, "npc") - (y1 - y0)
+    vp_x <- grid::unit(1, "npc") - (x0 + x1) / 2
+    vp_y <- grid::unit(1, "npc") - (y0 + y1) / 2
+  } else {
+    # Set up viewport parameters
+    vp_x <- grid::unit(0.5, "npc")
+    vp_y <- grid::unit(0.5, "npc")
+    vp_width <- grid::unit(1, "npc") - max(grid::grobWidth(circle_grobs))
+    vp_height <- grid::unit(1, "npc") - max(grid::grobHeight(circle_grobs))
+  }
+
+  # TODO: Find the actual node in each direction to size viewport better
+  graph_vp <- grid::viewport(
+    x = vp_x,
+    y = vp_y,
+    xscale = x_range,
+    yscale = y_range,
+    width = vp_width,
+    height = vp_height,
+    name = "caugi.vp"
+  )
+
+  # Assemble the grobs
+  graph_children_list <- list()
+
+  if (!is.null(tier_box_grobs)) {
+    graph_children_list <- c(graph_children_list, list(tier_box_grobs))
+  }
+
+  if (!is.null(tier_label_grobs) && length(tier_label_grobs) > 0) {
+    graph_children_list <- c(graph_children_list, list(tier_label_grobs))
+  }
+
   node_gtree <- grid::grobTree(
     circle_grobs,
     label_grobs,
     name = "node_gtree"
   )
 
-  # TODO: Find the actual node in each direction to size viewport better
-  graph_vp <- grid::viewport(
-    xscale = x_range,
-    yscale = y_range,
-    width = grid::unit(1, "npc") - max(grid::grobWidth(circle_grobs)),
-    height = grid::unit(1, "npc") -
-      max(grid::grobHeight(circle_grobs)),
-    name = "caugi.vp"
+  graph_children_list <- c(
+    graph_children_list,
+    list(edge_grobs, node_gtree)
   )
 
-  graph_children <- grid::gList(
-    edge_grobs,
-    node_gtree
-  )
+  graph_children <- do.call(grid::gList, graph_children_list)
 
   graph_grob <- grid::gTree(
     children = graph_children,
@@ -780,7 +1378,13 @@ S7::method(plot, caugi) <- function(
   caugi_plot(grob = final_grob)
 }
 
-make_styles <- function(edge_style, node_style, label_style, title_style) {
+make_styles <- function(
+  edge_style,
+  node_style,
+  label_style,
+  title_style,
+  tier_style
+) {
   # Get global options
   opts <- get0("options", .caugi_env, ifnotfound = caugi_default_options())
   plot_opts <- opts$plot %||% list()
@@ -790,6 +1394,7 @@ make_styles <- function(edge_style, node_style, label_style, title_style) {
   edge_defaults <- plot_opts$edge_style
   label_defaults <- plot_opts$label_style
   main_defaults <- plot_opts$title_style
+  tier_defaults <- plot_opts$tier_style
 
   # Merge with user-provided styles
   node_style_global <- utils::modifyList(node_defaults, node_style)
@@ -831,10 +1436,17 @@ make_styles <- function(edge_style, node_style, label_style, title_style) {
   # Extract by-edge overrides
   by_edge <- edge_style$by_edge %||% list()
 
+  # Handle tier style - extract by_tier overrides
+  tier_style <- list(
+    global = utils::modifyList(tier_defaults, tier_style),
+    by_tier = tier_style$by_tier %||% list()
+  )
+
   list(
     edge_styles = edge_styles,
     edge_by_edge = by_edge,
     node_style = node_style,
+    tier_style = tier_style,
     label_style = utils::modifyList(label_defaults, label_style),
     title_style = utils::modifyList(main_defaults, title_style)
   )
@@ -848,7 +1460,6 @@ make_nodes <- function(coords, labels, node_style, label_style) {
   node_radii <- vector("list", n_nodes)
 
   padding_global <- grid::unit(node_style$padding %||% 2, "mm")
-  size_global <- node_style$size %||% 1
   do_labels <- !is.null(labels) && length(labels) > 0
 
   for (i in seq_len(n_nodes)) {
@@ -1276,7 +1887,7 @@ S7::method(plot, caugi_plot) <- function(x, newpage = TRUE, ...) {
 #'
 #' # Horizontal composition
 #' p1 + p2
-#' p1 | p2  # equivalent
+#' p1 | p2 # equivalent
 #'
 #' # Adjust spacing
 #' caugi_options(plot = list(spacing = grid::unit(2, "lines")))

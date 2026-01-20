@@ -128,6 +128,8 @@ compute_layout_ptr <- function(g, method, packing_ratio) .Call(wrap__compute_lay
 
 compute_bipartite_layout_ptr <- function(g, partition, orientation) .Call(wrap__compute_bipartite_layout_ptr, g, partition, orientation)
 
+compute_tiered_layout_ptr <- function(g, tier_assignments, num_tiers, orientation) .Call(wrap__compute_tiered_layout_ptr, g, tier_assignments, num_tiers, orientation)
+
 write_caugi_file_ptr <- function(g, reg, graph_class, node_names, path, comment, tags) invisible(.Call(wrap__write_caugi_file_ptr, g, reg, graph_class, node_names, path, comment, tags))
 
 read_caugi_file_ptr <- function(path, reg) .Call(wrap__read_caugi_file_ptr, path, reg)

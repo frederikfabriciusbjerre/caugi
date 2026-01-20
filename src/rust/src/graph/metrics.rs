@@ -840,7 +840,10 @@ mod tests {
         let perm = [2u32, 3, 1, 0];
 
         let (norm, count) = shd_with_perm(&t, &g, &perm);
-        assert_eq!(count, 0, "Same edges with different node order should have SHD=0");
+        assert_eq!(
+            count, 0,
+            "Same edges with different node order should have SHD=0"
+        );
         assert_eq!(norm, 0.0);
     }
 
@@ -904,7 +907,10 @@ mod tests {
         let perm = [1u32, 2, 0];
 
         let (_, count) = shd_with_perm(&t, &g, &perm);
-        assert_eq!(count, 1, "Should detect one difference: directed vs undirected");
+        assert_eq!(
+            count, 1,
+            "Should detect one difference: directed vs undirected"
+        );
     }
 
     /// Test shd_with_perm with larger graph and complex permutation.
@@ -947,7 +953,10 @@ mod tests {
         let perm = [3u32, 5, 1, 4, 0, 2];
 
         let (norm, count) = shd_with_perm(&t, &g, &perm);
-        assert_eq!(count, 0, "Same edges with complex permutation should have SHD=0");
+        assert_eq!(
+            count, 0,
+            "Same edges with complex permutation should have SHD=0"
+        );
         assert_eq!(norm, 0.0);
     }
 }

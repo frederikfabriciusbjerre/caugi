@@ -58,6 +58,25 @@ settings.
 \code{fontfamily}, \code{cex}
 }}
 
+\item{tier_style}{List of tier box styling parameters. Tier boxes are shown
+when \code{boxes = TRUE} is set within this list. Supports:
+\itemize{
+\item Appearance (passed to \code{gpar()}): \code{fill}, \code{col} (border color), \code{lwd},
+\code{lty}, \code{alpha}
+\item Geometry: \code{padding} (padding around tier nodes as proportion of plot range,
+default 0.05)
+\item Labels: \code{labels} (logical or character vector). If \code{TRUE}, uses tier names
+from \code{tiers} argument. If a character vector, uses custom labels (one per
+tier). If \code{FALSE} or \code{NULL} (default), no labels are shown.
+\item Label styling: \code{label_style} (list with \code{col}, \code{fontsize}, \code{fontface}, etc.)
+\item Values can be scalars (applied to all tiers) or vectors (auto-expanded to
+each tier in order)
+\item Local overrides via \code{by_tier}: a named list (using tier names from \code{tiers}
+argument) or indexed list for per-tier customization, e.g.
+\code{by_tier = list(exposures = list(fill = "lightblue"), outcome = list(fill = "yellow"))}
+or \verb{by_tier = list(}1\verb{ = list(fill = "lightblue"))}
+}}
+
 \item{main}{Optional character string for plot title. If \code{NULL} (default),
 no title is displayed.}
 
@@ -140,6 +159,7 @@ Other plotting:
 \code{\link{caugi_layout_fruchterman_reingold}()},
 \code{\link{caugi_layout_kamada_kawai}()},
 \code{\link{caugi_layout_sugiyama}()},
+\code{\link{caugi_layout_tiered}()},
 \code{\link{caugi_plot}()},
 \code{\link{divide-caugi_plot-caugi_plot}}
 }

@@ -195,7 +195,12 @@ impl Pdag {
 
     #[inline]
     pub fn anteriors_of(&self, i: u32) -> Vec<u32> {
-        traversal::anteriors_of(self.n(), i, |u| self.parents_of(u), |u| self.undirected_of(u))
+        traversal::anteriors_of(
+            self.n(),
+            i,
+            |u| self.parents_of(u),
+            |u| self.undirected_of(u),
+        )
     }
 
     #[inline]

@@ -8,6 +8,7 @@ mod kamada_kawai;
 mod normalize;
 mod optimizer;
 mod sugiyama;
+mod tiered;
 
 use crate::graph::CaugiGraph;
 use components::{detect_components, group_by_component, pack_component_layouts};
@@ -17,6 +18,7 @@ pub use bipartite::{bipartite_columns_layout, bipartite_rows_layout};
 pub use force_directed::force_directed_layout;
 pub use kamada_kawai::kamada_kawai_layout;
 pub use sugiyama::sugiyama_layout;
+pub use tiered::{tiered_columns_layout, tiered_rows_layout};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BipartiteOrientation {
@@ -36,12 +38,31 @@ impl std::str::FromStr for BipartiteOrientation {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TieredOrientation {
+    Rows,
+    Columns,
+}
+
+impl std::str::FromStr for TieredOrientation {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "rows" => Ok(Self::Rows),
+            "columns" => Ok(Self::Columns),
+            _ => Err(format!("Unknown tiered orientation: '{}'", s)),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum LayoutMethod {
     Sugiyama,
     ForceDirected,
     KamadaKawai,
     Bipartite,
+    Tiered,
 }
 
 impl std::str::FromStr for LayoutMethod {
@@ -53,6 +74,7 @@ impl std::str::FromStr for LayoutMethod {
             "force" | "fruchterman-reingold" | "fr" => Ok(Self::ForceDirected),
             "kamada_kawai" | "kamada-kawai" | "kk" => Ok(Self::KamadaKawai),
             "bipartite" => Ok(Self::Bipartite),
+            "tiered" => Ok(Self::Tiered),
             _ => Err(format!("Unknown layout method: '{}'", s)),
         }
     }
@@ -71,6 +93,13 @@ pub fn compute_layout(
     if matches!(method, LayoutMethod::Bipartite) {
         return Err(
             "Bipartite layouts require a partition and orientation. Use compute_bipartite_layout instead."
+                .to_string(),
+        );
+    }
+
+    if matches!(method, LayoutMethod::Tiered) {
+        return Err(
+            "Tiered layouts require tier assignments and orientation. Use compute_tiered_layout instead."
                 .to_string(),
         );
     }
@@ -193,6 +222,21 @@ pub fn compute_bipartite_layout(
     }
 }
 
+/// Compute tiered layout coordinates with given tier assignments and orientation.
+/// Returns a vector of (x, y) pairs, one for each node in order.
+/// Coordinates are in [0, 1] range and already normalized.
+pub fn compute_tiered_layout(
+    graph: &CaugiGraph,
+    tier_assignments: &[usize],
+    num_tiers: usize,
+    orientation: TieredOrientation,
+) -> Result<Vec<(f64, f64)>, String> {
+    match orientation {
+        TieredOrientation::Rows => tiered_rows_layout(graph, tier_assignments, num_tiers),
+        TieredOrientation::Columns => tiered_columns_layout(graph, tier_assignments, num_tiers),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -233,6 +277,10 @@ mod tests {
             LayoutMethod::from_str("bipartite"),
             Ok(LayoutMethod::Bipartite)
         ));
+        assert!(matches!(
+            LayoutMethod::from_str("tiered"),
+            Ok(LayoutMethod::Tiered)
+        ));
     }
 
     #[test]
@@ -256,6 +304,21 @@ mod tests {
             Ok(BipartiteOrientation::Columns)
         ));
         assert!(BipartiteOrientation::from_str("invalid").is_err());
+    }
+
+    #[test]
+    fn test_tiered_orientation_from_str() {
+        use std::str::FromStr;
+
+        assert!(matches!(
+            TieredOrientation::from_str("rows"),
+            Ok(TieredOrientation::Rows)
+        ));
+        assert!(matches!(
+            TieredOrientation::from_str("columns"),
+            Ok(TieredOrientation::Columns)
+        ));
+        assert!(TieredOrientation::from_str("invalid").is_err());
     }
 
     #[test]
@@ -502,6 +565,25 @@ mod tests {
     }
 
     #[test]
+    fn test_compute_layout_tiered_error() {
+        use crate::edges::EdgeRegistry;
+        use crate::graph::builder::GraphBuilder;
+        use std::sync::Arc;
+
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let b = GraphBuilder::new_with_registry(2, true, &reg);
+        let core = Arc::new(b.finalize().unwrap());
+
+        // Calling compute_layout with Tiered method should return an error
+        let result = compute_layout(&core, LayoutMethod::Tiered, 1.0);
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .contains("Tiered layouts require tier assignments and orientation"));
+    }
+
+    #[test]
     fn test_compute_bipartite_layout_rows() {
         use crate::edges::EdgeRegistry;
         use crate::graph::builder::GraphBuilder;
@@ -565,5 +647,75 @@ mod tests {
         // Second partition (X, Y) should be at x=0
         assert!((coords[2].0 - 0.0).abs() < 1e-6);
         assert!((coords[3].0 - 0.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_compute_tiered_layout_rows() {
+        use crate::edges::EdgeRegistry;
+        use crate::graph::builder::GraphBuilder;
+        use std::sync::Arc;
+
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cdir = reg.code_of("-->").unwrap();
+
+        let mut b = GraphBuilder::new_with_registry(6, true, &reg);
+        b.add_edge(0, 2, cdir).unwrap();
+        b.add_edge(1, 3, cdir).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+
+        // Three tiers: [0,1], [2,3], [4,5]
+        let tier_assignments = vec![0, 0, 1, 1, 2, 2];
+        let coords =
+            compute_tiered_layout(&core, &tier_assignments, 3, TieredOrientation::Rows).unwrap();
+
+        assert_eq!(coords.len(), 6);
+        // Verify all coordinates are normalized
+        for &(x, y) in &coords {
+            assert!((0.0..=1.0).contains(&x));
+            assert!((0.0..=1.0).contains(&y));
+        }
+        // Tier 0 should be at y=1
+        assert!((coords[0].1 - 1.0).abs() < 1e-6);
+        assert!((coords[1].1 - 1.0).abs() < 1e-6);
+        // Tier 1 should be at y=0.5
+        assert!((coords[2].1 - 0.5).abs() < 1e-6);
+        assert!((coords[3].1 - 0.5).abs() < 1e-6);
+        // Tier 2 should be at y=0.0
+        assert!((coords[4].1 - 0.0).abs() < 1e-6);
+        assert!((coords[5].1 - 0.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_compute_tiered_layout_columns() {
+        use crate::edges::EdgeRegistry;
+        use crate::graph::builder::GraphBuilder;
+        use std::sync::Arc;
+
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cdir = reg.code_of("-->").unwrap();
+
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 2, cdir).unwrap();
+        b.add_edge(1, 3, cdir).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+
+        let tier_assignments = vec![0, 0, 1, 1];
+        let coords =
+            compute_tiered_layout(&core, &tier_assignments, 2, TieredOrientation::Columns).unwrap();
+
+        assert_eq!(coords.len(), 4);
+        // Verify all coordinates are normalized
+        for &(x, y) in &coords {
+            assert!((0.0..=1.0).contains(&x));
+            assert!((0.0..=1.0).contains(&y));
+        }
+        // Tier 0 should be at x=0
+        assert!((coords[0].0 - 0.0).abs() < 1e-6);
+        assert!((coords[1].0 - 0.0).abs() < 1e-6);
+        // Tier 1 should be at x=1
+        assert!((coords[2].0 - 1.0).abs() < 1e-6);
+        assert!((coords[3].0 - 1.0).abs() < 1e-6);
     }
 }

@@ -4,7 +4,7 @@
 \alias{caugi_layout_bipartite}
 \title{Bipartite Graph Layout}
 \usage{
-caugi_layout_bipartite(x, partition = NULL, orientation = c("rows", "columns"))
+caugi_layout_bipartite(x, partition = NULL, orientation = c("columns", "rows"))
 }
 \arguments{
 \item{x}{A \code{caugi} object.}
@@ -37,7 +37,7 @@ the layout.
 \examples{
 # Create a bipartite graph (causes -> effects)
 cg <- caugi(A \%-->\% X, A \%-->\% Y, B \%-->\% X, B \%-->\% Y)
-partition <- c(TRUE, TRUE, FALSE, FALSE)  # A, B = causes, X, Y = effects
+partition <- c(TRUE, TRUE, FALSE, FALSE) # A, B = causes, X, Y = effects
 
 # Two horizontal rows (causes on top)
 layout_rows <- caugi_layout_bipartite(cg, partition, orientation = "rows")
@@ -53,6 +53,7 @@ Other plotting:
 \code{\link{caugi_layout_fruchterman_reingold}()},
 \code{\link{caugi_layout_kamada_kawai}()},
 \code{\link{caugi_layout_sugiyama}()},
+\code{\link{caugi_layout_tiered}()},
 \code{\link{caugi_plot}()},
 \code{\link{divide-caugi_plot-caugi_plot}},
 \code{\link{plot}()}

@@ -36,7 +36,7 @@ p2 <- plot(cg2, main = "Graph 2")
 
 # Horizontal composition
 p1 + p2
-p1 | p2  # equivalent
+p1 | p2 # equivalent
 
 # Adjust spacing
 caugi_options(plot = list(spacing = grid::unit(2, "lines")))
@@ -52,6 +52,7 @@ Other plotting:
 \code{\link{caugi_layout_fruchterman_reingold}()},
 \code{\link{caugi_layout_kamada_kawai}()},
 \code{\link{caugi_layout_sugiyama}()},
+\code{\link{caugi_layout_tiered}()},
 \code{\link{caugi_plot}()},
 \code{\link{divide-caugi_plot-caugi_plot}},
 \code{\link{plot}()}

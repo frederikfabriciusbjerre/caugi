@@ -125,10 +125,7 @@ pub fn serialize_caugi(
     serde_json::to_string_pretty(&caugi_format).map_err(|e| e.to_string())
 }
 
-pub fn deserialize_caugi(
-    json: &str,
-    registry: &EdgeRegistry,
-) -> Result<DeserializedGraph, String> {
+pub fn deserialize_caugi(json: &str, registry: &EdgeRegistry) -> Result<DeserializedGraph, String> {
     let caugi_format: CaugiFormat = serde_json::from_str(json).map_err(|e| e.to_string())?;
 
     if caugi_format.format != "caugi" {
@@ -140,8 +137,11 @@ pub fn deserialize_caugi(
 
     // Parse version (semver: major.minor.patch)
     let parts: Vec<&str> = caugi_format.version.split('.').collect();
-    let major = parts.get(0).and_then(|s| s.parse::<u32>().ok()).unwrap_or(0);
-    
+    let major = parts
+        .get(0)
+        .and_then(|s| s.parse::<u32>().ok())
+        .unwrap_or(0);
+
     // Check major version compatibility
     if major != 1 {
         return Err(format!(
@@ -150,7 +150,7 @@ pub fn deserialize_caugi(
             caugi_format.version, major
         ));
     }
-    
+
     // Minor/patch differences are compatible (forward and backward)
 
     let graph_data = caugi_format.graph;
@@ -200,10 +200,7 @@ pub fn write_caugi_file(
     Ok(())
 }
 
-pub fn read_caugi_file(
-    path: &str,
-    registry: &EdgeRegistry,
-) -> Result<DeserializedGraph, String> {
+pub fn read_caugi_file(path: &str, registry: &EdgeRegistry) -> Result<DeserializedGraph, String> {
     let mut file = std::fs::File::open(path).map_err(|e| e.to_string())?;
     let mut json = String::new();
     file.read_to_string(&mut json).map_err(|e| e.to_string())?;
