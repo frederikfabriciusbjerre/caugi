@@ -27,5 +27,6 @@ Other plotting:
 [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
 [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
 [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
+[`caugi_layout_tiered()`](https://caugi.org/reference/caugi_layout_tiered.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md),
 [`plot()`](https://caugi.org/reference/plot.md)

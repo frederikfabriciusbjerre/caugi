@@ -55,7 +55,8 @@ be built automatically before computing the layout.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_layout</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"sugiyama"</span>, <span class="st">"fruchterman-reingold"</span>, <span class="st">"kamada-kawai"</span>, <span class="st">"bipartite"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"sugiyama"</span>, <span class="st">"fruchterman-reingold"</span>, <span class="st">"kamada-kawai"</span>, <span class="st">"bipartite"</span>,</span>
+<span>    <span class="st">"tiered"</span><span class="op">)</span>,</span>
 <span>  packing_ratio <span class="op">=</span> <span class="fl">1.618034</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -84,14 +85,18 @@ layout.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Character string specifying the layout method. Options:</p><ul><li><p><code>"auto"</code>: Automatically choose sugiyama for graphs with only directed
-edges, otherwise fruchterman-reingold (default)</p></li>
+<dd><p>Character string specifying the layout method. Options:</p><ul><li><p><code>"auto"</code>: Automatically choose the best layout (default). Selection order:</p><ol><li><p>If <code>tiers</code> is provided, uses <code>"tiered"</code></p></li>
+<li><p>If <code>partition</code> is provided, uses <code>"bipartite"</code></p></li>
+<li><p>If graph has only directed edges, uses <code>"sugiyama"</code></p></li>
+<li><p>Otherwise, uses <code>"fruchterman-reingold"</code></p></li>
+</ol></li>
 <li><p><code>"sugiyama"</code>: Hierarchical layout for DAGs (requires only directed edges)</p></li>
 <li><p><code>"fruchterman-reingold"</code>: Fast spring-electrical layout (works with all
 edge types)</p></li>
 <li><p><code>"kamada-kawai"</code>: High-quality stress minimization (works with all edge
 types)</p></li>
 <li><p><code>"bipartite"</code>: Bipartite layout (requires <code>partition</code> parameter)</p></li>
+<li><p><code>"tiered"</code>: Multi-tier layout (requires <code>tiers</code> parameter)</p></li>
 </ul></dd>
 
 
@@ -105,7 +110,9 @@ widescreen displays. Use <code>1.0</code> for square grid, <code>2.0</code> for 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to the specific layout function.
 For bipartite layouts, use <code>partition</code> (logical vector) and <code>orientation</code>
-(<code>"rows"</code> or <code>"columns"</code>).</p></dd>
+(<code>"columns"</code> or <code>"rows"</code>).
+For tiered layouts, use <code>tiers</code> (list, named vector, or data.frame) and
+<code>orientation</code> (<code>"rows"</code> or <code>"columns"</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -144,6 +151,7 @@ produces deterministic results.</p>
 <code><a href="caugi_layout_fruchterman_reingold.html">caugi_layout_fruchterman_reingold()</a></code>,
 <code><a href="caugi_layout_kamada_kawai.html">caugi_layout_kamada_kawai()</a></code>,
 <code><a href="caugi_layout_sugiyama.html">caugi_layout_sugiyama()</a></code>,
+<code><a href="caugi_layout_tiered.html">caugi_layout_tiered()</a></code>,
 <code><a href="caugi_plot.html">caugi_plot()</a></code>,
 <code><a href="divide-caugi_plot-caugi_plot.html">divide-caugi_plot-caugi_plot</a></code>,
 <code><a href="plot.html">plot()</a></code></p></div>
@@ -160,6 +168,11 @@ produces deterministic results.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Default: auto-selects best layout</span></span></span>
 <span class="r-in"><span><span class="va">layout</span> <span class="op">&lt;-</span> <span class="fu">caugi_layout</span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Auto-selects tiered when tiers provided</span></span></span>
+<span class="r-in"><span><span class="va">cg_tiered</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">X1</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">M1</span>, <span class="va">X2</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">M2</span>, <span class="va">M1</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span>, <span class="va">M2</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tiers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"X1"</span>, <span class="st">"X2"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M1"</span>, <span class="st">"M2"</span><span class="op">)</span>, <span class="st">"Y"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">layout_auto</span> <span class="op">&lt;-</span> <span class="fu">caugi_layout</span><span class="op">(</span><span class="va">cg_tiered</span>, tiers <span class="op">=</span> <span class="va">tiers</span><span class="op">)</span> <span class="co"># Uses "tiered"</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Explicitly use hierarchical layout</span></span></span>
 <span class="r-in"><span><span class="va">layout_sug</span> <span class="op">&lt;-</span> <span class="fu">caugi_layout</span><span class="op">(</span><span class="va">cg</span>, method <span class="op">=</span> <span class="st">"sugiyama"</span><span class="op">)</span></span></span>
@@ -185,6 +198,21 @@ produces deterministic results.</p>
 <span class="r-in"><span>  method <span class="op">=</span> <span class="st">"bipartite"</span>,</span></span>
 <span class="r-in"><span>  partition <span class="op">=</span> <span class="va">partition</span>,</span></span>
 <span class="r-in"><span>  orientation <span class="op">=</span> <span class="st">"columns"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Tiered layout with three tiers</span></span></span>
+<span class="r-in"><span><span class="va">cg_tiered</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">X1</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">M1</span> <span class="op">+</span> <span class="va">M2</span>,</span></span>
+<span class="r-in"><span>  <span class="va">X2</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">M1</span> <span class="op">+</span> <span class="va">M2</span>,</span></span>
+<span class="r-in"><span>  <span class="va">M1</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span>,</span></span>
+<span class="r-in"><span>  <span class="va">M2</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tiers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"X1"</span>, <span class="st">"X2"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M1"</span>, <span class="st">"M2"</span><span class="op">)</span>, <span class="st">"Y"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">layout_tiered</span> <span class="op">&lt;-</span> <span class="fu">caugi_layout</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">cg_tiered</span>,</span></span>
+<span class="r-in"><span>  method <span class="op">=</span> <span class="st">"tiered"</span>,</span></span>
+<span class="r-in"><span>  tiers <span class="op">=</span> <span class="va">tiers</span>,</span></span>
+<span class="r-in"><span>  orientation <span class="op">=</span> <span class="st">"rows"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

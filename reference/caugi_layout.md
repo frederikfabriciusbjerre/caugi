@@ -9,7 +9,8 @@ automatically before computing the layout.
 ``` r
 caugi_layout(
   x,
-  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite"),
+  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite",
+    "tiered"),
   packing_ratio = 1.618034,
   ...
 )
@@ -42,8 +43,16 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 
   Character string specifying the layout method. Options:
 
-  - `"auto"`: Automatically choose sugiyama for graphs with only
-    directed edges, otherwise fruchterman-reingold (default)
+  - `"auto"`: Automatically choose the best layout (default). Selection
+    order:
+
+    1.  If `tiers` is provided, uses `"tiered"`
+
+    2.  If `partition` is provided, uses `"bipartite"`
+
+    3.  If graph has only directed edges, uses `"sugiyama"`
+
+    4.  Otherwise, uses `"fruchterman-reingold"`
 
   - `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
     edges)
@@ -56,6 +65,8 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 
   - `"bipartite"`: Bipartite layout (requires `partition` parameter)
 
+  - `"tiered"`: Multi-tier layout (requires `tiers` parameter)
+
 - packing_ratio:
 
   Aspect ratio for packing disconnected components (width/height).
@@ -67,7 +78,9 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 
   Additional arguments passed to the specific layout function. For
   bipartite layouts, use `partition` (logical vector) and `orientation`
-  (`"rows"` or `"columns"`).
+  (`"columns"` or `"rows"`). For tiered layouts, use `tiers` (list,
+  named vector, or data.frame) and `orientation` (`"rows"` or
+  `"columns"`).
 
 ## Value
 
@@ -108,6 +121,7 @@ Other plotting:
 [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
 [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
 [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
+[`caugi_layout_tiered()`](https://caugi.org/reference/caugi_layout_tiered.md),
 [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md),
 [`plot()`](https://caugi.org/reference/plot.md)
@@ -124,6 +138,11 @@ cg <- caugi(
 
 # Default: auto-selects best layout
 layout <- caugi_layout(cg)
+
+# Auto-selects tiered when tiers provided
+cg_tiered <- caugi(X1 %-->% M1, X2 %-->% M2, M1 %-->% Y, M2 %-->% Y)
+tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+layout_auto <- caugi_layout(cg_tiered, tiers = tiers) # Uses "tiered"
 
 # Explicitly use hierarchical layout
 layout_sug <- caugi_layout(cg, method = "sugiyama")
@@ -149,5 +168,20 @@ layout_bp_cols <- caugi_layout(
   method = "bipartite",
   partition = partition,
   orientation = "columns"
+)
+
+# Tiered layout with three tiers
+cg_tiered <- caugi(
+  X1 %-->% M1 + M2,
+  X2 %-->% M1 + M2,
+  M1 %-->% Y,
+  M2 %-->% Y
+)
+tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+layout_tiered <- caugi_layout(
+  cg_tiered,
+  method = "tiered",
+  tiers = tiers,
+  orientation = "rows"
 )
 ```

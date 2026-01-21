@@ -280,6 +280,8 @@
   : Kamada-Kawai Stress Minimization Layout
 - [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md)
   : Sugiyama Hierarchical Layout
+- [`caugi_layout_tiered()`](https://caugi.org/reference/caugi_layout_tiered.md)
+  : Tiered Graph Layout
 - [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md) : S7 Class
   for caugi Plot
 - [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md)

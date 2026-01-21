@@ -63,6 +63,32 @@ caugi_default_options()
 #> [1] 14.4
 #> 
 #> 
+#> $plot$tier_style
+#> $plot$tier_style$boxes
+#> [1] TRUE
+#> 
+#> $plot$tier_style$labels
+#> [1] TRUE
+#> 
+#> $plot$tier_style$fill
+#> [1] "lightsteelblue"
+#> 
+#> $plot$tier_style$col
+#> [1] "transparent"
+#> 
+#> $plot$tier_style$label_style
+#> list()
+#> 
+#> $plot$tier_style$lwd
+#> [1] 1
+#> 
+#> $plot$tier_style$alpha
+#> [1] 1
+#> 
+#> $plot$tier_style$padding
+#> [1] 4mm
+#> 
+#> 
 #> 
 
 # Reset to defaults

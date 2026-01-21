@@ -112,7 +112,6 @@ ug <- caugi(
   class = "UG"
 )
 
-# Kamada-Kawai for publication-quality visualization
 plot(ug, layout = "kamada-kawai", main = "Kamada-Kawai")
 ```
 
@@ -129,16 +128,20 @@ The bipartite layout is designed for graphs with a clear two-group
 structure, such as treatment/outcome or exposure/response relationships.
 It arranges nodes in two parallel lines (rows or columns).
 
+Here’s an example bipartite causal graph with treatments and outcomes:
+
 ``` r
-# Create a bipartite graph: treatments -> outcomes
 bipartite_graph <- caugi(
   Treatment_A %-->% Outcome_1 + Outcome_2 + Outcome_3,
   Treatment_B %-->% Outcome_1 + Outcome_2,
   Treatment_C %-->% Outcome_2 + Outcome_3,
   class = "DAG"
 )
+```
 
-# Horizontal rows (treatments on top, outcomes on bottom)
+Horizontal rows (treatments on top, outcomes on bottom)
+
+``` r
 plot(
   bipartite_graph,
   layout = "bipartite",
@@ -146,11 +149,11 @@ plot(
 )
 ```
 
-![](visualization_files/figure-html/bipartite-layout-1.png)
+![](visualization_files/figure-html/bipartite-basic-1.png)
+
+Vertical columns (treatments on left, outcomes on right)
 
 ``` r
-
-# Vertical columns (treatments on right, outcomes on left)
 plot(
   bipartite_graph,
   layout = "bipartite",
@@ -158,7 +161,7 @@ plot(
 )
 ```
 
-![](visualization_files/figure-html/bipartite-layout-2.png)
+![](visualization_files/figure-html/bipartite-vertical-1.png)
 
 The bipartite layout automatically detects which nodes should be in
 which partition based on incoming edges. Nodes with no incoming edges
@@ -166,7 +169,6 @@ are placed in one group, while nodes with incoming edges are placed in
 the other. You can also specify the partition explicitly:
 
 ``` r
-# Create bipartite layout with explicit partition
 partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE)
 plot(
   bipartite_graph,
@@ -184,13 +186,81 @@ bipartite causal relationships
 **Advantages:** Clear visual separation, emphasizes directed
 relationships between groups
 
+### Tiered Layouts
+
+For graphs with more than two hierarchical levels, the tiered layout
+places nodes in multiple parallel tiers. This is ideal for visualizing
+causal structures with clear stages, such as exposures → mediators →
+outcomes.
+
+First, create a simple three-tier causal graph:
+
+``` r
+cg_tiered <- caugi(
+  X1 %-->% M1 + M2,
+  X2 %-->% M1 + M2,
+  M1 %-->% Y,
+  M2 %-->% Y
+)
+```
+
+We can define tiers using a named list:
+
+``` r
+tiers <- list(
+  exposures = c("X1", "X2"),
+  mediators = c("M1", "M2"),
+  outcome = "Y"
+)
+
+plot(cg_tiered, layout = "tiered", tiers = tiers, orientation = "rows")
+```
+
+![](visualization_files/figure-html/tiered-named-list-1.png)
+
+The tiered layout supports three input formats:
+
+- named lists,
+- named numeric vectors, and
+- `data.frame`s.
+
+Named lists is the most intuitive format, and what we have already
+shown. But you can also use a named numeric vector:
+
+``` r
+tiers_vector <- c(X1 = 1, X2 = 1, M1 = 2, M2 = 2, Y = 3)
+plot(cg_tiered, layout = "tiered", tiers = tiers_vector, orientation = "columns")
+```
+
+![](visualization_files/figure-html/tiered-vector-1.png)
+
+Finally, you can use a `data.frame` to specify tiers directly.
+
+``` r
+tiers_df <- data.frame(
+  name = c("X1", "X2", "M1", "M2", "Y"),
+  tier = c(1, 1, 2, 2, 3)
+)
+
+layout_df <- caugi_layout_tiered(cg_tiered, tiers_df, orientation = "rows")
+
+plot(cg_tiered, layout = layout_df)
+```
+
+![](visualization_files/figure-html/tiered-dataframe-1.png)
+
+**Best for:** Multi-stage causal processes, mediation analysis, temporal
+sequences, hierarchical structures
+
+**Advantages:** Clear stage separation, flexible tier assignment,
+supports 2+ tiers, multiple input formats
+
 ### Comparing Layouts
 
 You can compute and examine layout coordinates directly using
 [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md):
 
 ``` r
-# Compute layouts
 layout_sug <- caugi_layout(dag, method = "sugiyama")
 layout_fr <- caugi_layout(dag, method = "fruchterman-reingold")
 layout_kk <- caugi_layout(dag, method = "kamada-kawai")
@@ -347,17 +417,17 @@ plot(
     # Global defaults
     col = "gray80",
     lwd = 1,
-    
+
     # Per-type styling
     directed = list(col = "blue"),
     bidirected = list(col = "red", lty = "dashed"),
-    
+
     # All edges from node A
     by_edge = list(
       A = list(
         col = "green",
         lwd = 2,
-        
+
         # Specific edge A -> B
         B = list(
           col = "orange",
@@ -389,7 +459,6 @@ appear in PAGs (Partial Ancestral Graphs). You can customize the circle
 size:
 
 ``` r
-# Create a graph with partial edges (using UNKNOWN class since PAG not yet implemented)
 g <- caugi(
   A %o->% B,
   B %-->% C,
@@ -397,7 +466,6 @@ g <- caugi(
   class = "UNKNOWN"
 )
 
-# Customize circle size for partial edges
 plot(
   g,
   edge_style = list(
@@ -417,7 +485,6 @@ plot(
 Customize node labels with the `label_style` parameter:
 
 ``` r
-# Customize label appearance
 plot(
   cg,
   main = "Customized Labels",
@@ -440,45 +507,124 @@ Available label style parameters (passed to
 
 - `col`, `fontsize`, `fontface`, `fontfamily`, `cex`
 
-### Combining Customizations
+### Styling Tiered Layouts
 
-Put it all together for a fully customized plot:
+By default, tiered layouts are plotted with boxes around each tier and
+labels indicating the tier names (if provided).
 
 ``` r
-# Create a publication-ready plot
+plot(cg_tiered, tiers = tiers)
+```
+
+![](visualization_files/figure-html/tiered-boxes-basic-1.png)
+
+But you can customize the appearance of tier boxes using the
+`tier_style` parameter. Here, for isntance, we specify different fill
+colors for each tier using a vector.
+
+``` r
 plot(
-  dag,
-  layout = "sugiyama",
-  node_style = list(
-    fill = "#E8F4F8",
-    col = "#2C5F77",
-    lwd = 1.5,
-    padding = 3,
-    size = 1.1
-  ),
-  edge_style = list(
-    col = "#555555",
-    lwd = 1.2,
-    arrow_size = 3.5
-  ),
-  label_style = list(
-    col = "#1A1A1A",
-    fontsize = 11,
-    fontface = "bold"
+  cg_tiered,
+  tiers = tiers,
+  tier_style = list(
+    fill = c("lightblue", "lightgreen", "lightyellow"),
+    col = "gray50",
+    lty = 2,
+    alpha = 0.3
   )
 )
 ```
 
-![](visualization_files/figure-html/full-customization-1.png)
+![](visualization_files/figure-html/tiered-boxes-vector-1.png)
+
+For more granular control, you can specify styles for individual tiers.
+Here, we customize the “exposures” and “outcome” tiers specifically:
+
+``` r
+plot(
+  cg_tiered,
+  tiers = tiers,
+  tier_style = list(
+    fill = "gray95",
+    col = "gray60",
+    alpha = 0.2,
+    by_tier = list(
+      exposures = list(
+        fill = "lightblue",
+        col = "blue",
+        lwd = 2
+      ),
+      outcome = list(
+        fill = "lightyellow",
+        col = "orange",
+        lwd = 3,
+        lty = 1
+      )
+    )
+  )
+)
+```
+
+![](visualization_files/figure-html/tiered-boxes-by-tier-1.png)
+
+Labels for the tiers can also be customized. Here, for example, we
+change the font size and color of the tier labels:
+
+``` r
+plot(
+  cg_tiered,
+  tiers = tiers, # Named list: exposures, mediators, outcome
+  tier_style = list(
+    fill = c("lightblue", "lightgreen", "lightyellow"),
+    label_style = list(
+      fontsize = 11,
+      fontface = "bold",
+      col = "gray20"
+    )
+  )
+)
+```
+
+![](visualization_files/figure-html/tiered-boxes-labels-1.png)
+
+You can also provide custom labels for each tier instead of using the
+names from the tiers object
+
+``` r
+plot(
+  cg_tiered,
+  tiers = tiers,
+  tier_style = list(
+    fill = "gray95",
+    labels = c("Exposure Variables", "Mediating Variables", "Outcome Variable")
+  )
+)
+```
+
+![](visualization_files/figure-html/tiered-boxes-custom-labels-1.png)
+
+If you don’t want any boxes or labels around the tiers, you can disable
+them:
+
+``` r
+plot(
+  cg_tiered,
+  tiers = tiers,
+  tier_style = list(boxes = FALSE, labels = FALSE)
+)
+```
+
+![](visualization_files/figure-html/tiered-boxes-none-1.png)
 
 ## Working with Different Graph Types
 
-The plotting system works seamlessly with all supported graph types.
+The plotting system works with all graph types supported by `caugi`.
 
 ### Partially Directed Acyclic Graphs (PDAGs)
 
+First, let’s create a PDAG with both directed and undirected edges:
+
 ``` r
-# Create a PDAG with both directed and undirected edges
 pdag <- caugi(
   A %-->% B,
   B %---% C, # Undirected edge
@@ -499,8 +645,9 @@ plot(
 
 ### Acyclic Directed Mixed Graphs (ADMGs)
 
+Here’s an example of an ADMG with directed and bidirected edges:
+
 ``` r
-# Create an ADMG with confounding
 complex_admg <- caugi(
   X %-->% M1 + M2,
   M1 %-->% Y,
@@ -524,8 +671,9 @@ plot(
 
 ### Undirected Graphs (UGs)
 
+We also support undirected graphs. Here’s a Markov random field example:
+
 ``` r
-# Create a Markov network
 markov <- caugi(
   A %---% B + C,
   B %---% D,
@@ -594,7 +742,6 @@ p1 | p2
 For vertical stacking, use the `/` operator:
 
 ``` r
-# Stack plots vertically
 p1 / p2
 ```
 
@@ -605,7 +752,6 @@ p1 / p2
 Compositions can be nested to create complex multi-plot layouts:
 
 ``` r
-# Create a third graph
 g3 <- caugi(
   M1 %-->% M2,
   M2 %-->% M3,
@@ -620,10 +766,10 @@ p3 <- plot(g3, main = "Graph 3")
 
 ![](visualization_files/figure-html/composition-nested-1.png)
 
-You can mix operators freely:
+You can mix operators freely. Here’s an example combining horizontal and
+vertical arrangements:
 
 ``` r
-# Three plots in various arrangements
 (p1 + p2) / (p3 + p1)
 ```
 
@@ -635,19 +781,18 @@ The spacing between composed plots is controlled globally via
 [`caugi_options()`](https://caugi.org/reference/caugi_options.md):
 
 ``` r
-# Set custom spacing
 caugi_options(plot = list(spacing = grid::unit(2, "lines")))
 
-# Plots will now have more space between them
 p1 + p2
 ```
 
 ![](visualization_files/figure-html/composition-spacing-1.png)
 
-``` r
+To reset the default, you can call
+[`caugi_default_options()`](https://caugi.org/reference/caugi_default_options.md):
 
-# Reset to default
-caugi_options(plot = list(spacing = grid::unit(1, "lines")))
+``` r
+caugi_options(caugi_default_options())
 ```
 
 ## Global Plot Options
@@ -672,12 +817,6 @@ plot(cg, main = "Using Global Defaults")
 
 ![](visualization_files/figure-html/global-options-1.png)
 
-``` r
-
-# Reset to package defaults
-caugi_options(caugi_default_options())
-```
-
 ### Per-Plot Overrides
 
 Global options serve as defaults that can be overridden:
@@ -699,7 +838,7 @@ plot(cg,
 
 ``` r
 
-# Reset
+# Reset to defauls
 caugi_options(caugi_default_options())
 ```
 
@@ -756,6 +895,32 @@ caugi_options()
 #> 
 #> $plot$title_style$fontsize
 #> [1] 14.4
+#> 
+#> 
+#> $plot$tier_style
+#> $plot$tier_style$boxes
+#> [1] TRUE
+#> 
+#> $plot$tier_style$labels
+#> [1] TRUE
+#> 
+#> $plot$tier_style$fill
+#> [1] "lightsteelblue"
+#> 
+#> $plot$tier_style$col
+#> [1] "transparent"
+#> 
+#> $plot$tier_style$label_style
+#> list()
+#> 
+#> $plot$tier_style$lwd
+#> [1] 1
+#> 
+#> $plot$tier_style$alpha
+#> [1] 1
+#> 
+#> $plot$tier_style$padding
+#> [1] 4mm
 
 # Query specific option
 caugi_options("plot")
@@ -797,16 +962,42 @@ caugi_options("plot")
 #> 
 #> $plot$title_style$fontsize
 #> [1] 14.4
+#> 
+#> 
+#> $plot$tier_style
+#> $plot$tier_style$boxes
+#> [1] TRUE
+#> 
+#> $plot$tier_style$labels
+#> [1] TRUE
+#> 
+#> $plot$tier_style$fill
+#> [1] "lightsteelblue"
+#> 
+#> $plot$tier_style$col
+#> [1] "transparent"
+#> 
+#> $plot$tier_style$label_style
+#> list()
+#> 
+#> $plot$tier_style$lwd
+#> [1] 1
+#> 
+#> $plot$tier_style$alpha
+#> [1] 1
+#> 
+#> $plot$tier_style$padding
+#> [1] 4mm
 ```
 
 ## Advanced Usage
 
 ### Manual Layouts
 
-You can compute layouts separately and reuse them:
+You can compute layouts separately and reuse them. First, compute the
+layout coordinates:
 
 ``` r
-# Compute layout once
 coords <- caugi_layout(dag, method = "sugiyama")
 
 # The layout can be used for analysis or custom plotting

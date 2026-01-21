@@ -41,6 +41,7 @@ Other plotting:
 [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
 [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
 [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
+[`caugi_layout_tiered()`](https://caugi.org/reference/caugi_layout_tiered.md),
 [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md),
 [`plot()`](https://caugi.org/reference/plot.md)
@@ -57,7 +58,7 @@ p2 <- plot(cg2, main = "Graph 2")
 # Horizontal composition
 p1 + p2
 
-p1 | p2  # equivalent
+p1 | p2 # equivalent
 
 
 # Adjust spacing

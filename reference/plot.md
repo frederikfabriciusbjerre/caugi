@@ -80,6 +80,33 @@ viewports for proper coordinate handling.
   - Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
     `fontfamily`, `cex`
 
+- tier_style:
+
+  List of tier box styling parameters. Tier boxes are shown when
+  `boxes = TRUE` is set within this list. Supports:
+
+  - Appearance (passed to `gpar()`): `fill`, `col` (border color),
+    `lwd`, `lty`, `alpha`
+
+  - Geometry: `padding` (padding around tier nodes as proportion of plot
+    range, default 0.05)
+
+  - Labels: `labels` (logical or character vector). If `TRUE`, uses tier
+    names from `tiers` argument. If a character vector, uses custom
+    labels (one per tier). If `FALSE` or `NULL` (default), no labels are
+    shown.
+
+  - Label styling: `label_style` (list with `col`, `fontsize`,
+    `fontface`, etc.)
+
+  - Values can be scalars (applied to all tiers) or vectors
+    (auto-expanded to each tier in order)
+
+  - Local overrides via `by_tier`: a named list (using tier names from
+    `tiers` argument) or indexed list for per-tier customization, e.g.
+    `by_tier = list(exposures = list(fill = "lightblue"), outcome = list(fill = "yellow"))`
+    or `by_tier = list(`1` = list(fill = "lightblue"))`
+
 - main:
 
   Optional character string for plot title. If `NULL` (default), no
@@ -116,6 +143,7 @@ Other plotting:
 [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
 [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
 [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
+[`caugi_layout_tiered()`](https://caugi.org/reference/caugi_layout_tiered.md),
 [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md)
 

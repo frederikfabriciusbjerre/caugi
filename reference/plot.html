@@ -113,6 +113,25 @@ settings.</p></li>
 </ul></dd>
 
 
+<dt id="arg-tier-style">tier_style<a class="anchor" aria-label="anchor" href="#arg-tier-style"></a></dt>
+<dd><p>List of tier box styling parameters. Tier boxes are shown
+when <code>boxes = TRUE</code> is set within this list. Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>fill</code>, <code>col</code> (border color), <code>lwd</code>,
+<code>lty</code>, <code>alpha</code></p></li>
+<li><p>Geometry: <code>padding</code> (padding around tier nodes as proportion of plot range,
+default 0.05)</p></li>
+<li><p>Labels: <code>labels</code> (logical or character vector). If <code>TRUE</code>, uses tier names
+from <code>tiers</code> argument. If a character vector, uses custom labels (one per
+tier). If <code>FALSE</code> or <code>NULL</code> (default), no labels are shown.</p></li>
+<li><p>Label styling: <code>label_style</code> (list with <code>col</code>, <code>fontsize</code>, <code>fontface</code>, etc.)</p></li>
+<li><p>Values can be scalars (applied to all tiers) or vectors (auto-expanded to
+each tier in order)</p></li>
+<li><p>Local overrides via <code>by_tier</code>: a named list (using tier names from <code>tiers</code>
+argument) or indexed list for per-tier customization, e.g.
+<code>by_tier = list(exposures = list(fill = "lightblue"), outcome = list(fill = "yellow"))</code>
+or <code>by_tier = list(</code>1<code> = list(fill = "lightblue"))</code></p></li>
+</ul></dd>
+
+
 <dt id="arg-main">main<a class="anchor" aria-label="anchor" href="#arg-main"></a></dt>
 <dd><p>Optional character string for plot title. If <code>NULL</code> (default),
 no title is displayed.</p></dd>
@@ -149,6 +168,7 @@ plotted.</p>
 <code><a href="caugi_layout_fruchterman_reingold.html">caugi_layout_fruchterman_reingold()</a></code>,
 <code><a href="caugi_layout_kamada_kawai.html">caugi_layout_kamada_kawai()</a></code>,
 <code><a href="caugi_layout_sugiyama.html">caugi_layout_sugiyama()</a></code>,
+<code><a href="caugi_layout_tiered.html">caugi_layout_tiered()</a></code>,
 <code><a href="caugi_plot.html">caugi_plot()</a></code>,
 <code><a href="divide-caugi_plot-caugi_plot.html">divide-caugi_plot-caugi_plot</a></code></p></div>
     </div>

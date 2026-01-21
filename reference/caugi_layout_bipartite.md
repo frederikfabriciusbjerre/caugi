@@ -8,7 +8,7 @@ layout.
 ## Usage
 
 ``` r
-caugi_layout_bipartite(x, partition = NULL, orientation = c("rows", "columns"))
+caugi_layout_bipartite(x, partition = NULL, orientation = c("columns", "rows"))
 ```
 
 ## Arguments
@@ -49,6 +49,7 @@ Other plotting:
 [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
 [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
 [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
+[`caugi_layout_tiered()`](https://caugi.org/reference/caugi_layout_tiered.md),
 [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md),
 [`plot()`](https://caugi.org/reference/plot.md)
@@ -58,7 +59,7 @@ Other plotting:
 ``` r
 # Create a bipartite graph (causes -> effects)
 cg <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
-partition <- c(TRUE, TRUE, FALSE, FALSE)  # A, B = causes, X, Y = effects
+partition <- c(TRUE, TRUE, FALSE, FALSE) # A, B = causes, X, Y = effects
 
 # Two horizontal rows (causes on top)
 layout_rows <- caugi_layout_bipartite(cg, partition, orientation = "rows")
