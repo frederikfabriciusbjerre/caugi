@@ -337,7 +337,7 @@ NULL
 #' @references
 #' Definition 4.2.1 in Thomas Richardson. Peter Spirtes. "Ancestral graph
 #' Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
-#' <https://doi.org/10.1214/aos/1031689015>
+#' \doi{10.1214/aos/1031689015}
 #'
 #' @examples
 #' mg <- caugi(

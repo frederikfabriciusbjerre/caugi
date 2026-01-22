@@ -36,7 +36,7 @@ condition_marginalize(mg, cond_vars = "U") # DAG
 \references{
 Definition 4.2.1 in Thomas Richardson. Peter Spirtes. "Ancestral graph
 Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
-\url{https://doi.org/10.1214/aos/1031689015}
+\doi{10.1214/aos/1031689015}
 }
 \seealso{
 Other operations: 
