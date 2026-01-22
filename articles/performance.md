@@ -335,6 +335,6 @@ sessionInfo()
 #> [55] systemfonts_1.3.1   tidyselect_1.2.1    xfun_0.56          
 #> [58] tibble_3.3.1        knitr_1.51          farver_2.1.2       
 #> [61] htmltools_0.5.9     igraph_2.2.1        labeling_0.4.3     
-#> [64] rmarkdown_2.30      caugi_0.5.0         compiler_4.5.2     
+#> [64] rmarkdown_2.30      caugi_1.0.0         compiler_4.5.2     
 #> [67] S7_0.2.1
 ```

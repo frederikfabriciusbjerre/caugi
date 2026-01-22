@@ -2,6 +2,8 @@
 
 ## caugi 1.0.0
 
+CRAN release: 2026-01-22
+
 ### New Features
 
 - Add support for Ancestral Graphs (AGs), which combine directed
