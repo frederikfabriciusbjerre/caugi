@@ -15,7 +15,7 @@ caugi_layout_fruchterman_reingold(x, packing_ratio = 1.618034, ...)
 \item{x}{A \code{caugi} object.}
 
 \item{packing_ratio}{Aspect ratio for packing disconnected components
-(width/height). Default is the golden ratio (≈1.618) which works well with
+(width/height). Default is the golden ratio (1.618) which works well with
 widescreen displays. Use \code{1.0} for square grid, \code{2.0} for wider layouts,
 \code{0.5} for taller layouts, \code{Inf} for single row, or \code{0.0} for single column.}
 

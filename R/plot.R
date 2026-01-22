@@ -45,7 +45,7 @@
 #'   * `"bipartite"`: Bipartite layout (requires `partition` parameter)
 #'   * `"tiered"`: Multi-tier layout (requires `tiers` parameter)
 #' @param packing_ratio Aspect ratio for packing disconnected components
-#'   (width/height). Default is the golden ratio (≈1.618) which works well with
+#'   (width/height). Default is the golden ratio (1.618) which works well with
 #'   widescreen displays. Use `1.0` for square grid, `2.0` for wider layouts,
 #'   `0.5` for taller layouts, `Inf` for single row, or `0.0` for single column.
 #' @param ... Additional arguments passed to the specific layout function.
