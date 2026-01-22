@@ -26,10 +26,10 @@ tier indices must be consecutive starting from 0 or 1.}
 
 \item{orientation}{Character string specifying the layout orientation:
 \itemize{
-\item \code{"rows"}: Horizontal tiers (default). First tier at top (y=1),
-subsequent tiers below, last tier at bottom (y=0).
 \item \code{"columns"}: Vertical tiers. First tier at left (x=0),
 subsequent tiers to the right, last tier at right (x=1).
+\item \code{"rows"}: Horizontal tiers. First tier at top (y=1),
+subsequent tiers below, last tier at bottom (y=0).
 }}
 }
 \value{
