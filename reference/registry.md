@@ -25,7 +25,7 @@ An `edge_registry` external pointer.
 
 ## Details
 
-The intented use of the `caugi` registry is mostly for advanced users
+The intended use of the `caugi` registry is mostly for advanced users
 and developers. The registry enables users who need to define their own
 custom edge types in `caugi` directly. . It currently mostly supports
 the *representation* of new edges, but for users that might want to
