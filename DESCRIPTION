@@ -28,7 +28,7 @@ Description: Create, query, and modify causal graphs. 'caugi' (Causal Graph
     provides a simple interface to build, structure, and examine causal
     relationships.
 License: MIT + file LICENSE
-language: en-US
+Language: en-US
 URL: https://caugi.org/
 BugReports: https://github.com/frederikfabriciusbjerre/caugi/issues
 Depends:
