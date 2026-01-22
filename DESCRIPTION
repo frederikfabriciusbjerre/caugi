@@ -44,6 +44,7 @@ Suggests:
     bnlearn,
     dagitty,
     devtools,
+    bench,
     ggm,
     graph,
     gRbase,
