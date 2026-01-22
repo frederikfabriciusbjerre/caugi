@@ -26,7 +26,7 @@ new edge types, enabling users to extend the set of supported edges in
 global instance of the registry throughout the R session.
 }
 \details{
-The intented use of the \code{caugi} registry is mostly for advanced users and
+The intended use of the \code{caugi} registry is mostly for advanced users and
 developers. The registry enables users who need to define their own custom
 edge types in \code{caugi} directly. . It currently mostly supports the
 \emph{representation} of new edges, but for users that might want to represent
