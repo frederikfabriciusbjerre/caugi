@@ -32,7 +32,7 @@ A `caugi` object of class `"AG"`.
 
 Definition 4.2.1 in Thomas Richardson. Peter Spirtes. "Ancestral graph
 Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
-<https://doi.org/10.1214/aos/1031689015>
+[doi:10.1214/aos/1031689015](https://doi.org/10.1214/aos/1031689015)
 
 ## See also
 
@@ -54,12 +54,12 @@ mg <- caugi(
 )
 
 condition_marginalize(mg, marg_vars = "U") # ADMG
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x556eca6a6ce0>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x555c7bfba550>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y, X<->Y
 condition_marginalize(mg, cond_vars = "U") # DAG
-#> <caugi object; 4 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x556ec97dd540>
+#> <caugi object; 4 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x555c7c9757c0>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y

@@ -30,11 +30,11 @@ caugi_layout_bipartite(x, partition = NULL, orientation = c("columns", "rows"))
 
   Character string specifying the layout orientation:
 
-  - `"rows"`: Two horizontal rows (default). First partition on top
-    (y=1), second partition on bottom (y=0).
-
   - `"columns"`: Two vertical columns. First partition on right (x=1),
     second partition on left (x=0).
+
+  - `"rows"`: Two horizontal rows. First partition on top (y=1), second
+    partition on bottom (y=0).
 
 ## Value
 

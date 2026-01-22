@@ -28,7 +28,7 @@ undirected graphs. Information Processing Letters, 31(1), 7-15.
 - packing_ratio:
 
   Aspect ratio for packing disconnected components (width/height).
-  Default is the golden ratio (≈1.618) which works well with widescreen
+  Default is the golden ratio (1.618) which works well with widescreen
   displays. Use `1.0` for square grid, `2.0` for wider layouts, `0.5`
   for taller layouts, `Inf` for single row, or `0.0` for single column.
 

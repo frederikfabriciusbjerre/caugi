@@ -102,7 +102,7 @@
   backend, improving correctness of direction-dependent
   algorithms/metrics (e.g. topological sorting and structural Hamming
   distance computations).
-- Fix bug in `is_cpdag` function that return `TRUE` on non-complete
+- Fix bug in `is_cpdag` function that returns `TRUE` on non-complete
   PDAGs.
 - Fix bug in `shd` returning positive values for equivalent graphs given
   in shuffled order.

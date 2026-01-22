@@ -39,11 +39,11 @@ caugi_layout_tiered(x, tiers, orientation = c("columns", "rows"))
 
   Character string specifying the layout orientation:
 
-  - `"rows"`: Horizontal tiers (default). First tier at top (y=1),
-    subsequent tiers below, last tier at bottom (y=0).
-
   - `"columns"`: Vertical tiers. First tier at left (x=0), subsequent
     tiers to the right, last tier at right (x=1).
+
+  - `"rows"`: Horizontal tiers. First tier at top (y=1), subsequent
+    tiers below, last tier at bottom (y=0).
 
 ## Value
 
