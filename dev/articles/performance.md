@@ -314,7 +314,7 @@ sessionInfo()
 #> [1] ggplot2_4.0.1
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] tidyr_1.3.1         sass_0.4.10         generics_0.1.4     
+#>  [1] tidyr_1.3.2         sass_0.4.10         generics_0.1.4     
 #>  [4] digest_0.6.39       magrittr_2.0.4      evaluate_1.0.5     
 #>  [7] grid_4.5.2          RColorBrewer_1.1-3  fastmap_1.2.0      
 #> [10] jsonlite_2.0.0      graph_1.88.1        bench_1.1.4        
