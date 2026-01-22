@@ -1,0 +1,187 @@
+# Compute Graph Layout
+
+Computes node coordinates for graph visualization using specified layout
+algorithm. If the graph has not been built yet, it will be built
+automatically before computing the layout.
+
+## Usage
+
+``` r
+caugi_layout(
+  x,
+  method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite",
+    "tiered"),
+  packing_ratio = 1.618034,
+  ...
+)
+```
+
+## Source
+
+Fruchterman, T. M. J., & Reingold, E. M. (1991). Graph drawing by
+force-directed placement. Software: Practice and Experience, 21(11),
+1129-1164.
+[doi:10.1002/spe.4380211102](https://doi.org/10.1002/spe.4380211102)
+
+Kamada, T., & Kawai, S. (1989). An algorithm for drawing general
+undirected graphs. Information Processing Letters, 31(1), 7-15.
+[doi:10.1016/0020-0190(89)90102-6](https://doi.org/10.1016/0020-0190%2889%2990102-6)
+
+Sugiyama, K., Tagawa, S., & Toda, M. (1981). Methods for visual
+understanding of hierarchical system structures. IEEE Transactions on
+Systems, Man, and Cybernetics, 11(2), 109-125.
+[doi:10.1109/TSMC.1981.4308636](https://doi.org/10.1109/TSMC.1981.4308636)
+
+## Arguments
+
+- x:
+
+  A `caugi` object. Must contain only directed edges for Sugiyama
+  layout.
+
+- method:
+
+  Character string specifying the layout method. Options:
+
+  - `"auto"`: Automatically choose the best layout (default). Selection
+    order:
+
+    1.  If `tiers` is provided, uses `"tiered"`
+
+    2.  If `partition` is provided, uses `"bipartite"`
+
+    3.  If graph has only directed edges, uses `"sugiyama"`
+
+    4.  Otherwise, uses `"fruchterman-reingold"`
+
+  - `"sugiyama"`: Hierarchical layout for DAGs (requires only directed
+    edges)
+
+  - `"fruchterman-reingold"`: Fast spring-electrical layout (works with
+    all edge types)
+
+  - `"kamada-kawai"`: High-quality stress minimization (works with all
+    edge types)
+
+  - `"bipartite"`: Bipartite layout (requires `partition` parameter)
+
+  - `"tiered"`: Multi-tier layout (requires `tiers` parameter)
+
+- packing_ratio:
+
+  Aspect ratio for packing disconnected components (width/height).
+  Default is the golden ratio (1.618) which works well with widescreen
+  displays. Use `1.0` for square grid, `2.0` for wider layouts, `0.5`
+  for taller layouts, `Inf` for single row, or `0.0` for single column.
+
+- ...:
+
+  Additional arguments passed to the specific layout function. For
+  bipartite layouts, use `partition` (logical vector) and `orientation`
+  (`"columns"` or `"rows"`). For tiered layouts, use `tiers` (list,
+  named vector, or data.frame) and `orientation` (`"rows"` or
+  `"columns"`).
+
+## Value
+
+A `data.frame` with columns `name`, `x`, and `y` containing node names
+and their coordinates.
+
+## Layout Algorithms
+
+**Sugiyama (Hierarchical Layout)**
+
+Optimized for directed acyclic graphs (DAGs). Places nodes in layers to
+emphasize hierarchical structure and causal flow from top to bottom.
+Edges are routed to minimize crossings. Best for visualizing clear
+cause-effect relationships. Only works with directed edges.
+
+**Fruchterman-Reingold (Spring-Electrical)**
+
+Fast force-directed layout using a spring-electrical model. Treats edges
+as springs and nodes as electrically charged particles. Produces
+organic, symmetric layouts with uniform edge lengths. Good for
+general-purpose visualization and works with all edge types. Results are
+deterministic.
+
+**Kamada-Kawai (Stress Minimization)**
+
+High-quality force-directed layout that minimizes "stress" by making
+Euclidean distances proportional to graph-theoretic distances. Better
+preserves the global structure and path lengths compared to
+Fruchterman-Reingold. Ideal for publication-quality visualizations where
+accurate distance representation matters. Works with all edge types and
+produces deterministic results.
+
+## See also
+
+Other plotting:
+[`add-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md),
+[`caugi_layout_bipartite()`](https://caugi.org/dev/reference/caugi_layout_bipartite.md),
+[`caugi_layout_fruchterman_reingold()`](https://caugi.org/dev/reference/caugi_layout_fruchterman_reingold.md),
+[`caugi_layout_kamada_kawai()`](https://caugi.org/dev/reference/caugi_layout_kamada_kawai.md),
+[`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md),
+[`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_tiered.md),
+[`caugi_plot()`](https://caugi.org/dev/reference/caugi_plot.md),
+[`divide-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md),
+[`plot()`](https://caugi.org/dev/reference/plot.md)
+
+## Examples
+
+``` r
+cg <- caugi(
+  A %-->% B + C,
+  B %-->% D,
+  C %-->% D,
+  class = "DAG"
+)
+
+# Default: auto-selects best layout
+layout <- caugi_layout(cg)
+
+# Auto-selects tiered when tiers provided
+cg_tiered <- caugi(X1 %-->% M1, X2 %-->% M2, M1 %-->% Y, M2 %-->% Y)
+tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+layout_auto <- caugi_layout(cg_tiered, tiers = tiers) # Uses "tiered"
+
+# Explicitly use hierarchical layout
+layout_sug <- caugi_layout(cg, method = "sugiyama")
+
+# Use force-directed for organic appearance
+layout_fr <- caugi_layout(cg, method = "fruchterman-reingold")
+
+# Use stress minimization for publication quality
+layout_kk <- caugi_layout(cg, method = "kamada-kawai")
+
+# Bipartite layout with auto-detected partition
+cg_bp <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
+layout_bp_rows <- caugi_layout(
+  cg_bp,
+  method = "bipartite",
+  orientation = "rows"
+)
+
+# Explicit partition
+partition <- c(TRUE, TRUE, FALSE, FALSE)
+layout_bp_cols <- caugi_layout(
+  cg_bp,
+  method = "bipartite",
+  partition = partition,
+  orientation = "columns"
+)
+
+# Tiered layout with three tiers
+cg_tiered <- caugi(
+  X1 %-->% M1 + M2,
+  X2 %-->% M1 + M2,
+  M1 %-->% Y,
+  M2 %-->% Y
+)
+tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+layout_tiered <- caugi_layout(
+  cg_tiered,
+  method = "tiered",
+  tiers = tiers,
+  orientation = "rows"
+)
+```
