@@ -3,11 +3,11 @@ Title: Causal Graph Interface
 Version: 0.5.0
 Authors@R: c(
     person(
-      given = "Frederik", 
-      family = "Fabricius-Bjerre", 
-      email = "frederik@fabriciusbjerre.dk", 
+      given = "Frederik",
+      family = "Fabricius-Bjerre",
+      email = "frederik@fabriciusbjerre.dk",
       role = c("aut", "cre", "cph")
-    ), 
+    ),
     person(
       given = "Johan",
       family = "Larsson",
@@ -24,14 +24,14 @@ Authors@R: c(
     )
   )
 Description: Create, query, and modify causal graphs. 'caugi' (Causal Graph
-    Interface) is a causality-first, high performance graph package that 
-    provides a simple interface to build, structure, and examine causal 
+    Interface) is a causality-first, high performance graph package that
+    provides a simple interface to build, structure, and examine causal
     relationships.
 License: MIT + file LICENSE
 language: en-US
 URL: https://caugi.org/
 BugReports: https://github.com/frederikfabriciusbjerre/caugi/issues
-Depends: 
+Depends:
     R (>= 4.2)
 Imports:
     data.table,
@@ -55,7 +55,7 @@ Suggests:
     rextendr,
     rmarkdown,
     testthat
-VignetteBuilder: 
+VignetteBuilder:
     knitr
 Config/rextendr/version: 0.4.2
 Encoding: UTF-8
