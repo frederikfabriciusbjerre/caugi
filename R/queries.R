@@ -498,6 +498,8 @@ is_mag <- function(cg, force_check = FALSE) {
 #'
 #' @param cg A `caugi` object.
 #'
+#' @param ... Additional arguments (currently unused).
+#'
 #' @returns A `data.table` with a `name` column.
 #'
 #' @rdname nodes
@@ -535,6 +537,8 @@ V <- nodes # igraph notation
 #' @title Get edges of a `caugi`.
 #'
 #' @param cg A `caugi` object.
+#'
+#' @param ... Additional arguments (currently unused).
 #'
 #' @rdname edges
 #'

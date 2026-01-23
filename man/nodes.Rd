@@ -14,6 +14,8 @@ V(cg, ...)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
+
+\item{...}{Additional arguments (currently unused).}
 }
 \value{
 A \code{data.table} with a \code{name} column.
