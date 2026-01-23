@@ -5,9 +5,9 @@
 \alias{E}
 \title{Get edges of a \code{caugi}.}
 \usage{
-edges(cg)
+edges(cg, ...)
 
-E(cg)
+E(cg, ...)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}

@@ -515,7 +515,10 @@ is_mag <- function(cg, force_check = FALSE) {
 #' @concept queries
 #'
 #' @export
-nodes <- function(cg) {
+nodes <- S7::new_generic("nodes", "cg")
+
+#' @export
+S7::method(nodes, caugi) <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
   cg@nodes
@@ -550,7 +553,10 @@ V <- nodes # igraph notation
 #' @returns A `data.table` with columns `from`, `edge`, and `to`.
 #'
 #' @export
-edges <- function(cg) {
+edges <- S7::new_generic("edges", "cg")
+
+#' @export
+S7::method(edges, caugi) <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
   cg@edges

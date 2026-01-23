@@ -6,11 +6,11 @@
 \alias{V}
 \title{Get nodes or edges of a \code{caugi}}
 \usage{
-nodes(cg)
+nodes(cg, ...)
 
-vertices(cg)
+vertices(cg, ...)
 
-V(cg)
+V(cg, ...)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
