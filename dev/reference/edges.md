@@ -5,9 +5,9 @@ Get edges of a `caugi`.
 ## Usage
 
 ``` r
-edges(cg)
+edges(cg, ...)
 
-E(cg)
+E(cg, ...)
 ```
 
 ## Arguments
@@ -15,6 +15,10 @@ E(cg)
 - cg:
 
   A `caugi` object.
+
+- ...:
+
+  Additional arguments (currently unused).
 
 ## Value
 

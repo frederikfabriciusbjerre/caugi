@@ -5,11 +5,11 @@ Get nodes or edges of a `caugi`
 ## Usage
 
 ``` r
-nodes(cg)
+nodes(cg, ...)
 
-vertices(cg)
+vertices(cg, ...)
 
-V(cg)
+V(cg, ...)
 ```
 
 ## Arguments
@@ -17,6 +17,10 @@ V(cg)
 - cg:
 
   A `caugi` object.
+
+- ...:
+
+  Additional arguments (currently unused).
 
 ## Value
 
