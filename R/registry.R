@@ -130,9 +130,6 @@ register_caugi_edge <- function(
   if (!is.character(glyph) || length(glyph) != 1L) {
     stop("glyph must be a single string")
   }
-  if (nchar(glyph) != 3L) {
-    stop("glyph must be a non-empty string of length 3 (e.g., '-->')")
-  }
   if (grepl("%", glyph)) {
     stop("glyph must not contain '%'")
   }
