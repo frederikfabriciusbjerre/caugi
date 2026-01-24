@@ -6,7 +6,7 @@ mod transforms;
 
 use super::error::DagError;
 use super::CaugiGraph;
-use crate::edges::{EdgeClass, Mark};
+use crate::edges::EdgeClass;
 use crate::graph::alg::bitset;
 use crate::graph::alg::csr;
 use crate::graph::alg::directed_part_is_acyclic;
@@ -44,31 +44,25 @@ impl Dag {
             return Err(DagError::DirectedCycle);
         }
 
-        // Count `(parents, children)` per row.
-        // side[k] stores position: 0 = tail position, 1 = head position.
-        // To determine parent/child, check if my mark is Arrow.
+        // Count `(parents, children)` per row using mark helpers.
+        // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
+        // is_outgoing_arrow(k) = Arrow points FROM me = neighbor is child
         let mut deg: Vec<(u32, u32)> = vec![(0, 0); n];
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        // My mark depends on my position
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
+                        if core.is_incoming_arrow(k) {
+                            deg[i].0 += 1; // parent (Arrow points INTO me)
                         } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            deg[i].0 += 1 // parent (Arrow points INTO me)
-                        } else {
-                            deg[i].1 += 1 // child (Arrow points FROM me)
+                            deg[i].1 += 1; // child (Arrow points FROM me)
                         }
                     }
                     _ => {
                         return Err(DagError::InvalidEdgeType {
                             found: spec.glyph.clone(),
-                        })
+                        });
                     }
                 }
             }
@@ -97,13 +91,7 @@ impl Dag {
 
             for k in core.row_range(i as u32) {
                 let v = core.col_index[k];
-                let spec = &core.registry.specs[core.etype[k] as usize];
-                let my_mark = if core.side[k] == 0 {
-                    spec.tail
-                } else {
-                    spec.head
-                };
-                if my_mark == Mark::Arrow {
+                if core.is_incoming_arrow(k) {
                     pa_seg[pa_cur] = v;
                     pa_cur += 1;
                 } else {
@@ -245,6 +233,7 @@ impl Dag {
     }
 
     /// Drop predicate for removing the first edge on each proper causal path.
+    /// Uses mark-based direction: is_outgoing_arrow means row_u -> v.
     pub(crate) fn drop_first_edge(
         &self,
         xs_mask: &[bool],
@@ -254,11 +243,13 @@ impl Dag {
     ) -> bool {
         let c = self.core_ref();
         let v = c.col_index[k];
-        if c.side[k] == 0 {
-            // edge v -> row_u
+        if c.is_outgoing_arrow(k) {
+            // edge row_u -> v (Arrow points FROM me toward neighbor)
+            // Drop if row_u is in X and v can reach Y
             xs_mask[row_u as usize] && reach_y[v as usize]
         } else {
-            // edge row_u -> v
+            // edge v -> row_u (Arrow points INTO me)
+            // Drop if v is in X and row_u can reach Y
             xs_mask[v as usize] && reach_y[row_u as usize]
         }
     }

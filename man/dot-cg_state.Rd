@@ -4,17 +4,12 @@
 \alias{.cg_state}
 \title{Create the state environment for a \code{caugi} (internal)}
 \usage{
-.cg_state(nodes, edges, ptr, built, simple, class, name_index_map)
+.cg_state(nodes, edges, simple, class, name_index_map, session)
 }
 \arguments{
 \item{nodes}{A \code{data.table} of nodes with a \code{name} column.}
 
 \item{edges}{A \code{data.table} of edges with \code{from}, \code{edge}, and \code{to} columns.}
-
-\item{ptr}{A pointer to the underlying Rust graph structure
-(or \code{NULL} if not built).}
-
-\item{built}{Logical; whether the graph has been built.}
 
 \item{simple}{Logical; whether the graph is simple
 (no parallel edges or self-loops).}
@@ -23,6 +18,9 @@
 
 \item{name_index_map}{A \code{fastmap} mapping node names to their zero indexed
 indices.}
+
+\item{session}{A pointer to the GraphSession Rust object. This is the
+canonical Rust state that handles lazy compilation and caching.}
 }
 \value{
 An environment containing the graph state.

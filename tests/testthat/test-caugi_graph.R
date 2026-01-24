@@ -217,8 +217,9 @@ test_that("building DAG with cycle results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "DAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %-->% A) |> build()
+    cg |> add_edge(B %-->% A)
   )
 })
 
@@ -236,8 +237,9 @@ test_that("building PDAG with directed cycle results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "PDAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %-->% A) |> build()
+    cg |> add_edge(B %-->% A)
   )
 })
 
@@ -257,8 +259,9 @@ test_that("building PDAG with bidirected edges results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "PDAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %o->% C) |> build()
+    cg |> add_edge(B %o->% C)
   )
 })
 
@@ -465,11 +468,12 @@ test_that("caugi errors with trailing commas", {
   )
 })
 
-test_that("caugi warns when build = TRUE for empty graph", {
-  expect_warning(
-    caugi(build = TRUE),
-    "No edges or nodes provided; graph will not be built."
-  )
+test_that("caugi accepts build parameter for backward compatibility", {
+  # build parameter is deprecated but should not cause error
+  cg <- caugi(A %-->% B)
+  expect_true(!is.null(cg@session))
+  cg2 <- caugi(A %-->% B)
+  expect_true(!is.null(cg2@session))
 })
 
 test_that("caugi with wrong node input errors", {
@@ -611,7 +615,7 @@ test_that(".view_to_caugi fails on faulty node_names", {
 })
 
 test_that(".view_to_caugi works for empty cg", {
-  cg <- caugi(A, B, build = TRUE)
+  cg <- caugi(A, B)
   expect_equal(cg, .view_to_caugi(cg@ptr))
 })
 

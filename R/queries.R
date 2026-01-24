@@ -155,7 +155,7 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 #' @export
 is_acyclic <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (force_check) {
     is_it <- is_acyclic_ptr(cg@ptr)
   } else if (
@@ -213,7 +213,7 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' @export
 is_dag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "DAG") && !force_check) {
     is_it <- TRUE
   } else {
@@ -273,7 +273,7 @@ is_dag <- function(cg, force_check = FALSE) {
 #' @export
 is_pdag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "PDAG") && !force_check) {
     is_it <- TRUE
   } else {
@@ -315,7 +315,7 @@ is_pdag <- function(cg, force_check = FALSE) {
 #' @export
 is_cpdag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   is_it <- is_cpdag_ptr(cg@ptr)
   is_it
 }
@@ -349,7 +349,7 @@ is_cpdag <- function(cg) {
 #' @export
 is_ug <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "UG") && !force_check) {
     is_it <- TRUE
   } else {
@@ -394,7 +394,7 @@ is_ug <- function(cg, force_check = FALSE) {
 #' @export
 is_admg <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "ADMG") && !force_check) {
     is_it <- TRUE
   } else {
@@ -441,7 +441,7 @@ is_admg <- function(cg, force_check = FALSE) {
 #' @export
 is_ag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "AG") && !force_check) {
     is_it <- TRUE
   } else {
@@ -481,7 +481,7 @@ is_ag <- function(cg, force_check = FALSE) {
 #' @export
 is_mag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "MAG") && !force_check) {
     is_it <- TRUE
   } else {
@@ -517,7 +517,7 @@ is_mag <- function(cg, force_check = FALSE) {
 #' @export
 nodes <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   cg@nodes
 }
 
@@ -552,7 +552,7 @@ V <- nodes # igraph notation
 #' @export
 edges <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   cg@edges
 }
 
@@ -583,7 +583,7 @@ E <- edges # igraph notation
 #' @export
 edge_types <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   unique(cg@edges$edge)
 }
 # ──────────────────────────────────────────────────────────────────────────────
@@ -632,9 +632,7 @@ parents <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -704,9 +702,7 @@ children <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -824,9 +820,7 @@ neighbors <- function(
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
 
   mode <- match.arg(mode)
 
@@ -902,9 +896,7 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -969,9 +961,7 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -1051,9 +1041,7 @@ anteriors <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -1118,9 +1106,7 @@ markov_blanket <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -1175,7 +1161,7 @@ markov_blanket <- function(cg, nodes = NULL, index = NULL) {
 #' @export
 exogenous <- function(cg, undirected_as_parents = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   idx0 <- exogenous_nodes_of_ptr(cg@ptr, undirected_as_parents)
   cg@nodes$name[idx0 + 1L]
 }
@@ -1214,7 +1200,7 @@ exogenous <- function(cg, undirected_as_parents = FALSE) {
 #' @export
 topological_sort <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   idx0 <- topological_sort_ptr(cg@ptr)
   cg@nodes$name[idx0 + 1L]
 }
@@ -1254,9 +1240,7 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
     return(.getter_output(
       cg,
@@ -1311,7 +1295,7 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
 #' @export
 districts <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   idx0_list <- districts_ptr(cg@ptr)
   lapply(idx0_list, function(idx0) cg@nodes$name[idx0 + 1L])
 }
@@ -1357,7 +1341,7 @@ m_separated <- function(
   Z_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
 
   X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
@@ -1396,7 +1380,7 @@ m_separated <- function(
 #' @export
 subgraph <- function(cg, nodes = NULL, index = NULL) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
 
   nodes_supplied <- !missing(nodes) && !is.null(nodes)
   index_supplied <- !missing(index) && !is.null(index)
@@ -1476,14 +1460,31 @@ subgraph <- function(cg, nodes = NULL, index = NULL) {
     .set_names(as.list(seq_len(nrow(nodes_sub)) - 1L), nodes_sub$name)
   )
 
+  # Create session for the subgraph
+  reg <- caugi_registry()
+  n_sub <- nrow(nodes_sub)
+  session_sub <- graph_session_new(reg, n_sub, cg@simple, cg@graph_class)
+  graph_session_set_names(session_sub, nodes_sub$name)
+
+  if (nrow(edges_sub) > 0L) {
+    id_sub <- seq_len(n_sub) - 1L
+    names(id_sub) <- nodes_sub$name
+    codes <- edge_registry_code_of(reg, edges_sub$edge)
+    graph_session_set_edges(
+      session_sub,
+      as.integer(unname(id_sub[edges_sub$from])),
+      as.integer(unname(id_sub[edges_sub$to])),
+      as.integer(codes)
+    )
+  }
+
   state_sub <- .cg_state(
     nodes = nodes_sub,
     edges = edges_sub,
-    ptr = ptr_sub,
-    built = TRUE,
     simple = cg@simple,
     class = cg@graph_class,
-    name_index_map = name_index_map_sub
+    name_index_map = name_index_map_sub,
+    session = session_sub
   )
   caugi(state = state_sub)
 }

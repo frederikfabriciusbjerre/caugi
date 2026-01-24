@@ -122,9 +122,7 @@ caugi_layout <- function(
   method <- match.arg(method)
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
+
 
   # Dispatch to specific layout function
   layout_fn <- switch(
@@ -201,9 +199,7 @@ caugi_layout_bipartite <- function(
   orientation <- match.arg(orientation)
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
+
 
   # Auto-detect partition if not provided
   if (is.null(partition)) {
@@ -283,9 +279,7 @@ caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
+
 
   edge_types <- unique(edges(x)[["edge"]])
   non_directed <- setdiff(edge_types, "-->")
@@ -351,9 +345,7 @@ caugi_layout_fruchterman_reingold <- function(
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
+
 
   coords <- compute_layout_ptr(x@ptr, "fruchterman-reingold", packing_ratio)
 
@@ -401,9 +393,7 @@ caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
+
 
   coords <- compute_layout_ptr(x@ptr, "kamada-kawai", packing_ratio)
 
@@ -564,9 +554,7 @@ S7::method(plot, caugi) <- function(
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
+
 
   # Compute layout coordinates
   if (is.character(layout)) {

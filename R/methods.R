@@ -71,28 +71,26 @@ S7::method(print, caugi) <- function(
 
   graph_class <- x@graph_class
   simple <- x@simple
-  built <- x@built
-  ptr <- x@ptr
+  session <- x@session
 
-  ptr_str <- if (is.null(ptr)) {
+  session_str <- if (is.null(session)) {
     "NULL"
   } else {
-    ptr_chr <- format(ptr)
-    if (grepl("0x[0-9a-fA-F]+", ptr_chr)) {
-      sub(".*(0x[0-9a-fA-F]+).*", "\\1", ptr_chr)
+    session_chr <- format(session)
+    if (grepl("0x[0-9a-fA-F]+", session_chr)) {
+      sub(".*(0x[0-9a-fA-F]+).*", "\\1", session_chr)
     } else {
-      ptr_chr
+      session_chr
     }
   }
 
   # header split across two lines: main summary + graph_class line
   header <- sprintf(
-    "<caugi object; %d nodes, %d edges; simple: %s; built: %s; ptr=%s>",
+    "<caugi object; %d nodes, %d edges; simple: %s; session=%s>",
     n_nodes,
     n_edges,
     simple,
-    built,
-    ptr_str
+    session_str
   )
   header_class <- sprintf("  graph_class: %s", graph_class)
 

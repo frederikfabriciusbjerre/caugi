@@ -52,7 +52,7 @@ d_separated <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-  cg <- build(cg)
+
 
   X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
@@ -118,7 +118,7 @@ adjustment_set <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-  cg <- build(cg)
+
   type <- match.arg(type)
 
   X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
@@ -182,7 +182,7 @@ is_valid_backdoor <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-  cg <- build(cg)
+
 
   X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
@@ -264,7 +264,7 @@ all_backdoor_sets <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-  cg <- build(cg)
+
 
   X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
@@ -331,7 +331,7 @@ is_valid_adjustment_admg <- function(
   if (is.null(Y) && is.null(Y_index)) {
     stop("Y (or Y_index) must be provided.", call. = FALSE)
   }
-  cg <- build(cg)
+
 
   X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
@@ -387,7 +387,7 @@ all_adjustment_sets_admg <- function(
   if (is.null(Y) && is.null(Y_index)) {
     stop("Y (or Y_index) must be provided.", call. = FALSE)
   }
-  cg <- build(cg)
+
 
   X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)

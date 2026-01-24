@@ -28,7 +28,7 @@ add/remove.}
 The updated \code{caugi} object.
 }
 \description{
-Internal helper to add or remove nodes/edges and mark graph as
-not built.
+Internal helper to add or remove nodes/edges. The session
+is automatically synced after modifications.
 }
 \keyword{internal}

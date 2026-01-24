@@ -142,7 +142,7 @@ simulate_data <- function(
       call. = FALSE
     )
   }
-  cg <- build(cg)
+
   if (is_empty_caugi(cg)) {
     stop("Cannot simulate data from an empty graph", call. = FALSE)
   }

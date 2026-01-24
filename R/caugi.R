@@ -38,12 +38,6 @@
 #' @param simple Logical; if `TRUE` (default), the graph is a simple graph, and
 #' the function will throw an error if the input contains parallel edges or
 #' self-loops.
-#' @param build Logical; if `TRUE` (default), the graph will be built using the
-#' Rust backend. If `FALSE`, the graph will not be built, and the Rust backend
-#' cannot be used. The graph will build, when queries are made to the graph or
-#' if calling [build()]. __Note__: Even if `build = TRUE`, if no edges or
-#' nodes are provided, the graph will not be built and the pointer will be
-#' `NULL`.
 #' @param class Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`,
 #' `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick the appropriate
 #' class based on the first match in the order of `"DAG"`, `"UG"`, `"PDAG"`,
@@ -89,18 +83,7 @@
 #' )
 #'
 #' cg4@simple # FALSE
-#' cg4@built # TRUE
 #' cg4@graph_class # "UNKNOWN"
-#'
-#' # create graph, but don't built Rust object yet, which is needed for queries
-#' cg5 <- caugi(
-#'   A %-->% B + C,
-#'   B %-->% D,
-#'   class = "DAG",
-#'   build = FALSE
-#' )
-#'
-#' cg5@built # FALSE
 #'
 #' @family caugi
 #' @concept caugi
@@ -139,75 +122,29 @@ caugi <- S7::new_class(
     ),
     ptr = S7::new_property(
       S7::class_any,
-      getter = function(self) self@`.state`$ptr,
+      getter = function(self) {
+        # Derive ptr from session - triggers lazy compilation if needed
+        session <- self@`.state`$session
+        if (is.null(session)) {
+          return(NULL)
+        }
+        graph_session_view_ptr(session)
+      },
       setter = function(self, value) {
         stop(
           "`ptr` property is read-only via @ <-. ",
-          "Use `build()` to (re)build the graph.",
+          "The pointer is managed by the session.",
           call. = FALSE
         )
       }
     ),
     simple = S7::new_property(
       S7::class_logical,
-      getter = function(self) {
-        # we would like to return the Rust state if built
-        if (is.null(self@ptr)) {
-          return(self@`.state`$simple)
-        }
-        # extra precuation
-        if (self@`.state`$simple != is_simple_ptr(self@ptr)) {
-          stop(
-            paste0(
-              "Internal warning: graph simplicity mismatch between R (",
-              self@`.state`$simple,
-              ") and Rust (",
-              is_simple_ptr(self@ptr),
-              "). ",
-              "Please report this issue."
-            ),
-            call. = FALSE
-          )
-        }
-        is_simple_ptr(self@ptr)
-      }
-    ),
-    built = S7::new_property(
-      S7::class_logical,
-      getter = function(self) self@`.state`$built,
-      setter = function(self, value) {
-        stop(
-          "`built` property is read-only via @ <-. ",
-          "It should only be set at construction or when calling `build()`.",
-          call. = FALSE
-        )
-      }
+      getter = function(self) self@`.state`$simple
     ),
     graph_class = S7::new_property(
       S7::class_character,
-      getter = function(self) {
-        # we would like to return the Rust state if built
-        if (is.null(self@ptr)) {
-          return(self@`.state`$class)
-        }
-        # extra precuation
-        if (
-          toupper(self@`.state`$class) != toupper(graph_class_ptr(self@ptr))
-        ) {
-          stop(
-            paste0(
-              "Internal warning: graph class mismatch between R (",
-              self@`.state`$class,
-              ") and Rust (",
-              graph_class_ptr(self@ptr),
-              "). ",
-              "Please report this issue."
-            ),
-            call. = FALSE
-          )
-        }
-        graph_class_ptr(self@ptr)
-      },
+      getter = function(self) self@`.state`$class,
       setter = function(self, value) {
         stop(
           "`graph_class` property is read-only via @ <-. ",
@@ -228,6 +165,19 @@ caugi <- S7::new_class(
           call. = FALSE
         )
       }
+    ),
+    session = S7::new_property(
+      S7::class_any,
+      getter = function(self) {
+        return(self@`.state`$session)
+      },
+      setter = function(self, value) {
+        stop(
+          "`session` property is read-only via @ <-. ",
+          "It is managed internally by the Rust backend.",
+          call. = FALSE
+        )
+      }
     )
   ),
   validator = function(self) {
@@ -242,38 +192,11 @@ caugi <- S7::new_class(
       return("If simple = FALSE, class must be 'UNKNOWN', 'ADMG', or 'AG'")
     }
 
-    if (is.null(self@ptr) && s$built) {
-      return(paste0(
-        "Internal error: graph pointer is NULL but built = TRUE. ",
-        "Please report this issue."
-      ))
+    # Validate session exists for non-empty graphs
+    if (is.null(s$session) && nrow(s$nodes) > 0L) {
+      return("Internal error: session is NULL for non-empty graph.")
     }
 
-    # if the graph has been built and the pointer exists, check consistency
-    if (!is.null(self@ptr) && s$built) {
-      if (toupper(graph_class_ptr(self@ptr)) != toupper(s$class)) {
-        return(paste0(
-          "Internal error: graph class mismatch between R (",
-          s$class,
-          ") and Rust (",
-          graph_class_ptr(self@ptr),
-          "). ",
-          "Please report this issue."
-        ))
-      }
-      if (is_simple_ptr(self@ptr) != s$simple) {
-        return(paste0(
-          "Internal error: graph simplicity mismatch between R (",
-          s$simple,
-          ") and Rust (",
-          is_simple_ptr(self@ptr),
-          "). ",
-          "Please report this issue."
-        ))
-      }
-    }
-
-    # todo: how may a user corrupt via setting cg@.state$field <- value?
     NULL
   },
   constructor = function(
@@ -284,7 +207,6 @@ caugi <- S7::new_class(
     nodes = NULL,
     edges_df = NULL,
     simple = TRUE,
-    build = TRUE,
     class = c("AUTO", "DAG", "UG", "PDAG", "ADMG", "AG", "UNKNOWN"),
     state = NULL
   ) {
@@ -411,12 +333,6 @@ caugi <- S7::new_class(
       edges <- .edge_constructor(from = from, edge = edge, to = to)
       declared <- nodes
     } else {
-      if (build == TRUE && !missing(build)) {
-        warning(
-          "No edges or nodes provided; graph will not be built.",
-          call. = FALSE
-        )
-      }
       edges <- .edge_constructor()
       declared <- nodes
     }
@@ -440,15 +356,23 @@ caugi <- S7::new_class(
     # Initialize caugi registry (if not already registered)
     reg <- caugi_registry()
 
-    # Initialize graph pointer and built flag
-    gptr <- NULL
-    built <- FALSE
+    # initialize fastmap for name to index mapping
+    name_index_map <- fastmap::fastmap()
+    if (n > 0L) {
+      do.call(
+        name_index_map$mset,
+        .set_names(as.list(seq_len(n) - 1L), nodes$name)
+      )
+    }
 
-    # Build the graph using the Rust backend
-    if (build && n > 0L) {
+    # Create GraphSession - the canonical Rust state
+    # Session handles lazy compilation and caching internally
+    session <- NULL
+    if (n > 0L) {
+      # Validate and resolve class using the builder (this ensures type safety)
+      # The builder validates edge types and class compatibility
       b <- graph_builder_new(reg, n = n, simple = simple)
-
-      if (nrow(edges)) {
+      if (nrow(edges) > 0L) {
         codes <- edge_registry_code_of(reg, edges$edge)
         graph_builder_add_edges(
           b,
@@ -457,31 +381,33 @@ caugi <- S7::new_class(
           as.integer(codes)
         )
       }
+      # This validates that edges are compatible with the class
+      ptr <- graph_builder_build_view(b, class)
+      resolved_class <- graph_class_ptr(ptr)
 
-      gptr <- graph_builder_build_view(b, class)
-      built <- TRUE
+      # Now create session with the validated/resolved class
+      session <- graph_session_new(reg, n, simple, resolved_class)
+      graph_session_set_names(session, nodes$name)
 
-      # resolve AUTO to actual class from Rust
-      if (class == "AUTO") {
-        class <- graph_class_ptr(gptr)
+      if (nrow(edges) > 0L) {
+        graph_session_set_edges(
+          session,
+          as.integer(unname(id[edges$from])),
+          as.integer(unname(id[edges$to])),
+          as.integer(codes)
+        )
       }
-    }
 
-    # initialize fastmap for name to index mapping
-    name_index_map <- fastmap::fastmap()
-    do.call(
-      name_index_map$mset,
-      .set_names(as.list(seq_len(nrow(nodes)) - 1L), nodes$name)
-    )
+      class <- resolved_class
+    }
 
     state <- .cg_state(
       nodes = nodes,
       edges = edges,
-      ptr = gptr,
-      built = built,
       simple = simple,
       class = class,
-      name_index_map = name_index_map
+      name_index_map = name_index_map,
+      session = session
     )
 
     S7::new_object(
@@ -508,6 +434,7 @@ caugi <- S7::new_class(
 #'
 #' @keywords internal
 .view_to_caugi <- function(ptr, node_names = NULL) {
+
   if (is.null(ptr)) {
     stop("ptr is NULL", call. = FALSE)
   }
@@ -544,14 +471,33 @@ caugi <- S7::new_class(
     )
   )
 
+  simple <- is_simple_ptr(ptr)
+  class <- graph_class_ptr(ptr)
+
+  # Create a new session and populate it with the graph data
+  reg <- caugi_registry()
+  session <- graph_session_new(reg, n, simple, class)
+  graph_session_set_names(session, node_names)
+
+  if (nrow(edges_tbl) > 0L) {
+    id <- seq_len(n) - 1L
+    names(id) <- node_names
+    codes <- edge_registry_code_of(reg, edges_tbl$edge)
+    graph_session_set_edges(
+      session,
+      as.integer(unname(id[edges_tbl$from])),
+      as.integer(unname(id[edges_tbl$to])),
+      as.integer(codes)
+    )
+  }
+
   state <- .cg_state(
     nodes = nodes_tbl,
     edges = edges_tbl,
-    ptr = ptr,
-    built = TRUE,
-    simple = is_simple_ptr(ptr),
-    class = graph_class_ptr(ptr),
-    name_index_map = name_index_map
+    simple = simple,
+    class = class,
+    name_index_map = name_index_map,
+    session = session
   )
   caugi(state = state)
 }
@@ -563,14 +509,13 @@ caugi <- S7::new_class(
 #'
 #' @param nodes A `data.table` of nodes with a `name` column.
 #' @param edges A `data.table` of edges with `from`, `edge`, and `to` columns.
-#' @param ptr A pointer to the underlying Rust graph structure
-#' (or `NULL` if not built).
-#' @param built Logical; whether the graph has been built.
 #' @param simple Logical; whether the graph is simple
 #' (no parallel edges or self-loops).
 #' @param class Character; one of `"UNKNOWN"`, `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`, or `"AG"`.
 #' @param name_index_map A `fastmap` mapping node names to their zero indexed
 #' indices.
+#' @param session A pointer to the GraphSession Rust object. This is the
+#' canonical Rust state that handles lazy compilation and caching.
 #'
 #' @returns An environment containing the graph state.
 #'
@@ -578,19 +523,17 @@ caugi <- S7::new_class(
 .cg_state <- function(
   nodes,
   edges,
-  ptr,
-  built,
   simple,
   class,
-  name_index_map
+  name_index_map,
+  session
 ) {
   e <- new.env(parent = emptyenv())
   e$nodes <- nodes
   e$edges <- edges
-  e$ptr <- ptr
-  e$built <- isTRUE(built)
   e$simple <- isTRUE(simple)
   e$class <- class
   e$name_index_map <- name_index_map
+  e$session <- session
   e
 }

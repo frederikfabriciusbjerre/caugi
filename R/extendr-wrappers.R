@@ -24,6 +24,52 @@ edge_registry_code_of <- function(reg, glyphs) .Call(wrap__edge_registry_code_of
 
 edge_registry_spec_of_code <- function(reg, code) .Call(wrap__edge_registry_spec_of_code, reg, code)
 
+graph_session_new <- function(reg, n, simple, class) .Call(wrap__graph_session_new, reg, n, simple, class)
+
+graph_session_clone <- function(session) .Call(wrap__graph_session_clone, session)
+
+graph_session_set_edges <- function(session, from, to, etype) invisible(.Call(wrap__graph_session_set_edges, session, from, to, etype))
+
+graph_session_set_n <- function(session, n) invisible(.Call(wrap__graph_session_set_n, session, n))
+
+graph_session_set_simple <- function(session, simple) invisible(.Call(wrap__graph_session_set_simple, session, simple))
+
+graph_session_set_class <- function(session, class) invisible(.Call(wrap__graph_session_set_class, session, class))
+
+graph_session_set_names <- function(session, names) invisible(.Call(wrap__graph_session_set_names, session, names))
+
+graph_session_set_cache_enabled <- function(session, enabled) invisible(.Call(wrap__graph_session_set_cache_enabled, session, enabled))
+
+graph_session_view_ptr <- function(session) .Call(wrap__graph_session_view_ptr, session)
+
+graph_session_layout <- function(session, method, use_checkpoint) .Call(wrap__graph_session_layout, session, method, use_checkpoint)
+
+graph_session_clear_layout_checkpoint <- function(session) invisible(.Call(wrap__graph_session_clear_layout_checkpoint, session))
+
+graph_session_n <- function(session) .Call(wrap__graph_session_n, session)
+
+graph_session_class <- function(session) .Call(wrap__graph_session_class, session)
+
+graph_session_names <- function(session) .Call(wrap__graph_session_names, session)
+
+graph_session_is_valid <- function(session) .Call(wrap__graph_session_is_valid, session)
+
+graph_session_topological_sort <- function(session) .Call(wrap__graph_session_topological_sort, session)
+
+graph_session_ancestors_of <- function(session, node) .Call(wrap__graph_session_ancestors_of, session, node)
+
+graph_session_descendants_of <- function(session, node) .Call(wrap__graph_session_descendants_of, session, node)
+
+graph_session_anteriors_of <- function(session, node) .Call(wrap__graph_session_anteriors_of, session, node)
+
+graph_session_markov_blanket_of <- function(session, node) .Call(wrap__graph_session_markov_blanket_of, session, node)
+
+graph_session_exogenous_nodes <- function(session, undirected_as_parents) .Call(wrap__graph_session_exogenous_nodes, session, undirected_as_parents)
+
+graph_session_districts <- function(session) .Call(wrap__graph_session_districts, session)
+
+graph_session_dependency_json <- function(session) .Call(wrap__graph_session_dependency_json, session)
+
 graph_builder_new <- function(reg, n, simple) .Call(wrap__graph_builder_new, reg, n, simple)
 
 graph_builder_add_edges <- function(b, from, to, etype) invisible(.Call(wrap__graph_builder_add_edges, b, from, to, etype))

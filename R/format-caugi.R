@@ -60,8 +60,7 @@ NULL
 write_caugi <- function(x, path, comment = NULL, tags = NULL) {
   is_caugi(x, throw_error = TRUE)
 
-  # Build the graph if needed
-  x <- build(x)
+
 
   # Validate arguments
   if (!is.character(path) || length(path) != 1L) {
@@ -92,8 +91,6 @@ write_caugi <- function(x, path, comment = NULL, tags = NULL) {
 #' Reads a caugi graph from a file in the native caugi JSON format.
 #'
 #' @param path Character string specifying the file path.
-#' @param lazy Logical; if `FALSE` (default), the graph is built immediately.
-#'   If `TRUE`, graph building is deferred until needed.
 #'
 #' @returns A `caugi` object.
 #'
@@ -119,15 +116,12 @@ write_caugi <- function(x, path, comment = NULL, tags = NULL) {
 #' @concept export
 #'
 #' @export
-read_caugi <- function(path, lazy = FALSE) {
+read_caugi <- function(path) {
   if (!is.character(path) || length(path) != 1L) {
     stop("`path` must be a single character string", call. = FALSE)
   }
   if (!file.exists(path)) {
     stop("File not found: ", path, call. = FALSE)
-  }
-  if (!is.logical(lazy) || length(lazy) != 1L) {
-    stop("`lazy` must be a single logical value", call. = FALSE)
   }
 
   # Get the global registry
@@ -140,8 +134,7 @@ read_caugi <- function(path, lazy = FALSE) {
   if (length(result$edges_from) == 0L) {
     cg <- caugi(
       nodes = result$nodes,
-      class = result$graph_class,
-      build = !lazy
+      class = result$graph_class
     )
   } else {
     cg <- caugi(
@@ -149,8 +142,7 @@ read_caugi <- function(path, lazy = FALSE) {
       edge = result$edges_type,
       to = result$edges_to,
       nodes = result$nodes,
-      class = result$graph_class,
-      build = !lazy
+      class = result$graph_class
     )
   }
 
@@ -181,8 +173,7 @@ read_caugi <- function(path, lazy = FALSE) {
 caugi_serialize <- function(x, comment = NULL, tags = NULL) {
   is_caugi(x, throw_error = TRUE)
 
-  # Build the graph if needed
-  x <- build(x)
+
 
   # Validate arguments
   if (!is.null(comment) && (!is.character(comment) || length(comment) != 1L)) {
@@ -209,8 +200,6 @@ caugi_serialize <- function(x, comment = NULL, tags = NULL) {
 #' reading from files.
 #'
 #' @param json Character string containing the JSON representation.
-#' @param lazy Logical; if `FALSE` (default), the graph is built immediately.
-#'   If `TRUE`, graph building is deferred until needed.
 #'
 #' @returns A `caugi` object.
 #'
@@ -223,12 +212,9 @@ caugi_serialize <- function(x, comment = NULL, tags = NULL) {
 #' @concept export
 #'
 #' @export
-caugi_deserialize <- function(json, lazy = FALSE) {
+caugi_deserialize <- function(json) {
   if (!is.character(json) || length(json) != 1L) {
     stop("`json` must be a single character string", call. = FALSE)
-  }
-  if (!is.logical(lazy) || length(lazy) != 1L) {
-    stop("`lazy` must be a single logical value", call. = FALSE)
   }
 
   # Get the global registry
@@ -241,8 +227,7 @@ caugi_deserialize <- function(json, lazy = FALSE) {
   if (length(result$edges_from) == 0L) {
     cg <- caugi(
       nodes = result$nodes,
-      class = result$graph_class,
-      build = !lazy
+      class = result$graph_class
     )
   } else {
     cg <- caugi(
@@ -250,8 +235,7 @@ caugi_deserialize <- function(json, lazy = FALSE) {
       edge = result$edges_type,
       to = result$edges_to,
       nodes = result$nodes,
-      class = result$graph_class,
-      build = !lazy
+      class = result$graph_class
     )
   }
 

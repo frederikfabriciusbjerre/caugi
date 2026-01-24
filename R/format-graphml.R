@@ -64,8 +64,6 @@ caugi_graphml <- S7::new_class(
 #' @export
 to_graphml <- function(x) {
   is_caugi(x, throw_error = TRUE)
-  x <- build(x)
-
   xml <- serialize_graphml_ptr(
     x@ptr,
     caugi_registry(),

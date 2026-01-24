@@ -6,7 +6,7 @@ mod transforms;
 
 use super::error::PdagError;
 use super::CaugiGraph;
-use crate::edges::{EdgeClass, Mark};
+use crate::edges::EdgeClass;
 use crate::graph::alg::directed_part_is_acyclic;
 use crate::graph::alg::traversal;
 use std::sync::Arc;
@@ -36,24 +36,18 @@ impl Pdag {
         if !directed_part_is_acyclic(&core) {
             return Err(PdagError::DirectedCycle);
         }
-        // side[k] stores position: 0 = tail position, 1 = head position.
-        // To determine parent/child, check if my mark is Arrow.
+        // Count degrees using mark helpers.
+        // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
         let mut deg: Vec<(u32, u32, u32)> = vec![(0, 0, 0); n];
         for i in 0..n {
-            let r = core.row_range(i as u32);
-            for k in r.clone() {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+            for k in core.row_range(i as u32) {
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
+                        if core.is_incoming_arrow(k) {
+                            deg[i].0 += 1; // parent
                         } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            deg[i].0 += 1 // parent
-                        } else {
-                            deg[i].2 += 1 // child
+                            deg[i].2 += 1; // child
                         }
                     }
                     EdgeClass::Undirected => deg[i].1 += 1,
@@ -91,29 +85,20 @@ impl Pdag {
         let mut ccur = child_base.clone();
 
         for i in 0..n {
-            let r = core.row_range(i as u32);
-            for k in r.clone() {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+            for k in core.row_range(i as u32) {
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
-                        } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            let p = pcur[i];
-                            neigh[p] = core.col_index[k];
+                        if core.is_incoming_arrow(k) {
+                            neigh[pcur[i]] = core.col_index[k];
                             pcur[i] += 1;
                         } else {
-                            let p = ccur[i];
-                            neigh[p] = core.col_index[k];
+                            neigh[ccur[i]] = core.col_index[k];
                             ccur[i] += 1;
                         }
                     }
                     EdgeClass::Undirected => {
-                        let p = ucur[i];
-                        neigh[p] = core.col_index[k];
+                        neigh[ucur[i]] = core.col_index[k];
                         ucur[i] += 1;
                     }
                     _ => {

@@ -1,98 +1,4 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ─────────────────────────── Build a caugi graph ──────────────────────────────
-# ──────────────────────────────────────────────────────────────────────────────
-
-#' @title Build the graph now
-#'
-#' @description If a `caugi` has been modified (nodes or edges added or
-#' removed), it is marked as _not built_, i.e `cg@built = FALSE`.
-#' This function builds the graph using the Rust backend and updates the
-#' internal pointer to the graph. If the graph is already built, it is returned.
-#'
-#' @param cg A `caugi` object.
-#' @param ... Not used.
-#'
-#' @returns The built `caugi` object.
-#'
-#' @examples
-#' # initialize empty graph and build slowly
-#' cg <- caugi(class = "PDAG")
-#'
-#' cg <- cg |>
-#'   add_nodes(c("A", "B", "C", "D", "E")) |> # A, B, C, D, E
-#'   add_edges(A %-->% B %-->% C) |> # A --> B --> C, D, E
-#'   set_edges(B %---% C) # A --> B --- C, D, E
-#'
-#' cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
-#'   remove_nodes(c("C", "D", "E")) # A --> B
-#'
-#' # verbs do not build the Rust backend
-#' cg@built # FALSE
-#' build(cg)
-#' cg@built # TRUE
-#'
-#' @family verbs
-#' @concept verbs
-#'
-#' @export
-build <- S7::new_generic("build", "cg")
-
-#' @name build
-#' @export
-S7::method(build, caugi) <- function(cg, ...) {
-  if (length(list(...)) > 0L) {
-    stop(
-      "`build()` does not take any arguments other than `cg`.",
-      call. = FALSE
-    )
-  }
-  if (is_empty_caugi(cg)) {
-    return(cg)
-  }
-  if (cg@built) {
-    return(cg)
-  }
-
-  s <- cg@`.state`
-
-  n <- nrow(s$nodes)
-  id <- seq_len(n) - 1L
-  names(id) <- s$nodes$name
-
-  reg <- caugi_registry()
-  b <- graph_builder_new(reg, n = n, simple = cg@simple)
-
-  if (nrow(s$edges)) {
-    # batched glyph->code lookup
-    codes <- edge_registry_code_of(reg, s$edges$edge)
-    graph_builder_add_edges(
-      b,
-      as.integer(unname(id[s$edges$from])),
-      as.integer(unname(id[s$edges$to])),
-      as.integer(codes)
-    )
-  }
-
-  p <- graph_builder_build_view(b, s$class)
-
-  # resolve AUTO to actual class from Rust
-  if (s$class == "AUTO") {
-    s$class <- graph_class_ptr(p)
-  }
-
-  # normalize edge order
-  s$edges <- .edge_constructor(
-    from = s$edges$from,
-    edge = s$edges$edge,
-    to = s$edges$to
-  )
-
-  s$ptr <- p
-  s$built <- TRUE
-  cg
-}
-
-# ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────────────── Edge verbs ──────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -129,10 +35,8 @@ S7::method(build, caugi) <- function(cg, ...) {
 #' cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
 #'   remove_nodes(c("C", "D", "E")) # A --> B
 #'
-#' # verbs do not build the Rust backend
-#' cg@built # FALSE
-#' build(cg)
-#' cg@built # TRUE
+#' # Graphs are now built lazily when needed
+#' parents(cg, "B") # triggers compilation
 #'
 #' @family verbs
 #' @concept verbs
@@ -367,33 +271,84 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   edges
 }
 
-#' @title Mark a `caugi` as _not built_.
+#' @title Sync session with R state
 #'
-#' @description When a `caugi` is modified, it should be marked as not
-#' built. This function sets the `built` attribute to `FALSE`. Thereby, the Rust
-#' backend and the R frontend does not match, and at one point, the
-#' `caugi` will need to be rebuild for it to be queried.
+#' @description Internal helper to synchronize the GraphSession with the
+#' current R-side node/edge state. The session automatically invalidates
+#' its cached computations when edges change.
 #'
 #' @param cg A `caugi` object.
 #'
-#' @returns The same `caugi` object, but with the `built` attribute set to
-#' `FALSE`.
+#' @returns The same `caugi` object with session synced.
 #'
 #' @keywords internal
-.mark_not_built <- function(cg) {
-  attr(cg, ".should_validate") <- FALSE
-  on.exit(attr(cg, ".should_validate") <- NULL)
-
+.sync_session <- function(cg) {
   s <- cg@`.state`
-  s$built <- FALSE
+  n <- nrow(s$nodes)
+
+  if (n == 0L) {
+    s$session <- NULL
+    return(cg)
+  }
+
+  reg <- caugi_registry()
+  id <- seq_len(n) - 1L
+  names(id) <- s$nodes$name
+
+  # Resolve AUTO class if needed (before creating session)
+  resolved_class <- s$class
+  if (s$class == "AUTO" && nrow(s$edges) > 0L) {
+    # Use builder to determine class from edges
+    b <- graph_builder_new(reg, n = n, simple = s$simple)
+    codes <- edge_registry_code_of(reg, s$edges$edge)
+    graph_builder_add_edges(
+      b,
+      as.integer(unname(id[s$edges$from])),
+      as.integer(unname(id[s$edges$to])),
+      as.integer(codes)
+    )
+    ptr <- graph_builder_build_view(b, "AUTO")
+    resolved_class <- graph_class_ptr(ptr)
+    s$class <- resolved_class
+  } else if (s$class == "AUTO") {
+    # No edges yet, default to DAG
+    resolved_class <- "DAG"
+    s$class <- resolved_class
+  }
+
+  # Clone session for copy-on-write semantics or create new
+  if (!is.null(s$session)) {
+    s$session <- graph_session_clone(s$session)
+    # Update cloned session with new state
+    graph_session_set_n(s$session, n)
+    graph_session_set_names(s$session, s$nodes$name)
+    graph_session_set_class(s$session, resolved_class)
+  } else {
+    s$session <- graph_session_new(reg, n, s$simple, resolved_class)
+    graph_session_set_names(s$session, s$nodes$name)
+  }
+
+  # Sync edges to session
+  if (nrow(s$edges) > 0L) {
+    codes <- edge_registry_code_of(reg, s$edges$edge)
+    graph_session_set_edges(
+      s$session,
+      as.integer(unname(id[s$edges$from])),
+      as.integer(unname(id[s$edges$to])),
+      as.integer(codes)
+    )
+  } else {
+    # Clear edges in session
+    graph_session_set_edges(s$session, integer(0), integer(0), integer(0))
+  }
 
   cg
 }
 
 #' @title Update nodes and edges of a `caugi`
 #'
-#' @description Internal helper to add or remove nodes/edges and mark graph as
-#' not built.
+#' @description Internal helper to add or remove nodes/edges. The session
+#' is automatically synced after modifications.
 #'
 #' @param cg A `caugi` object.
 #' @param nodes A `data.frame` with column `name` for node names to add/remove.
@@ -420,15 +375,14 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   if (!inplace) {
     s <- cg@`.state`
 
-    # clone state safely
+    # clone state safely (session will be cloned in .sync_session)
     state_copy <- .cg_state(
       nodes = data.table::copy(s$nodes),
       edges = data.table::copy(s$edges),
-      ptr = NULL,
-      built = FALSE,
       simple = s$simple,
       class = s$class,
-      name_index_map = s$name_index_map$clone()
+      name_index_map = s$name_index_map$clone(),
+      session = s$session # Will be cloned in .sync_session
     )
     cg_copy <- caugi(state = state_copy)
 
@@ -491,13 +445,17 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
     s$edges <- unique(s$edges)
 
     # update fastmap
-    drop_ids <- intersect(nodes$name, s$name_index_map$keys())
-    if (length(drop_ids) > 0L) {
-      s$name_index_map$remove(keys = drop_ids)
-      for (i in seq_len(nrow(s$nodes))) {
-        s$name_index_map$set(s$nodes$name[i], i - 1L)
+    if (!is.null(nodes)) {
+      drop_ids <- intersect(nodes$name, s$name_index_map$keys())
+      if (length(drop_ids) > 0L) {
+        s$name_index_map$remove(keys = drop_ids)
+        for (i in seq_len(nrow(s$nodes))) {
+          s$name_index_map$set(s$nodes$name[i], i - 1L)
+        }
       }
     }
   }
-  .mark_not_built(cg)
+
+  # Sync session with updated R state (auto-invalidates cached computations)
+  .sync_session(cg)
 }

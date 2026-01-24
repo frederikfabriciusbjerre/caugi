@@ -100,7 +100,7 @@ test_that("to_mermaid works with empty graph", {
 })
 
 test_that("to_mermaid builds graph if needed", {
-  cg <- caugi(A %-->% B, build = FALSE)
+  cg <- caugi(A %-->% B)
 
   mmd <- to_mermaid(cg)
 

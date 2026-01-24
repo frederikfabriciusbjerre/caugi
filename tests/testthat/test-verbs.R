@@ -3,49 +3,47 @@
 # ──────────────────────────────────────────────────────────────────────────────
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ───────────────────────────────── Building ───────────────────────────────────
+# ───────────────────────────── Session management ────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that("build() generic dispatches", {
-  expect_error(build(1), "Can't find method")
-})
-
-test_that("build.caugi builds with and without edges", {
+test_that("caugi objects have session after construction", {
   cg <- caugi()
   cg <- add_nodes(cg, name = c("A", "B"))
-  cg0 <- build(cg) # no edges
-  expect_true(cg0@built)
-  expect_false(is.null(cg0@ptr))
+  expect_true(!is.null(cg@session))
+  expect_false(is.null(cg@ptr))
 
   cg <- add_edges(cg, from = "A", edge = "-->", to = "B")
-  cg1 <- build(cg) # with edges
-  expect_true(cg1@built)
-  expect_equal(cg1@nodes$name, c("A", "B"))
+  expect_true(!is.null(cg@session))
+  expect_equal(cg@nodes$name, c("A", "B"))
   expect_equal(
-    cg1@edges,
+    cg@edges,
     data.table::data.table(from = "A", edge = "-->", to = "B")
   )
-
-  expect_identical(build(cg1), cg1) # identical if built
 })
 
-test_that("build() errors when breaking simple graph assumptions", {
+test_that("verbs error when breaking simple graph assumptions", {
   cg <- caugi()
-  cg <- add_edges(
-    cg,
-    from = c("A", "A"),
-    edge = c("o->", "-->"),
-    to = c("B", "B")
+  # Error now thrown at add_edges time (eager validation)
+  expect_error(
+    add_edges(
+      cg,
+      from = c("A", "A"),
+      edge = c("o->", "-->"),
+      to = c("B", "B")
+    ),
+    "Parallel edges not allowed"
   )
-  expect_error(build(cg), "Parallel edges not allowed")
+
   cg <- caugi()
-  cg <- add_edges(
-    cg,
-    from = c("A", "A"),
-    edge = c("-->", "<->"),
-    to = c("B", "A")
+  expect_error(
+    add_edges(
+      cg,
+      from = c("A", "A"),
+      edge = c("-->", "<->"),
+      to = c("B", "A")
+    ),
+    "Self-loops not allowed"
   )
-  expect_error(build(cg), "Self-loops not allowed")
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -70,7 +68,8 @@ test_that("add_edges validates inputs and updates graph", {
   )
 
   cg1 <- add_edges(cg, from = "A", edge = "-->", to = "B")
-  expect_false(cg1@built)
+  # After verbs, session is synced automatically
+  expect_true(!is.null(cg1@session))
   expect_setequal(cg1@nodes$name, c("A", "B"))
   expect_equal(
     cg1@edges,
@@ -86,14 +85,12 @@ test_that("add_edges validates inputs and updates graph", {
   expect_equal(nrow(cg2@edges), 1L)
 })
 
-test_that("add_edges makes built = FALSE, build(cg) makes it TRUE (back and forth)", {
+test_that("add_edges keeps session synced", {
   cg <- caugi()
 
   cg1 <- add_edges(cg, from = "A", edge = "-->", to = "B")
-  expect_false(cg1@built)
-
-  cg1_built <- build(cg1)
-  expect_true(cg1_built@built)
+  # After verbs, session is synced automatically
+  expect_true(!is.null(cg1@session))
 
   cg2 <- add_edges(
     cg1,
@@ -101,7 +98,7 @@ test_that("add_edges makes built = FALSE, build(cg) makes it TRUE (back and fort
     edge = c("-->", "-->"),
     to = c("B", "B")
   )
-  expect_false(cg2@built)
+  expect_true(!is.null(cg2@session))
 })
 
 test_that("add_edges expression path works", {
@@ -115,7 +112,7 @@ test_that("add_edges expression path works", {
     E %o->% F,
     F %o-o% A
   )
-  expect_false(cg@built)
+  expect_true(!is.null(cg@session))
   expect_setequal(cg@nodes$name, c("A", "B", "C", "D", "E", "F"))
   expect_equal(nrow(cg@edges), 6L)
   expect_true(all(c("from", "edge", "to") %in% names(cg@edges)))
@@ -156,7 +153,8 @@ test_that("remove_edges works and keeps other edges", {
   )
 
   cg1 <- remove_edges(cg, from = "A", edge = "-->", to = "B")
-  expect_false(cg1@built)
+  # After verbs, session is synced automatically
+  expect_true(!is.null(cg1@session))
   expect_equal(
     cg1@edges,
     data.table::data.table(from = "A", edge = "-->", to = "C")
@@ -164,7 +162,8 @@ test_that("remove_edges works and keeps other edges", {
 })
 
 test_that("set_edges replaces any existing edges for pairs", {
-  cg <- caugi()
+  # Use simple=FALSE to allow parallel edges for this test
+  cg <- caugi(simple = FALSE, class = "UNKNOWN")
   cg <- add_edges(
     cg,
     from = c("A", "A"),
@@ -172,7 +171,8 @@ test_that("set_edges replaces any existing edges for pairs", {
     to = c("B", "B")
   )
   cg1 <- set_edges(cg, from = "A", edge = "<->", to = "B")
-  expect_false(cg1@built)
+  # After verbs, session is synced automatically
+  expect_true(!is.null(cg1@session))
   expect_equal(
     cg1@edges,
     data.table::data.table(from = "A", edge = "<->", to = "B")
@@ -180,7 +180,8 @@ test_that("set_edges replaces any existing edges for pairs", {
 })
 
 test_that("set_edges errors whwn both vector and expr paths are given", {
-  cg <- caugi()
+  # Use simple=FALSE to allow parallel edges for this test
+  cg <- caugi(simple = FALSE, class = "UNKNOWN")
   cg <- add_edges(
     cg,
     from = c("A", "A"),
@@ -209,7 +210,8 @@ test_that("add_nodes, remove_nodes cover vector and expr paths", {
   expect_identical(add_nodes(cg), cg)
 
   cg1 <- add_nodes(cg, name = c("A", "B"))
-  expect_false(cg1@built)
+  # After verbs, session is synced automatically
+  expect_true(!is.null(cg1@session))
   expect_setequal(cg1@nodes$name, c("A", "B"))
 
   cg2 <- add_nodes(caugi(), A + B + C)
@@ -217,7 +219,7 @@ test_that("add_nodes, remove_nodes cover vector and expr paths", {
 
   cg3 <- add_edges(cg1, from = "A", edge = "-->", to = "B")
   cg4 <- remove_nodes(cg3, name = "A")
-  expect_false(cg4@built)
+  expect_true(!is.null(cg4@session))
   expect_equal(cg4@nodes$name, "B")
   expect_equal(nrow(cg4@edges), 0L)
 
@@ -418,12 +420,11 @@ test_that(".get_edges works with empty input", {
 # ────────────────────────── Internal build marker ─────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that(".mark_not_built flips flag", {
+test_that(".sync_session keeps session synced", {
   cg <- caugi()
   cg <- add_nodes(cg, name = "A")
-  cg <- build(cg)
-  out <- caugi:::.mark_not_built(cg)
-  expect_false(out@built)
+  # Session is automatically synced by .update_caugi
+  expect_true(!is.null(cg@session))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -439,7 +440,8 @@ test_that(".update_caugi add/remove paths and validations", {
     ),
     action = "add"
   )
-  expect_false(cg1@built)
+  # After verbs, session is synced automatically
+  expect_true(!is.null(cg1@session))
   expect_setequal(cg1@nodes$name, c("A", "B"))
 
   cg2 <- caugi:::.update_caugi(

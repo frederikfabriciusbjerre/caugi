@@ -31,7 +31,6 @@ moralize <- function(cg) {
     stop("moralize() can only be applied to DAGs.", call. = FALSE)
   }
 
-  cg <- build(cg)
   moralized_ptr <- moralize_ptr(cg@ptr)
   moralized_cg <- .view_to_caugi(moralized_ptr, node_names = cg@nodes$name)
   moralized_cg
@@ -61,7 +60,6 @@ moralize <- function(cg) {
 #' @export
 skeleton <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
   skeleton_ptr <- skeleton_ptr(cg@ptr)
   skeleton_cg <- .view_to_caugi(skeleton_ptr, node_names = cg@nodes$name)
   skeleton_cg
@@ -120,7 +118,6 @@ latent_project <- function(cg, latents) {
     stop("`latents` must be a character vector of node names.", call. = FALSE)
   }
 
-  cg <- build(cg)
   node_names <- cg@nodes$name
 
   # Validate latent names exist
@@ -180,7 +177,6 @@ latent_project <- function(cg, latents) {
 #' @export
 mutate_caugi <- function(cg, class) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
   old_class <- cg@graph_class
 
   if (old_class == class) {
@@ -216,8 +212,7 @@ mutate_caugi <- function(cg, class) {
       nodes = nodes(cg),
       edges_df = edges(cg),
       class = class,
-      simple = TRUE,
-      build = TRUE
+      simple = TRUE
     ))
   }
 }
@@ -249,7 +244,6 @@ mutate_caugi <- function(cg, class) {
 #' @export
 exogenize <- function(cg, nodes) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
 
   if (cg@graph_class != "DAG") {
     stop(
@@ -312,7 +306,7 @@ exogenize <- function(cg, nodes) {
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ─────────────────────────────Marginalize and condition ──────────────────────
+# ────────────────────────── Marginalize and condition ─────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
 #' @importFrom utils combn
@@ -496,7 +490,7 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
       conditioning_set <- NULL
     }
 
-    if (m_separated(cg, node_a, node_b, Z = conditioning_set)) {
+    if (m_separated(cg, X = node_a, Y = node_b, Z = conditioning_set)) {
       # Found a set that m-separates them: no edge needed
       return(FALSE)
     }

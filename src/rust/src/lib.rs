@@ -4,6 +4,7 @@
 use extendr_api::prelude::*;
 pub mod edges;
 pub mod graph;
+mod reactive;
 
 use edges::{EdgeClass, EdgeRegistry, EdgeSpec, Mark};
 use graph::builder::GraphBuilder;
@@ -1124,6 +1125,225 @@ fn compute_bipartite_layout_ptr(
     list!(x = x, y = y).into_robj()
 }
 
+// ── GraphSession API ────────────────────────────────────────────────────────────────
+use graph::session::{EdgeBuffer, GraphClass, GraphSession};
+
+#[extendr]
+fn graph_session_new(
+    reg: ExternalPtr<EdgeRegistry>,
+    n: i32,
+    simple: Rbool,
+    class: &str,
+) -> ExternalPtr<GraphSession> {
+    if n < 0 {
+        throw_r_error("n must be >= 0");
+    }
+    let graph_class = GraphClass::from_str(class).unwrap_or_else(|e| throw_r_error(e));
+    ExternalPtr::new(GraphSession::new(reg.as_ref(), n as u32, simple.is_true(), graph_class))
+}
+
+#[extendr]
+fn graph_session_clone(session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    ExternalPtr::new(session.as_ref().clone_for_cow())
+}
+
+#[extendr]
+fn graph_session_set_edges(
+    mut session: ExternalPtr<GraphSession>,
+    from: Integers,
+    to: Integers,
+    etype: Integers,
+) {
+    if from.len() != to.len() || from.len() != etype.len() {
+        throw_r_error("vectors must have equal length");
+    }
+    let mut edges = EdgeBuffer::with_capacity(from.len());
+    for i in 0..from.len() {
+        let u = rint_to_u32(from[i], "from");
+        let v = rint_to_u32(to[i], "to");
+        let t = rint_to_u8(etype[i], "etype");
+        edges.push(u, v, t);
+    }
+    session.as_mut().set_edges(edges);
+}
+
+#[extendr]
+fn graph_session_set_n(mut session: ExternalPtr<GraphSession>, n: i32) {
+    if n < 0 {
+        throw_r_error("n must be >= 0");
+    }
+    session.as_mut().set_n(n as u32);
+}
+
+#[extendr]
+fn graph_session_set_simple(mut session: ExternalPtr<GraphSession>, simple: Rbool) {
+    session.as_mut().set_simple(simple.is_true());
+}
+
+#[extendr]
+fn graph_session_set_class(mut session: ExternalPtr<GraphSession>, class: &str) {
+    let graph_class = GraphClass::from_str(class).unwrap_or_else(|e| throw_r_error(e));
+    session.as_mut().set_class(graph_class);
+}
+
+#[extendr]
+fn graph_session_set_names(mut session: ExternalPtr<GraphSession>, names: Strings) {
+    // Handle empty names vector safely - extendr can have issues with empty Strings
+    let name_vec: Vec<String> = if names.len() == 0 {
+        Vec::new()
+    } else {
+        names.iter().map(|s| s.to_string()).collect()
+    };
+    session.as_mut().set_names(name_vec);
+}
+
+#[extendr]
+fn graph_session_set_cache_enabled(mut session: ExternalPtr<GraphSession>, enabled: Rbool) {
+    session.as_mut().set_cache_enabled(enabled.is_true());
+}
+
+#[extendr]
+fn graph_session_view_ptr(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphView> {
+    let view = session
+        .as_mut()
+        .view()
+        .unwrap_or_else(|e| throw_r_error(e));
+    // Clone the Arc and return as ExternalPtr
+    ExternalPtr::new((*view).clone())
+}
+
+#[extendr]
+fn graph_session_layout(
+    mut session: ExternalPtr<GraphSession>,
+    method: &str,
+    use_checkpoint: Rbool,
+) -> Robj {
+    let coords = session
+        .as_mut()
+        .layout(method, use_checkpoint.is_true())
+        .unwrap_or_else(|e| throw_r_error(e));
+    
+    let mut x: Vec<f64> = Vec::with_capacity(coords.len());
+    let mut y: Vec<f64> = Vec::with_capacity(coords.len());
+    for (xi, yi) in coords {
+        x.push(xi);
+        y.push(yi);
+    }
+    list!(x = x, y = y).into_robj()
+}
+
+#[extendr]
+fn graph_session_clear_layout_checkpoint(mut session: ExternalPtr<GraphSession>) {
+    session.as_mut().clear_layout_checkpoint();
+}
+
+#[extendr]
+fn graph_session_n(session: ExternalPtr<GraphSession>) -> i32 {
+    session.as_ref().n() as i32
+}
+
+#[extendr]
+fn graph_session_class(session: ExternalPtr<GraphSession>) -> String {
+    session.as_ref().class().as_str().to_string()
+}
+
+#[extendr]
+fn graph_session_names(session: ExternalPtr<GraphSession>) -> Strings {
+    session.as_ref().names().iter().map(|s| s.as_str()).collect()
+}
+
+#[extendr]
+fn graph_session_is_valid(session: ExternalPtr<GraphSession>) -> Robj {
+    list!(
+        core_valid = session.as_ref().is_core_valid(),
+        view_valid = session.as_ref().is_view_valid(),
+        has_layout_checkpoint = session.as_ref().has_layout_checkpoint(),
+        cache_enabled = session.as_ref().is_cache_enabled()
+    )
+    .into_robj()
+}
+
+// Cached query accessors
+#[extendr]
+fn graph_session_topological_sort(mut session: ExternalPtr<GraphSession>) -> Robj {
+    let result = session
+        .as_mut()
+        .topological_sort()
+        .unwrap_or_else(|e| throw_r_error(e));
+    result.iter().map(|&x| x as i32).collect_robj()
+}
+
+#[extendr]
+fn graph_session_ancestors_of(mut session: ExternalPtr<GraphSession>, node: i32) -> Robj {
+    let idx = rint_to_u32(Rint::from(node), "node");
+    let result = session
+        .as_mut()
+        .ancestors_of(idx)
+        .unwrap_or_else(|e| throw_r_error(e));
+    result.iter().map(|&x| x as i32).collect_robj()
+}
+
+#[extendr]
+fn graph_session_descendants_of(mut session: ExternalPtr<GraphSession>, node: i32) -> Robj {
+    let idx = rint_to_u32(Rint::from(node), "node");
+    let result = session
+        .as_mut()
+        .descendants_of(idx)
+        .unwrap_or_else(|e| throw_r_error(e));
+    result.iter().map(|&x| x as i32).collect_robj()
+}
+
+#[extendr]
+fn graph_session_anteriors_of(mut session: ExternalPtr<GraphSession>, node: i32) -> Robj {
+    let idx = rint_to_u32(Rint::from(node), "node");
+    let result = session
+        .as_mut()
+        .anteriors_of(idx)
+        .unwrap_or_else(|e| throw_r_error(e));
+    result.iter().map(|&x| x as i32).collect_robj()
+}
+
+#[extendr]
+fn graph_session_markov_blanket_of(mut session: ExternalPtr<GraphSession>, node: i32) -> Robj {
+    let idx = rint_to_u32(Rint::from(node), "node");
+    let result = session
+        .as_mut()
+        .markov_blanket_of(idx)
+        .unwrap_or_else(|e| throw_r_error(e));
+    result.iter().map(|&x| x as i32).collect_robj()
+}
+
+#[extendr]
+fn graph_session_exogenous_nodes(
+    mut session: ExternalPtr<GraphSession>,
+    undirected_as_parents: Rbool,
+) -> Robj {
+    let result = session
+        .as_mut()
+        .exogenous_nodes(undirected_as_parents.is_true())
+        .unwrap_or_else(|e| throw_r_error(e));
+    result.iter().map(|&x| x as i32).collect_robj()
+}
+
+#[extendr]
+fn graph_session_districts(mut session: ExternalPtr<GraphSession>) -> Robj {
+    let result = session
+        .as_mut()
+        .districts()
+        .unwrap_or_else(|e| throw_r_error(e));
+    
+    let out: Vec<Robj> = result
+        .iter()
+        .map(|d| d.iter().map(|&x| x as i32).collect_robj())
+        .collect();
+    extendr_api::prelude::List::from_values(out).into_robj()
+}
+
+#[extendr]
+fn graph_session_dependency_json(session: ExternalPtr<GraphSession>) -> String {
+    session.as_ref().dependency_json()
+}
+
 extendr_module! {
     mod caugi;
     // registry
@@ -1134,6 +1354,31 @@ extendr_module! {
     fn edge_registry_register;
     fn edge_registry_code_of;
     fn edge_registry_spec_of_code;
+
+    // session
+    fn graph_session_new;
+    fn graph_session_clone;
+    fn graph_session_set_edges;
+    fn graph_session_set_n;
+    fn graph_session_set_simple;
+    fn graph_session_set_class;
+    fn graph_session_set_names;
+    fn graph_session_set_cache_enabled;
+    fn graph_session_view_ptr;
+    fn graph_session_layout;
+    fn graph_session_clear_layout_checkpoint;
+    fn graph_session_n;
+    fn graph_session_class;
+    fn graph_session_names;
+    fn graph_session_is_valid;
+    fn graph_session_topological_sort;
+    fn graph_session_ancestors_of;
+    fn graph_session_descendants_of;
+    fn graph_session_anteriors_of;
+    fn graph_session_markov_blanket_of;
+    fn graph_session_exogenous_nodes;
+    fn graph_session_districts;
+    fn graph_session_dependency_json;
 
     // builder + core
     fn graph_builder_new;

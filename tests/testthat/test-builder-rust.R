@@ -43,7 +43,7 @@ test_that("queries work for DAGs and PDAGs", {
   expect_identical(children_of_ptr(cg@ptr, 1L), list(integer(0)))
 
   cg <- add_edges(cg, B %-->% C)
-  cg <- build(cg)
+  # Session syncs automatically, ptr is lazy
 
   expect_identical(parents_of_ptr(cg@ptr, 0L), list(integer(0)))
   expect_identical(children_of_ptr(cg@ptr, 0L), list(1L))
@@ -62,7 +62,7 @@ test_that("queries work for DAGs and PDAGs", {
   expect_identical(children_of_ptr(cg@ptr, 1L), list(integer(0)))
 
   cg <- add_edges(cg, B %---% C)
-  cg <- build(cg)
+  # Session syncs automatically, ptr is lazy
 
   expect_identical(parents_of_ptr(cg@ptr, 0L), list(integer(0)))
   expect_identical(children_of_ptr(cg@ptr, 0L), list(1L))
