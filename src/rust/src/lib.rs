@@ -4,7 +4,6 @@
 use extendr_api::prelude::*;
 pub mod edges;
 pub mod graph;
-mod reactive;
 
 use edges::{EdgeClass, EdgeRegistry, EdgeSpec, Mark};
 use graph::builder::GraphBuilder;
