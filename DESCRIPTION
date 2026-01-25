@@ -21,6 +21,12 @@ Authors@R: c(
       role = "aut",
       email = "sachsmc@gmail.com",
       comment = c(ORCID = "0000-0002-1279-8676")
+    ),
+    person(
+        given = "Bjarke Hautop",
+        family = "Kristensen",
+        role = "aut",
+        email = "bjarke.hautop@gmail.com"
     )
   )
 Description: Create, query, and modify causal graphs. 'caugi' (Causal Graph
