@@ -67,8 +67,7 @@ to_graphml <- function(x) {
   xml <- graph_session_serialize_graphml(
     x@session,
     caugi_registry(),
-    x@graph_class,
-    x@nodes$name
+    x@graph_class
   )
 
   caugi_graphml(xml)

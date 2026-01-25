@@ -31,12 +31,7 @@ shd <- function(cg1, cg2, normalized = FALSE) {
   is_caugi(cg1, throw_error = TRUE)
   is_caugi(cg2, throw_error = TRUE)
   same_nodes(cg1, cg2, throw_error = TRUE)
-  out_lst <- graph_session_shd(
-    cg1@session,
-    cg1@nodes$name,
-    cg2@session,
-    cg2@nodes$name
-  )
+  out_lst <- graph_session_shd(cg1@session, cg2@session)
   out <- if (normalized) out_lst$normalized else out_lst$count
   out
 }
@@ -109,24 +104,9 @@ aid <- function(
 
   res <- switch(
     type,
-    oset = graph_session_oset_aid(
-      truth@session,
-      truth@nodes$name,
-      guess@session,
-      guess@nodes$name
-    ),
-    ancestor = graph_session_ancestor_aid(
-      truth@session,
-      truth@nodes$name,
-      guess@session,
-      guess@nodes$name
-    ),
-    parent = graph_session_parent_aid(
-      truth@session,
-      truth@nodes$name,
-      guess@session,
-      guess@nodes$name
-    )
+    oset = graph_session_oset_aid(truth@session, guess@session),
+    ancestor = graph_session_ancestor_aid(truth@session, guess@session),
+    parent = graph_session_parent_aid(truth@session, guess@session)
   )
   if (normalized) {
     res$score

@@ -136,15 +136,15 @@ graph_session_is_valid_adjustment_set_admg <- function(session, xs, ys, z) .Call
 
 graph_session_all_adjustment_sets_admg <- function(session, xs, ys, minimal, max_size) .Call(wrap__graph_session_all_adjustment_sets_admg, session, xs, ys, minimal, max_size)
 
-graph_session_shd <- function(s1, names1, s2, names2) .Call(wrap__graph_session_shd, s1, names1, s2, names2)
+graph_session_shd <- function(s1, s2) .Call(wrap__graph_session_shd, s1, s2)
 
 graph_session_hd <- function(s1, s2) .Call(wrap__graph_session_hd, s1, s2)
 
-graph_session_ancestor_aid <- function(s_true, names_true, s_guess, names_guess) .Call(wrap__graph_session_ancestor_aid, s_true, names_true, s_guess, names_guess)
+graph_session_ancestor_aid <- function(s_true, s_guess) .Call(wrap__graph_session_ancestor_aid, s_true, s_guess)
 
-graph_session_oset_aid <- function(s_true, names_true, s_guess, names_guess) .Call(wrap__graph_session_oset_aid, s_true, names_true, s_guess, names_guess)
+graph_session_oset_aid <- function(s_true, s_guess) .Call(wrap__graph_session_oset_aid, s_true, s_guess)
 
-graph_session_parent_aid <- function(s_true, names_true, s_guess, names_guess) .Call(wrap__graph_session_parent_aid, s_true, names_true, s_guess, names_guess)
+graph_session_parent_aid <- function(s_true, s_guess) .Call(wrap__graph_session_parent_aid, s_true, s_guess)
 
 graph_builder_new <- function(reg, n, simple) .Call(wrap__graph_builder_new, reg, n, simple)
 
@@ -152,15 +152,15 @@ graph_builder_add_edges <- function(b, from, to, etype) invisible(.Call(wrap__gr
 
 graph_builder_resolve_class <- function(b, class) .Call(wrap__graph_builder_resolve_class, b, class)
 
-graph_session_write_caugi_file <- function(session, reg, graph_class, node_names, path, comment, tags) invisible(.Call(wrap__graph_session_write_caugi_file, session, reg, graph_class, node_names, path, comment, tags))
+graph_session_write_caugi_file <- function(session, reg, graph_class, path, comment, tags) invisible(.Call(wrap__graph_session_write_caugi_file, session, reg, graph_class, path, comment, tags))
 
 read_caugi_file <- function(path, reg) .Call(wrap__read_caugi_file, path, reg)
 
-graph_session_serialize_caugi <- function(session, reg, graph_class, node_names, comment, tags) .Call(wrap__graph_session_serialize_caugi, session, reg, graph_class, node_names, comment, tags)
+graph_session_serialize_caugi <- function(session, reg, graph_class, comment, tags) .Call(wrap__graph_session_serialize_caugi, session, reg, graph_class, comment, tags)
 
 deserialize_caugi <- function(json, reg) .Call(wrap__deserialize_caugi, json, reg)
 
-graph_session_serialize_graphml <- function(session, reg, graph_class, node_names) .Call(wrap__graph_session_serialize_graphml, session, reg, graph_class, node_names)
+graph_session_serialize_graphml <- function(session, reg, graph_class) .Call(wrap__graph_session_serialize_graphml, session, reg, graph_class)
 
 deserialize_graphml <- function(xml, reg) .Call(wrap__deserialize_graphml, xml, reg)
 

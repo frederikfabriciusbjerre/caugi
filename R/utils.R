@@ -17,3 +17,49 @@
   names(object) <- nm
   object
 }
+
+#' @title Validate nodes or index argument
+#'
+#' @description
+#' Check that either nodes or index is supplied, but not both.
+#'
+#' @param nodes A node name argument.
+#' @param index An index argument.
+#' @param nodes_missing Logical; result of `missing(nodes)`.
+#' @param index_missing Logical; result of `missing(index)`.
+#'
+#' @returns A list with `nodes_supplied` and `index_supplied` logical values.
+#'
+#' @keywords internal
+.validate_nodes_or_index <- function(nodes_missing, index, index_missing) {
+  nodes_supplied <- !nodes_missing
+  index_supplied <- !index_missing && !is.null(index)
+  if (nodes_supplied && index_supplied) {
+    stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
+  }
+  list(nodes_supplied = nodes_supplied, index_supplied = index_supplied)
+}
+
+#' @title Convert node names to 0-based indices
+#'
+#' @description
+#' Convert node names to 0-based indices using the caugi object's name index map.
+#'
+#' @param cg A `caugi` object.
+#' @param nodes A character vector of node names.
+#'
+#' @returns An integer vector of 0-based indices.
+#'
+#' @keywords internal
+.nodes_to_indices <- function(cg, nodes) {
+  cg@name_index_map$mget(
+    nodes,
+    missing = stop(
+      paste(
+        "Non-existent node name:",
+        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  )
+}

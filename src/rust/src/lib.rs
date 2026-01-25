@@ -49,6 +49,35 @@ fn rbool_to_bool(x: Rbool, field: &str) -> bool {
     x.is_true()
 }
 
+/// Validate that an index is within bounds.
+#[inline]
+fn validate_index(i: u32, n: u32) {
+    if i >= n {
+        throw_r_error(format!("Index {} is out of bounds", i));
+    }
+}
+
+/// Convert R Integers to Vec<u32>.
+fn integers_to_u32_vec(ints: &Integers, name: &str) -> Vec<u32> {
+    ints.iter().map(|ri| rint_to_u32(ri, name)).collect()
+}
+
+/// Convert Vec<u32> to Robj (as i32 vector).
+fn u32_vec_to_robj(v: &[u32]) -> Robj {
+    v.iter().map(|&x| x as i32).collect_robj()
+}
+
+/// Convert coordinate pairs to R list with x and y vectors.
+fn coords_to_list(coords: Vec<(f64, f64)>) -> Robj {
+    let mut x: Vec<f64> = Vec::with_capacity(coords.len());
+    let mut y: Vec<f64> = Vec::with_capacity(coords.len());
+    for (xi, yi) in coords {
+        x.push(xi);
+        y.push(yi);
+    }
+    list!(x = x, y = y).into_robj()
+}
+
 fn graph_class_from_view(view: &GraphView) -> GraphClass {
     match view {
         GraphView::Dag(_) => GraphClass::Dag,
@@ -301,52 +330,48 @@ fn graph_builder_resolve_class(mut b: ExternalPtr<GraphBuilder>, class: &str) ->
 // ── Unified queries ────────────────────────────────────────────────────────────────
 #[extendr]
 fn parents_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers) -> Robj {
+    let n = g.as_ref().n();
     let mut out: Vec<Robj> = Vec::with_capacity(idxs.len());
     for ri in idxs.iter() {
         let i = rint_to_u32(ri, "idxs");
-        // check if index is out of bounds
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
-        }
+        validate_index(i, n);
         let v = g
             .as_ref()
             .parents_of(i)
             .unwrap_or_else(|e| throw_r_error(e));
-        out.push(v.iter().map(|&x| x as i32).collect_robj());
+        out.push(u32_vec_to_robj(&v));
     }
     extendr_api::prelude::List::from_values(out).into_robj()
 }
 
 #[extendr]
 fn children_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers) -> Robj {
+    let n = g.as_ref().n();
     let mut out: Vec<Robj> = Vec::with_capacity(idxs.len());
     for ri in idxs.iter() {
         let i = rint_to_u32(ri, "idxs");
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
-        }
+        validate_index(i, n);
         let v = g
             .as_ref()
             .children_of(i)
             .unwrap_or_else(|e| throw_r_error(e));
-        out.push(v.iter().map(|&x| x as i32).collect_robj());
+        out.push(u32_vec_to_robj(&v));
     }
     extendr_api::prelude::List::from_values(out).into_robj()
 }
 
 #[extendr]
 fn undirected_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers) -> Robj {
+    let n = g.as_ref().n();
     let mut out: Vec<Robj> = Vec::with_capacity(idxs.len());
     for ri in idxs.iter() {
         let i = rint_to_u32(ri, "idxs");
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
-        }
+        validate_index(i, n);
         let v = g
             .as_ref()
             .undirected_of(i)
             .unwrap_or_else(|e| throw_r_error(e));
-        out.push(v.iter().map(|&x| x as i32).collect_robj());
+        out.push(u32_vec_to_robj(&v));
     }
     extendr_api::prelude::List::from_values(out).into_robj()
 }
@@ -367,85 +392,80 @@ fn neighbors_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers, mode: Strings) ->
         }
     };
 
+    let n = g.as_ref().n();
     let mut out: Vec<Robj> = Vec::with_capacity(idxs.len());
     for ri in idxs.iter() {
         let i = rint_to_u32(ri, "idxs");
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
-        }
+        validate_index(i, n);
         let v = g
             .as_ref()
             .neighbors_of(i, neighbor_mode)
             .unwrap_or_else(|e| throw_r_error(e));
-        out.push(v.iter().map(|&x| x as i32).collect_robj());
+        out.push(u32_vec_to_robj(&v));
     }
     extendr_api::prelude::List::from_values(out).into_robj()
 }
 
 #[extendr]
 fn ancestors_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers) -> Robj {
+    let n = g.as_ref().n();
     let mut out: Vec<Robj> = Vec::with_capacity(idxs.len());
     for ri in idxs.iter() {
         let i = rint_to_u32(ri, "idxs");
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
-        }
+        validate_index(i, n);
         let v = g
             .as_ref()
             .ancestors_of(i)
             .unwrap_or_else(|e| throw_r_error(e));
-        out.push(v.iter().map(|&x| x as i32).collect_robj());
+        out.push(u32_vec_to_robj(&v));
     }
     extendr_api::prelude::List::from_values(out).into_robj()
 }
 
 #[extendr]
 fn descendants_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers) -> Robj {
+    let n = g.as_ref().n();
     let mut out: Vec<Robj> = Vec::with_capacity(idxs.len());
     for ri in idxs.iter() {
         let i = rint_to_u32(ri, "idxs");
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
-        }
+        validate_index(i, n);
         let v = g
             .as_ref()
             .descendants_of(i)
             .unwrap_or_else(|e| throw_r_error(e));
-        out.push(v.iter().map(|&x| x as i32).collect_robj());
+        out.push(u32_vec_to_robj(&v));
     }
     extendr_api::prelude::List::from_values(out).into_robj()
 }
 
 #[extendr]
 fn anteriors_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers) -> Robj {
+    let n = g.as_ref().n();
     let mut out: Vec<Robj> = Vec::with_capacity(idxs.len());
     for ri in idxs.iter() {
         let i = rint_to_u32(ri, "idxs");
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
-        }
+        validate_index(i, n);
         let v = g
             .as_ref()
             .anteriors_of(i)
             .unwrap_or_else(|e| throw_r_error(e));
-        out.push(v.iter().map(|&x| x as i32).collect_robj());
+        out.push(u32_vec_to_robj(&v));
     }
     extendr_api::prelude::List::from_values(out).into_robj()
 }
 
 #[extendr]
 fn markov_blanket_of_ptr(g: ExternalPtr<GraphView>, idxs: Integers) -> Robj {
+    let n = g.as_ref().n();
     let mut out: Vec<Robj> = Vec::with_capacity(idxs.len());
     for ri in idxs.iter() {
         let i = rint_to_u32(ri, "idxs");
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
-        }
+        validate_index(i, n);
         let v = g
             .as_ref()
             .markov_blanket_of(i)
             .unwrap_or_else(|e| throw_r_error(e));
-        out.push(v.iter().map(|&x| x as i32).collect_robj());
+        out.push(u32_vec_to_robj(&v));
     }
     extendr_api::prelude::List::from_values(out).into_robj()
 }
@@ -455,7 +475,7 @@ fn exogenous_nodes_of_ptr(g: ExternalPtr<GraphView>, undirected_as_parents: Rboo
     let undirected_as_parents = undirected_as_parents.is_true();
     g.as_ref()
         .exogenous_nodes(undirected_as_parents)
-        .map(|s| s.iter().map(|&x| x as i32).collect_robj())
+        .map(|s| u32_vec_to_robj(&s))
         .unwrap_or_else(|e| throw_r_error(e))
 }
 
@@ -577,14 +597,12 @@ fn district_of_ptr(g: ExternalPtr<GraphView>, idx: i32) -> Robj {
 
 #[extendr]
 fn m_separated_ptr(g: ExternalPtr<GraphView>, xs: Integers, ys: Integers, z: Integers) -> bool {
-    let xs_u: Vec<u32> = xs.iter().map(|ri| rint_to_u32(ri, "xs")).collect();
-    let ys_u: Vec<u32> = ys.iter().map(|ri| rint_to_u32(ri, "ys")).collect();
-    let z_u: Vec<u32> = z.iter().map(|ri| rint_to_u32(ri, "z")).collect();
-    // Check that all indices are within bounds
+    let xs_u = integers_to_u32_vec(&xs, "xs");
+    let ys_u = integers_to_u32_vec(&ys, "ys");
+    let z_u = integers_to_u32_vec(&z, "z");
+    let n = g.as_ref().n();
     for &i in xs_u.iter().chain(ys_u.iter()).chain(z_u.iter()) {
-        if i >= g.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i + 1));
-        }
+        validate_index(i, n);
     }
     g.as_ref()
         .m_separated(&xs_u, &ys_u, &z_u)
@@ -598,9 +616,9 @@ fn is_valid_adjustment_set_admg_ptr(
     ys: Integers,
     z: Integers,
 ) -> bool {
-    let xs_u: Vec<u32> = xs.iter().map(|ri| rint_to_u32(ri, "xs")).collect();
-    let ys_u: Vec<u32> = ys.iter().map(|ri| rint_to_u32(ri, "ys")).collect();
-    let z_u: Vec<u32> = z.iter().map(|ri| rint_to_u32(ri, "z")).collect();
+    let xs_u = integers_to_u32_vec(&xs, "xs");
+    let ys_u = integers_to_u32_vec(&ys, "ys");
+    let z_u = integers_to_u32_vec(&z, "z");
     g.as_ref()
         .is_valid_adjustment_set_admg(&xs_u, &ys_u, &z_u)
         .unwrap_or_else(|e| throw_r_error(e))
@@ -614,8 +632,8 @@ fn all_adjustment_sets_admg_ptr(
     minimal: Rbool,
     max_size: i32,
 ) -> Robj {
-    let xs_u: Vec<u32> = xs.iter().map(|ri| rint_to_u32(ri, "xs")).collect();
-    let ys_u: Vec<u32> = ys.iter().map(|ri| rint_to_u32(ri, "ys")).collect();
+    let xs_u = integers_to_u32_vec(&xs, "xs");
+    let ys_u = integers_to_u32_vec(&ys, "ys");
     let max_size = rint_to_u32(Rint::from(max_size), "max_size");
     let sets = g
         .as_ref()
@@ -672,33 +690,17 @@ fn hd_of_ptrs(g1: ExternalPtr<GraphView>, g2: ExternalPtr<GraphView>) -> Robj {
 #[extendr]
 fn graph_session_shd(
     mut s1: ExternalPtr<GraphSession>,
-    names1: Strings,
     mut s2: ExternalPtr<GraphSession>,
-    names2: Strings,
 ) -> Robj {
     let core1 = s1.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
     let core2 = s2.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
     if core1.n() != core2.n() {
         throw_r_error("graph size mismatch");
     }
-    if names1.len() as u32 != core1.n() || names2.len() as u32 != core2.n() {
-        throw_r_error("names length must match number of nodes");
-    }
-    let mut idx2: HashMap<String, u32> = HashMap::with_capacity(names2.len());
-    for (i, s) in names2.iter().enumerate() {
-        let k = s.as_str().to_string();
-        if idx2.insert(k, i as u32).is_some() {
-            throw_r_error("duplicate node name in names2");
-        }
-    }
-    let mut perm = Vec::with_capacity(names1.len());
-    for s in names1.iter() {
-        let key = s.as_str();
-        let j = *idx2.get(key).unwrap_or_else(|| {
-            throw_r_error(format!("name '{key}' present in names1 but not in names2"))
-        });
-        perm.push(j);
-    }
+    let names1 = s1.as_ref().names();
+    let names2 = s2.as_ref().names();
+    let perm = build_perm_from_string_slices(names1, names2)
+        .unwrap_or_else(|e| throw_r_error(e));
     let (norm, count) = shd_with_perm(core1.as_ref(), core2.as_ref(), &perm);
     list!(normalized = norm, count = count as i32).into_robj()
 }
@@ -720,20 +722,85 @@ fn to_aid_input(view: &GraphView) -> std::result::Result<aid::AidInput<'_>, Stri
     }
 }
 
+/// Type of AID metric to compute.
 #[cfg(feature = "gadjid")]
-fn build_inv_from_names(
-    names_true: &extendr_api::prelude::Strings,
-    names_guess: &extendr_api::prelude::Strings,
+#[derive(Clone, Copy)]
+enum AidType {
+    Oset,
+    Ancestor,
+    Parent,
+}
+
+/// Compute AID metric for two graph sessions.
+#[cfg(feature = "gadjid")]
+fn session_aid_impl(
+    s_true: &mut ExternalPtr<GraphSession>,
+    s_guess: &mut ExternalPtr<GraphSession>,
+    aid_type: AidType,
+) -> Robj {
+    let core_t = s_true.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
+    let core_g = s_guess.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
+    if core_t.n() != core_g.n() {
+        throw_r_error("graph size mismatch");
+    }
+    let names_true = s_true.as_ref().names();
+    let names_guess = s_guess.as_ref().names();
+    let inv = build_inv_from_string_slices(names_true, names_guess)
+        .unwrap_or_else(|e| throw_r_error(e));
+    let t_view = s_true.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
+    let g_view = s_guess.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
+    let t = to_aid_input(t_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
+    let g = to_aid_input(g_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
+    let (score, count) = match aid_type {
+        AidType::Oset => aid::oset_aid_align(t, g, &inv),
+        AidType::Ancestor => aid::ancestor_aid_align(t, g, &inv),
+        AidType::Parent => aid::parent_aid_align(t, g, &inv),
+    }
+    .unwrap_or_else(|e| throw_r_error(e.to_string()));
+    list!(score = score, count = count as i32).into_robj()
+}
+
+/// Build a permutation mapping from names1 to names2 (for SHD).
+/// Returns perm where perm[i] = index in names2 for the i-th name in names1.
+fn build_perm_from_string_slices(
+    names1: &[String],
+    names2: &[String],
+) -> std::result::Result<Vec<u32>, String> {
+    use std::collections::HashMap;
+    let n = names1.len();
+    if n != names2.len() {
+        return Err("names length must match number of nodes".into());
+    }
+    let mut idx2: HashMap<&str, u32> = HashMap::with_capacity(n);
+    for (i, s) in names2.iter().enumerate() {
+        if idx2.insert(s.as_str(), i as u32).is_some() {
+            return Err("duplicate node name in names2".into());
+        }
+    }
+    let mut perm = Vec::with_capacity(n);
+    for s in names1.iter() {
+        let key = s.as_str();
+        let j = *idx2
+            .get(key)
+            .ok_or_else(|| format!("name '{key}' present in names1 but not in names2"))?;
+        perm.push(j);
+    }
+    Ok(perm)
+}
+
+#[cfg(feature = "gadjid")]
+fn build_inv_from_string_slices(
+    names_true: &[String],
+    names_guess: &[String],
 ) -> std::result::Result<Vec<usize>, String> {
     use std::collections::HashMap;
     let n = names_true.len();
     if n != names_guess.len() {
         return Err("names length must match number of nodes".into());
     }
-    let mut idx_guess: HashMap<String, usize> = HashMap::with_capacity(n);
+    let mut idx_guess: HashMap<&str, usize> = HashMap::with_capacity(n);
     for (i, s) in names_guess.iter().enumerate() {
-        let k = s.as_str().to_string();
-        if idx_guess.insert(k, i).is_some() {
+        if idx_guess.insert(s.as_str(), i).is_some() {
             return Err("duplicate node name in names_guess".into());
         }
     }
@@ -752,6 +819,18 @@ fn build_inv_from_names(
         inv[j] = i;
     }
     Ok(inv)
+}
+
+/// Version of build_inv_from_string_slices that works with extendr Strings.
+/// Used by the *_aid_of_ptrs functions that receive names from R.
+#[cfg(feature = "gadjid")]
+fn build_inv_from_names(
+    names_true: &extendr_api::prelude::Strings,
+    names_guess: &extendr_api::prelude::Strings,
+) -> std::result::Result<Vec<usize>, String> {
+    let true_vec: Vec<String> = names_true.iter().map(|s| s.to_string()).collect();
+    let guess_vec: Vec<String> = names_guess.iter().map(|s| s.to_string()).collect();
+    build_inv_from_string_slices(&true_vec, &guess_vec)
 }
 
 #[cfg(feature = "gadjid")]
@@ -827,72 +906,27 @@ fn parent_aid_of_ptrs(
 #[extendr]
 fn graph_session_ancestor_aid(
     mut s_true: ExternalPtr<GraphSession>,
-    names_true: Strings,
     mut s_guess: ExternalPtr<GraphSession>,
-    names_guess: Strings,
 ) -> Robj {
-    let core_t = s_true.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
-    let core_g = s_guess.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
-    if core_t.n() != core_g.n() {
-        throw_r_error("graph size mismatch");
-    }
-    let inv = build_inv_from_names(&names_true, &names_guess)
-        .unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let t_view = s_true.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
-    let g_view = s_guess.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
-    let t = to_aid_input(t_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let g = to_aid_input(g_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let (score, count) =
-        aid::ancestor_aid_align(t, g, &inv).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    list!(score = score, count = count as i32).into_robj()
+    session_aid_impl(&mut s_true, &mut s_guess, AidType::Ancestor)
 }
 
 #[cfg(feature = "gadjid")]
 #[extendr]
 fn graph_session_oset_aid(
     mut s_true: ExternalPtr<GraphSession>,
-    names_true: Strings,
     mut s_guess: ExternalPtr<GraphSession>,
-    names_guess: Strings,
 ) -> Robj {
-    let core_t = s_true.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
-    let core_g = s_guess.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
-    if core_t.n() != core_g.n() {
-        throw_r_error("graph size mismatch");
-    }
-    let inv = build_inv_from_names(&names_true, &names_guess)
-        .unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let t_view = s_true.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
-    let g_view = s_guess.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
-    let t = to_aid_input(t_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let g = to_aid_input(g_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let (score, count) =
-        aid::oset_aid_align(t, g, &inv).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    list!(score = score, count = count as i32).into_robj()
+    session_aid_impl(&mut s_true, &mut s_guess, AidType::Oset)
 }
 
 #[cfg(feature = "gadjid")]
 #[extendr]
 fn graph_session_parent_aid(
     mut s_true: ExternalPtr<GraphSession>,
-    names_true: Strings,
     mut s_guess: ExternalPtr<GraphSession>,
-    names_guess: Strings,
 ) -> Robj {
-    let core_t = s_true.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
-    let core_g = s_guess.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
-    if core_t.n() != core_g.n() {
-        throw_r_error("graph size mismatch");
-    }
-    let inv = build_inv_from_names(&names_true, &names_guess)
-        .unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let t_view = s_true.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
-    let g_view = s_guess.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
-    let t = to_aid_input(t_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let g = to_aid_input(g_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let (score, count) =
-        aid::parent_aid_align(t, g, &inv).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    list!(score = score, count = count as i32).into_robj()
+    session_aid_impl(&mut s_true, &mut s_guess, AidType::Parent)
 }
 
 // ── Causal queries ────────────────────────────────────────────────────────────────
@@ -1045,12 +1079,11 @@ fn graph_session_write_caugi_file(
     mut session: ExternalPtr<GraphSession>,
     reg: ExternalPtr<EdgeRegistry>,
     graph_class: &str,
-    node_names: Strings,
     path: &str,
     comment: Nullable<&str>,
     tags: Nullable<Strings>,
 ) {
-    let node_names_vec: Vec<String> = node_names.iter().map(|s| s.to_string()).collect();
+    let node_names_vec: Vec<String> = session.as_ref().names().to_vec();
     let comment_opt = comment.into_option().map(|s| s.to_string());
     let tags_opt = tags
         .into_option()
@@ -1078,11 +1111,10 @@ fn graph_session_serialize_caugi(
     mut session: ExternalPtr<GraphSession>,
     reg: ExternalPtr<EdgeRegistry>,
     graph_class: &str,
-    node_names: Strings,
     comment: Nullable<&str>,
     tags: Nullable<Strings>,
 ) -> String {
-    let node_names_vec: Vec<String> = node_names.iter().map(|s| s.to_string()).collect();
+    let node_names_vec: Vec<String> = session.as_ref().names().to_vec();
     let comment_opt = comment.into_option().map(|s| s.to_string());
     let tags_opt = tags
         .into_option()
@@ -1109,9 +1141,8 @@ fn graph_session_serialize_graphml(
     mut session: ExternalPtr<GraphSession>,
     reg: ExternalPtr<EdgeRegistry>,
     graph_class: &str,
-    node_names: Strings,
 ) -> String {
-    let node_names_vec: Vec<String> = node_names.iter().map(|s| s.to_string()).collect();
+    let node_names_vec: Vec<String> = session.as_ref().names().to_vec();
 
     let view = session
         .as_mut()
@@ -1360,20 +1391,9 @@ fn compute_layout_ptr(g: ExternalPtr<GraphView>, method: &str, packing_ratio: f6
     use std::str::FromStr;
 
     let layout_method = LayoutMethod::from_str(method).unwrap_or_else(|e| throw_r_error(e));
-
     let coords = compute_layout(g.as_ref().core(), layout_method, packing_ratio)
         .unwrap_or_else(|e| throw_r_error(e));
-
-    let n = coords.len();
-    let mut x = Vec::with_capacity(n);
-    let mut y = Vec::with_capacity(n);
-
-    for (xi, yi) in coords {
-        x.push(xi);
-        y.push(yi);
-    }
-
-    list!(x = x, y = y).into_robj()
+    coords_to_list(coords)
 }
 
 #[extendr]
@@ -1512,17 +1532,9 @@ fn graph_session_compute_layout(
         .core()
         .unwrap_or_else(|e| throw_r_error(e));
     let layout_method = LayoutMethod::from_str(method).unwrap_or_else(|e| throw_r_error(e));
-
     let coords = compute_layout(core.as_ref(), layout_method, packing_ratio)
         .unwrap_or_else(|e| throw_r_error(e));
-
-    let mut x: Vec<f64> = Vec::with_capacity(coords.len());
-    let mut y: Vec<f64> = Vec::with_capacity(coords.len());
-    for (xi, yi) in coords {
-        x.push(xi);
-        y.push(yi);
-    }
-    list!(x = x, y = y).into_robj()
+    coords_to_list(coords)
 }
 
 #[extendr]
@@ -1550,14 +1562,7 @@ fn graph_session_compute_bipartite_layout(
 
     let coords = compute_bipartite_layout(core.as_ref(), &partition_vec, orient)
         .unwrap_or_else(|e| throw_r_error(e));
-
-    let mut x: Vec<f64> = Vec::with_capacity(coords.len());
-    let mut y: Vec<f64> = Vec::with_capacity(coords.len());
-    for (xi, yi) in coords {
-        x.push(xi);
-        y.push(yi);
-    }
-    list!(x = x, y = y).into_robj()
+    coords_to_list(coords)
 }
 
 #[extendr]

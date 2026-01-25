@@ -627,37 +627,23 @@ edge_types <- function(cg) {
 #'
 #' @export
 parents <- function(cg, nodes = NULL, index = NULL) {
-  nodes_supplied <- !missing(nodes)
-  index_supplied <- !missing(index) && !is.null(index)
-  if (nodes_supplied && index_supplied) {
-    stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
-  }
+  check <- .validate_nodes_or_index(missing(nodes), index, missing(index))
 
-  if (index_supplied) {
+  if (check$index_supplied) {
     return(.getter_output(
       cg,
       graph_session_parents_of(cg@session, as.integer(index - 1L)),
       cg@nodes$name[index]
     ))
   }
-  if (!nodes_supplied) {
+  if (!check$nodes_supplied) {
     stop("Supply one of `nodes` or `index`.", call. = FALSE)
   }
   if (!is.character(nodes)) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
-
+  index <- .nodes_to_indices(cg, nodes)
   .getter_output(cg, graph_session_parents_of(cg@session, as.integer(index)), nodes)
 }
 
@@ -697,37 +683,23 @@ parents <- function(cg, nodes = NULL, index = NULL) {
 #'
 #' @export
 children <- function(cg, nodes = NULL, index = NULL) {
-  nodes_supplied <- !missing(nodes)
-  index_supplied <- !missing(index) && !is.null(index)
-  if (nodes_supplied && index_supplied) {
-    stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
-  }
+  check <- .validate_nodes_or_index(missing(nodes), index, missing(index))
 
-  if (index_supplied) {
+  if (check$index_supplied) {
     return(.getter_output(
       cg,
       graph_session_children_of(cg@session, as.integer(index - 1L)),
       cg@nodes$name[index]
     ))
   }
-  if (!nodes_supplied) {
+  if (!check$nodes_supplied) {
     stop("Supply one of `nodes` or `index`.", call. = FALSE)
   }
   if (!is.character(nodes)) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
-
+  index <- .nodes_to_indices(cg, nodes)
   .getter_output(cg, graph_session_children_of(cg@session, as.integer(index)), nodes)
 }
 
