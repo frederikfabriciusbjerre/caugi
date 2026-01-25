@@ -307,8 +307,7 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
       as.integer(unname(id[s$edges$to])),
       as.integer(codes)
     )
-    ptr <- graph_builder_build_view(b, "AUTO")
-    resolved_class <- graph_class_ptr(ptr)
+    resolved_class <- graph_builder_resolve_class(b, "AUTO")
     s$class <- resolved_class
   } else if (s$class == "AUTO") {
     # No edges yet, default to DAG

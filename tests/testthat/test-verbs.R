@@ -10,7 +10,6 @@ test_that("caugi objects have session after construction", {
   cg <- caugi()
   cg <- add_nodes(cg, name = c("A", "B"))
   expect_true(!is.null(cg@session))
-  expect_false(is.null(cg@ptr))
 
   cg <- add_edges(cg, from = "A", edge = "-->", to = "B")
   expect_true(!is.null(cg@session))

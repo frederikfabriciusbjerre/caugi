@@ -120,24 +120,6 @@ caugi <- S7::new_class(
         )
       }
     ),
-    ptr = S7::new_property(
-      S7::class_any,
-      getter = function(self) {
-        # Derive ptr from session - triggers lazy compilation if needed
-        session <- self@`.state`$session
-        if (is.null(session)) {
-          return(NULL)
-        }
-        graph_session_view_ptr(session)
-      },
-      setter = function(self, value) {
-        stop(
-          "`ptr` property is read-only via @ <-. ",
-          "The pointer is managed by the session.",
-          call. = FALSE
-        )
-      }
-    ),
     simple = S7::new_property(
       S7::class_logical,
       getter = function(self) self@`.state`$simple
@@ -382,8 +364,7 @@ caugi <- S7::new_class(
         )
       }
       # This validates that edges are compatible with the class
-      ptr <- graph_builder_build_view(b, class)
-      resolved_class <- graph_class_ptr(ptr)
+      resolved_class <- graph_builder_resolve_class(b, class)
 
       # Now create session with the validated/resolved class
       session <- graph_session_new(reg, n, simple, resolved_class)
@@ -421,33 +402,32 @@ caugi <- S7::new_class(
 # ───────────────────────────────── Helpers ────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-#' @title Convert a graph pointer to a `caugi` S7 object
+#' @title Convert a graph session to a `caugi` S7 object
 #'
 #' @description Convert a graph pointer from Rust to a `caugi` to a
 #' S7 object.
 #'
-#' @param ptr A pointer to the underlying Rust graph structure.
+#' @param session A pointer to the underlying Rust GraphSession.
 #' @param node_names Optional character vector of node names. If `NULL`
-#' (default), nodes will be named `V1`, `V2`, ..., `Vn`.
+#' (default), node names will be taken from the session.
 #'
 #' @returns A `caugi` object representing the graph.
 #'
 #' @keywords internal
-.view_to_caugi <- function(ptr, node_names = NULL) {
-
-  if (is.null(ptr)) {
-    stop("ptr is NULL", call. = FALSE)
+.session_to_caugi <- function(session, node_names = NULL) {
+  if (is.null(session)) {
+    stop("session is NULL", call. = FALSE)
   }
 
-  n <- n_ptr(ptr)
+  n <- graph_session_n(session)
   if (is.null(node_names)) {
-    node_names <- sprintf("V%d", seq_len(n))
+    node_names <- graph_session_names(session)
   }
   if (length(node_names) != n) {
-    stop("length(node_names) must equal n_ptr(ptr)", call. = FALSE)
+    stop("length(node_names) must equal graph_session_n(session)", call. = FALSE)
   }
 
-  edges_idx <- edges_ptr_df(ptr)
+  edges_idx <- graph_session_edges_df(session)
 
   if (length(edges_idx$from0) == 0L) {
     edges_tbl <- .edge_constructor()
@@ -471,25 +451,8 @@ caugi <- S7::new_class(
     )
   )
 
-  simple <- is_simple_ptr(ptr)
-  class <- graph_class_ptr(ptr)
-
-  # Create a new session and populate it with the graph data
-  reg <- caugi_registry()
-  session <- graph_session_new(reg, n, simple, class)
-  graph_session_set_names(session, node_names)
-
-  if (nrow(edges_tbl) > 0L) {
-    id <- seq_len(n) - 1L
-    names(id) <- node_names
-    codes <- edge_registry_code_of(reg, edges_tbl$edge)
-    graph_session_set_edges(
-      session,
-      as.integer(unname(id[edges_tbl$from])),
-      as.integer(unname(id[edges_tbl$to])),
-      as.integer(codes)
-    )
-  }
+  simple <- graph_session_is_simple(session)
+  class <- graph_session_graph_class(session)
 
   state <- .cg_state(
     nodes = nodes_tbl,

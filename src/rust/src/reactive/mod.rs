@@ -170,17 +170,12 @@ impl<T> Invalidatable for Variable<T> {
 /// A computed declaration with lazy evaluation and caching.
 ///
 /// The cached value is recomputed only when accessed after invalidation.
-/// Optionally supports checkpointing (keeping the last computed value even after invalidation).
 #[derive(Debug, Clone)]
 pub(crate) struct Declaration<T> {
-    /// Cached computed value (None if never computed or invalidated without checkpoint).
+    /// Cached computed value (None if never computed or invalidated).
     cached: Option<T>,
-    /// Checkpoint value that survives invalidation.
-    checkpoint: Option<T>,
     /// Whether the cached value is currently valid.
     valid: bool,
-    /// Whether this declaration uses checkpointing.
-    is_checkpoint: bool,
 }
 
 impl<T> Declaration<T> {
@@ -188,19 +183,7 @@ impl<T> Declaration<T> {
     pub fn new() -> Self {
         Self {
             cached: None,
-            checkpoint: None,
             valid: false,
-            is_checkpoint: false,
-        }
-    }
-
-    /// Create a new declaration with checkpointing enabled.
-    pub fn with_checkpoint() -> Self {
-        Self {
-            cached: None,
-            checkpoint: None,
-            valid: false,
-            is_checkpoint: true,
         }
     }
 
@@ -213,20 +196,8 @@ impl<T> Declaration<T> {
         }
     }
 
-    /// Get the checkpoint value (even if invalid).
-    pub fn get_checkpoint(&self) -> Option<&T> {
-        self.checkpoint.as_ref()
-    }
-
     /// Set the computed value and mark as valid.
-    /// If checkpointing is enabled, also update the checkpoint.
-    pub fn set(&mut self, value: T)
-    where
-        T: Clone,
-    {
-        if self.is_checkpoint {
-            self.checkpoint = Some(value.clone());
-        }
+    pub fn set(&mut self, value: T) {
         self.cached = Some(value);
         self.valid = true;
     }
@@ -235,26 +206,6 @@ impl<T> Declaration<T> {
     pub fn set_owned(&mut self, value: T) {
         self.cached = Some(value);
         self.valid = true;
-    }
-
-    /// Update checkpoint from current cached value.
-    pub fn update_checkpoint(&mut self)
-    where
-        T: Clone,
-    {
-        if let Some(ref cached) = self.cached {
-            self.checkpoint = Some(cached.clone());
-        }
-    }
-
-    /// Clear the checkpoint.
-    pub fn clear_checkpoint(&mut self) {
-        self.checkpoint = None;
-    }
-
-    /// Check if this declaration has checkpointing enabled.
-    pub fn has_checkpoint(&self) -> bool {
-        self.is_checkpoint
     }
 }
 
@@ -267,9 +218,7 @@ impl<T> Default for Declaration<T> {
 impl<T> Invalidatable for Declaration<T> {
     fn invalidate(&mut self) {
         self.valid = false;
-        if !self.is_checkpoint {
-            self.cached = None;
-        }
+        self.cached = None;
     }
 
     fn is_valid(&self) -> bool {
@@ -380,18 +329,4 @@ mod tests {
         assert!(decl.get().is_none());
     }
 
-    #[test]
-    fn declaration_checkpoint_survives_invalidation() {
-        let mut decl: Declaration<i32> = Declaration::with_checkpoint();
-
-        decl.set(42);
-        assert_eq!(decl.get(), Some(&42));
-        assert_eq!(decl.get_checkpoint(), Some(&42));
-
-        // Invalidate - checkpoint should survive
-        decl.invalidate();
-        assert!(!decl.is_valid());
-        assert!(decl.get().is_none()); // Regular get returns None when invalid
-        assert_eq!(decl.get_checkpoint(), Some(&42)); // Checkpoint survives
-    }
 }

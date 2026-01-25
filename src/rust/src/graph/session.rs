@@ -4,8 +4,7 @@
 //! This module provides a single source of truth for graph state, implementing:
 //! - Lazy compilation of CSR core and typed views
 //! - Automatic invalidation on mutation
-//! - Query caching with optional disable flag
-//! - Layout checkpointing that survives invalidation
+//! - On-demand query computation (no caching)
 
 use super::admg::Admg;
 use super::ag::Ag;
@@ -16,8 +15,8 @@ use super::ug::Ug;
 use super::view::GraphView;
 use super::CaugiGraph;
 use super::RegistrySnapshot;
+use crate::graph::NeighborMode;
 use crate::edges::{EdgeRegistry, EdgeSpec};
-use std::collections::HashMap;
 use std::sync::Arc;
 
 /// The target graph class for typed view construction.
@@ -107,20 +106,19 @@ impl EdgeBuffer {
     }
 }
 
-/// Canonical graph session containing mutable state and cached computations.
+/// Canonical graph session containing mutable state and computed values.
 ///
 /// # Design
 ///
 /// The session holds:
 /// - **Variables**: Mutable inputs (n, simple, class, registry, edges, names)
 /// - **Declarations**: Lazily computed outputs (core, view)
-/// - **Checkpoint**: Layout that survives invalidation
-/// - **Query caches**: Per-node cached results that clear on view invalidation
+/// - **Queries**: Computed on demand without caching
 ///
 /// # Invalidation Rules
 ///
-/// - `edges`, `n`, `simple`, `registry` change → invalidate `core` → invalidate `view` → clear caches
-/// - `class` change → invalidate `view` only → clear caches
+/// - `edges`, `n`, `simple`, `registry` change → invalidate `core` → invalidate `view`
+/// - `class` change → invalidate `view` only
 /// - `names` change → no invalidation (names are metadata)
 pub struct GraphSession {
     // ═══════════════════════════════════════════════════════════════════════════
@@ -140,27 +138,11 @@ pub struct GraphSession {
     view_valid: bool,
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // DECLARATIONS (cached computed values)
+    // DECLARATIONS (computed values)
     // ═══════════════════════════════════════════════════════════════════════════
     core: Option<Arc<CaugiGraph>>,
     view: Option<Arc<GraphView>>,
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // CHECKPOINT (survives invalidation)
-    // ═══════════════════════════════════════════════════════════════════════════
-    layout_checkpoint: Option<Vec<(f64, f64)>>,
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // QUERY CACHES (cleared on view invalidation)
-    // ═══════════════════════════════════════════════════════════════════════════
-    enable_query_cache: bool,
-    topo_cache: Option<Vec<u32>>,
-    ancestors_cache: HashMap<u32, Vec<u32>>,
-    descendants_cache: HashMap<u32, Vec<u32>>,
-    anteriors_cache: HashMap<u32, Vec<u32>>,
-    markov_cache: HashMap<u32, Vec<u32>>,
-    districts_cache: Option<Vec<Vec<u32>>>,
-    exogenous_cache: Option<Vec<u32>>,
 }
 
 impl GraphSession {
@@ -191,16 +173,6 @@ impl GraphSession {
             core: None,
             view: None,
 
-            layout_checkpoint: None,
-
-            enable_query_cache: true,
-            topo_cache: None,
-            ancestors_cache: HashMap::new(),
-            descendants_cache: HashMap::new(),
-            anteriors_cache: HashMap::new(),
-            markov_cache: HashMap::new(),
-            districts_cache: None,
-            exogenous_cache: None,
         }
     }
 
@@ -225,16 +197,6 @@ impl GraphSession {
             core: None,
             view: None,
 
-            layout_checkpoint: None,
-
-            enable_query_cache: true,
-            topo_cache: None,
-            ancestors_cache: HashMap::new(),
-            descendants_cache: HashMap::new(),
-            anteriors_cache: HashMap::new(),
-            markov_cache: HashMap::new(),
-            districts_cache: None,
-            exogenous_cache: None,
         }
     }
 
@@ -257,17 +219,6 @@ impl GraphSession {
             core: None,
             view: None,
 
-            // Clear checkpoint and caches in clone
-            layout_checkpoint: None,
-
-            enable_query_cache: self.enable_query_cache,
-            topo_cache: None,
-            ancestors_cache: HashMap::new(),
-            descendants_cache: HashMap::new(),
-            anteriors_cache: HashMap::new(),
-            markov_cache: HashMap::new(),
-            districts_cache: None,
-            exogenous_cache: None,
         }
     }
 
@@ -284,18 +235,6 @@ impl GraphSession {
     fn invalidate_view(&mut self) {
         self.view_valid = false;
         self.view = None;
-        self.clear_query_caches();
-        // NOTE: layout_checkpoint is NOT cleared (survives invalidation)
-    }
-
-    fn clear_query_caches(&mut self) {
-        self.topo_cache = None;
-        self.ancestors_cache.clear();
-        self.descendants_cache.clear();
-        self.anteriors_cache.clear();
-        self.markov_cache.clear();
-        self.districts_cache = None;
-        self.exogenous_cache = None;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -431,168 +370,296 @@ impl GraphSession {
         Ok(Arc::clone(self.view.as_ref().unwrap()))
     }
 
-    /// Get layout, optionally using checkpoint.
-    pub fn layout(
-        &mut self,
-        method: &str,
-        use_checkpoint: bool,
-    ) -> Result<Vec<(f64, f64)>, String> {
-        if use_checkpoint {
-            if let Some(ref cached) = self.layout_checkpoint {
-                return Ok(cached.clone());
-            }
-        }
-
+    /// Get layout.
+    pub fn layout(&mut self, method: &str) -> Result<Vec<(f64, f64)>, String> {
         let core = self.core()?;
         let packing_ratio = 1.0;
 
         use super::layout::{compute_layout, LayoutMethod};
         let layout_method: LayoutMethod = method.parse()?;
-        let coords = compute_layout(&core, layout_method, packing_ratio)?;
-        self.layout_checkpoint = Some(coords.clone());
-        Ok(coords)
-    }
-
-    /// Clear the layout checkpoint.
-    pub fn clear_layout_checkpoint(&mut self) {
-        self.layout_checkpoint = None;
+        compute_layout(&core, layout_method, packing_ratio)
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // CACHED QUERY API
+    // QUERY API
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Enable or disable query caching.
-    pub fn set_cache_enabled(&mut self, enabled: bool) {
-        self.enable_query_cache = enabled;
-        if !enabled {
-            self.clear_query_caches();
-        }
-    }
-
-    /// Check if query caching is enabled.
-    pub fn is_cache_enabled(&self) -> bool {
-        self.enable_query_cache
-    }
-
-    /// Get topological sort (cached).
+    /// Get topological sort.
     pub fn topological_sort(&mut self) -> Result<Vec<u32>, String> {
-        if self.enable_query_cache {
-            if let Some(ref cached) = self.topo_cache {
-                return Ok(cached.clone());
-            }
-        }
-
         let view = self.view()?;
-        let result = view.topological_sort()?;
-
-        if self.enable_query_cache {
-            self.topo_cache = Some(result.clone());
-        }
-        Ok(result)
+        view.topological_sort()
     }
 
-    /// Get ancestors of a node (cached).
+    /// Get parents of a node.
+    pub fn parents_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
+        let view = self.view()?;
+        view.parents_of(node)
+    }
+
+    /// Get children of a node.
+    pub fn children_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
+        let view = self.view()?;
+        view.children_of(node)
+    }
+
+    /// Get undirected neighbors of a node.
+    pub fn undirected_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
+        let view = self.view()?;
+        view.undirected_of(node)
+    }
+
+    /// Get neighbors of a node by mode.
+    pub fn neighbors_of(&mut self, node: u32, mode: NeighborMode) -> Result<Vec<u32>, String> {
+        let view = self.view()?;
+        view.neighbors_of(node, mode)
+    }
+
+    /// Get ancestors of a node.
     pub fn ancestors_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        if self.enable_query_cache {
-            if let Some(cached) = self.ancestors_cache.get(&node) {
-                return Ok(cached.clone());
-            }
-        }
-
         let view = self.view()?;
-        let result = view.ancestors_of(node)?;
-
-        if self.enable_query_cache {
-            self.ancestors_cache.insert(node, result.clone());
-        }
-        Ok(result)
+        view.ancestors_of(node)
     }
 
-    /// Get descendants of a node (cached).
+    /// Get descendants of a node.
     pub fn descendants_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        if self.enable_query_cache {
-            if let Some(cached) = self.descendants_cache.get(&node) {
-                return Ok(cached.clone());
-            }
-        }
-
         let view = self.view()?;
-        let result = view.descendants_of(node)?;
-
-        if self.enable_query_cache {
-            self.descendants_cache.insert(node, result.clone());
-        }
-        Ok(result)
+        view.descendants_of(node)
     }
 
-    /// Get anteriors of a node (cached).
+    /// Get anteriors of a node.
     pub fn anteriors_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        if self.enable_query_cache {
-            if let Some(cached) = self.anteriors_cache.get(&node) {
-                return Ok(cached.clone());
-            }
-        }
-
         let view = self.view()?;
-        let result = view.anteriors_of(node)?;
-
-        if self.enable_query_cache {
-            self.anteriors_cache.insert(node, result.clone());
-        }
-        Ok(result)
+        view.anteriors_of(node)
     }
 
-    /// Get Markov blanket of a node (cached).
+    /// Get Markov blanket of a node.
     pub fn markov_blanket_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        if self.enable_query_cache {
-            if let Some(cached) = self.markov_cache.get(&node) {
-                return Ok(cached.clone());
-            }
-        }
-
         let view = self.view()?;
-        let result = view.markov_blanket_of(node)?;
-
-        if self.enable_query_cache {
-            self.markov_cache.insert(node, result.clone());
-        }
-        Ok(result)
+        view.markov_blanket_of(node)
     }
 
-    /// Get districts (cached, ADMG only).
+    /// Get districts (ADMG only).
     pub fn districts(&mut self) -> Result<Vec<Vec<u32>>, String> {
-        if self.enable_query_cache {
-            if let Some(ref cached) = self.districts_cache {
-                return Ok(cached.clone());
-            }
-        }
-
         let view = self.view()?;
-        let result = view.districts()?;
-
-        if self.enable_query_cache {
-            self.districts_cache = Some(result.clone());
-        }
-        Ok(result)
+        view.districts()
     }
 
-    /// Get exogenous nodes (cached).
+    /// Get district of a node (ADMG/AG only).
+    pub fn district_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
+        let view = self.view()?;
+        view.district_of(node)
+    }
+
+    /// Get spouses of a node (ADMG/AG bidirected neighbors).
+    pub fn spouses_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
+        let view = self.view()?;
+        view.spouses_of(node)
+    }
+
+    /// Get exogenous nodes.
     /// The `undirected_as_parents` flag determines whether undirected edges count as parent edges.
     pub fn exogenous_nodes(&mut self, undirected_as_parents: bool) -> Result<Vec<u32>, String> {
-        if self.enable_query_cache {
-            if let Some(ref cached) = self.exogenous_cache {
-                return Ok(cached.clone());
-            }
-        }
-
         let view = self.view()?;
-        let result = view.exogenous_nodes(undirected_as_parents)?;
+        view.exogenous_nodes(undirected_as_parents)
+    }
 
-        if self.enable_query_cache {
-            self.exogenous_cache = Some(result.clone());
+    /// Check whether the directed part is acyclic.
+    pub fn is_acyclic(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        Ok(crate::graph::alg::directed_part_is_acyclic(core.as_ref()))
+    }
+
+    /// Check if the graph is compatible with DAG.
+    pub fn is_dag_type(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        Ok(Dag::new(Arc::new(core.as_ref().clone())).is_ok())
+    }
+
+    /// Check if the graph is compatible with PDAG.
+    pub fn is_pdag_type(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        Ok(Pdag::new(Arc::new(core.as_ref().clone())).is_ok())
+    }
+
+    /// Check if the graph is compatible with UG.
+    pub fn is_ug_type(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        Ok(Ug::new(Arc::new(core.as_ref().clone())).is_ok())
+    }
+
+    /// Check if the graph is compatible with ADMG.
+    pub fn is_admg_type(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        Ok(Admg::new(Arc::new(core.as_ref().clone())).is_ok())
+    }
+
+    /// Check if the graph is compatible with AG.
+    pub fn is_ag_type(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        Ok(Ag::new(Arc::new(core.as_ref().clone())).is_ok())
+    }
+
+    /// Check if the graph is a CPDAG (PDAG-only).
+    pub fn is_cpdag(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        match Pdag::new(Arc::new(core.as_ref().clone())) {
+            Ok(p) => Ok(p.is_cpdag()),
+            Err(_) => Ok(false),
         }
-        Ok(result)
+    }
+
+    /// Check if the graph is a MAG (AG only).
+    pub fn is_mag(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        match Ag::new(Arc::new(core.as_ref().clone())) {
+            Ok(ag) => Ok(ag.is_mag()),
+            Err(_) => Ok(false),
+        }
+    }
+
+    /// Convert DAG to CPDAG (DAG only).
+    pub fn to_cpdag(&mut self) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.to_cpdag()
+    }
+
+    /// Skeleton of the graph.
+    pub fn skeleton(&mut self) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.skeleton()
+    }
+
+    /// Moralized version of the graph (DAG only).
+    pub fn moralize(&mut self) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.moralize()
+    }
+
+    /// Latent projection (DAG only).
+    pub fn latent_project(&mut self, latents: &[u32]) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.latent_project(latents)
+    }
+
+    /// Proper backdoor graph (DAG only).
+    pub fn proper_backdoor_graph(&mut self, xs: &[u32], ys: &[u32]) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.proper_backdoor_graph(xs, ys)
+    }
+
+    /// Moral graph of ancestors (DAG only).
+    pub fn moral_of_ancestors(&mut self, seeds: &[u32]) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.moral_of_ancestors(seeds)
+    }
+
+    /// Ancestral reduction (DAG/PDAG/ADMG).
+    pub fn ancestral_reduction(&mut self, seeds: &[u32]) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.ancestral_reduction(seeds)
+    }
+
+    /// Induced subgraph on a node set.
+    pub fn induced_subgraph(&mut self, keep: &[u32]) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.induced_subgraph(keep)
+    }
+
+    /// D-separation query (DAG only).
+    pub fn d_separated(&mut self, xs: &[u32], ys: &[u32], z: &[u32]) -> Result<bool, String> {
+        let view = self.view()?;
+        view.d_separated(xs, ys, z)
+    }
+
+    /// M-separation query (ADMG/AG/DAG).
+    pub fn m_separated(&mut self, xs: &[u32], ys: &[u32], z: &[u32]) -> Result<bool, String> {
+        let view = self.view()?;
+        view.m_separated(xs, ys, z)
+    }
+
+    /// Adjustment set: parents.
+    pub fn adjustment_set_parents(
+        &mut self,
+        xs: &[u32],
+        ys: &[u32],
+    ) -> Result<Vec<u32>, String> {
+        let view = self.view()?;
+        view.adjustment_set_parents(xs, ys)
+    }
+
+    /// Adjustment set: backdoor.
+    pub fn adjustment_set_backdoor(
+        &mut self,
+        xs: &[u32],
+        ys: &[u32],
+    ) -> Result<Vec<u32>, String> {
+        let view = self.view()?;
+        view.adjustment_set_backdoor(xs, ys)
+    }
+
+    /// Adjustment set: optimal.
+    pub fn adjustment_set_optimal(
+        &mut self,
+        xs: &[u32],
+        ys: &[u32],
+    ) -> Result<Vec<u32>, String> {
+        if xs.len() != 1 || ys.len() != 1 {
+            return Err("adjustment_set_optimal expects exactly one X and one Y".into());
+        }
+        let view = self.view()?;
+        view.adjustment_set_optimal(xs[0], ys[0])
+    }
+
+    /// Validate a backdoor set.
+    pub fn is_valid_backdoor_set(
+        &mut self,
+        xs: &[u32],
+        ys: &[u32],
+        z: &[u32],
+    ) -> Result<bool, String> {
+        if xs.len() != 1 || ys.len() != 1 {
+            return Err("is_valid_backdoor_set expects exactly one X and one Y".into());
+        }
+        let view = self.view()?;
+        view.is_valid_backdoor_set(xs[0], ys[0], z)
+    }
+
+    /// Enumerate all backdoor sets.
+    pub fn all_backdoor_sets(
+        &mut self,
+        xs: &[u32],
+        ys: &[u32],
+        minimal: bool,
+        max_size: u32,
+    ) -> Result<Vec<Vec<u32>>, String> {
+        if xs.len() != 1 || ys.len() != 1 {
+            return Err("all_backdoor_sets expects exactly one X and one Y".into());
+        }
+        let view = self.view()?;
+        view.all_backdoor_sets(xs[0], ys[0], minimal, max_size)
+    }
+
+    /// Validate adjustment set for ADMG/AG.
+    pub fn is_valid_adjustment_set_admg(
+        &mut self,
+        xs: &[u32],
+        ys: &[u32],
+        z: &[u32],
+    ) -> Result<bool, String> {
+        let view = self.view()?;
+        view.is_valid_adjustment_set_admg(xs, ys, z)
+    }
+
+    /// Enumerate all adjustment sets for ADMG/AG.
+    pub fn all_adjustment_sets_admg(
+        &mut self,
+        xs: &[u32],
+        ys: &[u32],
+        minimal: bool,
+        max_size: u32,
+    ) -> Result<Vec<Vec<u32>>, String> {
+        let view = self.view()?;
+        view.all_adjustment_sets_admg(xs, ys, minimal, max_size)
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -629,25 +696,11 @@ impl GraphSession {
         self.view_valid
     }
 
-    /// Check if a layout checkpoint exists.
-    pub fn has_layout_checkpoint(&self) -> bool {
-        self.layout_checkpoint.is_some()
-    }
-
     /// Get detailed validity state for introspection.
     pub fn validity_state(&self) -> ValidityState {
         ValidityState {
             core_valid: self.core_valid,
             view_valid: self.view_valid,
-            query_cache_enabled: self.enable_query_cache,
-            has_layout_checkpoint: self.layout_checkpoint.is_some(),
-            topo_cached: self.topo_cache.is_some(),
-            ancestors_cached: self.ancestors_cache.len(),
-            descendants_cached: self.descendants_cache.len(),
-            anteriors_cached: self.anteriors_cache.len(),
-            markov_cached: self.markov_cache.len(),
-            districts_cached: self.districts_cache.is_some(),
-            exogenous_cached: self.exogenous_cache.is_some(),
         }
     }
 
@@ -667,19 +720,6 @@ impl GraphSession {
   "declarations": {{
     "core": {{ "valid": {} }},
     "view": {{ "valid": {} }}
-  }},
-  "checkpoints": {{
-    "layout": {{ "exists": {} }}
-  }},
-  "caches": {{
-    "enabled": {},
-    "topo": {{ "cached": {} }},
-    "ancestors": {{ "cached_nodes": {} }},
-    "descendants": {{ "cached_nodes": {} }},
-    "anteriors": {{ "cached_nodes": {} }},
-    "markov_blanket": {{ "cached_nodes": {} }},
-    "districts": {{ "cached": {} }},
-    "exogenous": {{ "cached": {} }}
   }},
   "dependencies": [
     ["n", "core"],
@@ -706,15 +746,6 @@ impl GraphSession {
             self.names.len(),
             state.core_valid,
             state.view_valid,
-            state.has_layout_checkpoint,
-            state.query_cache_enabled,
-            state.topo_cached,
-            state.ancestors_cached,
-            state.descendants_cached,
-            state.anteriors_cached,
-            state.markov_cached,
-            state.districts_cached,
-            state.exogenous_cached,
         )
     }
 }
@@ -724,15 +755,6 @@ impl GraphSession {
 pub struct ValidityState {
     pub core_valid: bool,
     pub view_valid: bool,
-    pub query_cache_enabled: bool,
-    pub has_layout_checkpoint: bool,
-    pub topo_cached: bool,
-    pub ancestors_cached: usize,
-    pub descendants_cached: usize,
-    pub anteriors_cached: usize,
-    pub markov_cached: usize,
-    pub districts_cached: bool,
-    pub exogenous_cached: bool,
 }
 
 #[cfg(test)]
@@ -821,33 +843,4 @@ mod tests {
         assert_eq!(cloned.n(), session.n());
     }
 
-    #[test]
-    fn session_layout_checkpoint() {
-        let mut session = make_session();
-
-        // Get layout
-        let layout1 = session.layout("force", false).unwrap();
-        assert!(session.has_layout_checkpoint());
-
-        // Mutate -> checkpoint survives
-        session.set_edges(EdgeBuffer::new());
-        assert!(session.has_layout_checkpoint());
-
-        // Use checkpoint
-        let layout2 = session.layout("force", true).unwrap();
-        assert_eq!(layout1, layout2);
-
-        // Clear checkpoint
-        session.clear_layout_checkpoint();
-        assert!(!session.has_layout_checkpoint());
-    }
-
-    #[test]
-    fn session_cache_control() {
-        let mut session = make_session();
-        assert!(session.is_cache_enabled());
-
-        session.set_cache_enabled(false);
-        assert!(!session.is_cache_enabled());
-    }
 }

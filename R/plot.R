@@ -239,7 +239,7 @@ caugi_layout_bipartite <- function(
     }
   }
 
-  coords <- compute_bipartite_layout_ptr(x@ptr, partition, orientation)
+  coords <- graph_session_compute_bipartite_layout(x@session, partition, orientation)
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -296,7 +296,7 @@ caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
     )
   }
 
-  coords <- compute_layout_ptr(x@ptr, "sugiyama", packing_ratio)
+  coords <- graph_session_compute_layout(x@session, "sugiyama", packing_ratio)
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -347,7 +347,7 @@ caugi_layout_fruchterman_reingold <- function(
   # Ensure graph is built
 
 
-  coords <- compute_layout_ptr(x@ptr, "fruchterman-reingold", packing_ratio)
+  coords <- graph_session_compute_layout(x@session, "fruchterman-reingold", packing_ratio)
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -395,7 +395,7 @@ caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
   # Ensure graph is built
 
 
-  coords <- compute_layout_ptr(x@ptr, "kamada-kawai", packing_ratio)
+  coords <- graph_session_compute_layout(x@session, "kamada-kawai", packing_ratio)
 
   data.frame(
     name = nodes(x)[["name"]],

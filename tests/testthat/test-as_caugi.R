@@ -416,14 +416,13 @@ test_that("dagitty -> caugi: PAG class is routed to UNKNOWN until supported", {
   expect_true(any(cg@edges$edge == "o->"))
 })
 
-test_that("dagitty -> caugi: respects `simple` flag and builds pointer when requested", {
+test_that("dagitty -> caugi: respects `simple` flag and builds session", {
   skip_if_not_installed("dagitty")
   g <- dagitty::dagitty("dag { A -> B }")
   cg <- as_caugi(g, class = "DAG", simple = TRUE)
 
   expect_true(!is.null(cg@session))
   expect_true(isTRUE(cg@simple))
-  expect_false(is.null(cg@ptr))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────

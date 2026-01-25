@@ -73,8 +73,8 @@ write_caugi <- function(x, path, comment = NULL, tags = NULL) {
     stop("`tags` must be NULL or a character vector", call. = FALSE)
   }
 
-  write_caugi_file_ptr(
-    x@ptr,
+  graph_session_write_caugi_file(
+    x@session,
     caugi_registry(),
     x@graph_class,
     x@nodes$name,
@@ -128,7 +128,7 @@ read_caugi <- function(path) {
   reg <- caugi_registry()
 
   # Read from file
-  result <- read_caugi_file_ptr(path, reg)
+  result <- read_caugi_file(path, reg)
 
   # Create caugi object using the standard constructor
   if (length(result$edges_from) == 0L) {
@@ -183,8 +183,8 @@ caugi_serialize <- function(x, comment = NULL, tags = NULL) {
     stop("`tags` must be NULL or a character vector", call. = FALSE)
   }
 
-  serialize_caugi_ptr(
-    x@ptr,
+  graph_session_serialize_caugi(
+    x@session,
     caugi_registry(),
     x@graph_class,
     x@nodes$name,
@@ -221,7 +221,7 @@ caugi_deserialize <- function(json) {
   reg <- caugi_registry()
 
   # Deserialize
-  result <- deserialize_caugi_ptr(json, reg)
+  result <- deserialize_caugi(json, reg)
 
   # Create caugi object using the standard constructor
   if (length(result$edges_from) == 0L) {

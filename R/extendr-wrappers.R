@@ -38,23 +38,35 @@ graph_session_set_class <- function(session, class) invisible(.Call(wrap__graph_
 
 graph_session_set_names <- function(session, names) invisible(.Call(wrap__graph_session_set_names, session, names))
 
-graph_session_set_cache_enabled <- function(session, enabled) invisible(.Call(wrap__graph_session_set_cache_enabled, session, enabled))
+graph_session_layout <- function(session, method) .Call(wrap__graph_session_layout, session, method)
 
-graph_session_view_ptr <- function(session) .Call(wrap__graph_session_view_ptr, session)
+graph_session_compute_layout <- function(session, method, packing_ratio) .Call(wrap__graph_session_compute_layout, session, method, packing_ratio)
 
-graph_session_layout <- function(session, method, use_checkpoint) .Call(wrap__graph_session_layout, session, method, use_checkpoint)
-
-graph_session_clear_layout_checkpoint <- function(session) invisible(.Call(wrap__graph_session_clear_layout_checkpoint, session))
+graph_session_compute_bipartite_layout <- function(session, partition, orientation) .Call(wrap__graph_session_compute_bipartite_layout, session, partition, orientation)
 
 graph_session_n <- function(session) .Call(wrap__graph_session_n, session)
 
+graph_session_is_simple <- function(session) .Call(wrap__graph_session_is_simple, session)
+
 graph_session_class <- function(session) .Call(wrap__graph_session_class, session)
 
+graph_session_graph_class <- function(session) .Call(wrap__graph_session_graph_class, session)
+
 graph_session_names <- function(session) .Call(wrap__graph_session_names, session)
+
+graph_session_edges_df <- function(session) .Call(wrap__graph_session_edges_df, session)
 
 graph_session_is_valid <- function(session) .Call(wrap__graph_session_is_valid, session)
 
 graph_session_topological_sort <- function(session) .Call(wrap__graph_session_topological_sort, session)
+
+graph_session_parents_of <- function(session, idxs) .Call(wrap__graph_session_parents_of, session, idxs)
+
+graph_session_children_of <- function(session, idxs) .Call(wrap__graph_session_children_of, session, idxs)
+
+graph_session_undirected_of <- function(session, idxs) .Call(wrap__graph_session_undirected_of, session, idxs)
+
+graph_session_neighbors_of <- function(session, idxs, mode) .Call(wrap__graph_session_neighbors_of, session, idxs, mode)
 
 graph_session_ancestors_of <- function(session, node) .Call(wrap__graph_session_ancestors_of, session, node)
 
@@ -64,127 +76,93 @@ graph_session_anteriors_of <- function(session, node) .Call(wrap__graph_session_
 
 graph_session_markov_blanket_of <- function(session, node) .Call(wrap__graph_session_markov_blanket_of, session, node)
 
+graph_session_spouses_of <- function(session, idxs) .Call(wrap__graph_session_spouses_of, session, idxs)
+
 graph_session_exogenous_nodes <- function(session, undirected_as_parents) .Call(wrap__graph_session_exogenous_nodes, session, undirected_as_parents)
 
 graph_session_districts <- function(session) .Call(wrap__graph_session_districts, session)
 
+graph_session_district_of <- function(session, idx) .Call(wrap__graph_session_district_of, session, idx)
+
 graph_session_dependency_json <- function(session) .Call(wrap__graph_session_dependency_json, session)
+
+graph_session_is_acyclic <- function(session) .Call(wrap__graph_session_is_acyclic, session)
+
+graph_session_is_dag_type <- function(session) .Call(wrap__graph_session_is_dag_type, session)
+
+graph_session_is_pdag_type <- function(session) .Call(wrap__graph_session_is_pdag_type, session)
+
+graph_session_is_ug_type <- function(session) .Call(wrap__graph_session_is_ug_type, session)
+
+graph_session_is_admg_type <- function(session) .Call(wrap__graph_session_is_admg_type, session)
+
+graph_session_is_ag_type <- function(session) .Call(wrap__graph_session_is_ag_type, session)
+
+graph_session_is_mag <- function(session) .Call(wrap__graph_session_is_mag, session)
+
+graph_session_is_cpdag <- function(session) .Call(wrap__graph_session_is_cpdag, session)
+
+graph_session_to_cpdag <- function(session) .Call(wrap__graph_session_to_cpdag, session)
+
+graph_session_skeleton <- function(session) .Call(wrap__graph_session_skeleton, session)
+
+graph_session_moralize <- function(session) .Call(wrap__graph_session_moralize, session)
+
+graph_session_latent_project <- function(session, latents) .Call(wrap__graph_session_latent_project, session, latents)
+
+graph_session_proper_backdoor_graph <- function(session, xs, ys) .Call(wrap__graph_session_proper_backdoor_graph, session, xs, ys)
+
+graph_session_moral_of_ancestors <- function(session, seeds) .Call(wrap__graph_session_moral_of_ancestors, session, seeds)
+
+graph_session_ancestral_reduction <- function(session, seeds) .Call(wrap__graph_session_ancestral_reduction, session, seeds)
+
+graph_session_induced_subgraph <- function(session, keep) .Call(wrap__graph_session_induced_subgraph, session, keep)
+
+graph_session_d_separated <- function(session, xs, ys, z) .Call(wrap__graph_session_d_separated, session, xs, ys, z)
+
+graph_session_m_separated <- function(session, xs, ys, z) .Call(wrap__graph_session_m_separated, session, xs, ys, z)
+
+graph_session_adjustment_set_parents <- function(session, xs, ys) .Call(wrap__graph_session_adjustment_set_parents, session, xs, ys)
+
+graph_session_adjustment_set_backdoor <- function(session, xs, ys) .Call(wrap__graph_session_adjustment_set_backdoor, session, xs, ys)
+
+graph_session_adjustment_set_optimal <- function(session, xs, ys) .Call(wrap__graph_session_adjustment_set_optimal, session, xs, ys)
+
+graph_session_is_valid_backdoor_set <- function(session, xs, ys, z) .Call(wrap__graph_session_is_valid_backdoor_set, session, xs, ys, z)
+
+graph_session_all_backdoor_sets <- function(session, xs, ys, minimal, max_size) .Call(wrap__graph_session_all_backdoor_sets, session, xs, ys, minimal, max_size)
+
+graph_session_is_valid_adjustment_set_admg <- function(session, xs, ys, z) .Call(wrap__graph_session_is_valid_adjustment_set_admg, session, xs, ys, z)
+
+graph_session_all_adjustment_sets_admg <- function(session, xs, ys, minimal, max_size) .Call(wrap__graph_session_all_adjustment_sets_admg, session, xs, ys, minimal, max_size)
+
+graph_session_shd <- function(s1, names1, s2, names2) .Call(wrap__graph_session_shd, s1, names1, s2, names2)
+
+graph_session_hd <- function(s1, s2) .Call(wrap__graph_session_hd, s1, s2)
+
+graph_session_ancestor_aid <- function(s_true, names_true, s_guess, names_guess) .Call(wrap__graph_session_ancestor_aid, s_true, names_true, s_guess, names_guess)
+
+graph_session_oset_aid <- function(s_true, names_true, s_guess, names_guess) .Call(wrap__graph_session_oset_aid, s_true, names_true, s_guess, names_guess)
+
+graph_session_parent_aid <- function(s_true, names_true, s_guess, names_guess) .Call(wrap__graph_session_parent_aid, s_true, names_true, s_guess, names_guess)
 
 graph_builder_new <- function(reg, n, simple) .Call(wrap__graph_builder_new, reg, n, simple)
 
 graph_builder_add_edges <- function(b, from, to, etype) invisible(.Call(wrap__graph_builder_add_edges, b, from, to, etype))
 
-graph_builder_build_view <- function(b, class) .Call(wrap__graph_builder_build_view, b, class)
+graph_builder_resolve_class <- function(b, class) .Call(wrap__graph_builder_resolve_class, b, class)
 
-parents_of_ptr <- function(g, idxs) .Call(wrap__parents_of_ptr, g, idxs)
+graph_session_write_caugi_file <- function(session, reg, graph_class, node_names, path, comment, tags) invisible(.Call(wrap__graph_session_write_caugi_file, session, reg, graph_class, node_names, path, comment, tags))
 
-children_of_ptr <- function(g, idxs) .Call(wrap__children_of_ptr, g, idxs)
+read_caugi_file <- function(path, reg) .Call(wrap__read_caugi_file, path, reg)
 
-undirected_of_ptr <- function(g, idxs) .Call(wrap__undirected_of_ptr, g, idxs)
+graph_session_serialize_caugi <- function(session, reg, graph_class, node_names, comment, tags) .Call(wrap__graph_session_serialize_caugi, session, reg, graph_class, node_names, comment, tags)
 
-neighbors_of_ptr <- function(g, idxs, mode) .Call(wrap__neighbors_of_ptr, g, idxs, mode)
+deserialize_caugi <- function(json, reg) .Call(wrap__deserialize_caugi, json, reg)
 
-ancestors_of_ptr <- function(g, idxs) .Call(wrap__ancestors_of_ptr, g, idxs)
+graph_session_serialize_graphml <- function(session, reg, graph_class, node_names) .Call(wrap__graph_session_serialize_graphml, session, reg, graph_class, node_names)
 
-descendants_of_ptr <- function(g, idxs) .Call(wrap__descendants_of_ptr, g, idxs)
-
-anteriors_of_ptr <- function(g, idxs) .Call(wrap__anteriors_of_ptr, g, idxs)
-
-markov_blanket_of_ptr <- function(g, idxs) .Call(wrap__markov_blanket_of_ptr, g, idxs)
-
-exogenous_nodes_of_ptr <- function(g, undirected_as_parents) .Call(wrap__exogenous_nodes_of_ptr, g, undirected_as_parents)
-
-topological_sort_ptr <- function(g) .Call(wrap__topological_sort_ptr, g)
-
-induced_subgraph_ptr <- function(g, keep) .Call(wrap__induced_subgraph_ptr, g, keep)
-
-is_simple_ptr <- function(g) .Call(wrap__is_simple_ptr, g)
-
-graph_class_ptr <- function(g) .Call(wrap__graph_class_ptr, g)
-
-skeleton_ptr <- function(g) .Call(wrap__skeleton_ptr, g)
-
-moralize_ptr <- function(g) .Call(wrap__moralize_ptr, g)
-
-latent_project_ptr <- function(g, latents) .Call(wrap__latent_project_ptr, g, latents)
-
-is_acyclic_ptr <- function(g) .Call(wrap__is_acyclic_ptr, g)
-
-to_cpdag_ptr <- function(g) .Call(wrap__to_cpdag_ptr, g)
-
-is_cpdag_ptr <- function(g) .Call(wrap__is_cpdag_ptr, g)
-
-is_dag_type_ptr <- function(g) .Call(wrap__is_dag_type_ptr, g)
-
-is_pdag_type_ptr <- function(g) .Call(wrap__is_pdag_type_ptr, g)
-
-is_ug_type_ptr <- function(g) .Call(wrap__is_ug_type_ptr, g)
-
-is_admg_type_ptr <- function(g) .Call(wrap__is_admg_type_ptr, g)
-
-is_ag_type_ptr <- function(g) .Call(wrap__is_ag_type_ptr, g)
-
-is_mag_ptr <- function(g) .Call(wrap__is_mag_ptr, g)
-
-spouses_of_ptr <- function(g, idxs) .Call(wrap__spouses_of_ptr, g, idxs)
-
-districts_ptr <- function(g) .Call(wrap__districts_ptr, g)
-
-district_of_ptr <- function(g, idx) .Call(wrap__district_of_ptr, g, idx)
-
-m_separated_ptr <- function(g, xs, ys, z) .Call(wrap__m_separated_ptr, g, xs, ys, z)
-
-is_valid_adjustment_set_admg_ptr <- function(g, xs, ys, z) .Call(wrap__is_valid_adjustment_set_admg_ptr, g, xs, ys, z)
-
-all_adjustment_sets_admg_ptr <- function(g, xs, ys, minimal, max_size) .Call(wrap__all_adjustment_sets_admg_ptr, g, xs, ys, minimal, max_size)
-
-shd_of_ptrs <- function(g1, names1, g2, names2) .Call(wrap__shd_of_ptrs, g1, names1, g2, names2)
-
-hd_of_ptrs <- function(g1, g2) .Call(wrap__hd_of_ptrs, g1, g2)
-
-ancestor_aid_of_ptrs <- function(g_true, names_true, g_guess, names_guess) .Call(wrap__ancestor_aid_of_ptrs, g_true, names_true, g_guess, names_guess)
-
-oset_aid_of_ptrs <- function(g_true, names_true, g_guess, names_guess) .Call(wrap__oset_aid_of_ptrs, g_true, names_true, g_guess, names_guess)
-
-parent_aid_of_ptrs <- function(g_true, names_true, g_guess, names_guess) .Call(wrap__parent_aid_of_ptrs, g_true, names_true, g_guess, names_guess)
-
-d_separated_ptr <- function(g, xs, ys, z) .Call(wrap__d_separated_ptr, g, xs, ys, z)
-
-adjustment_set_parents_ptr <- function(g, xs, ys) .Call(wrap__adjustment_set_parents_ptr, g, xs, ys)
-
-adjustment_set_backdoor_ptr <- function(g, xs, ys) .Call(wrap__adjustment_set_backdoor_ptr, g, xs, ys)
-
-adjustment_set_optimal_ptr <- function(g, x, y) .Call(wrap__adjustment_set_optimal_ptr, g, x, y)
-
-is_valid_backdoor_set_ptr <- function(g, x, y, z) .Call(wrap__is_valid_backdoor_set_ptr, g, x, y, z)
-
-all_backdoor_sets_ptr <- function(g, x, y, minimal, max_size) .Call(wrap__all_backdoor_sets_ptr, g, x, y, minimal, max_size)
-
-proper_backdoor_graph_ptr <- function(g, xs, ys) .Call(wrap__proper_backdoor_graph_ptr, g, xs, ys)
-
-moral_of_ancestors_ptr <- function(g, seeds) .Call(wrap__moral_of_ancestors_ptr, g, seeds)
-
-ancestral_reduction_ptr <- function(g, seeds) .Call(wrap__ancestral_reduction_ptr, g, seeds)
-
-n_ptr <- function(g) .Call(wrap__n_ptr, g)
-
-edges_ptr_df <- function(g) .Call(wrap__edges_ptr_df, g)
-
-compute_layout_ptr <- function(g, method, packing_ratio) .Call(wrap__compute_layout_ptr, g, method, packing_ratio)
-
-compute_bipartite_layout_ptr <- function(g, partition, orientation) .Call(wrap__compute_bipartite_layout_ptr, g, partition, orientation)
-
-write_caugi_file_ptr <- function(g, reg, graph_class, node_names, path, comment, tags) invisible(.Call(wrap__write_caugi_file_ptr, g, reg, graph_class, node_names, path, comment, tags))
-
-read_caugi_file_ptr <- function(path, reg) .Call(wrap__read_caugi_file_ptr, path, reg)
-
-serialize_caugi_ptr <- function(g, reg, graph_class, node_names, comment, tags) .Call(wrap__serialize_caugi_ptr, g, reg, graph_class, node_names, comment, tags)
-
-deserialize_caugi_ptr <- function(json, reg) .Call(wrap__deserialize_caugi_ptr, json, reg)
-
-serialize_graphml_ptr <- function(g, reg, graph_class, node_names) .Call(wrap__serialize_graphml_ptr, g, reg, graph_class, node_names)
-
-deserialize_graphml_ptr <- function(xml, reg) .Call(wrap__deserialize_graphml_ptr, xml, reg)
+deserialize_graphml <- function(xml, reg) .Call(wrap__deserialize_graphml, xml, reg)
 
 
 # nolint end

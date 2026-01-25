@@ -31,9 +31,8 @@ moralize <- function(cg) {
     stop("moralize() can only be applied to DAGs.", call. = FALSE)
   }
 
-  moralized_ptr <- moralize_ptr(cg@ptr)
-  moralized_cg <- .view_to_caugi(moralized_ptr, node_names = cg@nodes$name)
-  moralized_cg
+  moralized_session <- graph_session_moralize(cg@session)
+  .session_to_caugi(moralized_session, node_names = cg@nodes$name)
 }
 
 #' @title Get the skeleton of a graph
@@ -60,9 +59,8 @@ moralize <- function(cg) {
 #' @export
 skeleton <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  skeleton_ptr <- skeleton_ptr(cg@ptr)
-  skeleton_cg <- .view_to_caugi(skeleton_ptr, node_names = cg@nodes$name)
-  skeleton_cg
+  skeleton_session <- graph_session_skeleton(cg@session)
+  .session_to_caugi(skeleton_session, node_names = cg@nodes$name)
 }
 
 #' @title Project latent variables from a DAG to an ADMG
@@ -141,10 +139,10 @@ latent_project <- function(cg, latents) {
   observed_names <- node_names[!is_latent]
 
   # Call Rust function
-  projected_ptr <- latent_project_ptr(cg@ptr, latent_indices)
+  projected_session <- graph_session_latent_project(cg@session, latent_indices)
 
   # Convert result back to caugi
-  .view_to_caugi(projected_ptr, node_names = observed_names)
+  .session_to_caugi(projected_session, node_names = observed_names)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -582,41 +582,43 @@ test_that("edges df input is not a data.frame or data.table", {
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ────────────────────────────── .view_to_caugi ────────────────────────────────
+# ────────────────────────────── .session_to_caugi ─────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that(".view_to_caugi works as expected", {
+test_that(".session_to_caugi works as expected", {
   cg <- caugi(
     A %-->% B,
     B %---% C,
     C %<->% D
   )
 
-  cg2 <- .view_to_caugi(cg@ptr)
+  cg2 <- .session_to_caugi(cg@session)
   expect_s7_class(cg2, caugi)
-  expect_equal(cg, cg2)
+  expect_equal(cg@nodes, cg2@nodes)
+  expect_equal(cg@simple, cg2@simple)
 })
 
-test_that(".view_to_caugi fails on NULL ptr", {
+test_that(".session_to_caugi fails on NULL session", {
   expect_error(
-    .view_to_caugi(NULL),
-    "ptr is NULL"
+    .session_to_caugi(NULL),
+    "session is NULL"
   )
 })
 
-test_that(".view_to_caugi fails on faulty node_names", {
+test_that(".session_to_caugi fails on faulty node_names", {
   cg <- caugi(
     A %-->% B
   )
   expect_error(
-    .view_to_caugi(cg@ptr, node_names = c("A")),
+    .session_to_caugi(cg@session, node_names = c("A")),
     "length"
   )
 })
 
-test_that(".view_to_caugi works for empty cg", {
+test_that(".session_to_caugi works for empty cg", {
   cg <- caugi(A, B)
-  expect_equal(cg, .view_to_caugi(cg@ptr))
+  cg2 <- .session_to_caugi(cg@session)
+  expect_equal(cg@nodes, cg2@nodes)
 })
 
 

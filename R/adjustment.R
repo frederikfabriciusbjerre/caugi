@@ -58,7 +58,7 @@ d_separated <- function(
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
 
-  d_separated_ptr(cg@ptr, X_idx0, Y_idx0, Z_idx0)
+  graph_session_d_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -126,9 +126,9 @@ adjustment_set <- function(
 
   idx0 <- switch(
     type,
-    parents = adjustment_set_parents_ptr(cg@ptr, X_idx0, Y_idx0),
-    backdoor = adjustment_set_backdoor_ptr(cg@ptr, X_idx0, Y_idx0),
-    optimal = adjustment_set_optimal_ptr(cg@ptr, X_idx0, Y_idx0)
+    parents = graph_session_adjustment_set_parents(cg@session, X_idx0, Y_idx0),
+    backdoor = graph_session_adjustment_set_backdoor(cg@session, X_idx0, Y_idx0),
+    optimal = graph_session_adjustment_set_optimal(cg@session, X_idx0, Y_idx0)
   )
   cg@nodes$name[idx0 + 1L]
 }
@@ -188,7 +188,7 @@ is_valid_backdoor <- function(
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
 
-  is_valid_backdoor_set_ptr(cg@ptr, X_idx0, Y_idx0, Z_idx0)
+  graph_session_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 #' @title Get all backdoor sets up to a certain size.
@@ -269,8 +269,8 @@ all_backdoor_sets <- function(
   X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
 
-  sets_idx0 <- all_backdoor_sets_ptr(
-    cg@ptr,
+  sets_idx0 <- graph_session_all_backdoor_sets(
+    cg@session,
     X_idx0,
     Y_idx0,
     minimal,
@@ -337,7 +337,7 @@ is_valid_adjustment_admg <- function(
   Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
 
-  is_valid_adjustment_set_admg_ptr(cg@ptr, X_idx0, Y_idx0, Z_idx0)
+  graph_session_is_valid_adjustment_set_admg(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 #' @title Get all valid adjustment sets in an ADMG
@@ -392,8 +392,8 @@ all_adjustment_sets_admg <- function(
   X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
 
-  sets_idx0 <- all_adjustment_sets_admg_ptr(
-    cg@ptr,
+  sets_idx0 <- graph_session_all_adjustment_sets_admg(
+    cg@session,
     X_idx0,
     Y_idx0,
     minimal,
