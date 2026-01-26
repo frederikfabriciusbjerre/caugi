@@ -654,7 +654,11 @@ parents <- function(cg, nodes = NULL, index = NULL) {
   }
 
   index <- .nodes_to_indices(cg, nodes)
-  .getter_output(cg, graph_session_parents_of(cg@session, as.integer(index)), nodes)
+  .getter_output(
+    cg,
+    graph_session_parents_of(cg@session, as.integer(index)),
+    nodes
+  )
 }
 
 #' @title Get children of nodes in a `caugi`
@@ -710,7 +714,11 @@ children <- function(cg, nodes = NULL, index = NULL) {
   }
 
   index <- .nodes_to_indices(cg, nodes)
-  .getter_output(cg, graph_session_children_of(cg@session, as.integer(index)), nodes)
+  .getter_output(
+    cg,
+    graph_session_children_of(cg@session, as.integer(index)),
+    nodes
+  )
 }
 
 #' @title Get neighbors of nodes in a `caugi`
@@ -802,7 +810,6 @@ neighbors <- function(
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-
 
   mode <- match.arg(mode)
 
@@ -1281,7 +1288,11 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
     )
   )
 
-  .getter_output(cg, graph_session_spouses_of(cg@session, as.integer(index)), nodes)
+  .getter_output(
+    cg,
+    graph_session_spouses_of(cg@session, as.integer(index)),
+    nodes
+  )
 }
 
 #' @title Get districts (c-components) of an ADMG
@@ -1357,7 +1368,6 @@ m_separated <- function(
 ) {
   is_caugi(cg, throw_error = TRUE)
 
-
   X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
@@ -1395,7 +1405,6 @@ m_separated <- function(
 #' @export
 subgraph <- function(cg, nodes = NULL, index = NULL) {
   is_caugi(cg, throw_error = TRUE)
-
 
   nodes_supplied <- !missing(nodes) && !is.null(nodes)
   index_supplied <- !missing(index) && !is.null(index)
@@ -1449,7 +1458,9 @@ subgraph <- function(cg, nodes = NULL, index = NULL) {
 
   # Filter edges from parent graph to preserve original edge directions
   keep_set <- keep_names
-  edges_keep <- cg@edges[cg@edges$from %in% keep_set & cg@edges$to %in% keep_set, ]
+  edges_keep <- cg@edges[
+    cg@edges$from %in% keep_set & cg@edges$to %in% keep_set,
+  ]
 
   # Create new caugi with filtered edges and nodes
   caugi(

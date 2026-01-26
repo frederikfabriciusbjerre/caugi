@@ -424,7 +424,10 @@ caugi <- S7::new_class(
     node_names <- graph_session_names(session)
   }
   if (length(node_names) != n) {
-    stop("length(node_names) must equal graph_session_n(session)", call. = FALSE)
+    stop(
+      "length(node_names) must equal graph_session_n(session)",
+      call. = FALSE
+    )
   }
 
   edges_idx <- graph_session_edges_df(session)

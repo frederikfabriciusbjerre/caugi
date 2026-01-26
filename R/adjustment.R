@@ -53,7 +53,6 @@ d_separated <- function(
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
 
-
   X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
@@ -127,7 +126,11 @@ adjustment_set <- function(
   idx0 <- switch(
     type,
     parents = graph_session_adjustment_set_parents(cg@session, X_idx0, Y_idx0),
-    backdoor = graph_session_adjustment_set_backdoor(cg@session, X_idx0, Y_idx0),
+    backdoor = graph_session_adjustment_set_backdoor(
+      cg@session,
+      X_idx0,
+      Y_idx0
+    ),
     optimal = graph_session_adjustment_set_optimal(cg@session, X_idx0, Y_idx0)
   )
   cg@nodes$name[idx0 + 1L]
@@ -182,7 +185,6 @@ is_valid_backdoor <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-
 
   X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
@@ -265,7 +267,6 @@ all_backdoor_sets <- function(
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
 
-
   X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
 
@@ -332,7 +333,6 @@ is_valid_adjustment_admg <- function(
     stop("Y (or Y_index) must be provided.", call. = FALSE)
   }
 
-
   X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
@@ -387,7 +387,6 @@ all_adjustment_sets_admg <- function(
   if (is.null(Y) && is.null(Y_index)) {
     stop("Y (or Y_index) must be provided.", call. = FALSE)
   }
-
 
   X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)

@@ -60,8 +60,6 @@ NULL
 write_caugi <- function(x, path, comment = NULL, tags = NULL) {
   is_caugi(x, throw_error = TRUE)
 
-
-
   # Validate arguments
   if (!is.character(path) || length(path) != 1L) {
     stop("`path` must be a single character string", call. = FALSE)
@@ -171,8 +169,6 @@ read_caugi <- function(path) {
 #' @export
 caugi_serialize <- function(x, comment = NULL, tags = NULL) {
   is_caugi(x, throw_error = TRUE)
-
-
 
   # Validate arguments
   if (!is.null(comment) && (!is.character(comment) || length(comment) != 1L)) {

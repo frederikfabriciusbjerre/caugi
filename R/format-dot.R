@@ -81,7 +81,6 @@ to_dot <- function(
 
   # Ensure graph is built
 
-
   nodes_df <- nodes(x)
   edges_df <- edges(x)
 

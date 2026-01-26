@@ -150,7 +150,6 @@ caugi_layout <- function(
 
   # Ensure graph is built
 
-
   # Dispatch to specific layout function
   layout_fn <- switch(
     method,
@@ -243,7 +242,6 @@ caugi_layout_bipartite <- function(
 
   # Ensure graph is built
 
-
   # Auto-detect partition if not provided
   if (is.null(partition)) {
     # Simple heuristic: nodes with no incoming edges vs nodes with
@@ -282,7 +280,11 @@ caugi_layout_bipartite <- function(
     }
   }
 
-  coords <- graph_session_compute_bipartite_layout(x@session, partition, orientation)
+  coords <- graph_session_compute_bipartite_layout(
+    x@session,
+    partition,
+    orientation
+  )
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -369,7 +371,6 @@ caugi_layout_tiered <- function(
   orientation <- match.arg(orientation)
 
   # Ensure graph is built
-
 
   node_names <- nodes(x)[["name"]]
   n_nodes <- length(node_names)
@@ -552,7 +553,6 @@ caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
 
   # Ensure graph is built
 
-
   edge_types <- unique(edges(x)[["edge"]])
   non_directed <- setdiff(edge_types, "-->")
 
@@ -618,8 +618,11 @@ caugi_layout_fruchterman_reingold <- function(
 
   # Ensure graph is built
 
-
-  coords <- graph_session_compute_layout(x@session, "fruchterman-reingold", packing_ratio)
+  coords <- graph_session_compute_layout(
+    x@session,
+    "fruchterman-reingold",
+    packing_ratio
+  )
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -666,8 +669,11 @@ caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
 
   # Ensure graph is built
 
-
-  coords <- graph_session_compute_layout(x@session, "kamada-kawai", packing_ratio)
+  coords <- graph_session_compute_layout(
+    x@session,
+    "kamada-kawai",
+    packing_ratio
+  )
 
   data.frame(
     name = nodes(x)[["name"]],
@@ -1054,7 +1060,6 @@ S7::method(plot, caugi) <- function(
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
-
 
   dots <- list(...)
 
