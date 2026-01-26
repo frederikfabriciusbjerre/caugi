@@ -35,10 +35,14 @@ pub fn normalize_to_unit_box(coords: &mut [(f64, f64)]) {
         return;
     }
 
+    // Offsets to center the smaller dimension
+    let offset_x = if width < scale { (scale - width) / 2.0 } else { 0.0 };
+    let offset_y = if height < scale { (scale - height) / 2.0 } else { 0.0 };
+
     // Translate and scale
     for coord in coords.iter_mut() {
-        coord.0 = (coord.0 - min_x) / scale;
-        coord.1 = (coord.1 - min_y) / scale;
+        coord.0 = (coord.0 - min_x + offset_x) / scale;
+        coord.1 = (coord.1 - min_y + offset_y) / scale;
     }
 }
 
