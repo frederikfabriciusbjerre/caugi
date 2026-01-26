@@ -253,7 +253,6 @@ test_that("read_caugi validates inputs", {
   tmp <- tempfile(fileext = ".caugi.json")
   on.exit(unlink(tmp))
   write_caugi(caugi(A %-->% B, class = "DAG"), tmp)
-
 })
 
 test_that("caugi_serialize validates inputs", {
