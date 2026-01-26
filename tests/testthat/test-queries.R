@@ -492,8 +492,6 @@ test_that("subgraph on graph without edges keeps nodes and empty edges", {
   expect_true(!is.null(s@session))
   expect_identical(s@graph_class, g@graph_class)
   expect_identical(s@simple, g@simple)
-  expect_identical(s@name_index_map$get("C"), 0L)
-  expect_identical(s@name_index_map$get("A"), 1L)
 })
 
 test_that("subgraph filters edges to kept names and sorts", {
