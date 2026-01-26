@@ -1,5 +1,26 @@
 # caugi (development version)
 
+## Breaking Changes
+
+- Removed `@name_index_map` property from `caugi` objects. Name-to-index lookups
+  are now handled internally by the Rust backend. This provides better
+  performance and eliminates redundant state synchronization.
+
+- The `@nodes` and `@edges` properties are now computed lazily from the Rust
+  session, rather than being stored in R. This means each access retrieves
+  fresh data from the canonical Rust representation. They still return `data.table` 
+  objects.
+
+## Internal Changes
+
+- Rust is now the single source of truth for graph state. The R-side `.state`
+  environment only stores `simple`, `class`, and `session` (the Rust pointer).
+
+- Added `graph_session_index_of()` and `graph_session_indices_of()` Rust
+  functions for fast name-to-index lookups.
+
+- Removed `fastmap` dependency as it is no longer needed for name-index mapping.
+
 # caugi 1.0.0
 
 ## New Features
