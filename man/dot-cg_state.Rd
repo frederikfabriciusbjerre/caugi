@@ -4,20 +4,14 @@
 \alias{.cg_state}
 \title{Create the state environment for a \code{caugi} (internal)}
 \usage{
-.cg_state(nodes, edges, simple, class, name_index_map, session)
+.cg_state(simple, class, session)
 }
 \arguments{
-\item{nodes}{A \code{data.table} of nodes with a \code{name} column.}
-
-\item{edges}{A \code{data.table} of edges with \code{from}, \code{edge}, and \code{to} columns.}
-
 \item{simple}{Logical; whether the graph is simple
 (no parallel edges or self-loops).}
 
-\item{class}{Character; one of \code{"UNKNOWN"}, \code{"DAG"}, \code{"UG"}, \code{"PDAG"}, \code{"ADMG"}, or \code{"AG"}.}
-
-\item{name_index_map}{A \code{fastmap} mapping node names to their zero indexed
-indices.}
+\item{class}{Character; one of \code{"UNKNOWN"}, \code{"DAG"}, \code{"UG"}, \code{"PDAG"},
+\code{"ADMG"}, or \code{"AG"}.}
 
 \item{session}{A pointer to the GraphSession Rust object. This is the
 canonical Rust state that handles lazy compilation and caching.}

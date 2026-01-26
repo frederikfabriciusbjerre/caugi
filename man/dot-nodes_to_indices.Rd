@@ -15,6 +15,6 @@
 An integer vector of 0-based indices.
 }
 \description{
-Convert node names to 0-based indices using the caugi object's name index map.
+Convert node names to 0-based indices using the Rust session's name lookup.
 }
 \keyword{internal}
