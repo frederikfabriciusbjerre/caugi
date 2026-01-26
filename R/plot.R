@@ -1060,6 +1060,8 @@ S7::method(plot, caugi) <- function(
 
   dots <- list(...)
 
+  dots <- list(...)
+
   # Compute layout coordinates
   if (is.character(layout)) {
     # String method name - pass through to caugi_layout
