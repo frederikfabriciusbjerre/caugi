@@ -17,6 +17,7 @@ use super::CaugiGraph;
 use super::RegistrySnapshot;
 use crate::graph::NeighborMode;
 use crate::edges::{EdgeRegistry, EdgeSpec};
+use std::collections::HashMap;
 use std::sync::Arc;
 
 /// The target graph class for typed view construction.
@@ -34,6 +35,8 @@ pub enum GraphClass {
     Ag,
     /// Unknown/Raw (no validation)
     Unknown,
+    /// Auto - no validation, will be resolved when edges are added
+    Auto,
 }
 
 impl GraphClass {
@@ -45,6 +48,7 @@ impl GraphClass {
             "admg" => Ok(GraphClass::Admg),
             "ag" | "mag" | "pag" => Ok(GraphClass::Ag),
             "unknown" | "raw" => Ok(GraphClass::Unknown),
+            "auto" => Ok(GraphClass::Auto),
             _ => Err(format!("Unknown graph class: '{}'", s)),
         }
     }
@@ -57,6 +61,7 @@ impl GraphClass {
             GraphClass::Admg => "admg",
             GraphClass::Ag => "ag",
             GraphClass::Unknown => "unknown",
+            GraphClass::Auto => "auto",
         }
     }
 }
@@ -130,6 +135,8 @@ pub struct GraphSession {
     registry: Arc<RegistrySnapshot>,
     edges: EdgeBuffer,
     names: Vec<String>,
+    /// Maps node names to their 0-based indices for fast lookup.
+    name_to_index: HashMap<String, u32>,
 
     // ═══════════════════════════════════════════════════════════════════════════
     // VALIDITY FLAGS
@@ -142,7 +149,6 @@ pub struct GraphSession {
     // ═══════════════════════════════════════════════════════════════════════════
     core: Option<Arc<CaugiGraph>>,
     view: Option<Arc<GraphView>>,
-
 }
 
 impl GraphSession {
@@ -159,20 +165,23 @@ impl GraphSession {
         // Use registry length as a version indicator
         let snapshot = Arc::new(RegistrySnapshot::from_specs(specs, registry.len() as u32));
 
+        let names: Vec<String> = (0..n).map(|i| format!("{}", i)).collect();
+        let name_to_index = Self::build_name_to_index(&names);
+
         Self {
             n,
             simple,
             graph_class: class,
             registry: snapshot,
             edges: EdgeBuffer::new(),
-            names: (0..n).map(|i| format!("{}", i)).collect(),
+            names,
+            name_to_index,
 
             core_valid: false,
             view_valid: false,
 
             core: None,
             view: None,
-
         }
     }
 
@@ -183,20 +192,23 @@ impl GraphSession {
         simple: bool,
         class: GraphClass,
     ) -> Self {
+        let names: Vec<String> = (0..n).map(|i| format!("{}", i)).collect();
+        let name_to_index = Self::build_name_to_index(&names);
+
         Self {
             n,
             simple,
             graph_class: class,
             registry,
             edges: EdgeBuffer::new(),
-            names: (0..n).map(|i| format!("{}", i)).collect(),
+            names,
+            name_to_index,
 
             core_valid: false,
             view_valid: false,
 
             core: None,
             view: None,
-
         }
     }
 
@@ -212,13 +224,13 @@ impl GraphSession {
             registry: Arc::clone(&self.registry),
             edges: self.edges.clone(),
             names: self.names.clone(),
+            name_to_index: self.name_to_index.clone(),
 
             // Invalidate all declarations in the clone
             core_valid: false,
             view_valid: false,
             core: None,
             view: None,
-
         }
     }
 
@@ -273,6 +285,7 @@ impl GraphSession {
     }
 
     pub fn set_names(&mut self, names: Vec<String>) {
+        self.name_to_index = Self::build_name_to_index(&names);
         self.names = names;
         // No invalidation - names are metadata
     }
@@ -297,6 +310,7 @@ impl GraphSession {
         self.graph_class = class;
         self.registry = registry;
         self.edges = edges;
+        self.name_to_index = Self::build_name_to_index(&names);
         self.names = names;
         self.invalidate_core();
     }
@@ -341,7 +355,7 @@ impl GraphSession {
                 let ag = Ag::new(core)?;
                 Ok(GraphView::Ag(Arc::new(ag)))
             }
-            GraphClass::Unknown => Ok(GraphView::Raw(core)),
+            GraphClass::Unknown | GraphClass::Auto => Ok(GraphView::Raw(core)),
         }
     }
 
@@ -681,9 +695,42 @@ impl GraphSession {
         &self.names
     }
 
+    /// Build the name-to-index HashMap from a slice of names.
+    fn build_name_to_index(names: &[String]) -> HashMap<String, u32> {
+        names
+            .iter()
+            .enumerate()
+            .map(|(i, name)| (name.clone(), i as u32))
+            .collect()
+    }
+
+    /// Look up the 0-based index of a node by name.
+    /// Returns `None` if the name is not found.
+    pub fn index_of(&self, name: &str) -> Option<u32> {
+        self.name_to_index.get(name).copied()
+    }
+
+    /// Look up the 0-based indices of multiple nodes by name.
+    /// Returns an error if any name is not found.
+    pub fn indices_of(&self, names: &[String]) -> Result<Vec<u32>, String> {
+        let mut result = Vec::with_capacity(names.len());
+        for name in names {
+            match self.name_to_index.get(name) {
+                Some(&idx) => result.push(idx),
+                None => return Err(format!("Non-existent node name: {}", name)),
+            }
+        }
+        Ok(result)
+    }
+
     /// Get the registry snapshot.
     pub fn registry(&self) -> &Arc<RegistrySnapshot> {
         &self.registry
+    }
+
+    /// Get the edge buffer (preserves original input order).
+    pub fn edge_buffer(&self) -> &EdgeBuffer {
+        &self.edges
     }
 
     /// Check if the core is currently valid.
@@ -843,4 +890,49 @@ mod tests {
         assert_eq!(cloned.n(), session.n());
     }
 
+    #[test]
+    fn session_index_of() {
+        let mut session = make_session();
+        session.set_names(vec!["A".into(), "B".into(), "C".into()]);
+
+        assert_eq!(session.index_of("A"), Some(0));
+        assert_eq!(session.index_of("B"), Some(1));
+        assert_eq!(session.index_of("C"), Some(2));
+        assert_eq!(session.index_of("D"), None);
+    }
+
+    #[test]
+    fn session_indices_of() {
+        let mut session = make_session();
+        session.set_names(vec!["A".into(), "B".into(), "C".into()]);
+
+        let indices = session
+            .indices_of(&["A".into(), "C".into()])
+            .unwrap();
+        assert_eq!(indices, vec![0, 2]);
+
+        let err = session.indices_of(&["A".into(), "D".into()]);
+        assert!(err.is_err());
+        assert!(err.unwrap_err().contains("Non-existent node name: D"));
+    }
+
+    #[test]
+    fn session_name_index_updated_on_set_names() {
+        let mut session = make_session();
+        
+        // Initially has default names "0", "1", "2"
+        assert_eq!(session.index_of("0"), Some(0));
+        assert_eq!(session.index_of("A"), None);
+
+        // Update names
+        session.set_names(vec!["X".into(), "Y".into(), "Z".into()]);
+        
+        // Old names should be gone
+        assert_eq!(session.index_of("0"), None);
+        
+        // New names should work
+        assert_eq!(session.index_of("X"), Some(0));
+        assert_eq!(session.index_of("Y"), Some(1));
+        assert_eq!(session.index_of("Z"), Some(2));
+    }
 }

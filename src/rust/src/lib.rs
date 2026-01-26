@@ -1637,37 +1637,60 @@ fn graph_session_names(session: ExternalPtr<GraphSession>) -> Strings {
 }
 
 #[extendr]
-fn graph_session_edges_df(mut session: ExternalPtr<GraphSession>) -> Robj {
-    let core = session
-        .as_mut()
-        .core()
-        .unwrap_or_else(|e| throw_r_error(e));
-    let n = core.n();
-    let mut from0: Vec<i32> = Vec::new();
-    let mut to0: Vec<i32> = Vec::new();
-    let mut code: Vec<i32> = Vec::new();
-    let mut glyph: Vec<String> = Vec::new();
-
-    for u in 0..n {
-        for k in core.row_range(u) {
-            let v = core.col_index[k];
-            let ecode = core.etype[k];
-            let spec = &core.registry.specs[ecode as usize];
-            if spec.symmetric {
-                if u < v {
-                    from0.push(u as i32);
-                    to0.push(v as i32);
-                    code.push(ecode as i32);
-                    glyph.push(spec.glyph.clone());
-                }
-            } else if core.side[k] == 0 {
-                from0.push(u as i32);
-                to0.push(v as i32);
-                code.push(ecode as i32);
-                glyph.push(spec.glyph.clone());
-            }
-        }
+fn graph_session_index_of(session: ExternalPtr<GraphSession>, name: &str) -> Robj {
+    match session.as_ref().index_of(name) {
+        Some(idx) => (idx as i32).into_robj(),
+        None => throw_r_error(format!("Non-existent node name: {}", name)),
     }
+}
+
+#[extendr]
+fn graph_session_indices_of(session: ExternalPtr<GraphSession>, names: Robj) -> Robj {
+    // Handle potential NULL or invalid input
+    if names.is_null() {
+        throw_r_error("names cannot be NULL".to_string());
+    }
+    
+    // Convert from Robj to Strings more defensively
+    let names_strings: Strings = match names.try_into() {
+        Ok(s) => s,
+        Err(_) => throw_r_error("names must be a character vector".to_string()),
+    };
+    
+    let n = names_strings.len();
+    let mut name_vec = Vec::with_capacity(n);
+    for i in 0..n {
+        let s = names_strings.elt(i);
+        name_vec.push(s.to_string());
+    }
+    
+    match session.as_ref().indices_of(&name_vec) {
+        Ok(indices) => indices.iter().map(|&x| x as i32).collect_robj(),
+        Err(e) => throw_r_error(e),
+    }
+}
+
+#[extendr]
+fn graph_session_edges_df(session: ExternalPtr<GraphSession>) -> Robj {
+    // Use the EdgeBuffer directly to preserve original input order
+    let edge_buffer = session.as_ref().edge_buffer();
+    let registry = session.as_ref().registry();
+    
+    let n = edge_buffer.len();
+    let mut from0: Vec<i32> = Vec::with_capacity(n);
+    let mut to0: Vec<i32> = Vec::with_capacity(n);
+    let mut code: Vec<i32> = Vec::with_capacity(n);
+    let mut glyph: Vec<String> = Vec::with_capacity(n);
+
+    for i in 0..n {
+        let ecode = edge_buffer.etype[i];
+        let spec = &registry.specs[ecode as usize];
+        from0.push(edge_buffer.from[i] as i32);
+        to0.push(edge_buffer.to[i] as i32);
+        code.push(ecode as i32);
+        glyph.push(spec.glyph.clone());
+    }
+    
     list!(from0 = from0, to0 = to0, code = code, glyph = glyph).into_robj()
 }
 
@@ -2302,6 +2325,8 @@ extendr_module! {
     fn graph_session_class;
     fn graph_session_graph_class;
     fn graph_session_names;
+    fn graph_session_index_of;
+    fn graph_session_indices_of;
     fn graph_session_edges_df;
     fn graph_session_is_valid;
     fn graph_session_topological_sort;

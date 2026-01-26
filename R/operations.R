@@ -131,8 +131,7 @@ latent_project <- function(cg, latents) {
   }
 
   # Get 0-based indices for latent nodes
-  latent_indices <- cg@name_index_map$mget(latents)
-  latent_indices <- as.integer(unlist(latent_indices, use.names = FALSE))
+  latent_indices <- graph_session_indices_of(cg@session, latents)
 
   # Get observed node names (preserving order)
   is_latent <- node_names %in% latents

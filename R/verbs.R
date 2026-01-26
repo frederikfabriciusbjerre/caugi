@@ -271,83 +271,68 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   edges
 }
 
-#' @title Sync session with R state
+#' @title Build and update session from nodes and edges
 #'
-#' @description Internal helper to synchronize the GraphSession with the
-#' current R-side node/edge state. The session automatically invalidates
-#' its cached computations when edges change.
+#' @description Internal helper to create or update a GraphSession with
+#' the given nodes and edges. Rust is the source of truth.
 #'
-#' @param cg A `caugi` object.
+#' @param node_names Character vector of node names.
+#' @param edges_dt A data.table with columns `from`, `edge`, `to`.
+#' @param simple Logical; whether the graph is simple.
+#' @param class Character; the graph class.
+#' @param old_session Optional existing session for copy-on-write.
 #'
-#' @returns The same `caugi` object with session synced.
+#' @returns A list with `session` (GraphSession pointer) and `class` (resolved class string).
 #'
 #' @keywords internal
-.sync_session <- function(cg) {
-  s <- cg@`.state`
-  n <- nrow(s$nodes)
+.build_session <- function(node_names, edges_dt, simple, class, old_session = NULL) {
+  n <- length(node_names)
 
   if (n == 0L) {
-    s$session <- NULL
-    return(cg)
+    return(list(session = NULL, class = class))
   }
 
   reg <- caugi_registry()
   id <- seq_len(n) - 1L
-  names(id) <- s$nodes$name
+  names(id) <- node_names
 
-  # Resolve AUTO class if needed (before creating session)
-  resolved_class <- s$class
-  if (s$class == "AUTO" && nrow(s$edges) > 0L) {
-    # Use builder to determine class from edges
-    b <- graph_builder_new(reg, n = n, simple = s$simple)
-    codes <- edge_registry_code_of(reg, s$edges$edge)
+  # Resolve AUTO class if needed
+  resolved_class <- class
+  if (class == "AUTO" && nrow(edges_dt) > 0L) {
+    b <- graph_builder_new(reg, n = n, simple = simple)
+    codes <- edge_registry_code_of(reg, edges_dt$edge)
     graph_builder_add_edges(
       b,
-      as.integer(unname(id[s$edges$from])),
-      as.integer(unname(id[s$edges$to])),
+      as.integer(unname(id[edges_dt$from])),
+      as.integer(unname(id[edges_dt$to])),
       as.integer(codes)
     )
     resolved_class <- graph_builder_resolve_class(b, "AUTO")
-    s$class <- resolved_class
-  } else if (s$class == "AUTO") {
-    # No edges yet, default to DAG
-    resolved_class <- "DAG"
-    s$class <- resolved_class
   }
+  # If AUTO and no edges, keep as AUTO - will be resolved when edges are added
 
-  # Clone session for copy-on-write semantics or create new
-  if (!is.null(s$session)) {
-    s$session <- graph_session_clone(s$session)
-    # Update cloned session with new state
-    graph_session_set_n(s$session, n)
-    graph_session_set_names(s$session, s$nodes$name)
-    graph_session_set_class(s$session, resolved_class)
-  } else {
-    s$session <- graph_session_new(reg, n, s$simple, resolved_class)
-    graph_session_set_names(s$session, s$nodes$name)
-  }
+  # Create new session (always new for simplicity in mutations)
+  session <- graph_session_new(reg, n, simple, resolved_class)
+  graph_session_set_names(session, node_names)
 
-  # Sync edges to session
-  if (nrow(s$edges) > 0L) {
-    codes <- edge_registry_code_of(reg, s$edges$edge)
+  if (nrow(edges_dt) > 0L) {
+    codes <- edge_registry_code_of(reg, edges_dt$edge)
     graph_session_set_edges(
-      s$session,
-      as.integer(unname(id[s$edges$from])),
-      as.integer(unname(id[s$edges$to])),
+      session,
+      as.integer(unname(id[edges_dt$from])),
+      as.integer(unname(id[edges_dt$to])),
       as.integer(codes)
     )
-  } else {
-    # Clear edges in session
-    graph_session_set_edges(s$session, integer(0), integer(0), integer(0))
   }
 
-  cg
+  list(session = session, class = resolved_class)
 }
 
 #' @title Update nodes and edges of a `caugi`
 #'
-#' @description Internal helper to add or remove nodes/edges. The session
-#' is automatically synced after modifications.
+#' @description Internal helper to add or remove nodes/edges. Rust is the
+#' source of truth - we get current state from Rust, modify it, and build
+#' a new session.
 #'
 #' @param cg A `caugi` object.
 #' @param nodes A `data.frame` with column `name` for node names to add/remove.
@@ -369,92 +354,81 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   inplace = FALSE
 ) {
   action <- match.arg(action)
-
-  # copy-on-write: default is NOT in-place
-  if (!inplace) {
-    s <- cg@`.state`
-
-    # clone state safely (session will be cloned in .sync_session)
-    state_copy <- .cg_state(
-      nodes = data.table::copy(s$nodes),
-      edges = data.table::copy(s$edges),
-      simple = s$simple,
-      class = s$class,
-      name_index_map = s$name_index_map$clone(),
-      session = s$session # Will be cloned in .sync_session
-    )
-    cg_copy <- caugi(state = state_copy)
-
-    # reuse the in-place path on the copy
-    return(.update_caugi(
-      cg_copy,
-      nodes = nodes,
-      edges = edges,
-      action = action,
-      inplace = TRUE
-    ))
-  }
-
   s <- cg@`.state`
 
+  # Get current state from Rust (or empty if no session)
+  if (!is.null(s$session)) {
+    current_nodes <- cg@nodes$name
+    current_edges <- cg@edges
+  } else {
+    current_nodes <- character(0)
+    current_edges <- .edge_constructor()
+  }
+
+  # Apply modifications
   if (identical(action, "add")) {
     if (!is.null(nodes)) {
-      s$nodes <- .node_constructor(names = unique(c(s$nodes$name, nodes$name)))
+      current_nodes <- unique(c(current_nodes, nodes$name))
     }
     if (!is.null(edges)) {
-      s$nodes <- .node_constructor(
-        names = unique(c(
-          s$nodes$name,
-          edges$from,
-          edges$to
-        ))
-      )
-      s$edges <- unique(
-        data.table::rbindlist(list(s$edges, edges), use.names = TRUE),
+      # Add nodes from edges
+      current_nodes <- unique(c(current_nodes, edges$from, edges$to))
+      # Add edges
+      current_edges <- unique(
+        data.table::rbindlist(list(current_edges, edges), use.names = TRUE),
         by = c("from", "edge", "to")
       )
     }
-    # update fastmap
-    new_ids <- setdiff(s$nodes$name, s$name_index_map$keys())
-    if (length(new_ids) > 0L) {
-      tmp <- nrow(s$nodes) - length(new_ids)
-      new_id_values <- seq_len(length(new_ids)) - 1L + tmp
-      do.call(
-        s$name_index_map$mset,
-        .set_names(as.list(new_id_values), new_ids)
-      )
-    }
   } else {
+    # remove action
     if (!is.null(edges)) {
       keys <- intersect(c("from", "edge", "to"), names(edges))
       if (!all(c("from", "to") %in% keys)) {
         stop("edges must include at least `from` and `to`.", call. = FALSE)
       }
       edges_key <- unique(edges[, ..keys])
-      s$edges <- s$edges[!edges_key, on = keys]
+      current_edges <- current_edges[!edges_key, on = keys]
     }
     if (!is.null(nodes)) {
       drop <- nodes$name
-      s$nodes <- .node_constructor(names = setdiff(s$nodes$name, drop))
-      if (nrow(s$edges)) {
-        s$edges <- s$edges[!(from %chin% drop | to %chin% drop)]
+      current_nodes <- setdiff(current_nodes, drop)
+      if (nrow(current_edges)) {
+        current_edges <- current_edges[!(from %chin% drop | to %chin% drop)]
       }
     }
-    s$nodes <- .node_constructor(names = unique(s$nodes$name))
-    s$edges <- unique(s$edges)
-
-    # update fastmap
-    if (!is.null(nodes)) {
-      drop_ids <- intersect(nodes$name, s$name_index_map$keys())
-      if (length(drop_ids) > 0L) {
-        s$name_index_map$remove(keys = drop_ids)
-        for (i in seq_len(nrow(s$nodes))) {
-          s$name_index_map$set(s$nodes$name[i], i - 1L)
-        }
-      }
-    }
+    current_nodes <- unique(current_nodes)
+    current_edges <- unique(current_edges)
   }
 
-  # Sync session with updated R state (auto-invalidates cached computations)
-  .sync_session(cg)
+  # Build new session with updated state
+  # When adding edges, always re-resolve the class to allow automatic upgrade
+  use_class <- if (identical(action, "add") && !is.null(edges)) {
+    "AUTO"
+  } else {
+    s$class
+  }
+  result <- .build_session(
+    node_names = current_nodes,
+    edges_dt = current_edges,
+    simple = s$simple,
+    class = use_class,
+    old_session = s$session
+  )
+
+  # Create new state
+  new_state <- .cg_state(
+    simple = s$simple,
+    class = result$class,
+    session = result$session
+  )
+
+  # Return new caugi or modify in place
+  if (inplace) {
+    # Update the state in place
+    s$session <- result$session
+    s$class <- result$class
+    cg
+  } else {
+    caugi(state = new_state)
+  }
 }

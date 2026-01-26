@@ -828,16 +828,7 @@ neighbors <- function(
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
   .getter_output(
     cg,
@@ -905,16 +896,7 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
   idx0_list <- lapply(
     as.integer(index),
@@ -978,16 +960,7 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
   idx0_list <- lapply(
     as.integer(index),
@@ -1066,16 +1039,7 @@ anteriors <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
   idx0_list <- lapply(
     as.integer(index),
@@ -1139,16 +1103,7 @@ markov_blanket <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
   idx0_list <- lapply(
     as.integer(index),
@@ -1277,16 +1232,7 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
   .getter_output(
     cg,
@@ -1368,9 +1314,9 @@ m_separated <- function(
 ) {
   is_caugi(cg, throw_error = TRUE)
 
-  X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
-  Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
+  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
 
   graph_session_m_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }

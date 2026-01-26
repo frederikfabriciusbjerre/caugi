@@ -42,7 +42,7 @@
 #' @title Convert node names to 0-based indices
 #'
 #' @description
-#' Convert node names to 0-based indices using the caugi object's name index map.
+#' Convert node names to 0-based indices using the Rust session's name lookup.
 #'
 #' @param cg A `caugi` object.
 #' @param nodes A character vector of node names.
@@ -51,14 +51,8 @@
 #'
 #' @keywords internal
 .nodes_to_indices <- function(cg, nodes) {
-  cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  if (is.null(cg@session)) {
+    stop("Cannot look up indices for empty graph.", call. = FALSE)
+  }
+  graph_session_indices_of(cg@session, nodes)
 }

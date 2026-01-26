@@ -96,26 +96,34 @@ caugi <- S7::new_class(
     `.state` = S7::new_property(S7::class_environment),
     nodes = S7::new_property(
       S7::class_any,
-      getter = function(self) self@`.state`$nodes,
+      getter = function(self) {
+        session <- self@`.state`$session
+        if (is.null(session)) {
+          return(.node_constructor())
+        }
+        .node_constructor(names = graph_session_names(session))
+      },
       setter = function(self, value) {
         stop(
           "nodes is read-only via @ <-. ",
-          "Use `add_nodes()` or `remove_nodes()` instead. ",
-          "Advanced users can modify `cg@.state$nodes` directly, ",
-          "but this is not recommended.",
+          "Use `add_nodes()` or `remove_nodes()` instead.",
           call. = FALSE
         )
       }
     ),
     edges = S7::new_property(
       S7::class_any,
-      getter = function(self) self@`.state`$edges,
+      getter = function(self) {
+        session <- self@`.state`$session
+        if (is.null(session)) {
+          return(.edge_constructor())
+        }
+        .build_edges_from_session(session)
+      },
       setter = function(self, value) {
         stop(
           "`edges` property is read-only via @ <-. ",
-          "Use `add_edges()` or `remove_edges()` instead. ",
-          "Advanced users can modify `cg@.state$edges` directly ",
-          "but this is not recommended.",
+          "Use `add_edges()` or `remove_edges()` instead.",
           call. = FALSE
         )
       }
@@ -131,19 +139,6 @@ caugi <- S7::new_class(
         stop(
           "`graph_class` property is read-only via @ <-. ",
           "It should only be set at construction.",
-          call. = FALSE
-        )
-      }
-    ),
-    name_index_map = S7::new_property(
-      S7::class_any,
-      getter = function(self) {
-        return(self@`.state`$name_index_map)
-      },
-      setter = function(self, value) {
-        stop(
-          "`name_index_map` property is read-only via @ <-. ",
-          "It is managed internally.",
           call. = FALSE
         )
       }
@@ -174,10 +169,8 @@ caugi <- S7::new_class(
       return("If simple = FALSE, class must be 'UNKNOWN', 'ADMG', or 'AG'")
     }
 
-    # Validate session exists for non-empty graphs
-    if (is.null(s$session) && nrow(s$nodes) > 0L) {
-      return("Internal error: session is NULL for non-empty graph.")
-    }
+    # session can be NULL for empty graphs - that's valid
+    # The session is the source of truth for node count
 
     NULL
   },
@@ -338,15 +331,6 @@ caugi <- S7::new_class(
     # Initialize caugi registry (if not already registered)
     reg <- caugi_registry()
 
-    # initialize fastmap for name to index mapping
-    name_index_map <- fastmap::fastmap()
-    if (n > 0L) {
-      do.call(
-        name_index_map$mset,
-        .set_names(as.list(seq_len(n) - 1L), nodes$name)
-      )
-    }
-
     # Create GraphSession - the canonical Rust state
     # Session handles lazy compilation and caching internally
     session <- NULL
@@ -383,11 +367,8 @@ caugi <- S7::new_class(
     }
 
     state <- .cg_state(
-      nodes = nodes,
-      edges = edges,
       simple = simple,
       class = class,
-      name_index_map = name_index_map,
       session = session
     )
 
@@ -430,39 +411,15 @@ caugi <- S7::new_class(
     )
   }
 
-  edges_idx <- graph_session_edges_df(session)
-
-  if (length(edges_idx$from0) == 0L) {
-    edges_tbl <- .edge_constructor()
-  } else {
-    edges_tbl <- .edge_constructor_idx(
-      from_idx = edges_idx$from0 + 1L,
-      edge = as.character(edges_idx$glyph),
-      to_idx = edges_idx$to0 + 1L,
-      node_names = node_names
-    )
-  }
-
-  nodes_tbl <- .node_constructor(names = node_names)
-
-  name_index_map <- fastmap::fastmap()
-  do.call(
-    name_index_map$mset,
-    .set_names(
-      as.list(seq_len(n) - 1L),
-      node_names
-    )
-  )
+  # Ensure session has the correct names
+  graph_session_set_names(session, node_names)
 
   simple <- graph_session_is_simple(session)
   class <- graph_session_graph_class(session)
 
   state <- .cg_state(
-    nodes = nodes_tbl,
-    edges = edges_tbl,
     simple = simple,
     class = class,
-    name_index_map = name_index_map,
     session = session
   )
   caugi(state = state)
@@ -473,33 +430,43 @@ caugi <- S7::new_class(
 #' @description Internal function to create the state environment for a
 #' `caugi`. This function is not intended to be used directly by users.
 #'
-#' @param nodes A `data.table` of nodes with a `name` column.
-#' @param edges A `data.table` of edges with `from`, `edge`, and `to` columns.
 #' @param simple Logical; whether the graph is simple
 #' (no parallel edges or self-loops).
-#' @param class Character; one of `"UNKNOWN"`, `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`, or `"AG"`.
-#' @param name_index_map A `fastmap` mapping node names to their zero indexed
-#' indices.
+#' @param class Character; one of `"UNKNOWN"`, `"DAG"`, `"UG"`, `"PDAG"`,
+#' `"ADMG"`, or `"AG"`.
 #' @param session A pointer to the GraphSession Rust object. This is the
 #' canonical Rust state that handles lazy compilation and caching.
 #'
 #' @returns An environment containing the graph state.
 #'
 #' @keywords internal
-.cg_state <- function(
-  nodes,
-  edges,
-  simple,
-  class,
-  name_index_map,
-  session
-) {
+.cg_state <- function(simple, class, session) {
   e <- new.env(parent = emptyenv())
-  e$nodes <- nodes
-  e$edges <- edges
   e$simple <- isTRUE(simple)
   e$class <- class
-  e$name_index_map <- name_index_map
   e$session <- session
   e
+}
+
+#' @title Build edges data.table from session
+#'
+#' @description Internal helper to build edges data.table from Rust session.
+#'
+#' @param session A pointer to the GraphSession Rust object.
+#'
+#' @returns A `data.table` with columns `from`, `edge`, and `to`.
+#'
+#' @keywords internal
+.build_edges_from_session <- function(session) {
+  edges_idx <- graph_session_edges_df(session)
+  if (length(edges_idx$from0) == 0L) {
+    return(.edge_constructor())
+  }
+  node_names <- graph_session_names(session)
+  .edge_constructor_idx(
+    from_idx = edges_idx$from0 + 1L,
+    edge = as.character(edges_idx$glyph),
+    to_idx = edges_idx$to0 + 1L,
+    node_names = node_names
+  )
 }

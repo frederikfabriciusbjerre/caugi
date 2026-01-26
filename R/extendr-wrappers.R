@@ -54,6 +54,10 @@ graph_session_graph_class <- function(session) .Call(wrap__graph_session_graph_c
 
 graph_session_names <- function(session) .Call(wrap__graph_session_names, session)
 
+graph_session_index_of <- function(session, name) .Call(wrap__graph_session_index_of, session, name)
+
+graph_session_indices_of <- function(session, names) .Call(wrap__graph_session_indices_of, session, names)
+
 graph_session_edges_df <- function(session) .Call(wrap__graph_session_edges_df, session)
 
 graph_session_is_valid <- function(session) .Call(wrap__graph_session_is_valid, session)
@@ -152,6 +156,8 @@ graph_builder_add_edges <- function(b, from, to, etype) invisible(.Call(wrap__gr
 
 graph_builder_resolve_class <- function(b, class) .Call(wrap__graph_builder_resolve_class, b, class)
 
+graph_session_compute_tiered_layout <- function(session, tier_assignments, num_tiers, orientation) .Call(wrap__graph_session_compute_tiered_layout, session, tier_assignments, num_tiers, orientation)
+
 graph_session_write_caugi_file <- function(session, reg, graph_class, path, comment, tags) invisible(.Call(wrap__graph_session_write_caugi_file, session, reg, graph_class, path, comment, tags))
 
 read_caugi_file <- function(path, reg) .Call(wrap__read_caugi_file, path, reg)
@@ -163,8 +169,6 @@ deserialize_caugi <- function(json, reg) .Call(wrap__deserialize_caugi, json, re
 graph_session_serialize_graphml <- function(session, reg, graph_class) .Call(wrap__graph_session_serialize_graphml, session, reg, graph_class)
 
 deserialize_graphml <- function(xml, reg) .Call(wrap__deserialize_graphml, xml, reg)
-
-graph_session_compute_tiered_layout <- function(session, tier_assignments, num_tiers, orientation) .Call(wrap__graph_session_compute_tiered_layout, session, tier_assignments, num_tiers, orientation)
 
 
 # nolint end
