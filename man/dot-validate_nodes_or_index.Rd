@@ -12,8 +12,6 @@
 \item{index}{An index argument.}
 
 \item{index_missing}{Logical; result of \code{missing(index)}.}
-
-\item{nodes}{A node name argument.}
 }
 \value{
 A list with \code{nodes_supplied} and \code{index_supplied} logical values.

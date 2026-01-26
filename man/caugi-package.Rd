@@ -24,6 +24,7 @@ Authors:
 \itemize{
   \item Johan Larsson \email{johan@jolars.co} (\href{https://orcid.org/0000-0002-4029-5945}{ORCID})
   \item Michael Sachs \email{sachsmc@gmail.com} (\href{https://orcid.org/0000-0002-1279-8676}{ORCID})
+  \item Bjarke Hautop Kristensen \email{bjarke.hautop@gmail.com}
 }
 
 }

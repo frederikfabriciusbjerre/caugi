@@ -369,9 +369,7 @@ caugi_layout_tiered <- function(
   orientation <- match.arg(orientation)
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
+
 
   node_names <- nodes(x)[["name"]]
   n_nodes <- length(node_names)
@@ -502,8 +500,8 @@ caugi_layout_tiered <- function(
   }
 
   # Call Rust function
-  coords <- compute_tiered_layout_ptr(
-    x@ptr,
+  coords <- graph_session_compute_tiered_layout(
+    x@session,
     as.integer(tier_assignments),
     as.integer(num_tiers),
     orientation

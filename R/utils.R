@@ -23,9 +23,8 @@
 #' @description
 #' Check that either nodes or index is supplied, but not both.
 #'
-#' @param nodes A node name argument.
-#' @param index An index argument.
 #' @param nodes_missing Logical; result of `missing(nodes)`.
+#' @param index An index argument.
 #' @param index_missing Logical; result of `missing(index)`.
 #'
 #' @returns A list with `nodes_supplied` and `index_supplied` logical values.
