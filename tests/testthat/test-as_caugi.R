@@ -325,7 +325,7 @@ test_that("collapse && directed for graphNEL conversion to caugi", {
 test_that("dagitty -> caugi: empty graph with isolates builds node set only", {
   skip_if_not_installed("dagitty")
   g <- dagitty::dagitty("dag { A; B; C }")
-  cg <- as_caugi(g, class = "DAG", build = TRUE)
+  cg <- as_caugi(g, class = "DAG")
 
   expect_s3_class(cg, "S7_object")
   expect_identical(sort(cg@nodes$name), c("A", "B", "C"))
@@ -409,21 +409,20 @@ test_that("dagitty -> caugi: isolates are retained alongside edges", {
 test_that("dagitty -> caugi: PAG class is routed to UNKNOWN until supported", {
   skip_if_not_installed("dagitty")
   g <- dagitty::dagitty("pag { A @-> B }")
-  cg <- as_caugi(g, class = "PAG", build = TRUE)
+  cg <- as_caugi(g, class = "PAG")
 
   # graph_class getter returns uppercase from Rust; compare in upper
   expect_identical(toupper(cg@graph_class), "UNKNOWN")
   expect_true(any(cg@edges$edge == "o->"))
 })
 
-test_that("dagitty -> caugi: respects `simple` flag and builds pointer when requested", {
+test_that("dagitty -> caugi: respects `simple` flag and builds session", {
   skip_if_not_installed("dagitty")
   g <- dagitty::dagitty("dag { A -> B }")
-  cg <- as_caugi(g, class = "DAG", simple = TRUE, build = TRUE)
+  cg <- as_caugi(g, class = "DAG", simple = TRUE)
 
-  expect_true(isTRUE(cg@built))
+  expect_true(!is.null(cg@session))
   expect_true(isTRUE(cg@simple))
-  expect_false(is.null(cg@ptr))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -433,7 +432,7 @@ test_that("dagitty -> caugi: respects `simple` flag and builds pointer when requ
 test_that("bnlearn bn: isolates only", {
   skip_if_not_installed("bnlearn")
   g <- bnlearn::empty.graph(nodes = c("A", "B", "C"))
-  cg <- as_caugi(g, class = "DAG", build = TRUE)
+  cg <- as_caugi(g, class = "DAG")
   expect_s3_class(cg, "S7_object")
   expect_setequal(cg@nodes$name, c("A", "B", "C"))
   expect_equal(nrow(cg@edges), 0L)

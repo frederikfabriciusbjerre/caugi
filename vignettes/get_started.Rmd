@@ -39,13 +39,12 @@ You might scratch your head a bit, when looking at the call above. To clarify, `
 
 ### Properties
 
-#### `ptr`
+#### `session`
 
 ```{r}
-cg@ptr
+cg@session
 ```
-
-This is the pointer to the Rust object that `caugi` utilizes for performance. 
+This is the session pointer to the Rust graph object that `caugi` utilizes for performance. The session manages lazy compilation and caching of graph operations internally.
 
 #### `simple`
 
@@ -116,27 +115,13 @@ For further reading, we recommend the vignettes `vignette("package_use")` and `v
 
 ### Advanced properties
 
-#### `built`
-
-```{r}
-cg@built
-```
-
-This indicates whether the graph has been "built" or not on the Rust side. This is important, as the Rust object may not agree with the R object if `built = FALSE`. 
-
 #### `name_index_map`
 
-```{r, eval=FALSE}
-cg@name_index_map
-```
-
-The `name_index_map` is a hashmap that takes node names as keys and outputs zero-based indices. This is used to access nodes' zero-based indices, when converting node names to indices for Rust calls, as the Rust backend uses zero-based indices. 
-
-#### `.state`
+#### `session`
 
 ```{r}
-cg@.state
+cg@session
 ```
 
-This is the internal state of the `caugi` graph object. It is used to ensure that the `caugi` object can be modified in R and, so to speak, _saves_ the modifications you might make to the graph in R without having to rebuild the graph in Rust each time. The most important takeaway about the state is that you should _avoid_ modifying the state directly. Instead, you should use the verbs.
+This is the Rust GraphSession pointer that holds the canonical graph state. The session handles lazy compilation and caching of graph operations internally. You should _avoid_ accessing or modifying the session directly. Instead, use the provided accessor properties (`@nodes`, `@edges`, `@simple`, `@graph_class`) and verb functions (`add_edges()`, `remove_nodes()`, etc.).
 

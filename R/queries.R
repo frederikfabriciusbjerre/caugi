@@ -155,16 +155,16 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 #' @export
 is_acyclic <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (force_check) {
-    is_it <- is_acyclic_ptr(cg@ptr)
+    is_it <- graph_session_is_acyclic(cg@session)
   } else if (
     identical(cg@graph_class, "DAG") ||
       identical(cg@graph_class, "PDAG")
   ) {
     is_it <- TRUE
   } else {
-    is_it <- is_acyclic_ptr(cg@ptr)
+    is_it <- graph_session_is_acyclic(cg@session)
   }
   is_it
 }
@@ -213,12 +213,12 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' @export
 is_dag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "DAG") && !force_check) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
-    is_it <- is_dag_type_ptr(cg@ptr)
+    is_it <- graph_session_is_dag_type(cg@session)
   }
   is_it
 }
@@ -273,12 +273,12 @@ is_dag <- function(cg, force_check = FALSE) {
 #' @export
 is_pdag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "PDAG") && !force_check) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
-    is_it <- is_pdag_type_ptr(cg@ptr)
+    is_it <- graph_session_is_pdag_type(cg@session)
   }
   is_it
 }
@@ -315,8 +315,8 @@ is_pdag <- function(cg, force_check = FALSE) {
 #' @export
 is_cpdag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
-  is_it <- is_cpdag_ptr(cg@ptr)
+
+  is_it <- graph_session_is_cpdag(cg@session)
   is_it
 }
 
@@ -349,12 +349,12 @@ is_cpdag <- function(cg) {
 #' @export
 is_ug <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "UG") && !force_check) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
-    is_it <- is_ug_type_ptr(cg@ptr)
+    is_it <- graph_session_is_ug_type(cg@session)
   }
   is_it
 }
@@ -394,12 +394,12 @@ is_ug <- function(cg, force_check = FALSE) {
 #' @export
 is_admg <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "ADMG") && !force_check) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
-    is_it <- is_admg_type_ptr(cg@ptr)
+    is_it <- graph_session_is_admg_type(cg@session)
   }
   is_it
 }
@@ -441,12 +441,12 @@ is_admg <- function(cg, force_check = FALSE) {
 #' @export
 is_ag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "AG") && !force_check) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
-    is_it <- is_ag_type_ptr(cg@ptr)
+    is_it <- graph_session_is_ag_type(cg@session)
   }
   is_it
 }
@@ -481,11 +481,11 @@ is_ag <- function(cg, force_check = FALSE) {
 #' @export
 is_mag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   if (identical(cg@graph_class, "MAG") && !force_check) {
     is_it <- TRUE
   } else {
-    is_it <- is_mag_ptr(cg@ptr)
+    is_it <- graph_session_is_mag(cg@session)
   }
   is_it
 }
@@ -522,7 +522,7 @@ nodes <- S7::new_generic("nodes", "cg")
 #' @export
 S7::method(nodes, caugi) <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   cg@nodes
 }
 
@@ -562,7 +562,7 @@ edges <- S7::new_generic("edges", "cg")
 #' @export
 S7::method(edges, caugi) <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   cg@edges
 }
 
@@ -593,7 +593,7 @@ E <- edges # igraph notation
 #' @export
 edge_types <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
+
   unique(cg@edges$edge)
 }
 # ──────────────────────────────────────────────────────────────────────────────
@@ -637,40 +637,28 @@ edge_types <- function(cg) {
 #'
 #' @export
 parents <- function(cg, nodes = NULL, index = NULL) {
-  nodes_supplied <- !missing(nodes)
-  index_supplied <- !missing(index) && !is.null(index)
-  if (nodes_supplied && index_supplied) {
-    stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
-  }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
-  if (index_supplied) {
+  check <- .validate_nodes_or_index(missing(nodes), index, missing(index))
+
+  if (check$index_supplied) {
     return(.getter_output(
       cg,
-      parents_of_ptr(cg@ptr, as.integer(index - 1L)),
+      graph_session_parents_of(cg@session, as.integer(index - 1L)),
       cg@nodes$name[index]
     ))
   }
-  if (!nodes_supplied) {
+  if (!check$nodes_supplied) {
     stop("Supply one of `nodes` or `index`.", call. = FALSE)
   }
   if (!is.character(nodes)) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
+  index <- .nodes_to_indices(cg, nodes)
+  .getter_output(
+    cg,
+    graph_session_parents_of(cg@session, as.integer(index)),
+    nodes
   )
-
-  .getter_output(cg, parents_of_ptr(cg@ptr, as.integer(index)), nodes)
 }
 
 #' @title Get children of nodes in a `caugi`
@@ -709,40 +697,28 @@ parents <- function(cg, nodes = NULL, index = NULL) {
 #'
 #' @export
 children <- function(cg, nodes = NULL, index = NULL) {
-  nodes_supplied <- !missing(nodes)
-  index_supplied <- !missing(index) && !is.null(index)
-  if (nodes_supplied && index_supplied) {
-    stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
-  }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
-  if (index_supplied) {
+  check <- .validate_nodes_or_index(missing(nodes), index, missing(index))
+
+  if (check$index_supplied) {
     return(.getter_output(
       cg,
-      children_of_ptr(cg@ptr, as.integer(index - 1L)),
+      graph_session_children_of(cg@session, as.integer(index - 1L)),
       cg@nodes$name[index]
     ))
   }
-  if (!nodes_supplied) {
+  if (!check$nodes_supplied) {
     stop("Supply one of `nodes` or `index`.", call. = FALSE)
   }
   if (!is.character(nodes)) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
+  index <- .nodes_to_indices(cg, nodes)
+  .getter_output(
+    cg,
+    graph_session_children_of(cg@session, as.integer(index)),
+    nodes
   )
-
-  .getter_output(cg, children_of_ptr(cg@ptr, as.integer(index)), nodes)
 }
 
 #' @title Get neighbors of nodes in a `caugi`
@@ -834,16 +810,14 @@ neighbors <- function(
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
 
   mode <- match.arg(mode)
 
   if (index_supplied) {
+    idx <- as.integer(index - 1L)
     return(.getter_output(
       cg,
-      neighbors_of_ptr(cg@ptr, as.integer(index - 1L), mode),
+      graph_session_neighbors_of(cg@session, idx, mode),
       cg@nodes$name[index]
     ))
   }
@@ -854,20 +828,11 @@ neighbors <- function(
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
   .getter_output(
     cg,
-    neighbors_of_ptr(cg@ptr, as.integer(index), mode),
+    graph_session_neighbors_of(cg@session, as.integer(index), mode),
     nodes
   )
 }
@@ -912,13 +877,15 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
+    idx0_list <- lapply(
+      as.integer(index - 1L),
+      function(ix) graph_session_ancestors_of(cg@session, ix)
+    )
     return(.getter_output(
       cg,
-      ancestors_of_ptr(cg@ptr, as.integer(index - 1L)),
+      idx0_list,
       cg@nodes$name[index]
     ))
   }
@@ -929,18 +896,13 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
-  .getter_output(cg, ancestors_of_ptr(cg@ptr, as.integer(index)), nodes)
+  idx0_list <- lapply(
+    as.integer(index),
+    function(ix) graph_session_ancestors_of(cg@session, ix)
+  )
+  .getter_output(cg, idx0_list, nodes)
 }
 
 #' @title Get descendants of nodes in a `caugi`
@@ -979,13 +941,15 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
+    idx0_list <- lapply(
+      as.integer(index - 1L),
+      function(ix) graph_session_descendants_of(cg@session, ix)
+    )
     return(.getter_output(
       cg,
-      descendants_of_ptr(cg@ptr, as.integer(index - 1L)),
+      idx0_list,
       cg@nodes$name[index]
     ))
   }
@@ -996,18 +960,13 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
-  .getter_output(cg, descendants_of_ptr(cg@ptr, as.integer(index)), nodes)
+  idx0_list <- lapply(
+    as.integer(index),
+    function(ix) graph_session_descendants_of(cg@session, ix)
+  )
+  .getter_output(cg, idx0_list, nodes)
 }
 
 #' @title Get anteriors of nodes in a `caugi`
@@ -1061,13 +1020,15 @@ anteriors <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
+    idx0_list <- lapply(
+      as.integer(index - 1L),
+      function(ix) graph_session_anteriors_of(cg@session, ix)
+    )
     return(.getter_output(
       cg,
-      anteriors_of_ptr(cg@ptr, as.integer(index - 1L)),
+      idx0_list,
       cg@nodes$name[index]
     ))
   }
@@ -1078,18 +1039,13 @@ anteriors <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
-  .getter_output(cg, anteriors_of_ptr(cg@ptr, as.integer(index)), nodes)
+  idx0_list <- lapply(
+    as.integer(index),
+    function(ix) graph_session_anteriors_of(cg@session, ix)
+  )
+  .getter_output(cg, idx0_list, nodes)
 }
 
 #' @title Get Markov blanket of nodes in a `caugi`
@@ -1128,13 +1084,15 @@ markov_blanket <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
+    idx0_list <- lapply(
+      as.integer(index - 1L),
+      function(ix) graph_session_markov_blanket_of(cg@session, ix)
+    )
     return(.getter_output(
       cg,
-      markov_blanket_of_ptr(cg@ptr, as.integer(index - 1L)),
+      idx0_list,
       cg@nodes$name[index]
     ))
   }
@@ -1145,18 +1103,13 @@ markov_blanket <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
-  .getter_output(cg, markov_blanket_of_ptr(cg@ptr, as.integer(index)), nodes)
+  idx0_list <- lapply(
+    as.integer(index),
+    function(ix) graph_session_markov_blanket_of(cg@session, ix)
+  )
+  .getter_output(cg, idx0_list, nodes)
 }
 
 #' @title Get all exogenous nodes in a `caugi`
@@ -1185,8 +1138,8 @@ markov_blanket <- function(cg, nodes = NULL, index = NULL) {
 #' @export
 exogenous <- function(cg, undirected_as_parents = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
-  idx0 <- exogenous_nodes_of_ptr(cg@ptr, undirected_as_parents)
+
+  idx0 <- graph_session_exogenous_nodes(cg@session, undirected_as_parents)
   cg@nodes$name[idx0 + 1L]
 }
 
@@ -1224,8 +1177,8 @@ exogenous <- function(cg, undirected_as_parents = FALSE) {
 #' @export
 topological_sort <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
-  idx0 <- topological_sort_ptr(cg@ptr)
+
+  idx0 <- graph_session_topological_sort(cg@session)
   cg@nodes$name[idx0 + 1L]
 }
 
@@ -1264,13 +1217,11 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
-  if (!cg@built) {
-    cg <- build(cg)
-  }
+
   if (index_supplied) {
     return(.getter_output(
       cg,
-      spouses_of_ptr(cg@ptr, as.integer(index - 1L)),
+      graph_session_spouses_of(cg@session, as.integer(index - 1L)),
       cg@nodes$name[index]
     ))
   }
@@ -1281,18 +1232,13 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
     stop("`nodes` must be a character vector of node names.", call. = FALSE)
   }
 
-  index <- cg@name_index_map$mget(
-    nodes,
-    missing = stop(
-      paste(
-        "Non-existent node name:",
-        paste(setdiff(nodes, cg@nodes$name), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  )
+  index <- graph_session_indices_of(cg@session, nodes)
 
-  .getter_output(cg, spouses_of_ptr(cg@ptr, as.integer(index)), nodes)
+  .getter_output(
+    cg,
+    graph_session_spouses_of(cg@session, as.integer(index)),
+    nodes
+  )
 }
 
 #' @title Get districts (c-components) of an ADMG
@@ -1321,8 +1267,8 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
 #' @export
 districts <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
-  idx0_list <- districts_ptr(cg@ptr)
+
+  idx0_list <- graph_session_districts(cg@session)
   lapply(idx0_list, function(idx0) cg@nodes$name[idx0 + 1L])
 }
 
@@ -1367,13 +1313,12 @@ m_separated <- function(
   Z_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
 
-  X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
-  Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
+  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
 
-  m_separated_ptr(cg@ptr, X_idx0, Y_idx0, Z_idx0)
+  graph_session_m_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -1406,7 +1351,6 @@ m_separated <- function(
 #' @export
 subgraph <- function(cg, nodes = NULL, index = NULL) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
 
   nodes_supplied <- !missing(nodes) && !is.null(nodes)
   index_supplied <- !missing(index) && !is.null(index)
@@ -1458,44 +1402,19 @@ subgraph <- function(cg, nodes = NULL, index = NULL) {
     )
   }
 
-  ptr_sub <- induced_subgraph_ptr(cg@ptr, as.integer(keep_idx0))
+  # Filter edges from parent graph to preserve original edge directions
+  keep_set <- keep_names
+  edges_keep <- cg@edges[
+    cg@edges$from %in% keep_set & cg@edges$to %in% keep_set,
+  ]
 
-  nodes_sub <- .node_constructor(names = keep_names)
-
-  if (nrow(cg@edges)) {
-    dt <- data.table::as.data.table(cg@edges)
-
-    sel_from <- !is.na(data.table::chmatch(dt[["from"]], keep_names))
-    sel_to <- !is.na(data.table::chmatch(dt[["to"]], keep_names))
-    sel <- sel_from & sel_to
-
-    if (any(sel)) {
-      dt <- dt[which(sel), ] # force row-subset even if class slips
-      data.table::setorder(dt, from, to, edge)
-    } else {
-      dt <- dt[0L, ] # empty, preserve columns
-    }
-    edges_sub <- dt
-  } else {
-    edges_sub <- cg@edges
-  }
-
-  name_index_map_sub <- fastmap::fastmap()
-  do.call(
-    name_index_map_sub$mset,
-    .set_names(as.list(seq_len(nrow(nodes_sub)) - 1L), nodes_sub$name)
-  )
-
-  state_sub <- .cg_state(
-    nodes = nodes_sub,
-    edges = edges_sub,
-    ptr = ptr_sub,
-    built = TRUE,
+  # Create new caugi with filtered edges and nodes
+  caugi(
+    edges_df = edges_keep,
+    nodes = keep_names,
     simple = cg@simple,
-    class = cg@graph_class,
-    name_index_map = name_index_map_sub
+    class = graph_session_graph_class(cg@session)
   )
-  caugi(state = state_sub)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────

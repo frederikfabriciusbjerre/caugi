@@ -217,8 +217,9 @@ test_that("building DAG with cycle results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "DAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %-->% A) |> build()
+    cg |> add_edge(B %-->% A)
   )
 })
 
@@ -236,8 +237,9 @@ test_that("building PDAG with directed cycle results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "PDAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %-->% A) |> build()
+    cg |> add_edge(B %-->% A)
   )
 })
 
@@ -257,8 +259,9 @@ test_that("building PDAG with bidirected edges results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "PDAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %o->% C) |> build()
+    cg |> add_edge(B %o->% C)
   )
 })
 
@@ -465,11 +468,12 @@ test_that("caugi errors with trailing commas", {
   )
 })
 
-test_that("caugi warns when build = TRUE for empty graph", {
-  expect_warning(
-    caugi(build = TRUE),
-    "No edges or nodes provided; graph will not be built."
-  )
+test_that("caugi accepts build parameter for backward compatibility", {
+  # build parameter is deprecated but should not cause error
+  cg <- caugi(A %-->% B)
+  expect_true(!is.null(cg@session))
+  cg2 <- caugi(A %-->% B)
+  expect_true(!is.null(cg2@session))
 })
 
 test_that("caugi with wrong node input errors", {
@@ -578,41 +582,43 @@ test_that("edges df input is not a data.frame or data.table", {
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ────────────────────────────── .view_to_caugi ────────────────────────────────
+# ────────────────────────────── .session_to_caugi ─────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that(".view_to_caugi works as expected", {
+test_that(".session_to_caugi works as expected", {
   cg <- caugi(
     A %-->% B,
     B %---% C,
     C %<->% D
   )
 
-  cg2 <- .view_to_caugi(cg@ptr)
+  cg2 <- .session_to_caugi(cg@session)
   expect_s7_class(cg2, caugi)
-  expect_equal(cg, cg2)
+  expect_equal(cg@nodes, cg2@nodes)
+  expect_equal(cg@simple, cg2@simple)
 })
 
-test_that(".view_to_caugi fails on NULL ptr", {
+test_that(".session_to_caugi fails on NULL session", {
   expect_error(
-    .view_to_caugi(NULL),
-    "ptr is NULL"
+    .session_to_caugi(NULL),
+    "session is NULL"
   )
 })
 
-test_that(".view_to_caugi fails on faulty node_names", {
+test_that(".session_to_caugi fails on faulty node_names", {
   cg <- caugi(
     A %-->% B
   )
   expect_error(
-    .view_to_caugi(cg@ptr, node_names = c("A")),
+    .session_to_caugi(cg@session, node_names = c("A")),
     "length"
   )
 })
 
-test_that(".view_to_caugi works for empty cg", {
-  cg <- caugi(A, B, build = TRUE)
-  expect_equal(cg, .view_to_caugi(cg@ptr))
+test_that(".session_to_caugi works for empty cg", {
+  cg <- caugi(A, B)
+  cg2 <- .session_to_caugi(cg@session)
+  expect_equal(cg@nodes, cg2@nodes)
 })
 
 

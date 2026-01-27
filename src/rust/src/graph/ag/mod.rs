@@ -15,7 +15,7 @@ mod msep;
 
 use super::error::AgError;
 use super::CaugiGraph;
-use crate::edges::{EdgeClass, Mark};
+use crate::edges::EdgeClass;
 use crate::graph::alg::bitset;
 use crate::graph::alg::directed_part_is_acyclic;
 use crate::graph::alg::traversal;
@@ -60,9 +60,8 @@ impl Ag {
             return Err(AgError::DirectedCycle);
         }
 
-        // Count (parents, undirected, spouses, children) per node
-        // side[k] stores position: 0 = tail position, 1 = head position.
-        // To determine parent/child, check if my mark is Arrow.
+        // Count (parents, undirected, spouses, children) per node using mark helpers.
+        // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
         let mut deg: Vec<(u32, u32, u32, u32)> = vec![(0, 0, 0, 0); n];
 
         // Track which nodes have undirected edges and which have arrowhead edges
@@ -71,15 +70,10 @@ impl Ag {
 
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
-                        } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
+                        if core.is_incoming_arrow(k) {
                             deg[i].0 += 1; // parent (Arrow points INTO me)
                             has_arrowhead[i] = true;
                         } else {
@@ -139,35 +133,26 @@ impl Ag {
         let mut scur = spouse_base.clone();
         let mut ccur = child_base.clone();
 
-        // Scatter pass
+        // Scatter pass using mark helpers
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
-                        } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            let p = pcur[i];
-                            neigh[p] = core.col_index[k];
+                        if core.is_incoming_arrow(k) {
+                            neigh[pcur[i]] = core.col_index[k];
                             pcur[i] += 1;
                         } else {
-                            let p = ccur[i];
-                            neigh[p] = core.col_index[k];
+                            neigh[ccur[i]] = core.col_index[k];
                             ccur[i] += 1;
                         }
                     }
                     EdgeClass::Undirected => {
-                        let p = ucur[i];
-                        neigh[p] = core.col_index[k];
+                        neigh[ucur[i]] = core.col_index[k];
                         ucur[i] += 1;
                     }
                     EdgeClass::Bidirected => {
-                        let p = scur[i];
-                        neigh[p] = core.col_index[k];
+                        neigh[scur[i]] = core.col_index[k];
                         scur[i] += 1;
                     }
                     _ => unreachable!("Should have errored on invalid edges earlier"),

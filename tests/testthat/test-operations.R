@@ -469,7 +469,10 @@ test_that("exogenize works", {
     B %-->% C,
     class = "DAG"
   )
-  expect_equal(edges(exogenized_cg), edges(cg_expected))
+  # Compare edges irrespective of order
+  actual <- edges(exogenized_cg)[order(from, to, edge)]
+  expected <- edges(cg_expected)[order(from, to, edge)]
+  expect_equal(actual, expected)
   expect_setequal(nodes(exogenized_cg)$name, nodes(cg_expected)$name)
 })
 

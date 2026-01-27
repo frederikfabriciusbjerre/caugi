@@ -203,8 +203,9 @@ pub mod aid {
                 let core: &CaugiGraph = d.core_ref();
                 for u in 0..n as u32 {
                     for k in core.row_range(u) {
-                        let spec = &core.registry.specs[core.etype[k] as usize];
-                        if matches!(spec.class, EdgeClass::Directed) && core.side[k] == 0 {
+                        let spec = core.spec(k);
+                        // Use mark helper: is_outgoing_arrow means u -> v
+                        if matches!(spec.class, EdgeClass::Directed) && core.is_outgoing_arrow(k) {
                             // u -> v in DAG
                             let u0 = u as usize;
                             let v0 = core.col_index[k] as usize;

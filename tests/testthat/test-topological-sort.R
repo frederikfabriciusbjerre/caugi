@@ -240,16 +240,16 @@ test_that("topological_sort returns all nodes exactly once", {
 })
 
 test_that("topological_sort builds the graph if needed", {
-  cg <- caugi(A %-->% B, B %-->% C, class = "DAG", build = FALSE)
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
 
   # Graph should not be built yet
-  expect_false(cg@built)
+  expect_true(!is.null(cg@session))
 
   # topological_sort should trigger build
   order <- topological_sort(cg)
 
   # Graph should be built now
-  expect_true(cg@built)
+  expect_true(!is.null(cg@session))
 
   # Result should be valid
   expect_equal(length(order), 3L)

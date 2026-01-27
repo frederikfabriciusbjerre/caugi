@@ -5,13 +5,12 @@
 \alias{.resolve_idx0_mget}
 \title{Resolve node name or index to 0-based index.}
 \usage{
-.resolve_idx0_get(nm_idx_map, node_name = NULL, node_index = NULL)
+.resolve_idx0_get(session, node_name = NULL, node_index = NULL)
 
-.resolve_idx0_mget(nm_idx_map, node_name = NULL, node_index = NULL)
+.resolve_idx0_mget(session, node_name = NULL, node_index = NULL)
 }
 \arguments{
-\item{nm_idx_map}{A \code{fastmap} mapping node names to 0-based indices from
-a \code{caugi}.}
+\item{session}{A GraphSession pointer.}
 
 \item{node_name}{Optional character vector of node names.}
 
@@ -19,11 +18,8 @@ a \code{caugi}.}
 }
 \description{
 Internal helper function to resolve either a node name or a
-node index to a 0-based index.
-\code{.resolve_idx0_get} uses \code{get} on the \code{fastmap} and expects a single value,
-while \code{.resolve_idx0_mget} uses \code{mget} and can return multiple values.
-}
-\seealso{
-\link[fastmap:fastmap]{fastmap::fastmap}
+node index to a 0-based index using the Rust session.
+\code{.resolve_idx0_get} expects a single value,
+while \code{.resolve_idx0_mget} can return multiple values.
 }
 \keyword{internal}

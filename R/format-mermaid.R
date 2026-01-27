@@ -85,9 +85,6 @@ to_mermaid <- function(x, direction = "TD") {
   }
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
 
   nodes_df <- nodes(x)
   edges_df <- edges(x)

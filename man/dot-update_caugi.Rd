@@ -22,13 +22,14 @@ add/remove.}
 
 \item{action}{One of \code{"add"} or \code{"remove"}.}
 
-\item{inplace}{Logical, whether to modify the graph inplace or not.}
+\item{inplace}{Deprecated and ignored. Always returns a new caugi object.}
 }
 \value{
 The updated \code{caugi} object.
 }
 \description{
-Internal helper to add or remove nodes/edges and mark graph as
-not built.
+Internal helper to add or remove nodes/edges. Rust is the
+source of truth - we get current state from Rust, modify it, and build
+a new session.
 }
 \keyword{internal}

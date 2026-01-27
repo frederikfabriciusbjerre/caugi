@@ -37,15 +37,15 @@ test_that("is_acyclic forces check when requested", {
 
 test_that("query builds", {
   cg <- caugi(A %-->% B, B %-->% C, C %---% D, class = "PDAG")
-  expect_true(cg@built)
+  expect_true(!is.null(cg@session))
 
   cg <- cg |> add_edges(D %-->% E)
-  expect_false(cg@built)
+  expect_true(!is.null(cg@session))
 
   expect_true(is_acyclic(cg))
 
   # now it should be build
-  expect_true(cg@built)
+  expect_true(!is.null(cg@session))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -243,9 +243,9 @@ test_that("aliases route correctly", {
 test_that("public getters trigger lazy build", {
   cg <- caugi(A %-->% B, B %-->% C, class = "PDAG")
   cg <- cg |> add_edges(C %---% D)
-  expect_false(cg@built)
+  expect_true(!is.null(cg@session))
   parents(cg, "B")
-  expect_true(cg@built)
+  expect_true(!is.null(cg@session))
 })
 
 test_that("nodes and edges getters work", {
@@ -382,9 +382,9 @@ test_that("getter queries builds", {
     markov_blanket
   )
   for (getter in getter_queries) {
-    cg <- caugi(A %-->% B, B %-->% C, class = "DAG", build = FALSE)
+    cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
     getter(cg, "B")
-    expect_true(cg@built)
+    expect_true(!is.null(cg@session))
   }
 })
 
@@ -489,11 +489,9 @@ test_that("subgraph on graph without edges keeps nodes and empty edges", {
   s <- subgraph(g, nodes = c("C", "A"))
   expect_identical(s@nodes$name, c("C", "A"))
   expect_equal(nrow(s@edges), 0L)
-  expect_true(s@built)
+  expect_true(!is.null(s@session))
   expect_identical(s@graph_class, g@graph_class)
   expect_identical(s@simple, g@simple)
-  expect_identical(s@name_index_map$get("C"), 0L)
-  expect_identical(s@name_index_map$get("A"), 1L)
 })
 
 test_that("subgraph filters edges to kept names and sorts", {
@@ -526,7 +524,7 @@ test_that("subgraph with index matches nodes variant", {
   s2 <- subgraph(g, index = c(2L, 1L, 3L))
   expect_identical(s1@nodes$name, s2@nodes$name)
   expect_identical(s1@edges, s2@edges)
-  expect_true(s1@built && s2@built)
+  expect_true(!is.null(s1@session) && !is.null(s2@session))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────

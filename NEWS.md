@@ -1,5 +1,41 @@
 # caugi (development version)
 
+## Breaking Changes
+
+- Removed `@name_index_map` property from `caugi` objects. Name-to-index lookups
+  are now handled internally by the Rust backend. This provides better
+  performance and eliminates redundant state synchronization.
+
+- The `@nodes` and `@edges` properties are now computed lazily from the Rust
+  session, rather than being stored in R. This means each access retrieves
+  fresh data from the canonical Rust representation. They still return `data.table` 
+  objects.
+
+- Removed the `.state` environment property. The `session` property is now stored
+  directly on the caugi S7 object. The `@simple` and `@graph_class` properties
+  are now computed from the session.
+
+## Internal Changes
+
+- Rust is now the single source of truth for graph state. All graph properties
+  (`simple`, `graph_class`, `nodes`, `edges`) are read directly from the Rust
+  session.
+
+- Added `graph_session_simple()` Rust function for lightweight access to the
+  declared `simple` flag without building the graph core.
+
+- Added `graph_session_index_of()` and `graph_session_indices_of()` Rust
+  functions for fast name-to-index lookups.
+
+- Removed `fastmap` dependency as it is no longer needed for name-index mapping.
+
+- Session is now always created, even for empty graphs (n = 0). This simplifies
+  property access since session is never NULL.
+
+- Added `all.equal` and `compare_proxy` methods for caugi objects to enable
+  proper object comparison in testthat (comparing graph content rather than
+  session pointer identity).
+
 # caugi 1.0.0
 
 ## New Features
