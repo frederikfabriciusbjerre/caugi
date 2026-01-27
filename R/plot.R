@@ -989,6 +989,12 @@ make_tiers <- function(
 #' @param title_style List of title styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
 #'     `fontfamily`, `cex`
+#' @param asp Numeric value for the y/x aspect ratio. If `NA` or `NULL` (default),
+#'   the aspect ratio is automatically determined to fill the available space.
+#'   Use `asp = 1` to ensure that one unit on the x-axis equals one unit on
+#'   the y-axis, which respects the layout coordinates. Values other than 1
+#'   will stretch the plot accordingly (e.g., `asp = 2` makes the y-axis
+#'   twice as tall as the x-axis for the same data range).
 #' @param outer_margin Grid unit specifying outer margin around the plot.
 #'   Default is `grid::unit(2, "mm")`.
 #' @param title_gap Grid unit specifying gap between title and graph.
@@ -1045,6 +1051,9 @@ make_tiers <- function(
 #'   title_style = list(fontsize = 18, col = "blue", fontface = "italic")
 #' )
 #'
+#' # Respect aspect ratio (1:1)
+#' plot(cg, asp = 1)
+#'
 #' @name plot
 #' @family plotting
 #' @concept plotting
@@ -1059,6 +1068,7 @@ S7::method(plot, caugi) <- function(
   tier_style = list(),
   main = NULL,
   title_style = list(),
+  asp = NA,
   outer_margin = grid::unit(2, "mm"),
   title_gap = grid::unit(1, "lines"),
   ...
@@ -1069,6 +1079,12 @@ S7::method(plot, caugi) <- function(
   if (!x@built) {
     x <- build(x)
   }
+
+  stopifnot(
+    is.null(asp) ||
+      is.na(asp) ||
+      isTRUE(is.numeric(asp) && length(asp) == 1 && asp > 0)
+  )
 
   dots <- list(...)
 
@@ -1278,6 +1294,27 @@ S7::method(plot, caugi) <- function(
     vp_y <- grid::unit(0.5, "npc")
     vp_width <- grid::unit(1, "npc") - max(grid::grobWidth(circle_grobs))
     vp_height <- grid::unit(1, "npc") - max(grid::grobHeight(circle_grobs))
+  }
+
+  # Apply aspect ratio if specified
+  if (!is.null(asp) && !is.na(asp) && is.numeric(asp) && asp > 0) {
+    # asp is y/x aspect ratio (same as base R)
+    # Calculate the data aspect ratio
+    data_width <- diff(x_range)
+    data_height <- diff(y_range)
+    data_asp <- data_height / data_width
+
+    # If asp is specified, we need to adjust the viewport dimensions
+    # to match the desired aspect ratio
+    if (data_asp > asp) {
+      # Data is taller than desired - constrain by height
+      # Keep vp_height, adjust vp_width
+      vp_width <- vp_height * (data_width / data_height) * asp
+    } else {
+      # Data is wider than desired - constrain by width
+      # Keep vp_width, adjust vp_height
+      vp_height <- vp_width * (data_height / data_width) / asp
+    }
   }
 
   # TODO: Find the actual node in each direction to size viewport better

@@ -603,3 +603,25 @@ test_that("plot.caugi renders disconnected components", {
   expect_s7_class(plot(cg, layout = "sugiyama"), caugi_plot)
   expect_s7_class(plot(cg, layout = "auto"), caugi_plot)
 })
+
+test_that("plot.caugi asp parameter works", {
+  cg <- caugi(A %-->% B + C, B %-->% D, class = "DAG")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # asp = NULL should work (automatic aspect ratio)
+  expect_s7_class(plot(cg, asp = NULL), caugi_plot)
+
+  # asp = NA should work (automatic aspect ratio)
+  expect_s7_class(plot(cg, asp = NA), caugi_plot)
+
+  # asp = 1 should work (equal aspect ratio)
+  expect_s7_class(plot(cg, asp = 1), caugi_plot)
+
+  # asp = 2 should work (y-axis twice as tall)
+  expect_s7_class(plot(cg, asp = 2), caugi_plot)
+
+  # asp = 0.5 should work (x-axis twice as wide)
+  expect_s7_class(plot(cg, asp = 0.5), caugi_plot)
+})
