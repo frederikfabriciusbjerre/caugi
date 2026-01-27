@@ -1617,6 +1617,16 @@ fn graph_session_is_simple(mut session: ExternalPtr<GraphSession>) -> bool {
     core.simple
 }
 
+/// Lightweight getter for the declared simple flag (no core build).
+///
+/// @param session A pointer to the GraphSession Rust object.
+/// @return Logical indicating if the graph is declared as simple.
+/// @keywords internal
+#[extendr]
+fn graph_session_simple(session: ExternalPtr<GraphSession>) -> bool {
+    session.as_ref().simple()
+}
+
 #[extendr]
 fn graph_session_class(session: ExternalPtr<GraphSession>) -> String {
     session.as_ref().class().as_str().to_string()
@@ -2322,6 +2332,7 @@ extendr_module! {
     fn graph_session_compute_bipartite_layout;
     fn graph_session_n;
     fn graph_session_is_simple;
+    fn graph_session_simple;
     fn graph_session_class;
     fn graph_session_graph_class;
     fn graph_session_names;

@@ -48,6 +48,13 @@ graph_session_n <- function(session) .Call(wrap__graph_session_n, session)
 
 graph_session_is_simple <- function(session) .Call(wrap__graph_session_is_simple, session)
 
+#' Lightweight getter for the declared simple flag (no core build).
+#'
+#' @param session A pointer to the GraphSession Rust object.
+#' @return Logical indicating if the graph is declared as simple.
+#' @keywords internal
+graph_session_simple <- function(session) .Call(wrap__graph_session_simple, session)
+
 graph_session_class <- function(session) .Call(wrap__graph_session_class, session)
 
 graph_session_graph_class <- function(session) .Call(wrap__graph_session_graph_class, session)

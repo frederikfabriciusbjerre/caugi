@@ -22,7 +22,7 @@ add/remove.}
 
 \item{action}{One of \code{"add"} or \code{"remove"}.}
 
-\item{inplace}{Logical, whether to modify the graph inplace or not.}
+\item{inplace}{Deprecated and ignored. Always returns a new caugi object.}
 }
 \value{
 The updated \code{caugi} object.

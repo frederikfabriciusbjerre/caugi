@@ -287,42 +287,47 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 #' @keywords internal
 .build_session <- function(node_names, edges_dt, simple, class, old_session = NULL) {
   n <- length(node_names)
-
-  if (n == 0L) {
-    return(list(session = NULL, class = class))
-  }
-
   reg <- caugi_registry()
-  id <- seq_len(n) - 1L
-  names(id) <- node_names
 
   # Resolve AUTO class if needed
   resolved_class <- class
-  if (class == "AUTO" && nrow(edges_dt) > 0L) {
-    b <- graph_builder_new(reg, n = n, simple = simple)
-    codes <- edge_registry_code_of(reg, edges_dt$edge)
-    graph_builder_add_edges(
-      b,
-      as.integer(unname(id[edges_dt$from])),
-      as.integer(unname(id[edges_dt$to])),
-      as.integer(codes)
-    )
-    resolved_class <- graph_builder_resolve_class(b, "AUTO")
+  if (n > 0L && nrow(edges_dt) > 0L) {
+    id <- seq_len(n) - 1L
+    names(id) <- node_names
+
+    if (class == "AUTO") {
+      b <- graph_builder_new(reg, n = n, simple = simple)
+      codes <- edge_registry_code_of(reg, edges_dt$edge)
+      graph_builder_add_edges(
+        b,
+        as.integer(unname(id[edges_dt$from])),
+        as.integer(unname(id[edges_dt$to])),
+        as.integer(codes)
+      )
+      resolved_class <- graph_builder_resolve_class(b, "AUTO")
+    }
+  } else if (class == "AUTO") {
+    # For empty graphs with AUTO, default to DAG
+    resolved_class <- "DAG"
   }
-  # If AUTO and no edges, keep as AUTO - will be resolved when edges are added
 
-  # Create new session (always new for simplicity in mutations)
+  # Always create a session (even for empty graphs)
   session <- graph_session_new(reg, n, simple, resolved_class)
-  graph_session_set_names(session, node_names)
 
-  if (nrow(edges_dt) > 0L) {
-    codes <- edge_registry_code_of(reg, edges_dt$edge)
-    graph_session_set_edges(
-      session,
-      as.integer(unname(id[edges_dt$from])),
-      as.integer(unname(id[edges_dt$to])),
-      as.integer(codes)
-    )
+  if (n > 0L) {
+    id <- seq_len(n) - 1L
+    names(id) <- node_names
+    graph_session_set_names(session, node_names)
+
+    if (nrow(edges_dt) > 0L) {
+      codes <- edge_registry_code_of(reg, edges_dt$edge)
+      graph_session_set_edges(
+        session,
+        as.integer(unname(id[edges_dt$from])),
+        as.integer(unname(id[edges_dt$to])),
+        as.integer(codes)
+      )
+    }
   }
 
   list(session = session, class = resolved_class)
@@ -339,7 +344,7 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 #' @param edges A `data.frame` with columns `from`, `edge`, `to` for edges to
 #' add/remove.
 #' @param action One of `"add"` or `"remove"`.
-#' @param inplace Logical, whether to modify the graph inplace or not.
+#' @param inplace Deprecated and ignored. Always returns a new caugi object.
 #'
 #' @importFrom data.table `%chin%`
 #'
@@ -354,16 +359,13 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   inplace = FALSE
 ) {
   action <- match.arg(action)
-  s <- cg@`.state`
+  session <- cg@session
 
-  # Get current state from Rust (or empty if no session)
-  if (!is.null(s$session)) {
-    current_nodes <- cg@nodes$name
-    current_edges <- cg@edges
-  } else {
-    current_nodes <- character(0)
-    current_edges <- .edge_constructor()
-  }
+  # Get current state from Rust session (session is always present)
+  current_nodes <- cg@nodes$name
+  current_edges <- cg@edges
+  current_simple <- graph_session_simple(session)
+  current_class <- graph_session_class(session)
 
   # Apply modifications
   if (identical(action, "add")) {
@@ -405,30 +407,15 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   use_class <- if (identical(action, "add") && !is.null(edges)) {
     "AUTO"
   } else {
-    s$class
+    current_class
   }
   result <- .build_session(
     node_names = current_nodes,
     edges_dt = current_edges,
-    simple = s$simple,
+    simple = current_simple,
     class = use_class,
-    old_session = s$session
+    old_session = session
   )
 
-  # Create new state
-  new_state <- .cg_state(
-    simple = s$simple,
-    class = result$class,
-    session = result$session
-  )
-
-  # Return new caugi or modify in place
-  if (inplace) {
-    # Update the state in place
-    s$session <- result$session
-    s$class <- result$class
-    cg
-  } else {
-    caugi(state = new_state)
-  }
+  caugi(.session = result$session)
 }

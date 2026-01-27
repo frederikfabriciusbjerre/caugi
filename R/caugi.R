@@ -43,8 +43,8 @@
 #' class based on the first match in the order of `"DAG"`, `"UG"`, `"PDAG"`,
 #' `"ADMG"`, and `"AG"`.
 #' It will default to `"UNKNOWN"` if no match is found.
-#' @param state For internal use. Build a graph by supplying a pre-constructed
-#' state environment.
+#' @param .session For internal use. Build a graph by supplying a pre-constructed
+#' session pointer from Rust.
 #'
 #' @returns A `caugi` S7 object containing the nodes, edges, and a
 #' pointer to the underlying Rust graph structure.
@@ -93,15 +93,11 @@ caugi <- S7::new_class(
   "caugi",
   parent = S7::S7_object,
   properties = list(
-    `.state` = S7::new_property(S7::class_environment),
+    session = S7::new_property(S7::class_any),
     nodes = S7::new_property(
       S7::class_any,
       getter = function(self) {
-        session <- self@`.state`$session
-        if (is.null(session)) {
-          return(.node_constructor())
-        }
-        .node_constructor(names = graph_session_names(session))
+        .node_constructor(names = graph_session_names(self@session))
       },
       setter = function(self, value) {
         stop(
@@ -114,11 +110,7 @@ caugi <- S7::new_class(
     edges = S7::new_property(
       S7::class_any,
       getter = function(self) {
-        session <- self@`.state`$session
-        if (is.null(session)) {
-          return(.edge_constructor())
-        }
-        .build_edges_from_session(session)
+        .build_edges_from_session(self@session)
       },
       setter = function(self, value) {
         stop(
@@ -130,11 +122,15 @@ caugi <- S7::new_class(
     ),
     simple = S7::new_property(
       S7::class_logical,
-      getter = function(self) self@`.state`$simple
+      getter = function(self) {
+        graph_session_simple(self@session)
+      }
     ),
     graph_class = S7::new_property(
       S7::class_character,
-      getter = function(self) self@`.state`$class,
+      getter = function(self) {
+        graph_session_class(self@session)
+      },
       setter = function(self, value) {
         stop(
           "`graph_class` property is read-only via @ <-. ",
@@ -142,35 +138,20 @@ caugi <- S7::new_class(
           call. = FALSE
         )
       }
-    ),
-    session = S7::new_property(
-      S7::class_any,
-      getter = function(self) {
-        return(self@`.state`$session)
-      },
-      setter = function(self, value) {
-        stop(
-          "`session` property is read-only via @ <-. ",
-          "It is managed internally by the Rust backend.",
-          call. = FALSE
-        )
-      }
     )
   ),
   validator = function(self) {
-    s <- self@`.state`
     # Allow simple = FALSE for UNKNOWN, ADMG, and AG (mixed edges can share pairs)
+    simple <- graph_session_simple(self@session)
+    class <- graph_session_class(self@session)
     if (
-      isFALSE(s$simple) &&
-        !identical(s$class, "UNKNOWN") &&
-        !identical(s$class, "ADMG") &&
-        !identical(s$class, "AG")
+      isFALSE(simple) &&
+        !identical(class, "UNKNOWN") &&
+        !identical(class, "ADMG") &&
+        !identical(class, "AG")
     ) {
       return("If simple = FALSE, class must be 'UNKNOWN', 'ADMG', or 'AG'")
     }
-
-    # session can be NULL for empty graphs - that's valid
-    # The session is the source of truth for node count
 
     NULL
   },
@@ -183,12 +164,12 @@ caugi <- S7::new_class(
     edges_df = NULL,
     simple = TRUE,
     class = c("AUTO", "DAG", "UG", "PDAG", "ADMG", "AG", "UNKNOWN"),
-    state = NULL
+    .session = NULL
   ) {
-    if (!is.null(state)) {
+    if (!is.null(.session)) {
       return(S7::new_object(
         caugi,
-        `.state` = state
+        session = .session
       ))
     }
     class <- toupper(class)
@@ -333,48 +314,45 @@ caugi <- S7::new_class(
 
     # Create GraphSession - the canonical Rust state
     # Session handles lazy compilation and caching internally
-    session <- NULL
-    if (n > 0L) {
+    # Always create a session, even for empty graphs (n = 0)
+    resolved_class <- class
+
+    if (n > 0L && nrow(edges) > 0L) {
       # Validate and resolve class using the builder (this ensures type safety)
       # The builder validates edge types and class compatibility
       b <- graph_builder_new(reg, n = n, simple = simple)
-      if (nrow(edges) > 0L) {
-        codes <- edge_registry_code_of(reg, edges$edge)
-        graph_builder_add_edges(
-          b,
-          as.integer(unname(id[edges$from])),
-          as.integer(unname(id[edges$to])),
-          as.integer(codes)
-        )
-      }
+      codes <- edge_registry_code_of(reg, edges$edge)
+      graph_builder_add_edges(
+        b,
+        as.integer(unname(id[edges$from])),
+        as.integer(unname(id[edges$to])),
+        as.integer(codes)
+      )
       # This validates that edges are compatible with the class
       resolved_class <- graph_builder_resolve_class(b, class)
-
-      # Now create session with the validated/resolved class
-      session <- graph_session_new(reg, n, simple, resolved_class)
-      graph_session_set_names(session, nodes$name)
-
-      if (nrow(edges) > 0L) {
-        graph_session_set_edges(
-          session,
-          as.integer(unname(id[edges$from])),
-          as.integer(unname(id[edges$to])),
-          as.integer(codes)
-        )
-      }
-
-      class <- resolved_class
+    } else if (class == "AUTO") {
+      # For empty graphs with AUTO, default to DAG
+      resolved_class <- "DAG"
     }
 
-    state <- .cg_state(
-      simple = simple,
-      class = class,
-      session = session
-    )
+    # Now create session with the validated/resolved class
+    session <- graph_session_new(reg, n, simple, resolved_class)
+    if (n > 0L) {
+      graph_session_set_names(session, nodes$name)
+    }
+
+    if (n > 0L && nrow(edges) > 0L) {
+      graph_session_set_edges(
+        session,
+        as.integer(unname(id[edges$from])),
+        as.integer(unname(id[edges$to])),
+        as.integer(codes)
+      )
+    }
 
     S7::new_object(
       caugi,
-      `.state` = state
+      session = session
     )
   }
 )
@@ -414,38 +392,7 @@ caugi <- S7::new_class(
   # Ensure session has the correct names
   graph_session_set_names(session, node_names)
 
-  simple <- graph_session_is_simple(session)
-  class <- graph_session_graph_class(session)
-
-  state <- .cg_state(
-    simple = simple,
-    class = class,
-    session = session
-  )
-  caugi(state = state)
-}
-
-#' @title Create the state environment for a `caugi` (internal)
-#'
-#' @description Internal function to create the state environment for a
-#' `caugi`. This function is not intended to be used directly by users.
-#'
-#' @param simple Logical; whether the graph is simple
-#' (no parallel edges or self-loops).
-#' @param class Character; one of `"UNKNOWN"`, `"DAG"`, `"UG"`, `"PDAG"`,
-#' `"ADMG"`, or `"AG"`.
-#' @param session A pointer to the GraphSession Rust object. This is the
-#' canonical Rust state that handles lazy compilation and caching.
-#'
-#' @returns An environment containing the graph state.
-#'
-#' @keywords internal
-.cg_state <- function(simple, class, session) {
-  e <- new.env(parent = emptyenv())
-  e$simple <- isTRUE(simple)
-  e$class <- class
-  e$session <- session
-  e
+  caugi(.session = session)
 }
 
 #' @title Build edges data.table from session

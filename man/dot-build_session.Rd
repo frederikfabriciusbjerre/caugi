@@ -18,7 +18,7 @@
 \item{old_session}{Optional existing session for copy-on-write.}
 }
 \value{
-A new GraphSession pointer.
+A list with \code{session} (GraphSession pointer) and \code{class} (resolved class string).
 }
 \description{
 Internal helper to create or update a GraphSession with

@@ -55,13 +55,13 @@ impl GraphClass {
 
     pub fn as_str(&self) -> &'static str {
         match self {
-            GraphClass::Dag => "dag",
-            GraphClass::Pdag => "pdag",
-            GraphClass::Ug => "ug",
-            GraphClass::Admg => "admg",
-            GraphClass::Ag => "ag",
-            GraphClass::Unknown => "unknown",
-            GraphClass::Auto => "auto",
+            GraphClass::Dag => "DAG",
+            GraphClass::Pdag => "PDAG",
+            GraphClass::Ug => "UG",
+            GraphClass::Admg => "ADMG",
+            GraphClass::Ag => "AG",
+            GraphClass::Unknown => "UNKNOWN",
+            GraphClass::Auto => "AUTO",
         }
     }
 }
@@ -688,6 +688,11 @@ impl GraphSession {
     /// Get current graph class.
     pub fn class(&self) -> GraphClass {
         self.graph_class
+    }
+
+    /// Get whether the graph is declared as simple (no parallel edges or self-loops).
+    pub fn simple(&self) -> bool {
+        self.simple
     }
 
     /// Get current node names.
