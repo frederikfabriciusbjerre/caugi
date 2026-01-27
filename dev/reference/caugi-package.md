@@ -26,3 +26,5 @@ Authors:
 
 - Michael Sachs <sachsmc@gmail.com>
   ([ORCID](https://orcid.org/0000-0002-1279-8676))
+
+- Bjarke Hautop Kristensen <bjarke.hautop@gmail.com>
