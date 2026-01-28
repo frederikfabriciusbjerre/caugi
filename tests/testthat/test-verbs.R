@@ -482,3 +482,48 @@ test_that(".update_caugi add/remove paths and validations", {
     "include at least `from` and `to`."
   )
 })
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────── Additional Coverage ──────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("build() rejects extra arguments", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    build(cg, extra_arg = TRUE),
+    "does not take any arguments other than"
+  )
+})
+
+test_that("remove_edges errors when cg is not simple and edge is NULL", {
+  cg <- caugi(
+    A %-->% B,
+    A %<->% B,
+    class = "ADMG",
+    simple = FALSE
+  )
+  expect_error(
+    remove_edges(cg, from = "A", to = "B"),
+    "When removing edges without specifying `edge`, `cg` must be simple"
+  )
+})
+
+test_that("remove_edges errors when from/to missing with NULL edge", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    remove_edges(cg, from = "A"),
+    "`from` and `to` must be supplied when `edge` is omitted"
+  )
+  expect_error(
+    remove_edges(cg, to = "B"),
+    "`from` and `to` must be supplied when `edge` is omitted"
+  )
+})
+
+test_that("remove_edges errors when from/to have different lengths", {
+  cg <- caugi(A %-->% B + C, class = "DAG")
+  expect_error(
+    remove_edges(cg, from = c("A", "A"), to = "B"),
+    "`from` and `to` must be equal length"
+  )
+})
