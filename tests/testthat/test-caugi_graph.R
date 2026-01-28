@@ -788,3 +788,76 @@ test_that("UG graph length returns number of nodes", {
   cg_empty <- caugi(class = "UG")
   expect_equal(length(cg_empty), 0)
 })
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────── Property Setters ─────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("nodes property setter is read-only", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    cg@nodes <- data.frame(name = c("X", "Y")),
+    "nodes is read-only"
+  )
+})
+
+test_that("edges property setter is read-only", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    cg@edges <- data.frame(from = "X", to = "Y", edge = "-->"),
+    "edges.*is read-only"
+  )
+})
+
+test_that("ptr property setter is read-only", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    cg@ptr <- NULL,
+    "ptr.*is read-only"
+  )
+})
+
+test_that("built property setter is read-only", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    cg@built <- TRUE,
+    "built.*is read-only"
+  )
+})
+
+test_that("graph_class property setter is read-only", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    cg@graph_class <- "PDAG",
+    "graph_class.*is read-only"
+  )
+})
+
+test_that("name_index_map property setter is read-only", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    cg@name_index_map <- list(),
+    "name_index_map.*is read-only"
+  )
+})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────── Validation ──────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("validator catches simple=FALSE for non-ADMG/AG classes", {
+  expect_error(
+    caugi(A %-->% B, class = "DAG", simple = FALSE),
+    "If simple = FALSE, class must be"
+  )
+  expect_error(
+    caugi(A %-->% B, class = "PDAG", simple = FALSE),
+    "If simple = FALSE, class must be"
+  )
+})
+
+test_that("ADMG and AG allow simple=FALSE", {
+  expect_s7_class(caugi(A %-->% B, class = "ADMG", simple = FALSE), caugi)
+  expect_s7_class(caugi(A %-->% B, class = "AG", simple = FALSE), caugi)
+  expect_s7_class(caugi(A %-->% B, class = "UNKNOWN", simple = FALSE), caugi)
+})
