@@ -2,6 +2,12 @@
 
 ## caugi (development version)
 
+- Add `asp` parameter to
+  [`plot()`](https://caugi.org/dev/reference/plot.md) for controlling
+  aspect ratio. When `asp = 1`, the plot respects equal units on both
+  axes, preserving the layout coordinates. Works like base R’s `asp`
+  parameter (y/x aspect ratio).
+
 ## caugi 1.0.0
 
 CRAN release: 2026-01-22
