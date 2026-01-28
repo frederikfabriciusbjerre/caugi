@@ -1,5 +1,5 @@
 ---
-applyTo: "src/rust/src/graph/layout/**, R/plot.R, vignettes/visualization.Rmd, tests/testthat/test-*layout*.R"
+applyTo: "src/rust/src/graph/layout/**, R/layout.R, R/plot-*.R, vignettes/visualization.Rmd, tests/testthat/test-*layout*.R"
 ---
 
 # Layout Algorithm Instructions
@@ -24,6 +24,7 @@ applyTo: "src/rust/src/graph/layout/**, R/plot.R, vignettes/visualization.Rmd, t
 - **Fruchterman-Reingold**: General, fast, PCA rotated (`force_directed.rs`)
 - **Kamada-Kawai**: Stress minimization, PCA rotated (`kamada_kawai.rs`)
 - **Bipartite**: Two-group, auto-detects partition, rows/columns (`bipartite.rs`)
+- **Tiered**: Multi-tier, custom tier assignments, rows/columns (`tiered.rs`)
 
 ## Adding a New Layout
 
@@ -31,9 +32,9 @@ applyTo: "src/rust/src/graph/layout/**, R/plot.R, vignettes/visualization.Rmd, t
 
 **2. Register** (`mod.rs`): Add module, enum variant, FromStr impl, dispatch in `compute_layout()`
 
-**3. R Function** (`R/plot.R`): `caugi_layout_your_layout()` → calls Rust → data.frame(name, x, y)
+**3. R Function** (`R/layout.R`): `caugi_layout_your_layout()` → calls Rust → data.frame(name, x, y)
 
-**4. Dispatcher** (`R/plot.R`): Add to `caugi_layout()` method choices and switch
+**4. Dispatcher** (`R/layout.R`): Add to `caugi_layout()` method choices and switch
 
 **5. Tests** (`tests/testthat/`): Validate structure, [0,1] range, max=1.0, determinism, plot() integration
 
@@ -48,7 +49,7 @@ applyTo: "src/rust/src/graph/layout/**, R/plot.R, vignettes/visualization.Rmd, t
 - ✓ Deterministic (repeated calls identical)
 - ✓ Edge cases: empty graph, single node
 - ✓ Works with plot() as string and function
-- See `test-bipartite-layout.R` for examples
+- See `test-bipartite-layout.R` and `test-tiered-layout.R` for examples
 
 ## Common Pitfalls
 
