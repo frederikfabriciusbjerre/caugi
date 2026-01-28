@@ -625,3 +625,177 @@ test_that("plot.caugi asp parameter works", {
   # asp = 0.5 should work (x-axis twice as wide)
   expect_s7_class(plot(cg, asp = 0.5), caugi_plot)
 })
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────── Tiered plotting ──────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("plot with tiers as data.frame works", {
+  cg <- caugi(
+    A %-->% B + C,
+    B %-->% D,
+    C %-->% D,
+    class = "DAG"
+  )
+
+  tiers_df <- data.frame(
+    name = c("A", "B", "C", "D"),
+    tier = c(1, 2, 2, 3)
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(plot(cg, tiers = tiers_df), caugi_plot)
+})
+
+test_that("plot with tiers orientation='columns' works", {
+  cg <- caugi(
+    A %-->% B + C,
+    B %-->% D,
+    C %-->% D,
+    class = "DAG"
+  )
+
+  tiers_list <- list(
+    tier1 = "A",
+    tier2 = c("B", "C"),
+    tier3 = "D"
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(
+    plot(cg, tiers = tiers_list, orientation = "columns"),
+    caugi_plot
+  )
+})
+
+test_that("plot with tier_style and label_style works", {
+  cg <- caugi(
+    A %-->% B + C,
+    B %-->% D,
+    C %-->% D,
+    class = "DAG"
+  )
+
+  tiers_list <- list(
+    tier1 = "A",
+    tier2 = c("B", "C"),
+    tier3 = "D"
+  )
+
+  tier_style <- list(
+    global = list(
+      labels = c("Input", "Middle", "Output"),
+      label_style = list(col = "red", fontsize = 12)
+    ),
+    by_tier = list(
+      tier1 = list(
+        label_style = list(col = "blue", fontsize = 14)
+      )
+    )
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(
+    plot(
+      cg,
+      tiers = tiers_list,
+      tier_style = tier_style
+    ),
+    caugi_plot
+  )
+})
+
+test_that("plot with tiers orientation='rows' and labels works", {
+  cg <- caugi(
+    A %-->% B + C,
+    B %-->% D,
+    C %-->% D,
+    class = "DAG"
+  )
+
+  tiers_list <- list(
+    tier1 = "A",
+    tier2 = c("B", "C"),
+    tier3 = "D"
+  )
+
+  tier_style <- list(
+    global = list(
+      labels = c("Input", "Middle", "Output")
+    )
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(
+    plot(
+      cg,
+      tiers = tiers_list,
+      orientation = "rows",
+      tier_style = tier_style
+    ),
+    caugi_plot
+  )
+})
+
+test_that("plot nodes without labels uses nullGrob", {
+  cg <- caugi(
+    A %-->% B,
+    class = "DAG"
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Plot without node labels
+  p <- plot(cg, node_style = list(label = FALSE))
+  expect_s7_class(p, caugi_plot)
+})
+
+test_that("plot renders o-> edge circles at tail", {
+  cg <- caugi(A %o->% B, class = "UNKNOWN")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Test with custom circle size
+  p <- plot(cg, edge_style = list(partial = list(circle_size = 3)))
+  expect_s7_class(p, caugi_plot)
+})
+
+test_that("plot renders o-o edge circles at both ends", {
+  cg <- caugi(A %o-o% B, class = "UNKNOWN")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Test that circles render at both ends
+  p <- plot(cg)
+  expect_s7_class(p, caugi_plot)
+
+  # Test with custom circle size
+  p2 <- plot(cg, edge_style = list(partial = list(circle_size = 2)))
+  expect_s7_class(p2, caugi_plot)
+})
+
+test_that("plot handles self-loop edges for circle rendering", {
+  # Create a graph with a self-loop (zero-length edge case)
+  cg <- caugi(
+    A %o->% A,
+    class = "UNKNOWN",
+    simple = FALSE
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # This should trigger the zero-length edge path
+  expect_s7_class(plot(cg), caugi_plot)
+})

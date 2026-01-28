@@ -134,3 +134,33 @@ test_that("write_mermaid accepts direction", {
 
   unlink(tmp)
 })
+
+test_that("to_mermaid handles unsupported edge types", {
+  # o-o edges are not explicitly supported by mermaid format
+  # Should default to directed edge
+  cg <- caugi(
+    A %o-o% B,
+    class = "UNKNOWN"
+  )
+
+  mmd <- to_mermaid(cg)
+  mmd_str <- as.character(mmd)
+
+  # Should use default directed arrow for unsupported edge type
+  expect_match(mmd_str, "A --> B", fixed = TRUE)
+})
+
+test_that("to_mermaid handles --o edge type", {
+  # --o edges are not explicitly supported
+  # Should default to directed edge
+  cg <- caugi(
+    A %--o% B,
+    class = "UNKNOWN"
+  )
+
+  mmd <- to_mermaid(cg)
+  mmd_str <- as.character(mmd)
+
+  # Should use default directed arrow for unsupported edge type
+  expect_match(mmd_str, "A --> B", fixed = TRUE)
+})
