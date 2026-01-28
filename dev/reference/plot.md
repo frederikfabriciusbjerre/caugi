@@ -105,7 +105,7 @@ viewports for proper coordinate handling.
   - Local overrides via `by_tier`: a named list (using tier names from
     `tiers` argument) or indexed list for per-tier customization, e.g.
     `by_tier = list(exposures = list(fill = "lightblue"), outcome = list(fill = "yellow"))`
-    or `by_tier = list(`1` = list(fill = "lightblue"))`
+    or `by_tier = list("1" = list(fill = "lightblue"))`
 
 - main:
 
@@ -121,12 +121,12 @@ viewports for proper coordinate handling.
 
 - asp:
 
-  Numeric value for the y/x aspect ratio. If `NA` (default), the aspect
-  ratio is automatically determined to fill the available space. Use
-  `asp = 1` to ensure that one unit on the x-axis equals one unit on the
-  y-axis, which respects the layout coordinates. Values other than 1
-  will stretch the plot accordingly (e.g., `asp = 2` makes the y-axis
-  twice as tall as the x-axis for the same data range).
+  Numeric value for the y/x aspect ratio. If `NA` or `NULL` (default),
+  the aspect ratio is automatically determined to fill the available
+  space. Use `asp = 1` to ensure that one unit on the x-axis equals one
+  unit on the y-axis, which respects the layout coordinates. Values
+  other than 1 will stretch the plot accordingly (e.g., `asp = 2` makes
+  the y-axis twice as tall as the x-axis for the same data range).
 
 - outer_margin:
 

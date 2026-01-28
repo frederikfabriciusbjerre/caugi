@@ -48,7 +48,7 @@ cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
 cg@built # FALSE
 #> [1] FALSE
 build(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x561944a854b0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x5617231c2f70>
 #>   graph_class: PDAG
 #>   nodes: A, B
 #>   edges: A-->B
