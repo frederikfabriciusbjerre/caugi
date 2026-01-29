@@ -244,7 +244,8 @@ S7::method(plot, caugi) <- function(
       )
     }
 
-    coords <- layout
+    graph_nodes <- nodes(x)[["name"]]
+    coords <- layout[match(graph_nodes, layout$name), , drop = FALSE]
 
     # Extract tier information from layout if present
     if ("tier" %in% names(layout) && is.null(dots$tiers)) {
