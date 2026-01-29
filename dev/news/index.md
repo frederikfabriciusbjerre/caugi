@@ -8,6 +8,13 @@
   axes, preserving the layout coordinates. Works like base R’s `asp`
   parameter (y/x aspect ratio).
 
+### Bug Fixes
+
+- Fixed a bug causing
+  [`plot()`](https://caugi.org/dev/reference/plot.md) to use incorrect
+  layout if node names were not in the same order as in the graph
+  object.
+
 ## caugi 1.0.0
 
 CRAN release: 2026-01-22
