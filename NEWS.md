@@ -3,6 +3,11 @@
 - Add `asp` parameter to `plot()` for controlling aspect ratio. When `asp = 1`,
   the plot respects equal units on both axes, preserving the layout
   coordinates. Works like base R's `asp` parameter (y/x aspect ratio).
+  
+## Bug Fixes
+
+- Fixed a bug causing `plot()` to use incorrect layout if node names were not
+  in the same order as in the graph object.
 
 # caugi 1.0.0
 
