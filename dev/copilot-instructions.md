@@ -174,6 +174,10 @@ the user-facing API.
 - `rust-sugiyama = "0.4.0"` - Sugiyama layout algorithm for graph
   visualization
 - `fdg-sim = "0.9.1"` - Force-directed graph simulation for layout
+- `serde = "1.0"` - Serialization framework
+- `serde_json = "1.0"` - JSON serialization
+- `quick-xml = "0.39"` - XML serialization
+- `rustc-hash = "2.1"` - Fast hash functions
 - `gadjid` (optional, default enabled) - For adjustment identification
   distance
 
@@ -248,6 +252,9 @@ plot(
 - `"sugiyama"`: Hierarchical layout for DAGs (directed edges only)
 - `"fruchterman-reingold"`: Fast force-directed layout (all edge types)
 - `"kamada-kawai"`: High-quality stress minimization (all edge types)
+- `"bipartite"`: Two-group layout with auto-detection or explicit
+  partition
+- `"tiered"`: Multi-tier layout with custom tier assignments
 
 ### Testing pattern
 
