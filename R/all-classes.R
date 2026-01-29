@@ -89,3 +89,24 @@ S7::method(
 ) {
   knitr::asis_output(paste0("```{", x@format, "}\n", x@content, "\n```\n"))
 }
+
+#' S7 Class for caugi Plot
+#'
+#' An S7 object that wraps a grid gTree for displaying caugi graphs.
+#' Similar to ggplot objects, these are created by the plot method but
+#' not drawn until explicitly printed or plotted. This allows for
+#' returning plot objects from functions and controlling when/where
+#' they are displayed.
+#'
+#' @param grob A grid gTree representing the graph plot.
+#'
+#' @family plotting
+#' @concept plotting
+#'
+#' @export
+caugi_plot <- S7::new_class(
+  "caugi_plot",
+  properties = list(
+    grob = S7::class_any
+  )
+)
