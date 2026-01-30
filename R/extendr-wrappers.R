@@ -38,11 +38,11 @@ undirected_of_ptr <- function(g, idxs) .Call(wrap__undirected_of_ptr, g, idxs)
 
 neighbors_of_ptr <- function(g, idxs, mode) .Call(wrap__neighbors_of_ptr, g, idxs, mode)
 
-ancestors_of_ptr <- function(g, idxs) .Call(wrap__ancestors_of_ptr, g, idxs)
+ancestors_of_ptr <- function(g, idxs, open) .Call(wrap__ancestors_of_ptr, g, idxs, open)
 
-descendants_of_ptr <- function(g, idxs) .Call(wrap__descendants_of_ptr, g, idxs)
+descendants_of_ptr <- function(g, idxs, open) .Call(wrap__descendants_of_ptr, g, idxs, open)
 
-anteriors_of_ptr <- function(g, idxs) .Call(wrap__anteriors_of_ptr, g, idxs)
+anteriors_of_ptr <- function(g, idxs, open) .Call(wrap__anteriors_of_ptr, g, idxs, open)
 
 markov_blanket_of_ptr <- function(g, idxs) .Call(wrap__markov_blanket_of_ptr, g, idxs)
 

@@ -882,6 +882,9 @@ neighbours <- neighbors
 #' @param nodes A vector of node names, a vector of unquoted
 #' node names, or an expression combining these with `+` and `c()`.
 #' @param index A vector of node indexes.
+#' @param graph_definition Character; either `"open"` or `"closed"`. Determines
+#'   how the graph is interpreted when retrieving ancestors. If `NULL` (default),
+#'   the value is taken from the global `caugi_options("graph_definition")`.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -893,6 +896,7 @@ neighbours <- neighbors
 #'   class = "DAG"
 #' )
 #' ancestors(cg, "A") # NULL
+#' ancestors(cg, "A", graph_definition = "closed") # A
 #' ancestors(cg, index = 2) # "A"
 #' ancestors(cg, "B") # "A"
 #' ancestors(cg, c("B", "C"))
@@ -906,9 +910,19 @@ neighbours <- neighbors
 #' @concept queries
 #'
 #' @export
-ancestors <- function(cg, nodes = NULL, index = NULL) {
+ancestors <- function(cg, nodes = NULL, index = NULL, graph_definition = NULL) {
+  if (is.null(graph_definition)) {
+    graph_def <- caugi_options("graph_definition")[[1L]]
+  } else {
+    graph_def <- graph_definition
+  }
+
+  graph_def <- match.arg(graph_def, c("open", "closed"))
+  open <- graph_def == "open"
+
   nodes_supplied <- !missing(nodes)
   index_supplied <- !missing(index) && !is.null(index)
+
   if (nodes_supplied && index_supplied) {
     stop("Supply either `nodes` or `index`, not both.", call. = FALSE)
   }
@@ -918,7 +932,7 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
   if (index_supplied) {
     return(.getter_output(
       cg,
-      ancestors_of_ptr(cg@ptr, as.integer(index - 1L)),
+      ancestors_of_ptr(cg@ptr, as.integer(index - 1L), open = open),
       cg@nodes$name[index]
     ))
   }
@@ -940,7 +954,11 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
     )
   )
 
-  .getter_output(cg, ancestors_of_ptr(cg@ptr, as.integer(index)), nodes)
+  .getter_output(
+    cg,
+    ancestors_of_ptr(cg@ptr, as.integer(index), open = open),
+    nodes
+  )
 }
 
 #' @title Get descendants of nodes in a `caugi`
@@ -949,6 +967,9 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
 #' @param nodes A vector of node names, a vector of unquoted
 #' node names, or an expression combining these with `+` and `c()`.
 #' @param index A vector of node indexes.
+#' @param graph_definition Character; either `"open"` or `"closed"`. Determines
+#'   how the graph is interpreted when retrieving descendants. If `NULL` (default),
+#'   the value is taken from the global `caugi_options("graph_definition")`.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -960,6 +981,7 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
 #'   class = "DAG"
 #' )
 #' descendants(cg, "A") # "B" "C"
+#' descendants(cg, "A", graph_definition = "closed") # "A" "B" "C"
 #' descendants(cg, index = 2) # "C"
 #' descendants(cg, "B") # "C"
 #' descendants(cg, c("B", "C"))
@@ -973,7 +995,21 @@ ancestors <- function(cg, nodes = NULL, index = NULL) {
 #' @concept queries
 #'
 #' @export
-descendants <- function(cg, nodes = NULL, index = NULL) {
+descendants <- function(
+  cg,
+  nodes = NULL,
+  index = NULL,
+  graph_definition = NULL
+) {
+  if (is.null(graph_definition)) {
+    graph_def <- caugi_options("graph_definition")[[1L]]
+  } else {
+    graph_def <- graph_definition
+  }
+
+  graph_def <- match.arg(graph_def, c("open", "closed"))
+  open <- graph_def == "open"
+
   nodes_supplied <- !missing(nodes)
   index_supplied <- !missing(index) && !is.null(index)
   if (nodes_supplied && index_supplied) {
@@ -985,7 +1021,7 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
   if (index_supplied) {
     return(.getter_output(
       cg,
-      descendants_of_ptr(cg@ptr, as.integer(index - 1L)),
+      descendants_of_ptr(cg@ptr, as.integer(index - 1L), open = open),
       cg@nodes$name[index]
     ))
   }
@@ -1007,7 +1043,11 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
     )
   )
 
-  .getter_output(cg, descendants_of_ptr(cg@ptr, as.integer(index)), nodes)
+  .getter_output(
+    cg,
+    descendants_of_ptr(cg@ptr, as.integer(index), open = open),
+    nodes
+  )
 }
 
 #' @title Get anteriors of nodes in a `caugi`
@@ -1025,6 +1065,9 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
 #' @param nodes A vector of node names, a vector of unquoted
 #' node names, or an expression combining these with `+` and `c()`.
 #' @param index A vector of node indexes.
+#' @param graph_definition Character; either `"open"` or `"closed"`. Determines
+#'   how the graph is interpreted when retrieving anteriors. If `NULL` (default),
+#'   the value is taken from the global `caugi_options("graph_definition")`.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -1037,6 +1080,7 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
 #'   class = "PDAG"
 #' )
 #' anteriors(cg, "A") # NULL (no anteriors)
+#' anteriors(cg, "A", graph_definition = "closed") # A
 #' anteriors(cg, "C") # A, B
 #' anteriors(cg, "D") # A, B, C
 #'
@@ -1055,7 +1099,16 @@ descendants <- function(cg, nodes = NULL, index = NULL) {
 #' @concept queries
 #'
 #' @export
-anteriors <- function(cg, nodes = NULL, index = NULL) {
+anteriors <- function(cg, nodes = NULL, index = NULL, graph_definition = NULL) {
+  if (is.null(graph_definition)) {
+    graph_def <- caugi_options("graph_definition")[[1L]]
+  } else {
+    graph_def <- graph_definition
+  }
+
+  graph_def <- match.arg(graph_def, c("open", "closed"))
+  open <- graph_def == "open"
+
   nodes_supplied <- !missing(nodes)
   index_supplied <- !missing(index) && !is.null(index)
   if (nodes_supplied && index_supplied) {
@@ -1067,7 +1120,7 @@ anteriors <- function(cg, nodes = NULL, index = NULL) {
   if (index_supplied) {
     return(.getter_output(
       cg,
-      anteriors_of_ptr(cg@ptr, as.integer(index - 1L)),
+      anteriors_of_ptr(cg@ptr, as.integer(index - 1L), open = open),
       cg@nodes$name[index]
     ))
   }
@@ -1089,7 +1142,11 @@ anteriors <- function(cg, nodes = NULL, index = NULL) {
     )
   )
 
-  .getter_output(cg, anteriors_of_ptr(cg@ptr, as.integer(index)), nodes)
+  .getter_output(
+    cg,
+    anteriors_of_ptr(cg@ptr, as.integer(index), open = open),
+    nodes
+  )
 }
 
 #' @title Get Markov blanket of nodes in a `caugi`

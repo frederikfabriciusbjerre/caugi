@@ -4,7 +4,7 @@
 \alias{anteriors}
 \title{Get anteriors of nodes in a \code{caugi}}
 \usage{
-anteriors(cg, nodes = NULL, index = NULL)
+anteriors(cg, nodes = NULL, index = NULL, graph_definition = NULL)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class DAG or PDAG.}
@@ -13,6 +13,10 @@ anteriors(cg, nodes = NULL, index = NULL)
 node names, or an expression combining these with \code{+} and \code{c()}.}
 
 \item{index}{A vector of node indexes.}
+
+\item{graph_definition}{Character; either \code{"open"} or \code{"closed"}. Determines
+how the graph is interpreted when retrieving anteriors. If \code{NULL} (default),
+the value is taken from the global \code{caugi_options("graph_definition")}.}
 }
 \value{
 Either a character vector of node names (if a single node is
@@ -35,6 +39,7 @@ cg <- caugi(
   class = "PDAG"
 )
 anteriors(cg, "A") # NULL (no anteriors)
+anteriors(cg, "A", graph_definition = "closed") # A
 anteriors(cg, "C") # A, B
 anteriors(cg, "D") # A, B, C
 

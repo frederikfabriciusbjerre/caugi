@@ -21,6 +21,8 @@
 #' caugi_options(caugi_default_options())
 caugi_default_options <- function() {
   list(
+    graph_definition = "open",
+
     plot = list(
       spacing = grid::unit(1, "lines"),
       node_style = list(
