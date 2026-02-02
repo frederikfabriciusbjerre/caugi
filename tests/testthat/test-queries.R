@@ -868,3 +868,19 @@ test_that("anteriors returns list for multiple nodes", {
   expect_null(result$A)
   expect_equal(sort(result$D), c("A", "B", "C"))
 })
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ────────────────────────────── Closed graph definition tests ─────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("graph_definition closed works", {
+  cg <- caugi(
+    A %-->% B %---% C,
+    B %-->% D,
+    class = "PDAG"
+  )
+  expect_equal(anteriors(cg, "A", graph_definition = "closed"), "A")
+  expect_equal(ancestors(cg, "A", graph_definition = "closed"), "A")
+  descendants_closed <- descendants(cg, "A", graph_definition = "closed")
+  expect_equal(sort(descendants_closed), c("A", "B", "D"))
+})
