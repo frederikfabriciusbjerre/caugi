@@ -85,6 +85,7 @@ Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other operations:
+<code><a href="dag_from_pdag.html">dag_from_pdag()</a></code>,
 <code><a href="exogenize.html">exogenize()</a></code>,
 <code><a href="latent_project.html">latent_project()</a></code>,
 <code><a href="moralize.html">moralize()</a></code>,
@@ -102,12 +103,12 @@ Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">condition_marginalize</span><span class="op">(</span><span class="va">mg</span>, marg_vars <span class="op">=</span> <span class="st">"U"</span><span class="op">)</span> <span class="co"># ADMG</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 4 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x5558a50f6290&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 4 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x556243d848d0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: AG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, X, Y</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: A--&gt;X, B--&gt;Y, X&lt;-&gt;Y</span>
 <span class="r-in"><span><span class="fu">condition_marginalize</span><span class="op">(</span><span class="va">mg</span>, cond_vars <span class="op">=</span> <span class="st">"U"</span><span class="op">)</span> <span class="co"># DAG</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 4 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x5558a4bfcca0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 4 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x5562430b5a50&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: AG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, X, Y</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: A--&gt;X, B--&gt;Y</span>

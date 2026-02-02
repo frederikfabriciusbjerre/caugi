@@ -209,6 +209,9 @@
 - [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md)
   : Marginalize and/or condition on variables in an ancestral graph (AG)
 
+- [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
+  : Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
+
 - [`exogenize()`](https://caugi.org/dev/reference/exogenize.md) :
   Exogenize a graph
 

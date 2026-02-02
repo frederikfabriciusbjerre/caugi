@@ -42,10 +42,11 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="caugi-development-version">caugi (development version)<a class="anchor" aria-label="anchor" href="#caugi-development-version"></a></h2>
-<ul><li>Add <code>asp</code> parameter to <code><a href="../reference/plot.html">plot()</a></code> for controlling aspect ratio. When <code>asp = 1</code>, the plot respects equal units on both axes, preserving the layout coordinates. Works like base R’s <code>asp</code> parameter (y/x aspect ratio).</li>
+<ul><li><p>Add <code>asp</code> parameter to <code><a href="../reference/plot.html">plot()</a></code> for controlling aspect ratio. When <code>asp = 1</code>, the plot respects equal units on both axes, preserving the layout coordinates. Works like base R’s <code>asp</code> parameter (y/x aspect ratio) (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/195" class="external-link">#195</a>).</p></li>
+<li><p>Add <code>pdag_to_dag()</code> function that generates a random DAG consistent with a given CPDAG/PDAG structure if possible (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/201" class="external-link">#201</a>).</p></li>
 </ul><div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li>Fixed a bug causing <code><a href="../reference/plot.html">plot()</a></code> to use incorrect layout if node names were not in the same order as in the graph object.</li>
+<ul><li>Fixed a bug causing <code><a href="../reference/plot.html">plot()</a></code> to use incorrect layout if node names were not in the same order as in the graph object (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/198" class="external-link">#198</a>).</li>
 </ul></div>
 </div>
     <div class="section level2">

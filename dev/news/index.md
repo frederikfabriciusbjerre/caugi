@@ -6,14 +6,19 @@
   [`plot()`](https://caugi.org/dev/reference/plot.md) for controlling
   aspect ratio. When `asp = 1`, the plot respects equal units on both
   axes, preserving the layout coordinates. Works like base R’s `asp`
-  parameter (y/x aspect ratio).
+  parameter (y/x aspect ratio)
+  ([\#195](https://github.com/frederikfabriciusbjerre/caugi/issues/195)).
+
+- Add `pdag_to_dag()` function that generates a random DAG consistent
+  with a given CPDAG/PDAG structure if possible
+  ([\#201](https://github.com/frederikfabriciusbjerre/caugi/issues/201)).
 
 ### Bug Fixes
 
 - Fixed a bug causing
   [`plot()`](https://caugi.org/dev/reference/plot.md) to use incorrect
-  layout if node names were not in the same order as in the graph
-  object.
+  layout if node names were not in the same order as in the graph object
+  ([\#198](https://github.com/frederikfabriciusbjerre/caugi/issues/198)).
 
 ## caugi 1.0.0
 
