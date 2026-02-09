@@ -19,8 +19,6 @@
 #' "ADMG" is for Acyclic Directed Mixed Graphs (with `-->` and `<->` edges).
 #' @param simple logical. If `TRUE` (default) the graph will be simple
 #' (no multiple edges or self-loops).
-#' @param build logical. If `TRUE` (default) build the graph now, otherwise
-#' build lazily on first query or when using [build()].
 #' @param collapse logical. If `TRUE` collapse mutual directed edges to
 #' undirected edges. Default is `FALSE`.
 #' @param collapse_to Character string to use as the edge glyph when collapsing.
@@ -102,7 +100,6 @@ as_caugi <- S7::new_generic(
     x,
     class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
     simple = TRUE,
-    build = TRUE,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -118,7 +115,6 @@ S7::method(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -143,7 +139,6 @@ S7::method(
       to = character(),
       nodes = nm,
       simple = isTRUE(simple),
-      build = isTRUE(build),
       class = class
     ))
   }
@@ -193,7 +188,6 @@ S7::method(
     to = to,
     nodes = nm,
     simple = isTRUE(simple),
-    build = isTRUE(build),
     class = class
   )
 }
@@ -206,7 +200,6 @@ register_graphnel_s4_class <- function() {
     x,
     class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
     simple = TRUE,
-    build = TRUE,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -240,7 +233,6 @@ register_graphnel_s4_class <- function() {
         to = character(),
         nodes = nm,
         simple = isTRUE(simple),
-        build = isTRUE(build),
         class = class
       ))
     }
@@ -272,7 +264,6 @@ register_graphnel_s4_class <- function() {
       to = to,
       nodes = nm,
       simple = isTRUE(simple),
-      build = isTRUE(build),
       class = class
     )
   }
@@ -285,7 +276,6 @@ S7::method(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -427,7 +417,6 @@ S7::method(
         to = character(),
         nodes = nm,
         simple = isTRUE(simple),
-        build = isTRUE(build),
         class = class
       ))
     }
@@ -466,7 +455,6 @@ S7::method(
     to = to,
     nodes = nm,
     simple = isTRUE(simple),
-    build = isTRUE(build),
     class = class
   )
 }
@@ -478,7 +466,6 @@ S7::method(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -499,7 +486,6 @@ S7::method(
     x,
     class = class,
     simple = simple,
-    build = build,
     collapse = collapse,
     collapse_to = collapse_to,
     ...
@@ -513,7 +499,6 @@ S7::method(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -530,7 +515,6 @@ S7::method(
     x,
     class = class,
     simple = simple,
-    build = build,
     collapse = collapse,
     collapse_to = collapse_to,
     ...
@@ -545,7 +529,6 @@ register_matrix_s4_class <- function() {
     x,
     class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
     simple = TRUE,
-    build = TRUE,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -556,7 +539,6 @@ register_matrix_s4_class <- function() {
       m,
       class = class,
       simple = simple,
-      build = build,
       collapse = collapse,
       collapse_to = collapse_to,
       ...
@@ -571,7 +553,6 @@ S7::method(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -584,7 +565,6 @@ S7::method(
     tidygraph::as.igraph(x),
     class = class,
     simple = simple,
-    build = build,
     collapse = collapse,
     collapse_to = collapse_to,
     ...
@@ -598,7 +578,6 @@ S7::method(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -618,7 +597,6 @@ S7::method(
       to = character(),
       nodes = nm,
       simple = isTRUE(simple),
-      build = isTRUE(build),
       class = if (class == "PAG") "UNKNOWN" else class
     ))
   }
@@ -697,7 +675,6 @@ S7::method(
     to = to,
     nodes = nm,
     simple = isTRUE(simple),
-    build = isTRUE(build),
     class = class
   )
 }
@@ -709,7 +686,6 @@ S7::method(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -730,7 +706,6 @@ S7::method(
       to = character(),
       nodes = nm,
       simple = isTRUE(simple),
-      build = isTRUE(build),
       class = class
     ))
   }
@@ -769,7 +744,6 @@ S7::method(
     to = to,
     nodes = nm,
     simple = isTRUE(simple),
-    build = isTRUE(build),
     class = class
   )
 }

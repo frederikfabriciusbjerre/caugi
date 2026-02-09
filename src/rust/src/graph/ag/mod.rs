@@ -14,8 +14,9 @@
 mod msep;
 
 use super::error::AgError;
+use super::packed::{PackedBuckets, PackedBucketsBuilder};
 use super::CaugiGraph;
-use crate::edges::{EdgeClass, Mark};
+use crate::edges::EdgeClass;
 use crate::graph::alg::bitset;
 use crate::graph::alg::directed_part_is_acyclic;
 use crate::graph::alg::traversal;
@@ -24,12 +25,8 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub struct Ag {
     core: Arc<CaugiGraph>,
-    /// len = n+1; prefix sums for neighborhood slices
-    node_edge_ranges: Arc<[usize]>,
-    /// len = n; (parents, undirected, spouses, children) counts per node
-    node_deg: Arc<[(u32, u32, u32, u32)]>,
     /// packed as [parents | undirected | spouses | children] for each node
-    neighborhoods: Arc<[u32]>,
+    packed: PackedBuckets<4>,
 }
 
 impl Ag {
@@ -60,38 +57,32 @@ impl Ag {
             return Err(AgError::DirectedCycle);
         }
 
-        // Count (parents, undirected, spouses, children) per node
-        // side[k] stores position: 0 = tail position, 1 = head position.
-        // To determine parent/child, check if my mark is Arrow.
-        let mut deg: Vec<(u32, u32, u32, u32)> = vec![(0, 0, 0, 0); n];
+        let mut packed_builder: PackedBucketsBuilder<4> = PackedBucketsBuilder::new(n);
 
+        // Count (parents, undirected, spouses, children) per node using mark helpers.
+        // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
         // Track which nodes have undirected edges and which have arrowhead edges
         let mut has_undirected = vec![false; n];
         let mut has_arrowhead = vec![false; n];
 
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
-                        } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            deg[i].0 += 1; // parent (Arrow points INTO me)
+                        if core.is_incoming_arrow(k) {
+                            packed_builder.inc_degree(i, 0);
                             has_arrowhead[i] = true;
                         } else {
-                            deg[i].3 += 1; // child (Arrow points FROM me)
+                            packed_builder.inc_degree(i, 3);
                         }
                     }
                     EdgeClass::Undirected => {
-                        deg[i].1 += 1; // undirected neighbor
+                        packed_builder.inc_degree(i, 1);
                         has_undirected[i] = true;
                     }
                     EdgeClass::Bidirected => {
-                        deg[i].2 += 1; // spouse
+                        packed_builder.inc_degree(i, 2);
                         has_arrowhead[i] = true;
                     }
                     _ => {
@@ -110,86 +101,37 @@ impl Ag {
             }
         }
 
-        // Prefix sums for row slices into `neighborhoods`
-        let mut node_edge_ranges = Vec::with_capacity(n + 1);
-        node_edge_ranges.push(0usize);
-        for i in 0..n {
-            let (pa, und, sp, ch) = deg[i];
-            let last = *node_edge_ranges.last().unwrap();
-            node_edge_ranges.push(last + (pa + und + sp + ch) as usize);
-        }
-        let total = *node_edge_ranges.last().unwrap();
-        let mut neigh = vec![0u32; total];
+        packed_builder.finalize_degrees();
 
-        // Bucket bases for scatter
-        let mut parent_base: Vec<usize> = vec![0; n];
-        let mut und_base: Vec<usize> = vec![0; n];
-        let mut spouse_base: Vec<usize> = vec![0; n];
-        let mut child_base: Vec<usize> = vec![0; n];
-        for i in 0..n {
-            let start = node_edge_ranges[i];
-            let (pa, und, sp, _) = deg[i];
-            parent_base[i] = start;
-            und_base[i] = start + pa as usize;
-            spouse_base[i] = und_base[i] + und as usize;
-            child_base[i] = spouse_base[i] + sp as usize;
-        }
-        let mut pcur = parent_base.clone();
-        let mut ucur = und_base.clone();
-        let mut scur = spouse_base.clone();
-        let mut ccur = child_base.clone();
-
-        // Scatter pass
+        // Scatter pass using mark helpers
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
+                        if core.is_incoming_arrow(k) {
+                            packed_builder.scatter(i, 0, core.col_index[k]);
                         } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            let p = pcur[i];
-                            neigh[p] = core.col_index[k];
-                            pcur[i] += 1;
-                        } else {
-                            let p = ccur[i];
-                            neigh[p] = core.col_index[k];
-                            ccur[i] += 1;
+                            packed_builder.scatter(i, 3, core.col_index[k]);
                         }
                     }
                     EdgeClass::Undirected => {
-                        let p = ucur[i];
-                        neigh[p] = core.col_index[k];
-                        ucur[i] += 1;
+                        packed_builder.scatter(i, 1, core.col_index[k]);
                     }
                     EdgeClass::Bidirected => {
-                        let p = scur[i];
-                        neigh[p] = core.col_index[k];
-                        scur[i] += 1;
+                        packed_builder.scatter(i, 2, core.col_index[k]);
                     }
                     _ => unreachable!("Should have errored on invalid edges earlier"),
                 }
             }
-            // Sort each segment for determinism and binary search
-            let s = node_edge_ranges[i];
-            let um = und_base[i];
-            let sm = spouse_base[i];
-            let cm = child_base[i];
-            let e = node_edge_ranges[i + 1];
-            neigh[s..um].sort_unstable();
-            neigh[um..sm].sort_unstable();
-            neigh[sm..cm].sort_unstable();
-            neigh[cm..e].sort_unstable();
         }
+
+        packed_builder.sort_all();
+        let packed = packed_builder.build();
 
         let ag = Self {
             core,
-            node_edge_ranges: node_edge_ranges.into(),
-            node_deg: deg.into(),
-            neighborhoods: neigh.into(),
+            packed,
         };
 
         // Check anterior constraint: for each edge with arrowhead at v from u,
@@ -252,56 +194,34 @@ impl Ag {
         self.core.n()
     }
 
-    /// Returns (row_start, und_end, spouse_end, children_start) for node `i`.
-    #[inline]
-    fn bounds(&self, i: u32) -> (usize, usize, usize, usize, usize) {
-        let i = i as usize;
-        let s = self.node_edge_ranges[i];
-        let e = self.node_edge_ranges[i + 1];
-        let (pa, und, sp, ch) = self.node_deg[i];
-        let pm = s + pa as usize;
-        let um = pm + und as usize;
-        let sm = um + sp as usize;
-        let cs = e - ch as usize;
-        (s, pm, um, sm, cs)
-    }
-
     /// Sorted slice of parents of `i` (nodes with directed edge into `i`).
     #[inline]
     pub fn parents_of(&self, i: u32) -> &[u32] {
-        let (s, pm, _, _, _) = self.bounds(i);
-        &self.neighborhoods[s..pm]
+        self.packed.bucket_slice(i, 0)
     }
 
     /// Sorted slice of children of `i` (nodes with directed edge from `i`).
     #[inline]
     pub fn children_of(&self, i: u32) -> &[u32] {
-        let (_, _, _, _, cs) = self.bounds(i);
-        let e = self.node_edge_ranges[i as usize + 1];
-        &self.neighborhoods[cs..e]
+        self.packed.bucket_slice(i, 3)
     }
 
     /// Sorted slice of undirected neighbors of `i`.
     #[inline]
     pub fn undirected_of(&self, i: u32) -> &[u32] {
-        let (_, pm, um, _, _) = self.bounds(i);
-        &self.neighborhoods[pm..um]
+        self.packed.bucket_slice(i, 1)
     }
 
     /// Sorted slice of spouses of `i` (nodes connected via bidirected edge).
     #[inline]
     pub fn spouses_of(&self, i: u32) -> &[u32] {
-        let (_, _, um, sm, _) = self.bounds(i);
-        &self.neighborhoods[um..sm]
+        self.packed.bucket_slice(i, 2)
     }
 
     /// All neighbors of `i`: [parents | undirected | spouses | children].
     #[inline]
     pub fn neighbors_of(&self, i: u32) -> &[u32] {
-        let i = i as usize;
-        let s = self.node_edge_ranges[i];
-        let e = self.node_edge_ranges[i + 1];
-        &self.neighborhoods[s..e]
+        self.packed.all_neighbors(i)
     }
 
     /// All ancestors of `i` via directed edges, returned in ascending order.

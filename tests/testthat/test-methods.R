@@ -56,26 +56,10 @@ test_that("print method with many edges shows truncation", {
   expect_true(any(grepl("edges more", output, fixed = TRUE)))
 })
 
-test_that("print method shows built status", {
-  cg <- caugi(A %-->% B, class = "DAG")
-  cg_built <- build(cg)
-  output_built <- capture.output(print(cg_built))
-  expect_true(any(grepl("built: TRUE", output_built, fixed = TRUE)))
-})
-
 test_that("print method shows simple status", {
   cg <- caugi(A %-->% B, class = "DAG")
   output <- capture.output(print(cg))
   expect_true(any(grepl("simple: TRUE", output, fixed = TRUE)))
-})
-
-test_that("print method shows pointer", {
-  cg <- caugi(A %-->% B, class = "DAG")
-  cg_built <- build(cg)
-  output <- capture.output(print(cg_built))
-
-  # Should show a pointer address for built graphs
-  expect_true(any(grepl("ptr=", output, fixed = TRUE)))
 })
 
 test_that("print method returns object invisibly", {

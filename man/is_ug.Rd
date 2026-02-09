@@ -51,6 +51,7 @@ Other queries:
 \code{\link{is_empty_caugi}()},
 \code{\link{is_mag}()},
 \code{\link{is_pdag}()},
+\code{\link{is_simple}()},
 \code{\link{m_separated}()},
 \code{\link{markov_blanket}()},
 \code{\link{neighbors}()},

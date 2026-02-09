@@ -94,10 +94,7 @@ test_that("serialization handles empty graphs", {
   on.exit(unlink(tmp))
 
   write_caugi(cg, tmp)
-  expect_warning(
-    cg2 <- read_caugi(tmp),
-    "No edges or nodes provided"
-  )
+  cg2 <- read_caugi(tmp)
 
   expect_equal(nrow(cg@nodes), nrow(cg2@nodes))
   expect_equal(nrow(edges(cg)), 0)
@@ -133,18 +130,16 @@ test_that("write_caugi with comments and tags", {
   expect_equal(parsed$meta$tags, "experiment")
 })
 
-test_that("read_caugi with lazy = TRUE defers building", {
+test_that("read_caugi creates graph with session", {
   cg <- caugi(A %-->% B + C, class = "DAG")
 
   tmp <- tempfile(fileext = ".caugi.json")
   on.exit(unlink(tmp))
 
   write_caugi(cg, tmp)
-  cg2 <- read_caugi(tmp, lazy = TRUE)
+  cg2 <- read_caugi(tmp)
 
-  expect_false(cg2@built)
-  cg2 <- build(cg2)
-  expect_true(cg2@built)
+  expect_true(!is.null(cg2@session))
 })
 
 test_that("deserialization validates edge types", {
@@ -258,15 +253,6 @@ test_that("read_caugi validates inputs", {
   tmp <- tempfile(fileext = ".caugi.json")
   on.exit(unlink(tmp))
   write_caugi(caugi(A %-->% B, class = "DAG"), tmp)
-
-  expect_error(
-    read_caugi(tmp, lazy = "yes"),
-    "`lazy` must be a single logical value"
-  )
-  expect_error(
-    read_caugi(tmp, lazy = c(TRUE, FALSE)),
-    "`lazy` must be a single logical value"
-  )
 })
 
 test_that("caugi_serialize validates inputs", {
@@ -295,25 +281,16 @@ test_that("caugi_deserialize validates inputs", {
     caugi_deserialize(c("a", "b")),
     "`json` must be a single character string"
   )
-  expect_error(
-    caugi_deserialize("{}", lazy = "yes"),
-    "`lazy` must be a single logical value"
-  )
-  expect_error(
-    caugi_deserialize("{}", lazy = c(TRUE, FALSE)),
-    "`lazy` must be a single logical value"
-  )
 })
 
-test_that("caugi_deserialize handles empty graphs with lazy = TRUE", {
+test_that("caugi_deserialize handles empty graphs", {
   cg <- caugi(nodes = c("A", "B"), class = "DAG")
   json <- caugi_serialize(cg)
 
-  # With lazy=TRUE, no warning (not built yet)
-  cg2 <- caugi_deserialize(json, lazy = TRUE)
+  cg2 <- caugi_deserialize(json)
 
   expect_true(is_caugi(cg2))
-  expect_false(cg2@built)
+  expect_true(!is.null(cg2@session))
   expect_equal(nrow(cg2@nodes), 2)
 })
 

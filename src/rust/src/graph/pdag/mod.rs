@@ -5,8 +5,9 @@ mod cpdag;
 mod transforms;
 
 use super::error::PdagError;
+use super::packed::{PackedBuckets, PackedBucketsBuilder};
 use super::CaugiGraph;
-use crate::edges::{EdgeClass, Mark};
+use crate::edges::EdgeClass;
 use crate::graph::alg::directed_part_is_acyclic;
 use crate::graph::alg::traversal;
 use std::sync::Arc;
@@ -14,12 +15,8 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub struct Pdag {
     core: Arc<CaugiGraph>,
-    /// len = n+1
-    node_edge_ranges: Arc<[usize]>,
-    /// len = n; (parents, undirected, children)
-    node_deg: Arc<[(u32, u32, u32)]>,
     /// packed as [parents | undirected | children]
-    neighborhoods: Arc<[u32]>,
+    packed: PackedBuckets<3>,
 }
 
 impl Pdag {
@@ -36,27 +33,21 @@ impl Pdag {
         if !directed_part_is_acyclic(&core) {
             return Err(PdagError::DirectedCycle);
         }
-        // side[k] stores position: 0 = tail position, 1 = head position.
-        // To determine parent/child, check if my mark is Arrow.
-        let mut deg: Vec<(u32, u32, u32)> = vec![(0, 0, 0); n];
+        let mut packed_builder: PackedBucketsBuilder<3> = PackedBucketsBuilder::new(n);
+        // Count degrees using mark helpers.
+        // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
         for i in 0..n {
-            let r = core.row_range(i as u32);
-            for k in r.clone() {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+            for k in core.row_range(i as u32) {
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
+                        if core.is_incoming_arrow(k) {
+                            packed_builder.inc_degree(i, 0);
                         } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            deg[i].0 += 1 // parent
-                        } else {
-                            deg[i].2 += 1 // child
+                            packed_builder.inc_degree(i, 2);
                         }
                     }
-                    EdgeClass::Undirected => deg[i].1 += 1,
+                    EdgeClass::Undirected => packed_builder.inc_degree(i, 1),
                     _ => {
                         return Err(PdagError::InvalidEdgeType {
                             found: spec.glyph.clone(),
@@ -65,78 +56,33 @@ impl Pdag {
                 }
             }
         }
-        let mut node_edge_ranges = Vec::with_capacity(n + 1);
-        node_edge_ranges.push(0usize);
-        for i in 0..n {
-            let (pa, u, ch) = deg[i];
-            let last = *node_edge_ranges.last().unwrap();
-            node_edge_ranges.push(last + (pa + u + ch) as usize);
-        }
-        let total = *node_edge_ranges.last().unwrap();
-        let mut neigh = vec![0u32; total];
-
-        // bucket bases
-        let mut parent_base: Vec<usize> = vec![0; n];
-        let mut und_base: Vec<usize> = vec![0; n];
-        let mut child_base: Vec<usize> = vec![0; n];
-        for i in 0..n {
-            let start = node_edge_ranges[i];
-            let (pa, u, _) = deg[i];
-            parent_base[i] = start;
-            und_base[i] = start + pa as usize;
-            child_base[i] = und_base[i] + u as usize;
-        }
-        let mut pcur = parent_base.clone();
-        let mut ucur = und_base.clone();
-        let mut ccur = child_base.clone();
+        packed_builder.finalize_degrees();
 
         for i in 0..n {
-            let r = core.row_range(i as u32);
-            for k in r.clone() {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+            for k in core.row_range(i as u32) {
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
+                        if core.is_incoming_arrow(k) {
+                            packed_builder.scatter(i, 0, core.col_index[k]);
                         } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            let p = pcur[i];
-                            neigh[p] = core.col_index[k];
-                            pcur[i] += 1;
-                        } else {
-                            let p = ccur[i];
-                            neigh[p] = core.col_index[k];
-                            ccur[i] += 1;
+                            packed_builder.scatter(i, 2, core.col_index[k]);
                         }
                     }
                     EdgeClass::Undirected => {
-                        let p = ucur[i];
-                        neigh[p] = core.col_index[k];
-                        ucur[i] += 1;
+                        packed_builder.scatter(i, 1, core.col_index[k]);
                     }
                     _ => {
                         unreachable!("Should have errored on partial/bidirected edges earlier");
                     }
                 }
             }
-            // determinism
-            let s = node_edge_ranges[i];
-            let pm = und_base[i];
-            let um = child_base[i];
-            let e = node_edge_ranges[i + 1];
-            neigh[s..pm].sort_unstable();
-            neigh[pm..um].sort_unstable();
-            neigh[um..e].sort_unstable();
         }
 
-        Ok(Self {
-            core,
-            node_edge_ranges: node_edge_ranges.into(),
-            node_deg: deg.into(),
-            neighborhoods: neigh.into(),
-        })
+        packed_builder.sort_all();
+        let packed = packed_builder.build();
+
+        Ok(Self { core, packed })
     }
 
     #[inline]
@@ -145,42 +91,23 @@ impl Pdag {
     }
 
     #[inline]
-    fn bounds(&self, i: u32) -> (usize, usize, usize, usize) {
-        let i = i as usize;
-        let s = self.node_edge_ranges[i];
-        let e = self.node_edge_ranges[i + 1];
-        let (pa, u, ch) = self.node_deg[i];
-        let pm = s + pa as usize;
-        let um = pm + u as usize;
-        let cs = e - ch as usize;
-        (s, pm, um, cs)
-    }
-
-    #[inline]
     pub fn parents_of(&self, i: u32) -> &[u32] {
-        let (s, pm, _, _) = self.bounds(i);
-        &self.neighborhoods[s..pm]
+        self.packed.bucket_slice(i, 0)
     }
 
     #[inline]
     pub fn children_of(&self, i: u32) -> &[u32] {
-        let (_, _, _, cs) = self.bounds(i);
-        let e = self.node_edge_ranges[i as usize + 1];
-        &self.neighborhoods[cs..e]
+        self.packed.bucket_slice(i, 2)
     }
 
     #[inline]
     pub fn undirected_of(&self, i: u32) -> &[u32] {
-        let (_, pm, um, _) = self.bounds(i);
-        &self.neighborhoods[pm..um]
+        self.packed.bucket_slice(i, 1)
     }
 
     #[inline]
     pub fn neighbors_of(&self, i: u32) -> &[u32] {
-        let i = i as usize;
-        let s = self.node_edge_ranges[i];
-        let e = self.node_edge_ranges[i + 1];
-        &self.neighborhoods[s..e]
+        self.packed.all_neighbors(i)
     }
 
     #[inline]

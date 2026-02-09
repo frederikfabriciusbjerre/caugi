@@ -217,8 +217,9 @@ test_that("building DAG with cycle results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "DAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %-->% A) |> build()
+    cg |> add_edge(B %-->% A)
   )
 })
 
@@ -236,8 +237,9 @@ test_that("building PDAG with directed cycle results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "PDAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %-->% A) |> build()
+    cg |> add_edge(B %-->% A)
   )
 })
 
@@ -257,8 +259,9 @@ test_that("building PDAG with bidirected edges results in error", {
     )
   )
   cg <- caugi(A %-->% B, class = "PDAG")
+  # Validation now happens at add_edge time
   expect_error(
-    cg |> add_edge(B %o->% C) |> build()
+    cg |> add_edge(B %o->% C)
   )
 })
 
@@ -465,10 +468,34 @@ test_that("caugi errors with trailing commas", {
   )
 })
 
-test_that("caugi warns when build = TRUE for empty graph", {
-  expect_warning(
-    caugi(build = TRUE),
-    "No edges or nodes provided; graph will not be built."
+test_that("caugi accepts build parameter for backward compatibility", {
+  cg <- expect_warning(
+    caugi(A %-->% B, build = FALSE),
+    "`build` is deprecated"
+  )
+  expect_true(!is.null(cg@session))
+  cg2 <- expect_warning(
+    caugi(A %-->% B, build = TRUE),
+    "`build` is deprecated"
+  )
+  expect_true(!is.null(cg2@session))
+})
+
+test_that("caugi accepts state parameter for backward compatibility", {
+  state <- new.env(parent = emptyenv())
+  state$nodes <- data.table::data.table(name = c("X", "Y"))
+  state$edges <- data.table::data.table(from = "X", edge = "-->", to = "Y")
+  state$simple <- TRUE
+  state$class <- "DAG"
+
+  cg <- expect_warning(
+    caugi(A %-->% B, state = state),
+    "`state` is deprecated"
+  )
+  expect_equal(cg@nodes$name, c("A", "B"))
+  expect_equal(
+    cg@edges,
+    data.table::data.table(from = "A", edge = "-->", to = "B")
   )
 })
 
@@ -578,41 +605,43 @@ test_that("edges df input is not a data.frame or data.table", {
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ────────────────────────────── .view_to_caugi ────────────────────────────────
+# ────────────────────────────── .session_to_caugi ─────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that(".view_to_caugi works as expected", {
+test_that(".session_to_caugi works as expected", {
   cg <- caugi(
     A %-->% B,
     B %---% C,
     C %<->% D
   )
 
-  cg2 <- .view_to_caugi(cg@ptr)
+  cg2 <- .session_to_caugi(cg@session)
   expect_s7_class(cg2, caugi)
-  expect_equal(cg, cg2)
+  expect_equal(cg@nodes, cg2@nodes)
+  expect_equal(cg@simple, cg2@simple)
 })
 
-test_that(".view_to_caugi fails on NULL ptr", {
+test_that(".session_to_caugi fails on NULL session", {
   expect_error(
-    .view_to_caugi(NULL),
-    "ptr is NULL"
+    .session_to_caugi(NULL),
+    "session is NULL"
   )
 })
 
-test_that(".view_to_caugi fails on faulty node_names", {
+test_that(".session_to_caugi fails on faulty node_names", {
   cg <- caugi(
     A %-->% B
   )
   expect_error(
-    .view_to_caugi(cg@ptr, node_names = c("A")),
+    .session_to_caugi(cg@session, node_names = c("A")),
     "length"
   )
 })
 
-test_that(".view_to_caugi works for empty cg", {
-  cg <- caugi(A, B, build = TRUE)
-  expect_equal(cg, .view_to_caugi(cg@ptr))
+test_that(".session_to_caugi works for empty cg", {
+  cg <- caugi(A, B)
+  cg2 <- .session_to_caugi(cg@session)
+  expect_equal(cg@nodes, cg2@nodes)
 })
 
 
@@ -809,19 +838,11 @@ test_that("edges property setter is read-only", {
   )
 })
 
-test_that("ptr property setter is read-only", {
+test_that("session property setter is read-only", {
   cg <- caugi(A %-->% B, class = "DAG")
   expect_error(
-    cg@ptr <- NULL,
-    "ptr.*is read-only"
-  )
-})
-
-test_that("built property setter is read-only", {
-  cg <- caugi(A %-->% B, class = "DAG")
-  expect_error(
-    cg@built <- TRUE,
-    "built.*is read-only"
+    cg@session <- NULL,
+    "session is read-only"
   )
 })
 
@@ -833,11 +854,44 @@ test_that("graph_class property setter is read-only", {
   )
 })
 
-test_that("name_index_map property setter is read-only", {
+test_that("deprecated property getters warn and return NULL", {
   cg <- caugi(A %-->% B, class = "DAG")
-  expect_error(
-    cg@name_index_map <- list(),
-    "name_index_map.*is read-only"
+
+  expect_warning(cg@ptr, "`@ptr` is deprecated")
+  ptr <- suppressWarnings(cg@ptr)
+  expect_null(ptr)
+
+  expect_warning(cg@built, "`@built` is deprecated")
+  built <- suppressWarnings(cg@built)
+  expect_null(built)
+
+  expect_warning(cg@name_index_map, "`@name_index_map` is deprecated")
+  idx_map <- suppressWarnings(cg@name_index_map)
+  expect_null(idx_map)
+
+  expect_warning(cg@.state, "`@.state` is deprecated")
+  st <- suppressWarnings(cg@.state)
+  expect_null(st)
+})
+
+test_that("deprecated property setters warn then error", {
+  cg <- caugi(A %-->% B, class = "DAG")
+
+  expect_warning(
+    expect_error(cg@ptr <- NULL, "read-only"),
+    "`@ptr` is deprecated"
+  )
+  expect_warning(
+    expect_error(cg@built <- TRUE, "read-only"),
+    "`@built` is deprecated"
+  )
+  expect_warning(
+    expect_error(cg@name_index_map <- integer(), "read-only"),
+    "`@name_index_map` is deprecated"
+  )
+  expect_warning(
+    expect_error(cg@.state <- new.env(parent = emptyenv()), "read-only"),
+    "`@.state` is deprecated"
   )
 })
 

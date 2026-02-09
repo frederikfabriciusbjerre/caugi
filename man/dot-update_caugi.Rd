@@ -28,7 +28,8 @@ add/remove.}
 The updated \code{caugi} object.
 }
 \description{
-Internal helper to add or remove nodes/edges and mark graph as
-not built.
+Internal helper to add or remove nodes/edges. Rust is the
+source of truth - we get current state from Rust, modify it, and build
+a new session.
 }
 \keyword{internal}

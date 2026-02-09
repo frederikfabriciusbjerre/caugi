@@ -80,9 +80,6 @@ to_dot <- function(
   is_caugi(x, throw_error = TRUE)
 
   # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
 
   nodes_df <- nodes(x)
   edges_df <- edges(x)

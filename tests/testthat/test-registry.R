@@ -134,12 +134,30 @@ test_that("reverse edge, <--, behaves correctly, when initalized in a cg", {
   reset_caugi_registry()
   register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
   cg <- caugi(A %-->% B, B %<--% C, class = "DAG")
-  expect_identical(parents_of_ptr(cg@ptr, 0L), list(integer(0)))
-  expect_identical(children_of_ptr(cg@ptr, 0L), list(1L))
-  expect_identical(parents_of_ptr(cg@ptr, 1L), list(c(0L, 2L)))
-  expect_identical(children_of_ptr(cg@ptr, 1L), list(integer(0)))
-  expect_identical(parents_of_ptr(cg@ptr, 2L), list(integer(0)))
-  expect_identical(children_of_ptr(cg@ptr, 2L), list(1L))
+  expect_identical(
+    rs_parents_of(cg@session, 0L),
+    list(integer(0))
+  )
+  expect_identical(
+    rs_children_of(cg@session, 0L),
+    list(1L)
+  )
+  expect_identical(
+    rs_parents_of(cg@session, 1L),
+    list(c(0L, 2L))
+  )
+  expect_identical(
+    rs_children_of(cg@session, 1L),
+    list(integer(0))
+  )
+  expect_identical(
+    rs_parents_of(cg@session, 2L),
+    list(integer(0))
+  )
+  expect_identical(
+    rs_children_of(cg@session, 2L),
+    list(1L)
+  )
 
   reset_caugi_registry()
 })

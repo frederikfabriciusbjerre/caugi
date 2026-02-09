@@ -2,40 +2,23 @@
 % Please edit documentation in R/verbs.R
 \name{build}
 \alias{build}
-\title{Build the graph now}
+\title{Build the \code{caugi} graph}
 \usage{
-build(cg, ...)
+build(cg)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
-
-\item{...}{Not used.}
 }
 \value{
-The built \code{caugi} object.
+The input \code{caugi} object (invisibly), with its graph built.
 }
 \description{
-If a \code{caugi} has been modified (nodes or edges added or
-removed), it is marked as \emph{not built}, i.e \code{cg@built = FALSE}.
-This function builds the graph using the Rust backend and updates the
-internal pointer to the graph. If the graph is already built, it is returned.
+Forces lazy compilation of the \code{caugi} graph
+without running a specific query. Useful to pre-initialize the graph.
 }
 \examples{
-# initialize empty graph and build slowly
-cg <- caugi(class = "PDAG")
-
-cg <- cg |>
-  add_nodes(c("A", "B", "C", "D", "E")) |> # A, B, C, D, E
-  add_edges(A \%-->\% B \%-->\% C) |> # A --> B --> C, D, E
-  set_edges(B \%---\% C) # A --> B --- C, D, E
-
-cg <- remove_edges(cg, B \%---\% C) |> # A --> B, C, D, E
-  remove_nodes(c("C", "D", "E")) # A --> B
-
-# verbs do not build the Rust backend
-cg@built # FALSE
-build(cg)
-cg@built # TRUE
+cg <- caugi(A \%-->\% B, class = "DAG")
+build(cg) # initialize graph without querying
 
 }
 \seealso{

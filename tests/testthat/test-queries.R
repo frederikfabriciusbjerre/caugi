@@ -35,17 +35,74 @@ test_that("is_acyclic forces check when requested", {
   expect_true(is_acyclic(cg, force_check = TRUE))
 })
 
+test_that("is_simple reflects declared state and force_check path", {
+  cg_simple <- caugi(A %-->% B, class = "DAG")
+  expect_true(is_simple(cg_simple))
+  expect_true(is_simple(cg_simple, force_check = TRUE))
+
+  cg_nonsimple <- caugi(
+    A %-->% B,
+    A %<->% B,
+    class = "UNKNOWN",
+    simple = FALSE
+  )
+  expect_false(is_simple(cg_nonsimple))
+  expect_false(is_simple(cg_nonsimple, force_check = TRUE))
+})
+
 test_that("query builds", {
   cg <- caugi(A %-->% B, B %-->% C, C %---% D, class = "PDAG")
-  expect_true(cg@built)
+  expect_true(!is.null(cg@session))
 
   cg <- cg |> add_edges(D %-->% E)
-  expect_false(cg@built)
+  expect_true(!is.null(cg@session))
 
   expect_true(is_acyclic(cg))
 
   # now it should be build
-  expect_true(cg@built)
+  expect_true(!is.null(cg@session))
+})
+
+test_that("build initializes session without querying", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  state_before <- rs_is_valid(cg@session)
+  expect_true(state_before$core_valid)
+  expect_false(state_before$view_valid)
+
+  expect_invisible(build(cg))
+
+  state_after <- rs_is_valid(cg@session)
+  expect_true(state_after$core_valid)
+  expect_true(state_after$view_valid)
+
+  # Build should not change graph content
+  expect_setequal(nodes(cg)$name, c("A", "B", "C"))
+  expect_equal(nrow(edges(cg)), 2L)
+})
+
+test_that("build is idempotent and survives updates", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  build(cg)
+  state_built <- rs_is_valid(cg@session)
+  expect_true(state_built$core_valid)
+  expect_true(state_built$view_valid)
+
+  # idempotent
+  build(cg)
+  state_built2 <- rs_is_valid(cg@session)
+  expect_true(state_built2$core_valid)
+  expect_true(state_built2$view_valid)
+
+  # updating invalidates session; build again should restore
+  cg <- add_edges(cg, B %-->% C)
+  state_after_update <- rs_is_valid(cg@session)
+  expect_true(state_after_update$core_valid)
+  expect_false(state_after_update$view_valid)
+
+  build(cg)
+  state_rebuilt <- rs_is_valid(cg@session)
+  expect_true(state_rebuilt$core_valid)
+  expect_true(state_rebuilt$view_valid)
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -243,9 +300,9 @@ test_that("aliases route correctly", {
 test_that("public getters trigger lazy build", {
   cg <- caugi(A %-->% B, B %-->% C, class = "PDAG")
   cg <- cg |> add_edges(C %---% D)
-  expect_false(cg@built)
+  expect_true(!is.null(cg@session))
   parents(cg, "B")
-  expect_true(cg@built)
+  expect_true(!is.null(cg@session))
 })
 
 test_that("nodes and edges getters work", {
@@ -382,9 +439,9 @@ test_that("getter queries builds", {
     markov_blanket
   )
   for (getter in getter_queries) {
-    cg <- caugi(A %-->% B, B %-->% C, class = "DAG", build = FALSE)
+    cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
     getter(cg, "B")
-    expect_true(cg@built)
+    expect_true(!is.null(cg@session))
   }
 })
 
@@ -489,11 +546,9 @@ test_that("subgraph on graph without edges keeps nodes and empty edges", {
   s <- subgraph(g, nodes = c("C", "A"))
   expect_identical(s@nodes$name, c("C", "A"))
   expect_equal(nrow(s@edges), 0L)
-  expect_true(s@built)
+  expect_true(!is.null(s@session))
   expect_identical(s@graph_class, g@graph_class)
   expect_identical(s@simple, g@simple)
-  expect_identical(s@name_index_map$get("C"), 0L)
-  expect_identical(s@name_index_map$get("A"), 1L)
 })
 
 test_that("subgraph filters edges to kept names and sorts", {
@@ -526,7 +581,63 @@ test_that("subgraph with index matches nodes variant", {
   s2 <- subgraph(g, index = c(2L, 1L, 3L))
   expect_identical(s1@nodes$name, s2@nodes$name)
   expect_identical(s1@edges, s2@edges)
-  expect_true(s1@built && s2@built)
+  expect_true(!is.null(s1@session) && !is.null(s2@session))
+})
+
+test_that("districts supports all, nodes, and index modes", {
+  cg <- caugi(
+    A %<->% B,
+    B %<->% C,
+    C %-->% D,
+    class = "ADMG"
+  )
+
+  all_d <- districts(cg)
+  expect_equal(length(all_d), 2L)
+  expect_true(any(vapply(
+    all_d,
+    function(x) setequal(x, c("A", "B", "C")),
+    logical(1)
+  )))
+  expect_true(any(vapply(all_d, function(x) identical(x, "D"), logical(1))))
+
+  expect_setequal(districts(cg, nodes = "A"), c("A", "B", "C"))
+
+  by_nodes <- districts(cg, nodes = c("A", "D"))
+  expect_named(by_nodes, c("A", "D"))
+  expect_setequal(by_nodes$A, c("A", "B", "C"))
+  expect_identical(by_nodes$D, "D")
+
+  by_index <- districts(cg, index = c(1L, 4L))
+  expect_named(by_index, c("A", "D"))
+  expect_setequal(by_index$A, c("A", "B", "C"))
+  expect_identical(by_index$D, "D")
+
+  all_explicit <- districts(cg, all = TRUE)
+  expect_equal(length(all_explicit), length(all_d))
+  expect_true(any(vapply(
+    all_explicit,
+    function(x) setequal(x, c("A", "B", "C")),
+    logical(1)
+  )))
+  expect_true(any(vapply(
+    all_explicit,
+    function(x) identical(x, "D"),
+    logical(1)
+  )))
+})
+
+test_that("districts validates argument combinations", {
+  cg <- caugi(A %<->% B, class = "ADMG")
+
+  expect_error(
+    districts(cg, nodes = "A", index = 1L),
+    "either `nodes` or `index`"
+  )
+  expect_error(districts(cg, all = TRUE, nodes = "A"), "cannot be combined")
+  expect_error(districts(cg, all = FALSE), "requires `nodes` or `index`")
+  expect_error(districts(cg, index = 0), "out of range")
+  expect_error(districts(cg, nodes = c("A", NA_character_)), "without NA")
 })
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -106,18 +106,6 @@ cat(substr(json_str, 1, 200), "...\n")
 cg_from_json <- caugi_deserialize(json_str)
 ```
 
-### Lazy Loading
-
-For large graphs, you can defer building:
-
-```{r}
-# Read without building the Rust graph structure
-cg_lazy <- read_caugi(tmp, lazy = TRUE)
-
-# Build when needed
-cg_lazy <- build(cg_lazy)
-```
-
 ### Metadata
 
 Add context to your graphs with comments and tags:

@@ -70,7 +70,7 @@ test_that("to_dot works with single node", {
 })
 
 test_that("to_dot builds graph if needed", {
-  cg <- caugi(A %-->% B, build = FALSE)
+  cg <- caugi(A %-->% B)
 
   dot <- to_dot(cg)
 

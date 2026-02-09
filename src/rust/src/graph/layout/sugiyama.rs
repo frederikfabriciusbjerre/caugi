@@ -11,17 +11,16 @@ pub fn sugiyama_layout(graph: &CaugiGraph) -> Result<Vec<(f64, f64)>, String> {
     }
 
     // Build edge list for rust-sugiyama
+    // Use mark helpers: is_outgoing_arrow means edge goes from i -> j
     let mut edges = Vec::new();
     for i in 0..n {
-        let range = graph.row_range(i as u32);
-        for idx in range {
+        for idx in graph.row_range(i as u32) {
             let j = graph.col_index[idx] as usize;
-            let etype = graph.etype[idx];
-            let side = graph.side[idx];
+            let spec = graph.spec(idx);
 
-            // Only include directed edges (tail->head)
-            let spec = &graph.registry.specs[etype as usize];
-            if spec.class == crate::edges::EdgeClass::Directed && side == 0 {
+            // Only include directed edges, emitting once from source node
+            // is_outgoing_arrow(idx) = Arrow points FROM me toward neighbor = i -> j
+            if spec.class == crate::edges::EdgeClass::Directed && graph.is_outgoing_arrow(idx) {
                 edges.push((i as u32, j as u32));
             }
         }

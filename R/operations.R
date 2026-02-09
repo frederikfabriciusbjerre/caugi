@@ -31,10 +31,8 @@ moralize <- function(cg) {
     stop("moralize() can only be applied to DAGs.", call. = FALSE)
   }
 
-  cg <- build(cg)
-  moralized_ptr <- moralize_ptr(cg@ptr)
-  moralized_cg <- .view_to_caugi(moralized_ptr, node_names = cg@nodes$name)
-  moralized_cg
+  moralized_session <- rs_moralize(cg@session)
+  .session_to_caugi(moralized_session, node_names = cg@nodes$name)
 }
 
 #' @title Get the skeleton of a graph
@@ -61,10 +59,8 @@ moralize <- function(cg) {
 #' @export
 skeleton <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
-  skeleton_ptr <- skeleton_ptr(cg@ptr)
-  skeleton_cg <- .view_to_caugi(skeleton_ptr, node_names = cg@nodes$name)
-  skeleton_cg
+  skeleton_session <- rs_skeleton(cg@session)
+  .session_to_caugi(skeleton_session, node_names = cg@nodes$name)
 }
 
 #' @title Project latent variables from a DAG to an ADMG
@@ -120,7 +116,6 @@ latent_project <- function(cg, latents) {
     stop("`latents` must be a character vector of node names.", call. = FALSE)
   }
 
-  cg <- build(cg)
   node_names <- cg@nodes$name
 
   # Validate latent names exist
@@ -136,18 +131,17 @@ latent_project <- function(cg, latents) {
   }
 
   # Get 0-based indices for latent nodes
-  latent_indices <- cg@name_index_map$mget(latents)
-  latent_indices <- as.integer(unlist(latent_indices, use.names = FALSE))
+  latent_indices <- rs_indices_of(cg@session, latents)
 
   # Get observed node names (preserving order)
   is_latent <- node_names %in% latents
   observed_names <- node_names[!is_latent]
 
   # Call Rust function
-  projected_ptr <- latent_project_ptr(cg@ptr, latent_indices)
+  projected_session <- rs_latent_project(cg@session, latent_indices)
 
   # Convert result back to caugi
-  .view_to_caugi(projected_ptr, node_names = observed_names)
+  .session_to_caugi(projected_session, node_names = observed_names)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -180,7 +174,6 @@ latent_project <- function(cg, latents) {
 #' @export
 mutate_caugi <- function(cg, class) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
   old_class <- cg@graph_class
 
   if (old_class == class) {
@@ -218,8 +211,7 @@ mutate_caugi <- function(cg, class) {
       nodes = nodes(cg),
       edges_df = edges(cg),
       class = class,
-      simple = TRUE,
-      build = TRUE
+      simple = TRUE
     ))
   }
 }
@@ -251,7 +243,6 @@ mutate_caugi <- function(cg, class) {
 #' @export
 exogenize <- function(cg, nodes) {
   is_caugi(cg, throw_error = TRUE)
-  cg <- build(cg)
 
   if (cg@graph_class != "DAG") {
     stop(
@@ -292,8 +283,7 @@ exogenize <- function(cg, nodes) {
           cg,
           from = grid$from,
           edge = rep("-->", nrow(grid)),
-          to = grid$to,
-          inplace = TRUE
+          to = grid$to
         )
       }
     }
@@ -303,8 +293,7 @@ exogenize <- function(cg, nodes) {
       cg <- remove_edges(
         cg,
         from = pa_u,
-        to = rep(u, length(pa_u)),
-        inplace = TRUE
+        to = rep(u, length(pa_u))
       )
     }
   }
@@ -314,7 +303,7 @@ exogenize <- function(cg, nodes) {
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ─────────────────────────────Marginalize and condition ──────────────────────
+# ────────────────────────── Marginalize and condition ─────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
 #' @importFrom utils combn
@@ -498,7 +487,7 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
       conditioning_set <- NULL
     }
 
-    if (m_separated(cg, node_a, node_b, Z = conditioning_set)) {
+    if (m_separated(cg, X = node_a, Y = node_b, Z = conditioning_set)) {
       # Found a set that m-separates them: no edge needed
       return(FALSE)
     }
@@ -641,20 +630,23 @@ dag_from_pdag <- function(PDAG) {
       # Orient all undirected edges toward x in output_graph
       if (length(undirected_neighbors) > 0) {
         # Ensure to also remove A---B if adding B-->A
-        remove_edges(
+        output_graph <- remove_edges(
           output_graph,
           from = rep(x, length(undirected_neighbors)),
           to = undirected_neighbors,
-          edge = "---",
-          inplace = TRUE
+          edge = "---"
         )
-
-        set_edges(
+        output_graph <- remove_edges(
           output_graph,
           from = undirected_neighbors,
           to = rep(x, length(undirected_neighbors)),
-          edge = "-->",
-          inplace = TRUE
+          edge = "---"
+        )
+        output_graph <- set_edges(
+          output_graph,
+          from = undirected_neighbors,
+          to = rep(x, length(undirected_neighbors)),
+          edge = "-->"
         )
       }
 

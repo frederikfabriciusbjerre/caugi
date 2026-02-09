@@ -49,7 +49,6 @@ generate_graph <- function(n, m = NULL, p = NULL, class = c("DAG", "CPDAG")) {
 
   reg <- caugi_registry()
   code_dir <- edge_registry_code_of(reg, "-->")
-  b <- graph_builder_new(reg, n, simple = TRUE)
 
   ord <- sample.int(n) - 1L
 
@@ -66,14 +65,25 @@ generate_graph <- function(n, m = NULL, p = NULL, class = c("DAG", "CPDAG")) {
     from <- ord[i + 1L]
     to <- ord[j + 1L]
 
-    graph_builder_add_edges(b, from, to, rep.int(code_dir, m))
+    edges_from <- from
+    edges_to <- to
   }
 
-  ptr <- graph_builder_build_view(b, "DAG")
-  if (class == "CPDAG") {
-    ptr <- to_cpdag_ptr(ptr)
+  session <- rs_new(reg, n, TRUE, "DAG")
+  node_names <- paste0("V", seq_len(n))
+  rs_set_names(session, node_names)
+  if (m > 0L) {
+    rs_set_edges(
+      session,
+      as.integer(edges_from),
+      as.integer(edges_to),
+      as.integer(rep.int(code_dir, m))
+    )
   }
-  .view_to_caugi(ptr)
+  if (class == "CPDAG") {
+    session <- rs_to_cpdag(session)
+  }
+  .session_to_caugi(session, node_names = node_names)
 }
 
 #' @title Simulate data from a `caugi` DAG.
@@ -142,7 +152,7 @@ simulate_data <- function(
       call. = FALSE
     )
   }
-  cg <- build(cg)
+
   if (is_empty_caugi(cg)) {
     stop("Cannot simulate data from an empty graph", call. = FALSE)
   }

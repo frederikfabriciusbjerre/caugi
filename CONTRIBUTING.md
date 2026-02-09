@@ -39,17 +39,18 @@ If you don't have Rust installed, visit [rustup.rs](https://rustup.rs/) for inst
 ## Development Environment Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/frederikfabriciusbjerre/caugi.git
    cd caugi
    ```
-
 2. **Load the package in R**:
+
    ```r
    devtools::load_all()
    ```
-
 3. **Build Rust code** (if needed):
+
    ```r
    rextendr::document()
    ```
@@ -92,9 +93,7 @@ caugi/
 ### How It Works
 
 1. **CSR Format**: Graphs are stored in Compressed Sparse Row format in Rust, which makes queries very fast but mutations more expensive.
-
 2. **Lazy Building**: When you mutate a graph (e.g., add edges), the changes are stored in R but not immediately applied in Rust. The graph rebuilds itself in Rust when you query it, or you can force a rebuild with `build(cg)`.
-
 3. **R + Rust Integration**: The `extendr` framework handles the communication between R and Rust, with automatic type conversions and memory management.
 
 ## Code Style Guidelines
@@ -117,6 +116,7 @@ caugi/
   - Update `_pkgdown.yaml` to organize the function appropriately in the documentation website
 
 Example:
+
 ```r
 #' @title Get parent nodes
 #'
@@ -150,6 +150,7 @@ parents <- function(graph, nodes) {
 - **Extendr integration**: Functions exposed to R should use `#[extendr]` macros
 
 Example:
+
 ```rust
 /// Computes the parents of the given nodes in the graph.
 ///
@@ -184,6 +185,7 @@ devtools::check()
 - **Test both R and Rust paths**: Ensure lazy building works correctly
 
 Example test structure:
+
 ```r
 test_that("parents() returns correct parents", {
   cg <- caugi(A %-->% B, C %-->% B, class = "DAG")
@@ -208,19 +210,22 @@ test_that("parents() returns correct parents", {
 ### Before Submitting a Pull Request
 
 1. **Style your code**:
+
    ```r
    # Style R code
    styler::style_pkg()
    ```
+
    ```bash
    # Style Rust code (run from src/rust/)
    cargo fmt
    ```
-
 2. **Check the package**:
+
    ```r
    devtools::check()
    ```
+
    Ensure there are no errors or warnings. This will run all tests and validate documentation.
 
 ### Pull Request Guidelines
@@ -256,6 +261,7 @@ When reporting a bug, please include:
 - Expected vs. actual behavior
 
 Example:
+
 ```r
 # Minimal reproducible example
 library(caugi)

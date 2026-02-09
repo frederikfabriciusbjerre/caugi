@@ -64,13 +64,10 @@ caugi_graphml <- S7::new_class(
 #' @export
 to_graphml <- function(x) {
   is_caugi(x, throw_error = TRUE)
-  x <- build(x)
-
-  xml <- serialize_graphml_ptr(
-    x@ptr,
+  xml <- rs_serialize_graphml(
+    x@session,
     caugi_registry(),
-    x@graph_class,
-    x@nodes$name
+    x@graph_class
   )
 
   caugi_graphml(xml)
@@ -152,7 +149,7 @@ read_graphml <- function(path, class = NULL) {
 
   xml_content <- paste(readLines(path, warn = FALSE), collapse = "\n")
   reg <- caugi_registry()
-  result <- deserialize_graphml_ptr(xml_content, reg)
+  result <- deserialize_graphml(xml_content, reg)
 
   # Use provided class or fall back to metadata
   final_class <- class %||% result$graph_class %||% "UNKNOWN"

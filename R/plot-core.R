@@ -150,11 +150,6 @@ S7::method(plot, caugi) <- function(
 ) {
   is_caugi(x, throw_error = TRUE)
 
-  # Ensure graph is built
-  if (!x@built) {
-    x <- build(x)
-  }
-
   stopifnot(
     is.null(asp) ||
       is.na(asp) ||

@@ -52,13 +52,12 @@ d_separated <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-  cg <- build(cg)
 
-  X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
-  Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
-  Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
+  X_idx0 <- .resolve_idx0_get(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_get(cg@session, Y, Y_index)
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
 
-  d_separated_ptr(cg@ptr, X_idx0, Y_idx0, Z_idx0)
+  rs_d_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -118,17 +117,21 @@ adjustment_set <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-  cg <- build(cg)
+
   type <- match.arg(type)
 
-  X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
-  Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
+  X_idx0 <- .resolve_idx0_get(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_get(cg@session, Y, Y_index)
 
   idx0 <- switch(
     type,
-    parents = adjustment_set_parents_ptr(cg@ptr, X_idx0, Y_idx0),
-    backdoor = adjustment_set_backdoor_ptr(cg@ptr, X_idx0, Y_idx0),
-    optimal = adjustment_set_optimal_ptr(cg@ptr, X_idx0, Y_idx0)
+    parents = rs_adjustment_set_parents(cg@session, X_idx0, Y_idx0),
+    backdoor = rs_adjustment_set_backdoor(
+      cg@session,
+      X_idx0,
+      Y_idx0
+    ),
+    optimal = rs_adjustment_set_optimal(cg@session, X_idx0, Y_idx0)
   )
   cg@nodes$name[idx0 + 1L]
 }
@@ -182,13 +185,12 @@ is_valid_backdoor <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-  cg <- build(cg)
 
-  X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
-  Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
-  Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
+  X_idx0 <- .resolve_idx0_get(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_get(cg@session, Y, Y_index)
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
 
-  is_valid_backdoor_set_ptr(cg@ptr, X_idx0, Y_idx0, Z_idx0)
+  rs_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 #' @title Get all backdoor sets up to a certain size.
@@ -264,13 +266,12 @@ all_backdoor_sets <- function(
   ) {
     stop("Provide exactly one X and one Y.", call. = FALSE)
   }
-  cg <- build(cg)
 
-  X_idx0 <- .resolve_idx0_get(cg@name_index_map, X, X_index)
-  Y_idx0 <- .resolve_idx0_get(cg@name_index_map, Y, Y_index)
+  X_idx0 <- .resolve_idx0_get(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_get(cg@session, Y, Y_index)
 
-  sets_idx0 <- all_backdoor_sets_ptr(
-    cg@ptr,
+  sets_idx0 <- rs_all_backdoor_sets(
+    cg@session,
     X_idx0,
     Y_idx0,
     minimal,
@@ -331,13 +332,12 @@ is_valid_adjustment_admg <- function(
   if (is.null(Y) && is.null(Y_index)) {
     stop("Y (or Y_index) must be provided.", call. = FALSE)
   }
-  cg <- build(cg)
 
-  X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
-  Z_idx0 <- .resolve_idx0_mget(cg@name_index_map, Z, Z_index)
+  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
 
-  is_valid_adjustment_set_admg_ptr(cg@ptr, X_idx0, Y_idx0, Z_idx0)
+  rs_is_valid_adjustment_set_admg(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 #' @title Get all valid adjustment sets in an ADMG
@@ -387,13 +387,12 @@ all_adjustment_sets_admg <- function(
   if (is.null(Y) && is.null(Y_index)) {
     stop("Y (or Y_index) must be provided.", call. = FALSE)
   }
-  cg <- build(cg)
 
-  X_idx0 <- .resolve_idx0_mget(cg@name_index_map, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@name_index_map, Y, Y_index)
+  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
 
-  sets_idx0 <- all_adjustment_sets_admg_ptr(
-    cg@ptr,
+  sets_idx0 <- rs_all_adjustment_sets_admg(
+    cg@session,
     X_idx0,
     Y_idx0,
     minimal,
@@ -410,36 +409,25 @@ all_adjustment_sets_admg <- function(
 #' @title Resolve node name or index to 0-based index.
 #'
 #' @description Internal helper function to resolve either a node name or a
-#' node index to a 0-based index.
-#' `.resolve_idx0_get` uses `get` on the `fastmap` and expects a single value,
-#' while `.resolve_idx0_mget` uses `mget` and can return multiple values.
+#' node index to a 0-based index using the Rust session.
+#' `.resolve_idx0_get` expects a single value,
+#' while `.resolve_idx0_mget` can return multiple values.
 #'
-#' @param nm_idx_map A `fastmap` mapping node names to 0-based indices from
-#' a `caugi`.
+#' @param session A GraphSession pointer.
 #' @param node_name Optional character vector of node names.
 #' @param node_index Optional numeric vector of 1-based node indices.
 #'
 #' @name .resolve_idx0_get
 #'
-#' @seealso [fastmap::fastmap]
 #' @keywords internal
-.resolve_idx0_get <- function(nm_idx_map, node_name = NULL, node_index = NULL) {
+.resolve_idx0_get <- function(session, node_name = NULL, node_index = NULL) {
   if (!is.null(node_index)) {
     if (!is.null(node_name)) {
-      stop("Provide either a node name or node index.")
+      stop("Provide either a node name or node index.", call. = FALSE)
     }
     as.integer(node_index - 1L)
   } else if (!is.null(node_name)) {
-    nm_idx_map$get(
-      node_name,
-      missing = stop(
-        paste(
-          "Non-existent node name:",
-          paste(setdiff(node_name, nm_idx_map$keys()), collapse = ", ")
-        ),
-        call. = FALSE
-      )
-    )
+    rs_index_of(session, node_name)
   } else {
     stop(
       "Either the node name or the node index must be provided.",
@@ -450,30 +438,15 @@ all_adjustment_sets_admg <- function(
 
 #' @name .resolve_idx0_get
 #' @keywords internal
-.resolve_idx0_mget <- function(
-  nm_idx_map,
-  node_name = NULL,
-  node_index = NULL
-) {
+.resolve_idx0_mget <- function(session, node_name = NULL, node_index = NULL) {
   if (is.null(node_name) && is.null(node_index)) {
     integer(0)
   } else if (!is.null(node_index)) {
     if (!is.null(node_name)) {
-      stop("Provide either a node name or node index.")
+      stop("Provide either a node name or node index.", call. = FALSE)
     }
     as.integer(node_index - 1L)
   } else if (!is.null(node_name)) {
-    as.integer(
-      nm_idx_map$mget(
-        node_name,
-        missing = stop(
-          paste(
-            "Non-existent node name:",
-            paste(setdiff(node_name, nm_idx_map$keys()), collapse = ", ")
-          ),
-          call. = FALSE
-        )
-      )
-    )
+    rs_indices_of(session, node_name)
   }
 }

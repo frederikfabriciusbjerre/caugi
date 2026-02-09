@@ -5,8 +5,9 @@ mod adjustment;
 mod transforms;
 
 use super::error::DagError;
+use super::packed::{PackedBuckets, PackedBucketsBuilder};
 use super::CaugiGraph;
-use crate::edges::{EdgeClass, Mark};
+use crate::edges::EdgeClass;
 use crate::graph::alg::bitset;
 use crate::graph::alg::csr;
 use crate::graph::alg::directed_part_is_acyclic;
@@ -18,9 +19,7 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub struct Dag {
     core: Arc<CaugiGraph>,
-    node_edge_ranges: Arc<[usize]>,
-    node_deg: Arc<[(u32, u32)]>,
-    neighborhoods: Arc<[u32]>,
+    packed: PackedBuckets<2>, // [parents | children]
 }
 
 impl Dag {
@@ -44,83 +43,49 @@ impl Dag {
             return Err(DagError::DirectedCycle);
         }
 
-        // Count `(parents, children)` per row.
-        // side[k] stores position: 0 = tail position, 1 = head position.
-        // To determine parent/child, check if my mark is Arrow.
-        let mut deg: Vec<(u32, u32)> = vec![(0, 0); n];
+        let mut packed_builder: PackedBucketsBuilder<2> = PackedBucketsBuilder::new(n);
+
+        // Count `(parents, children)` per row using mark helpers.
+        // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
+        // is_outgoing_arrow(k) = Arrow points FROM me = neighbor is child
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = &core.registry.specs[core.etype[k] as usize];
+                let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
-                        // My mark depends on my position
-                        let my_mark = if core.side[k] == 0 {
-                            spec.tail
+                        if core.is_incoming_arrow(k) {
+                            packed_builder.inc_degree(i, 0);
                         } else {
-                            spec.head
-                        };
-                        if my_mark == Mark::Arrow {
-                            deg[i].0 += 1 // parent (Arrow points INTO me)
-                        } else {
-                            deg[i].1 += 1 // child (Arrow points FROM me)
+                            packed_builder.inc_degree(i, 1);
                         }
                     }
                     _ => {
                         return Err(DagError::InvalidEdgeType {
                             found: spec.glyph.clone(),
-                        })
+                        });
                     }
                 }
             }
         }
 
-        // Prefix sums for row slices into `neighborhoods`.
-        let mut node_edge_ranges = Vec::with_capacity(n + 1);
-        node_edge_ranges.push(0usize);
+        packed_builder.finalize_degrees();
+
+        // Scatter pass.
         for i in 0..n {
-            let (pa, ch) = deg[i];
-            node_edge_ranges.push(node_edge_ranges[i] + (pa + ch) as usize);
-        }
-        let mut neigh = vec![0u32; *node_edge_ranges.last().unwrap()];
-
-        // Single scatter pass per row.
-        // Parents occupy the first segment, children the second.
-        for i in 0..n {
-            let start = node_edge_ranges[i];
-            let end = node_edge_ranges[i + 1];
-            let pa = deg[i].0 as usize;
-
-            // Split the row slice once; fill with two cursors.
-            let (pa_seg, ch_seg) = neigh[start..end].split_at_mut(pa);
-            let mut pa_cur = 0;
-            let mut ch_cur = 0;
-
             for k in core.row_range(i as u32) {
                 let v = core.col_index[k];
-                let spec = &core.registry.specs[core.etype[k] as usize];
-                let my_mark = if core.side[k] == 0 {
-                    spec.tail
+                if core.is_incoming_arrow(k) {
+                    packed_builder.scatter(i, 0, v);
                 } else {
-                    spec.head
-                };
-                if my_mark == Mark::Arrow {
-                    pa_seg[pa_cur] = v;
-                    pa_cur += 1;
-                } else {
-                    ch_seg[ch_cur] = v;
-                    ch_cur += 1;
+                    packed_builder.scatter(i, 1, v);
                 }
             }
-            debug_assert_eq!(pa_cur, pa);
-            debug_assert_eq!(ch_cur, end - start - pa);
         }
 
-        Ok(Self {
-            core,
-            node_edge_ranges: node_edge_ranges.into(),
-            node_deg: deg.into(),
-            neighborhoods: neigh.into(),
-        })
+        packed_builder.sort_all();
+        let packed = packed_builder.build();
+
+        Ok(Self { core, packed })
     }
 
     /// Number of nodes.
@@ -129,38 +94,22 @@ impl Dag {
         self.core.n()
     }
 
-    /// Returns `(row_start, parents_end, children_start)` for node `i`.
-    #[inline]
-    fn row_bounds(&self, i: u32) -> (usize, usize, usize) {
-        let i = i as usize;
-        let start = self.node_edge_ranges[i];
-        let end = self.node_edge_ranges[i + 1];
-        let (pa, ch) = self.node_deg[i];
-        (start, start + pa as usize, end - ch as usize)
-    }
-
     /// Sorted slice of parents of `i` (borrowed view into packed storage).
     #[inline]
     pub fn parents_of(&self, i: u32) -> &[u32] {
-        let (s, pmid, _) = self.row_bounds(i);
-        &self.neighborhoods[s..pmid]
+        self.packed.bucket_slice(i, 0)
     }
 
     /// Sorted slice of children of `i` (borrowed view into packed storage).
     #[inline]
     pub fn children_of(&self, i: u32) -> &[u32] {
-        let (_, _, cstart) = self.row_bounds(i);
-        let e = self.node_edge_ranges[i as usize + 1];
-        &self.neighborhoods[cstart..e]
+        self.packed.bucket_slice(i, 1)
     }
 
     /// Concatenated neighbors `[parents..., children...]` of `i`.
     #[inline]
     pub fn neighbors_of(&self, i: u32) -> &[u32] {
-        let i = i as usize;
-        let s = self.node_edge_ranges[i];
-        let e = self.node_edge_ranges[i + 1];
-        &self.neighborhoods[s..e]
+        self.packed.all_neighbors(i)
     }
 
     /// All ancestors of `i`, returned in ascending order.
@@ -245,6 +194,7 @@ impl Dag {
     }
 
     /// Drop predicate for removing the first edge on each proper causal path.
+    /// Uses mark-based direction: is_outgoing_arrow means row_u -> v.
     pub(crate) fn drop_first_edge(
         &self,
         xs_mask: &[bool],
@@ -254,11 +204,13 @@ impl Dag {
     ) -> bool {
         let c = self.core_ref();
         let v = c.col_index[k];
-        if c.side[k] == 0 {
-            // edge v -> row_u
+        if c.is_outgoing_arrow(k) {
+            // edge row_u -> v (Arrow points FROM me toward neighbor)
+            // Drop if row_u is in X and v can reach Y
             xs_mask[row_u as usize] && reach_y[v as usize]
         } else {
-            // edge row_u -> v
+            // edge v -> row_u (Arrow points INTO me)
+            // Drop if v is in X and row_u can reach Y
             xs_mask[v as usize] && reach_y[row_u as usize]
         }
     }

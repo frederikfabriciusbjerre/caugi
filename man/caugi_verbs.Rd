@@ -73,10 +73,8 @@ cg <- cg |>
 cg <- remove_edges(cg, B \%---\% C) |> # A --> B, C, D, E
   remove_nodes(c("C", "D", "E")) # A --> B
 
-# verbs do not build the Rust backend
-cg@built # FALSE
-build(cg)
-cg@built # TRUE
+# Graphs are now built lazily when needed
+parents(cg, "B") # triggers compilation
 
 }
 \seealso{

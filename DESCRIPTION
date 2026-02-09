@@ -41,7 +41,6 @@ Depends:
     R (>= 4.2)
 Imports:
     data.table,
-    fastmap,
     grid,
     S7,
     stats,
@@ -60,7 +59,8 @@ Suggests:
     Matrix,
     rextendr,
     rmarkdown,
-    testthat
+    testthat,
+    waldo
 VignetteBuilder:
     knitr
 Config/rextendr/version: 0.4.2

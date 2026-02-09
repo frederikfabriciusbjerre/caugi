@@ -2,6 +2,7 @@
 //! UG (Undirected Graph) wrapper with O(1) slice queries via packed neighborhoods.
 
 use super::error::UgError;
+use super::packed::{PackedBuckets, PackedBucketsBuilder};
 use super::CaugiGraph;
 use crate::edges::EdgeClass;
 use std::sync::Arc;
@@ -9,12 +10,7 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub struct Ug {
     core: Arc<CaugiGraph>,
-    /// len = n+1
-    node_edge_ranges: Arc<[usize]>,
-    /// len = n; (neighbors)
-    // node_deg: Arc<[u32]>,
-    /// packed neighbors
-    neighborhoods: Arc<[u32]>,
+    packed: PackedBuckets<1>, // [neighbors]
 }
 
 impl Ug {
@@ -28,15 +24,15 @@ impl Ug {
     /// Builds a `Ug` view with typed error handling.
     pub fn try_new(core: Arc<CaugiGraph>) -> Result<Self, UgError> {
         let n = core.n() as usize;
+        let mut packed_builder: PackedBucketsBuilder<1> = PackedBucketsBuilder::new(n);
 
         // Count neighbors per node and validate edges are undirected
-        let mut deg: Vec<u32> = vec![0; n];
         for i in 0..n {
             let r = core.row_range(i as u32);
             for k in r.clone() {
                 let spec = &core.registry.specs[core.etype[k] as usize];
                 match spec.class {
-                    EdgeClass::Undirected => deg[i] += 1,
+                    EdgeClass::Undirected => packed_builder.inc_degree(i, 0),
                     // Reject any non-undirected edges
                     _ => {
                         return Err(UgError::InvalidEdgeType {
@@ -46,43 +42,19 @@ impl Ug {
                 }
             }
         }
-
-        let mut node_edge_ranges = Vec::with_capacity(n + 1);
-        node_edge_ranges.push(0usize);
-        for i in 0..n {
-            let last = *node_edge_ranges.last().unwrap();
-            node_edge_ranges.push(last + deg[i] as usize);
-        }
-
-        let total = *node_edge_ranges.last().unwrap();
-        let mut neigh = vec![0u32; total];
-
-        // Fill neighbor arrays
-        let mut base: Vec<usize> = vec![0; n];
-        for i in 0..n {
-            base[i] = node_edge_ranges[i];
-        }
-        let mut cur = base.clone();
+        packed_builder.finalize_degrees();
 
         for i in 0..n {
             let r = core.row_range(i as u32);
             for k in r.clone() {
-                let p = cur[i];
-                neigh[p] = core.col_index[k];
-                cur[i] += 1;
+                packed_builder.scatter(i, 0, core.col_index[k]);
             }
-            // Sort neighbors for determinism
-            let s = node_edge_ranges[i];
-            let e = node_edge_ranges[i + 1];
-            neigh[s..e].sort_unstable();
         }
 
-        Ok(Self {
-            core,
-            node_edge_ranges: node_edge_ranges.into(),
-            // node_deg: deg.into(),
-            neighborhoods: neigh.into(),
-        })
+        packed_builder.sort_all();
+        let packed = packed_builder.build();
+
+        Ok(Self { core, packed })
     }
 
     #[inline]
@@ -92,10 +64,7 @@ impl Ug {
 
     #[inline]
     pub fn neighbors_of(&self, i: u32) -> &[u32] {
-        let i = i as usize;
-        let s = self.node_edge_ranges[i];
-        let e = self.node_edge_ranges[i + 1];
-        &self.neighborhoods[s..e]
+        self.packed.bucket_slice(i, 0)
     }
 
     #[inline]

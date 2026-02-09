@@ -78,6 +78,20 @@ impl GraphBuilder {
         }
     }
 
+    /// Create a new builder from an existing registry snapshot.
+    /// This is more efficient when the snapshot already exists (e.g., in GraphSession).
+    pub fn new_from_snapshot(n: u32, simple: bool, snapshot: Arc<RegistrySnapshot>) -> Self {
+        let n_us = n as usize;
+        Self {
+            n,
+            simple,
+            specs: Arc::clone(&snapshot.specs),
+            rows: vec![Vec::new(); n_us],
+            seen: HashSet::new(),
+            pair_seen: HashSet::new(),
+        }
+    }
+
     /// Add an edge to the graph.
     ///
     /// Returns a `String` error for FFI compatibility. Use `try_add_edge` for typed errors.

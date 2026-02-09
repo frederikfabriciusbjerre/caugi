@@ -8,7 +8,6 @@ as_caugi(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -23,9 +22,6 @@ as_caugi(
 
 \item{simple}{logical. If \code{TRUE} (default) the graph will be simple
 (no multiple edges or self-loops).}
-
-\item{build}{logical. If \code{TRUE} (default) build the graph now, otherwise
-build lazily on first query or when using \code{\link[=build]{build()}}.}
 
 \item{collapse}{logical. If \code{TRUE} collapse mutual directed edges to
 undirected edges. Default is \code{FALSE}.}

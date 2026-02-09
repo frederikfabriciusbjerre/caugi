@@ -63,36 +63,49 @@ S7::method(print, caugi) <- function(
   max_edges = getOption("caugi.max_edges"),
   ...
 ) {
-  nodes_tbl <- x@nodes
-  edges_tbl <- x@edges
+  session <- x@session
+  if (is.null(session)) {
+    # Defensive fallback for malformed objects without a session.
+    nodes_tbl <- data.table::data.table(name = character())
+    edges_tbl <- data.table::data.table(
+      from = character(),
+      edge = character(),
+      to = character()
+    )
+  } else {
+    nodes_tbl <- x@nodes
+    edges_tbl <- x@edges
+  }
 
   n_nodes <- nrow(nodes_tbl)
   n_edges <- nrow(edges_tbl)
 
-  graph_class <- x@graph_class
-  simple <- x@simple
-  built <- x@built
-  ptr <- x@ptr
+  if (is.null(session)) {
+    graph_class <- NA_character_
+    simple <- NA
+  } else {
+    graph_class <- x@graph_class
+    simple <- x@simple
+  }
 
-  ptr_str <- if (is.null(ptr)) {
+  session_str <- if (is.null(session)) {
     "NULL"
   } else {
-    ptr_chr <- format(ptr)
-    if (grepl("0x[0-9a-fA-F]+", ptr_chr)) {
-      sub(".*(0x[0-9a-fA-F]+).*", "\\1", ptr_chr)
+    session_chr <- format(session)
+    if (grepl("0x[0-9a-fA-F]+", session_chr)) {
+      sub(".*(0x[0-9a-fA-F]+).*", "\\1", session_chr)
     } else {
-      ptr_chr
+      session_chr
     }
   }
 
   # header split across two lines: main summary + graph_class line
   header <- sprintf(
-    "<caugi object; %d nodes, %d edges; simple: %s; built: %s; ptr=%s>",
+    "<caugi object; %d nodes, %d edges; simple: %s; session=%s>",
     n_nodes,
     n_edges,
     simple,
-    built,
-    ptr_str
+    session_str
   )
   header_class <- sprintf("  graph_class: %s", graph_class)
 
@@ -164,11 +177,8 @@ S7::method(print, caugi) <- function(
   used_edges <- 0L
   remaining <- edge_labels
 
-  for (line_idx in seq_len(max_lines)) {
-    if (length(remaining) == 0L) {
-      break
-    }
-
+  line_idx <- 1L
+  while (length(remaining) > 0L && line_idx <= max_lines) {
     n_fit <- .caugi_fit_on_line(remaining, width = width, indent = edge_indent)
     if (n_fit < 1L) {
       n_fit <- 1L
@@ -180,6 +190,7 @@ S7::method(print, caugi) <- function(
 
     used_edges <- used_edges + length(take)
     remaining <- remaining[-take]
+    line_idx <- line_idx + 1L
   }
 
   # print edge lines
@@ -242,4 +253,131 @@ S7::method(print, caugi) <- function(
   }
 
   used
+}
+
+#' Proxy for waldo comparison of caugi objects
+#'
+#' @description Provides a proxy representation for waldo comparison that
+#' compares graph content (nodes, edges, simple, class) rather than session
+#' identity.
+#'
+#' @param x A `caugi` object.
+#' @param path The path to the object (for error messages).
+#'
+#' @returns A list with `object` (proxy) and `path`.
+#'
+#' @keywords internal
+#' @export
+`compare_proxy.caugi::caugi` <- function(x, path) {
+  # Return a proxy with comparable properties (not the session pointer)
+  e <- x@edges
+  if (nrow(e) > 0) {
+    data.table::setorder(e, from, to, edge)
+  }
+  list(
+    object = list(
+      simple = x@simple,
+      graph_class = x@graph_class,
+      nodes = sort(x@nodes$name),
+      edges = e
+    ),
+    path = path
+  )
+}
+
+#' Compare caugi objects for equality
+#'
+#' @description S3 method for `all.equal` that compares caugi objects by their
+#' graph content (nodes, edges, simple, class) rather than session identity.
+#' This is used by testthat edition 2.
+#'
+#' @param target A `caugi` object.
+#' @param current A `caugi` object.
+#' @param ... Additional arguments (ignored).
+#'
+#' @returns `TRUE` if equal, or a character vector describing differences.
+#'
+#' @keywords internal
+#' @export
+`all.equal.caugi::caugi` <- function(target, current, ...) {
+  if (!inherits(current, "caugi::caugi")) {
+    return("current is not a caugi object")
+  }
+
+  diffs <- character(0)
+
+  # Compare simple flag
+  target_simple <- target@simple
+  current_simple <- current@simple
+  if (!identical(target_simple, current_simple)) {
+    diffs <- c(
+      diffs,
+      sprintf(
+        "simple: %s vs %s",
+        target_simple,
+        current_simple
+      )
+    )
+  }
+
+  # Compare graph_class
+  target_class <- target@graph_class
+  current_class <- current@graph_class
+  if (!identical(target_class, current_class)) {
+    diffs <- c(
+      diffs,
+      sprintf(
+        "graph_class: %s vs %s",
+        target_class,
+        current_class
+      )
+    )
+  }
+
+  # Compare nodes
+  target_nodes <- sort(target@nodes$name)
+  current_nodes <- sort(current@nodes$name)
+  if (!identical(target_nodes, current_nodes)) {
+    diffs <- c(
+      diffs,
+      sprintf(
+        "nodes differ: target has %d nodes, current has %d nodes",
+        length(target_nodes),
+        length(current_nodes)
+      )
+    )
+  }
+
+  # Compare edges (sorted for consistent comparison)
+  target_edges <- data.table::copy(target@edges)
+  current_edges <- data.table::copy(current@edges)
+  if (nrow(target_edges) != nrow(current_edges)) {
+    diffs <- c(
+      diffs,
+      sprintf(
+        "edges differ: target has %d edges, current has %d edges",
+        nrow(target_edges),
+        nrow(current_edges)
+      )
+    )
+  } else if (nrow(target_edges) > 0) {
+    # Sort both by from, to, edge for comparison
+    data.table::setorder(target_edges, from, to, edge)
+    data.table::setorder(current_edges, from, to, edge)
+    if (
+      !isTRUE(all.equal(
+        as.data.frame(target_edges),
+        as.data.frame(current_edges),
+        check.attributes = FALSE
+      ))
+    ) {
+      diffs <- c(diffs, "edges have different content")
+    }
+  }
+
+  if (length(diffs) == 0) {
+    TRUE
+  } else {
+    diffs
+  }
 }

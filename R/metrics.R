@@ -31,9 +31,7 @@ shd <- function(cg1, cg2, normalized = FALSE) {
   is_caugi(cg1, throw_error = TRUE)
   is_caugi(cg2, throw_error = TRUE)
   same_nodes(cg1, cg2, throw_error = TRUE)
-  build(cg1)
-  build(cg2)
-  out_lst <- shd_of_ptrs(cg1@ptr, cg1@nodes$name, cg2@ptr, cg2@nodes$name)
+  out_lst <- rs_shd(cg1@session, cg2@session)
   out <- if (normalized) out_lst$normalized else out_lst$count
   out
 }
@@ -63,9 +61,7 @@ hd <- function(cg1, cg2, normalized = FALSE) {
   is_caugi(cg1, throw_error = TRUE)
   is_caugi(cg2, throw_error = TRUE)
   same_nodes(cg1, cg2, throw_error = TRUE)
-  build(cg1)
-  build(cg2)
-  out_lst <- hd_of_ptrs(cg1@ptr, cg2@ptr)
+  out_lst <- rs_hd(cg1@session, cg2@session)
   out <- if (normalized) out_lst$normalized else out_lst$count
   out
 }
@@ -105,29 +101,12 @@ aid <- function(
   is_caugi(truth, throw_error = TRUE)
   is_caugi(guess, throw_error = TRUE)
   same_nodes(truth, guess, throw_error = TRUE)
-  build(truth)
-  build(guess)
 
   res <- switch(
     type,
-    oset = oset_aid_of_ptrs(
-      truth@ptr,
-      truth@nodes$name,
-      guess@ptr,
-      guess@nodes$name
-    ),
-    ancestor = ancestor_aid_of_ptrs(
-      truth@ptr,
-      truth@nodes$name,
-      guess@ptr,
-      guess@nodes$name
-    ),
-    parent = parent_aid_of_ptrs(
-      truth@ptr,
-      truth@nodes$name,
-      guess@ptr,
-      guess@nodes$name
-    )
+    oset = rs_oset_aid(truth@session, guess@session),
+    ancestor = rs_ancestor_aid(truth@session, guess@session),
+    parent = rs_parent_aid(truth@session, guess@session)
   )
   if (normalized) {
     res$score

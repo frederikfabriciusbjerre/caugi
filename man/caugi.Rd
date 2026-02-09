@@ -12,9 +12,10 @@ caugi(
   nodes = NULL,
   edges_df = NULL,
   simple = TRUE,
-  build = TRUE,
+  build = NULL,
   class = c("AUTO", "DAG", "UG", "PDAG", "ADMG", "AG", "UNKNOWN"),
-  state = NULL
+  state = NULL,
+  .session = NULL
 )
 }
 \arguments{
@@ -46,12 +47,7 @@ from another \code{caugi} object, \code{cg}.}
 the function will throw an error if the input contains parallel edges or
 self-loops.}
 
-\item{build}{Logical; if \code{TRUE} (default), the graph will be built using the
-Rust backend. If \code{FALSE}, the graph will not be built, and the Rust backend
-cannot be used. The graph will build, when queries are made to the graph or
-if calling \code{\link[=build]{build()}}. \strong{Note}: Even if \code{build = TRUE}, if no edges or
-nodes are provided, the graph will not be built and the pointer will be
-\code{NULL}.}
+\item{build}{Deprecated.}
 
 \item{class}{Character; one of \code{"AUTO"}, \code{"DAG"}, \code{"UG"}, \code{"PDAG"}, \code{"ADMG"},
 \code{"AG"}, or \code{"UNKNOWN"}. \code{"AUTO"} will automatically pick the appropriate
@@ -59,8 +55,10 @@ class based on the first match in the order of \code{"DAG"}, \code{"UG"}, \code{
 \code{"ADMG"}, and \code{"AG"}.
 It will default to \code{"UNKNOWN"} if no match is found.}
 
-\item{state}{For internal use. Build a graph by supplying a pre-constructed
-state environment.}
+\item{state}{Deprecated. Replaced by \code{.session}.}
+
+\item{.session}{For internal use. Build a graph by supplying a
+pre-constructed session pointer from Rust.}
 }
 \value{
 A \code{caugi} S7 object containing the nodes, edges, and a
@@ -116,18 +114,7 @@ cg4 <- caugi(
 )
 
 cg4@simple # FALSE
-cg4@built # TRUE
 cg4@graph_class # "UNKNOWN"
-
-# create graph, but don't built Rust object yet, which is needed for queries
-cg5 <- caugi(
-  A \%-->\% B + C,
-  B \%-->\% D,
-  class = "DAG",
-  build = FALSE
-)
-
-cg5@built # FALSE
 
 }
 \concept{caugi}

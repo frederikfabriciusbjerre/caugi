@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 //! CSR graph with registry snapshot; class wrappers live in submodules.
 
-use crate::edges::EdgeSpec;
+use crate::edges::{EdgeSpec, Mark};
 use std::ops::Range;
 use std::sync::Arc;
 use std::{
@@ -15,7 +15,9 @@ pub mod alg;
 pub mod builder;
 pub mod dag;
 pub mod error;
+pub mod packed;
 pub mod pdag;
+pub mod session;
 pub mod ug;
 pub mod view;
 pub use view::GraphView;
@@ -24,6 +26,7 @@ pub mod graphml;
 pub mod layout;
 pub mod metrics;
 pub mod serialization;
+pub use session::{EdgeBuffer, GraphClass, GraphSession};
 
 #[derive(Debug, Clone)]
 pub struct RegistrySnapshot {
@@ -88,6 +91,60 @@ impl CaugiGraph {
     pub fn row_range(&self, i: u32) -> Range<usize> {
         let i = i as usize;
         self.row_index[i] as usize..self.row_index[i + 1] as usize
+    }
+
+    // ── Mark interpretation helpers ──────────────────────────────────────────
+    // These provide canonical ways to interpret edge direction based on endpoint
+    // marks rather than the raw `side` value. This is essential for supporting
+    // reverse-direction glyphs like "<--" where tail=Arrow, head=Tail.
+
+    /// Get the EdgeSpec for half-edge at CSR index `k`.
+    #[inline]
+    pub fn spec(&self, k: usize) -> &EdgeSpec {
+        &self.registry.specs[self.etype[k] as usize]
+    }
+
+    /// My mark at half-edge `k` (the mark at MY endpoint).
+    /// If side[k]==0, I'm at the tail position; if side[k]==1, I'm at the head position.
+    #[inline]
+    pub fn my_mark(&self, k: usize) -> Mark {
+        let spec = self.spec(k);
+        if self.side[k] == 0 {
+            spec.tail
+        } else {
+            spec.head
+        }
+    }
+
+    /// Neighbor's mark at half-edge `k` (the mark at THEIR endpoint).
+    #[inline]
+    pub fn nbr_mark(&self, k: usize) -> Mark {
+        let spec = self.spec(k);
+        if self.side[k] == 0 {
+            spec.head
+        } else {
+            spec.tail
+        }
+    }
+
+    /// Is this an incoming arrow? (Arrow points INTO me)
+    /// Use this to identify parents in a directed graph.
+    #[inline]
+    pub fn is_incoming_arrow(&self, k: usize) -> bool {
+        self.my_mark(k) == Mark::Arrow
+    }
+
+    /// Is this an outgoing arrow? (Arrow points FROM me toward neighbor)
+    /// Use this to identify children in a directed graph.
+    #[inline]
+    pub fn is_outgoing_arrow(&self, k: usize) -> bool {
+        self.nbr_mark(k) == Mark::Arrow
+    }
+
+    /// Returns (my_mark, nbr_mark) for half-edge `k`.
+    #[inline]
+    pub fn marks(&self, k: usize) -> (Mark, Mark) {
+        (self.my_mark(k), self.nbr_mark(k))
     }
 }
 
@@ -321,5 +378,141 @@ mod tests {
         let core = make_core(2, &[(0, 1)]);
         let gv = GraphView::Raw(Arc::new(core));
         assert!(gv.induced_subgraph(&[0, 2]).is_err());
+    }
+
+    // ── Reverse glyph direction tests ──────────────────────────────────────────
+    // These tests verify that glyphs like "<--" (where tail=Arrow, head=Tail)
+    // work correctly for direction-sensitive operations.
+
+    use crate::edges::{EdgeClass, EdgeSpec};
+
+    /// Register a reverse directed glyph "<--" where the arrow is on the left (tail) side.
+    /// For "A <-- B", B is the parent and A is the child.
+    fn register_reverse_glyph(reg: &mut EdgeRegistry) -> u8 {
+        reg.register(EdgeSpec {
+            glyph: "<--".into(),
+            tail: Mark::Arrow, // Arrow at the "from" position
+            head: Mark::Tail,  // Tail at the "to" position
+            symmetric: false,
+            class: EdgeClass::Directed,
+        })
+        .unwrap()
+    }
+
+    #[test]
+    fn reverse_glyph_parents_children_dag() {
+        // Test that a reverse glyph "<--" correctly identifies parents and children.
+        // "1 <-- 0" means: edge from node 1 to node 0 with arrow at node 1
+        // Semantically: 0 -> 1 (0 is parent, 1 is child)
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let rev = register_reverse_glyph(&mut reg);
+
+        // Build: 1 <-- 0 (which is semantically 0 -> 1)
+        let mut b = GraphBuilder::new_with_registry(2, true, &reg);
+        b.add_edge(1, 0, rev).unwrap();
+        let dag = crate::graph::dag::Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        // Node 1 has parent 0 (arrow points into node 1)
+        assert_eq!(dag.parents_of(1), &[0], "Node 1 should have parent 0");
+        assert!(
+            dag.children_of(1).is_empty(),
+            "Node 1 should have no children"
+        );
+
+        // Node 0 has child 1 (arrow points away from node 0)
+        assert!(
+            dag.parents_of(0).is_empty(),
+            "Node 0 should have no parents"
+        );
+        assert_eq!(dag.children_of(0), &[1], "Node 0 should have child 1");
+    }
+
+    #[test]
+    fn reverse_glyph_ancestors_descendants() {
+        // Build a chain: 2 <-- 1 <-- 0 (semantically 0 -> 1 -> 2)
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let rev = register_reverse_glyph(&mut reg);
+
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(1, 0, rev).unwrap(); // 1 <-- 0 means 0 -> 1
+        b.add_edge(2, 1, rev).unwrap(); // 2 <-- 1 means 1 -> 2
+        let dag = crate::graph::dag::Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        assert_eq!(dag.ancestors_of(2), vec![0, 1]);
+        assert_eq!(dag.descendants_of(0), vec![1, 2]);
+    }
+
+    #[test]
+    fn reverse_glyph_mixed_with_standard() {
+        // Mix standard "-->" and reverse "<--" glyphs
+        // 0 --> 1, 2 <-- 1 (semantically: 0 -> 1 -> 2)
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let dir = reg.code_of("-->").unwrap();
+        let rev = register_reverse_glyph(&mut reg);
+
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, dir).unwrap(); // Standard: 0 -> 1
+        b.add_edge(2, 1, rev).unwrap(); // Reverse: 2 <-- 1 means 1 -> 2
+        let dag = crate::graph::dag::Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        assert_eq!(dag.children_of(0), &[1]);
+        assert_eq!(dag.children_of(1), &[2]);
+        assert_eq!(dag.parents_of(2), &[1]);
+        assert_eq!(dag.descendants_of(0), vec![1, 2]);
+    }
+
+    #[test]
+    fn reverse_glyph_sugiyama_orientation() {
+        // Test that Sugiyama layout correctly interprets reverse glyphs.
+        // 1 <-- 0 means 0 -> 1, so Sugiyama should treat this as directed 0 -> 1
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let rev = register_reverse_glyph(&mut reg);
+
+        // Build: 1 <-- 0 (semantically 0 -> 1)
+        let mut b = GraphBuilder::new_with_registry(2, true, &reg);
+        b.add_edge(1, 0, rev).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+
+        let coords = crate::graph::layout::sugiyama_layout(&core).unwrap();
+
+        // In a hierarchical layout, the parent (0) should have a different y than child (1)
+        // The exact coordinates depend on the layout algorithm, but they should be valid
+        assert_eq!(coords.len(), 2);
+        assert!(coords[0].0.is_finite());
+        assert!(coords[0].1.is_finite());
+        assert!(coords[1].0.is_finite());
+        assert!(coords[1].1.is_finite());
+    }
+
+    #[test]
+    fn mark_helpers_consistency() {
+        // Verify mark helpers are consistent with direct spec access
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let dir = reg.code_of("-->").unwrap();
+
+        let mut b = GraphBuilder::new_with_registry(2, true, &reg);
+        b.add_edge(0, 1, dir).unwrap();
+        let core = b.finalize().unwrap();
+
+        // For edge 0 -> 1:
+        // At node 0: side=0 (tail), my_mark=Tail, nbr_mark=Arrow, is_outgoing_arrow=true
+        // At node 1: side=1 (head), my_mark=Arrow, nbr_mark=Tail, is_incoming_arrow=true
+        for k in core.row_range(0) {
+            assert_eq!(core.my_mark(k), Mark::Tail);
+            assert_eq!(core.nbr_mark(k), Mark::Arrow);
+            assert!(core.is_outgoing_arrow(k));
+            assert!(!core.is_incoming_arrow(k));
+        }
+        for k in core.row_range(1) {
+            assert_eq!(core.my_mark(k), Mark::Arrow);
+            assert_eq!(core.nbr_mark(k), Mark::Tail);
+            assert!(core.is_incoming_arrow(k));
+            assert!(!core.is_outgoing_arrow(k));
+        }
     }
 }

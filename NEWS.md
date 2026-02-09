@@ -1,12 +1,24 @@
 # caugi (development version)
 
+## Improvements
+
+- Rust remains the single source of truth for graph state. Graph properties
+  (`simple`, `graph_class`, `nodes`, `edges`) are sourced from the `session`.
+
+  - Session is always created, including empty graphs (n = 0), which simplifies
+    property access.
+  - Deprecated compatibility properties `@.state`, `@name_index_map`, `@built`,
+    and `@ptr` now warn on access and return `NULL`.
+  - Deprecated compatibility constructor arguments `build` and `state` in
+    `caugi()` now warn and are ignored.
+- Added `all.equal` and `compare_proxy` methods for caugi objects to support
+  graph-content comparison in tests.
 - Add `asp` parameter to `plot()` for controlling aspect ratio. When `asp = 1`,
-the plot respects equal units on both axes, preserving the layout
-coordinates. Works like base R's `asp` parameter (y/x aspect ratio) (#195).
-  
-- Add `pdag_to_dag()` function that generates a random DAG consistent with a given
-  CPDAG/PDAG structure if possible (#201).
-  
+  the plot respects equal units on both axes, preserving the layout
+  coordinates. Works like base R's `asp` parameter (y/x aspect ratio) (#195).
+- Add `pdag_to_dag()` function that generates a random DAG consistent with a
+  given CPDAG/PDAG structure if possible (#201).
+
 ## Bug Fixes
 
 - Fixed a bug causing `plot()` to use incorrect layout if node names were not
