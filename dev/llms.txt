@@ -88,7 +88,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x562aff8da3a0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5679606fdb60>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -113,7 +113,10 @@ objects. Some of the available functions are:
 - Structural queries, such as
   [`is_acyclic()`](https://caugi.org/dev/reference/is_acyclic.md),
   [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md), and more.
-- Graph manipulations, such as `add_edge()`, `remove_node()`, and more.
+- Graph manipulations, such as
+  [`add_edges()`](https://caugi.org/dev/reference/caugi_verbs.md),
+  [`remove_nodes()`](https://caugi.org/dev/reference/caugi_verbs.md),
+  and more.
 - Graph metrics, such as
   [`shd()`](https://caugi.org/dev/reference/shd.md) and
   [`aid()`](https://caugi.org/dev/reference/aid.md).
