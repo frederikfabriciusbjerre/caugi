@@ -38,7 +38,7 @@ Other caugi methods:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 print(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x5633b46d8210>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x5606cc86d5e0>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: A-->B
