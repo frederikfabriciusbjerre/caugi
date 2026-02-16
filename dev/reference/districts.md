@@ -1,23 +1,41 @@
-# Get districts (c-components) of an ADMG
+# Get districts (c-components) of an ADMG or AG
 
-Get the districts (c-components) of an ADMG. A district is a maximal set
-of nodes connected via bidirected edges.
+Get districts (c-components) for all nodes, or for selected nodes in an
+ADMG/AG. A district is a maximal set of nodes connected via bidirected
+edges.
 
 ## Usage
 
 ``` r
-districts(cg)
+districts(cg, nodes = NULL, index = NULL, all = NULL)
 ```
 
 ## Arguments
 
 - cg:
 
-  A `caugi` object of class ADMG.
+  A `caugi` object of class ADMG or AG.
+
+- nodes:
+
+  Optional character vector of node names. If supplied, returns
+  district(s) containing these nodes.
+
+- index:
+
+  Optional numeric vector of 1-based node indices. If supplied, returns
+  district(s) containing these indices.
+
+- all:
+
+  Optional logical. If `TRUE`, return all districts explicitly. Cannot
+  be combined with `nodes` or `index`.
 
 ## Value
 
-A list of character vectors, each containing the nodes in a district.
+If all districts are requested: a list of character vectors, one per
+district. If `nodes`/`index` are supplied: either a character vector
+(single target) or a named list of character vectors (multiple targets).
 
 ## See also
 
@@ -38,6 +56,7 @@ Other queries:
 [`is_empty_caugi()`](https://caugi.org/dev/reference/is_empty_caugi.md),
 [`is_mag()`](https://caugi.org/dev/reference/is_mag.md),
 [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+[`is_simple()`](https://caugi.org/dev/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),
 [`m_separated()`](https://caugi.org/dev/reference/m_separated.md),
 [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md),
@@ -69,4 +88,13 @@ districts(cg)
 #> [1] "B"
 #> 
 # Returns list with districts: {A, C}, {B}, {D, E}
+districts(cg, nodes = "A") # Returns c("A", "C")
+#> [1] "A" "C"
+districts(cg, index = c(1, 4))
+#> $A
+#> [1] "A" "C"
+#> 
+#> $C
+#> [1] "A" "C"
+#> 
 ```

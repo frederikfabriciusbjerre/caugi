@@ -8,7 +8,7 @@ reading from files.
 ## Usage
 
 ``` r
-caugi_deserialize(json, lazy = FALSE)
+caugi_deserialize(json, lazy)
 ```
 
 ## Arguments
@@ -19,8 +19,8 @@ caugi_deserialize(json, lazy = FALSE)
 
 - lazy:
 
-  Logical; if `FALSE` (default), the graph is built immediately. If
-  `TRUE`, graph building is deferred until needed.
+  Deprecated, no longer necessary. Logical indicating whether to lazily
+  deserialize the graph.
 
 ## Value
 

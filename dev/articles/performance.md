@@ -311,7 +311,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] ggplot2_4.0.1
+#> [1] ggplot2_4.0.2
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] tidyr_1.3.2         sass_0.4.10         generics_0.1.4     
@@ -323,7 +323,7 @@ sessionInfo()
 #> [19] cli_3.6.5           rlang_1.1.7         ggm_2.5.2          
 #> [22] bnlearn_5.1         withr_3.0.2         cachem_1.1.0       
 #> [25] yaml_2.3.12         otel_0.2.0          ggbeeswarm_0.7.3   
-#> [28] tools_4.5.2         parallel_4.5.2      dplyr_1.1.4        
+#> [28] tools_4.5.2         parallel_4.5.2      dplyr_1.2.0        
 #> [31] profmem_0.7.0       boot_1.3-32         BiocGenerics_0.56.0
 #> [34] curl_7.0.0          vctrs_0.7.1         R6_2.6.1           
 #> [37] stats4_4.5.2        lifecycle_1.0.5     fs_1.6.6           
@@ -334,7 +334,7 @@ sessionInfo()
 #> [52] data.table_1.18.2.1 glue_1.8.0          Rcpp_1.1.1         
 #> [55] systemfonts_1.3.1   tidyselect_1.2.1    xfun_0.56          
 #> [58] tibble_3.3.1        knitr_1.51          farver_2.1.2       
-#> [61] htmltools_0.5.9     igraph_2.2.1        labeling_0.4.3     
+#> [61] htmltools_0.5.9     igraph_2.2.2        labeling_0.4.3     
 #> [64] rmarkdown_2.30      caugi_1.0.0.9000    compiler_4.5.2     
 #> [67] S7_0.2.1
 ```

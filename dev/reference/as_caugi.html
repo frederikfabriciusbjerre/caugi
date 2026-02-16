@@ -54,7 +54,6 @@ graphNEL, matrix, tidygraph, daggity, bn, or igraph."><meta property="og:image" 
 <span>  <span class="va">x</span>,</span>
 <span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DAG"</span>, <span class="st">"PDAG"</span>, <span class="st">"ADMG"</span>, <span class="st">"PAG"</span>, <span class="st">"UNKNOWN"</span><span class="op">)</span>,</span>
 <span>  simple <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  build <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  collapse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  collapse_to <span class="op">=</span> <span class="st">"---"</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -78,11 +77,6 @@ graphNEL, matrix, tidygraph, daggity, bn, or igraph."><meta property="og:image" 
 <dt id="arg-simple">simple<a class="anchor" aria-label="anchor" href="#arg-simple"></a></dt>
 <dd><p>logical. If <code>TRUE</code> (default) the graph will be simple
 (no multiple edges or self-loops).</p></dd>
-
-
-<dt id="arg-build">build<a class="anchor" aria-label="anchor" href="#arg-build"></a></dt>
-<dd><p>logical. If <code>TRUE</code> (default) build the graph now, otherwise
-build lazily on first query or when using <code><a href="build.html">build()</a></code>.</p></dd>
 
 
 <dt id="arg-collapse">collapse<a class="anchor" aria-label="anchor" href="#arg-collapse"></a></dt>

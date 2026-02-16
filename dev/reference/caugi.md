@@ -31,9 +31,10 @@ caugi(
   nodes = NULL,
   edges_df = NULL,
   simple = TRUE,
-  build = TRUE,
+  build = NULL,
   class = c("AUTO", "DAG", "UG", "PDAG", "ADMG", "AG", "UNKNOWN"),
-  state = NULL
+  state = NULL,
+  .session = NULL
 )
 ```
 
@@ -83,13 +84,7 @@ caugi(
 
 - build:
 
-  Logical; if `TRUE` (default), the graph will be built using the Rust
-  backend. If `FALSE`, the graph will not be built, and the Rust backend
-  cannot be used. The graph will build, when queries are made to the
-  graph or if calling
-  [`build()`](https://caugi.org/dev/reference/build.md). **Note**: Even
-  if `build = TRUE`, if no edges or nodes are provided, the graph will
-  not be built and the pointer will be `NULL`.
+  Deprecated.
 
 - class:
 
@@ -101,8 +96,12 @@ caugi(
 
 - state:
 
-  For internal use. Build a graph by supplying a pre-constructed state
-  environment.
+  Deprecated. Replaced by `.session`.
+
+- .session:
+
+  For internal use. Build a graph by supplying a pre-constructed session
+  pointer from Rust.
 
 ## Value
 
@@ -146,19 +145,6 @@ cg4 <- caugi(
 
 cg4@simple # FALSE
 #> [1] FALSE
-cg4@built # TRUE
-#> [1] TRUE
 cg4@graph_class # "UNKNOWN"
 #> [1] "UNKNOWN"
-
-# create graph, but don't built Rust object yet, which is needed for queries
-cg5 <- caugi(
-  A %-->% B + C,
-  B %-->% D,
-  class = "DAG",
-  build = FALSE
-)
-
-cg5@built # FALSE
-#> [1] FALSE
 ```

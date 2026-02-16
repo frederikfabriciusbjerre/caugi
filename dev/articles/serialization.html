@@ -261,21 +261,10 @@ operators:</p>
 <span><span class="va">cg_from_json</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_deserialize.html">caugi_deserialize</a></span><span class="op">(</span><span class="va">json_str</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="lazy-loading">Lazy Loading<a class="anchor" aria-label="anchor" href="#lazy-loading"></a>
-</h3>
-<p>For large graphs, you can defer building:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Read without building the Rust graph structure</span></span>
-<span><span class="va">cg_lazy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_caugi.html">read_caugi</a></span><span class="op">(</span><span class="va">tmp</span>, lazy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Build when needed</span></span>
-<span><span class="va">cg_lazy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">cg_lazy</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
 <h3 id="metadata">Metadata<a class="anchor" aria-label="anchor" href="#metadata"></a>
 </h3>
 <p>Add context to your graphs with comments and tags:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/write_caugi.html">write_caugi</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">tmp</span>,</span>
 <span>  comment <span class="op">=</span> <span class="st">"Mediation model from Study A"</span>,</span>
 <span>  tags <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mediation"</span>, <span class="st">"study-a"</span>, <span class="st">"validated"</span><span class="op">)</span></span>
@@ -286,7 +275,7 @@ operators:</p>
 <h2 id="different-graph-types">Different Graph Types<a class="anchor" aria-label="anchor" href="#different-graph-types"></a>
 </h2>
 <p>The format supports all caugi graph classes:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># DAG</span></span>
 <span><span class="va">dag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">X</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span>, <span class="va">Y</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">Z</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
 <span></span>
@@ -338,7 +327,7 @@ descriptions</li>
 </h2>
 <p>Serialization is implemented in Rust for high performance. Large
 graphs serialize and deserialize efficiently:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tmp_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".caugi.json"</span><span class="op">)</span></span>
 <span><span class="va">large_dag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_graph.html">generate_graph</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, m <span class="op">=</span> <span class="fl">500</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu"><a href="../reference/write_caugi.html">write_caugi</a></span><span class="op">(</span><span class="va">large_dag</span>, <span class="va">tmp_file</span><span class="op">)</span><span class="op">)</span></span>

@@ -25,7 +25,7 @@
   Get descendants of nodes in a `caugi`
 
 - [`districts()`](https://caugi.org/dev/reference/districts.md) : Get
-  districts (c-components) of an ADMG
+  districts (c-components) of an ADMG or AG
 
 - [`edge_types()`](https://caugi.org/dev/reference/edge_types.md) :
 
@@ -77,6 +77,10 @@
 
   Is the `caugi` graph a PDAG?
 
+- [`is_simple()`](https://caugi.org/dev/reference/is_simple.md) :
+
+  Is the `caugi` graph simple?
+
 - [`is_ug()`](https://caugi.org/dev/reference/is_ug.md) :
 
   Is the `caugi` graph an UG?
@@ -118,8 +122,9 @@
 
 ## Verbs
 
-- [`build()`](https://caugi.org/dev/reference/build.md) : Build the
-  graph now
+- [`build()`](https://caugi.org/dev/reference/build.md) :
+
+  Build the `caugi` graph
 
 - [`add_edges()`](https://caugi.org/dev/reference/caugi_verbs.md)
   [`remove_edges()`](https://caugi.org/dev/reference/caugi_verbs.md)

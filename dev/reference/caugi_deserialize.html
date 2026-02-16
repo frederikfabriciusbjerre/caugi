@@ -53,7 +53,7 @@ reading from files.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_deserialize</span><span class="op">(</span><span class="va">json</span>, lazy <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_deserialize</span><span class="op">(</span><span class="va">json</span>, <span class="va">lazy</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -65,8 +65,7 @@ reading from files.</p>
 
 
 <dt id="arg-lazy">lazy<a class="anchor" aria-label="anchor" href="#arg-lazy"></a></dt>
-<dd><p>Logical; if <code>FALSE</code> (default), the graph is built immediately.
-If <code>TRUE</code>, graph building is deferred until needed.</p></dd>
+<dd><p>Deprecated, no longer necessary. Logical indicating whether to lazily deserialize the graph.</p></dd>
 
 </dl></div>
     <div class="section level2">

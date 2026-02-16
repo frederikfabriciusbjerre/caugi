@@ -1,14 +1,12 @@
-# Build the graph now
+# Build the `caugi` graph
 
-If a `caugi` has been modified (nodes or edges added or removed), it is
-marked as *not built*, i.e `cg@built = FALSE`. This function builds the
-graph using the Rust backend and updates the internal pointer to the
-graph. If the graph is already built, it is returned.
+Forces lazy compilation of the `caugi` graph without running a specific
+query. Useful to pre-initialize the graph.
 
 ## Usage
 
 ``` r
-build(cg, ...)
+build(cg)
 ```
 
 ## Arguments
@@ -17,13 +15,9 @@ build(cg, ...)
 
   A `caugi` object.
 
-- ...:
-
-  Not used.
-
 ## Value
 
-The built `caugi` object.
+The input `caugi` object (invisibly), with its graph built.
 
 ## See also
 
@@ -33,25 +27,6 @@ Other verbs:
 ## Examples
 
 ``` r
-# initialize empty graph and build slowly
-cg <- caugi(class = "PDAG")
-
-cg <- cg |>
-  add_nodes(c("A", "B", "C", "D", "E")) |> # A, B, C, D, E
-  add_edges(A %-->% B %-->% C) |> # A --> B --> C, D, E
-  set_edges(B %---% C) # A --> B --- C, D, E
-
-cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
-  remove_nodes(c("C", "D", "E")) # A --> B
-
-# verbs do not build the Rust backend
-cg@built # FALSE
-#> [1] FALSE
-build(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x557106f71480>
-#>   graph_class: PDAG
-#>   nodes: A, B
-#>   edges: A-->B
-cg@built # TRUE
-#> [1] TRUE
+cg <- caugi(A %-->% B, class = "DAG")
+build(cg) # initialize graph without querying
 ```

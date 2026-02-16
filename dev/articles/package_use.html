@@ -175,52 +175,11 @@ correlation threshold.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">correlation_implies_causation</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="va">cg</span></span>
-<span><span class="co">#&gt; &lt;caugi object; 3 nodes, 1 edges; simple: TRUE; built: FALSE; ptr=NULL&gt;</span></span>
+<span><span class="co">#&gt; &lt;caugi object; 3 nodes, 1 edges; simple: TRUE; session=0x562d5eca2a00&gt;</span></span>
 <span><span class="co">#&gt;   graph_class: DAG</span></span>
 <span><span class="co">#&gt;   nodes: V1, V2, V3</span></span>
 <span><span class="co">#&gt;   edges: V1--&gt;V2</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="something-is-up">Something is up!<a class="anchor" aria-label="anchor" href="#something-is-up"></a>
-</h2>
-<p>Let’s inspect the object:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">built</span></span>
-<span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
-<p>We can see that the object is not built yet. So, we have to include
-that as well. Building is important in <code>caugi</code>, as it
-finalizes the graph structure and prepares it for analysis. It also
-makes sure that the graph class agrees with the input graph.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#' @title Correlation implies causation!</span></span>
-<span><span class="co">#'</span></span>
-<span><span class="co">#' @param df A `data.frame` with numeric columns</span></span>
-<span><span class="co">#'</span></span>
-<span><span class="co">#' @returns A `caugi` representing the causal graph that is totally true!</span></span>
-<span><span class="va">correlation_implies_causation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span>nodes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">cor_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span>  <span class="co"># Add edges for correlations above 0.5</span></span>
-<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">cor_matrix</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">i</span> <span class="op">!=</span> <span class="va">j</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">cor_matrix</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">{</span></span>
-<span>        <span class="va">from</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="va">j</span><span class="op">]</span></span>
-<span>        <span class="va">to</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
-<span>        <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">cg</span>, from <span class="op">=</span> <span class="va">from</span>, edge <span class="op">=</span> <span class="st">"--&gt;"</span>, to <span class="op">=</span> <span class="va">to</span><span class="op">)</span> <span class="co"># add edge to caugi</span></span>
-<span>      <span class="op">}</span></span>
-<span>    <span class="op">}</span></span>
-<span>  <span class="op">}</span></span>
-<span>  <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p><strong>Hold on, it doesn’t check every iteration?</strong> No,
-<code>caugi</code> is designed to be efficient, so it only checks the
-graph’s validity when you explicitly call <code><a href="../reference/build.html">build()</a></code>. This
-allows you to add multiple edges without incurring the overhead of
-validation after each addition. You <em>can</em> ensure that your
-algorithm breaks, when introducing a faulty edge by building at each
-step. This is computationally expensive, but sometimes necessary for
-debugging.</p>
+<p>The graph is ready to use!</p>
 </div>
 <div class="section level2">
 <h2 id="class-of-the-output">Class of the output<a class="anchor" aria-label="anchor" href="#class-of-the-output"></a>
@@ -231,7 +190,7 @@ advantageous for several reasons), but you don’t want to enforce
 acyclicity in the algorithm, as that could sometimes cause your function
 to throw an error. You would rather have it return a graph in any case,
 but if it <em>is</em> a DAG, then we return a DAG.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @title Correlation implies causation!</span></span>
 <span><span class="co">#'</span></span>
 <span><span class="co">#' @param df A `data.frame` with numeric columns</span></span>
@@ -259,10 +218,10 @@ but if it <em>is</em> a DAG, then we return a DAG.</p>
 <p>Now, when you call <code>correlation_implies_causation(df)</code>, it
 will return a <code>caugi</code> graph that is a DAG if possible,
 otherwise an <code>"UNKNOWN"</code> graph.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">correlation_implies_causation</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="va">cg</span></span>
-<span><span class="co">#&gt; &lt;caugi object; 3 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x55f2dabc4960&gt;</span></span>
+<span><span class="co">#&gt; &lt;caugi object; 3 nodes, 1 edges; simple: TRUE; session=0x562d5d1eb130&gt;</span></span>
 <span><span class="co">#&gt;   graph_class: DAG</span></span>
 <span><span class="co">#&gt;   nodes: V1, V2, V3</span></span>
 <span><span class="co">#&gt;   edges: V1--&gt;V2</span></span>

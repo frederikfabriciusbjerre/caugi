@@ -90,14 +90,7 @@ cg <- cg |>
 cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
   remove_nodes(c("C", "D", "E")) # A --> B
 
-# verbs do not build the Rust backend
-cg@built # FALSE
-#> [1] FALSE
-build(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; built: TRUE; ptr=0x557105ff95c0>
-#>   graph_class: PDAG
-#>   nodes: A, B
-#>   edges: A-->B
-cg@built # TRUE
-#> [1] TRUE
+# Graphs are now built lazily when needed
+parents(cg, "B") # triggers compilation
+#> [1] "A"
 ```

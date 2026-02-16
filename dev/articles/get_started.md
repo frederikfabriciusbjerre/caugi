@@ -22,10 +22,10 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x55cce4ed3290>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x560cd0da3120>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
-#>   edges: A-->B, B-->C, B-->D, A-->C
+#>   edges: A-->B, A-->C, B-->C, B-->D
 ```
 
 You might scratch your head a bit, when looking at the call above. To
@@ -37,15 +37,16 @@ other *properties*. Let’s check the other properties.
 
 ### Properties
 
-#### `ptr`
+#### `session`
 
 ``` r
-cg@ptr
-#> <pointer: 0x55cce4ed3290>
+cg@session
+#> <pointer: 0x560cd0da3120>
 ```
 
-This is the pointer to the Rust object that `caugi` utilizes for
-performance.
+This is the session pointer to the Rust graph object that `caugi`
+utilizes for performance. The session manages lazy compilation and
+caching of graph operations internally.
 
 #### `simple`
 
@@ -59,8 +60,8 @@ a non-simple graph:
 
 ``` r
 caugi(A %-->% B, B %-->% A)
-#> Error in `graph_builder_add_edges()`:
-#> ! Parallel edges not allowed in simple graphs (0 -> 1)
+#> Error in `rs_resolve_class()`:
+#> ! Parallel edges not allowed in simple graphs (A -> B)
 ```
 
 This cannot be done unless you initialize the graph with
@@ -111,7 +112,7 @@ cg_modified <- cg |>
   remove_edges(A %-->% B, B %-->% C + D) |>
   add_edges(B %-->% A, D %-->% C)
 cg_modified
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; built: FALSE; ptr=NULL>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x560cd2bc27e0>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->C, B-->A, D-->C
@@ -153,38 +154,20 @@ to do with `caugi`.
 
 ### Advanced properties
 
-#### `built`
-
-``` r
-cg@built
-#> [1] TRUE
-```
-
-This indicates whether the graph has been “built” or not on the Rust
-side. This is important, as the Rust object may not agree with the R
-object if `built = FALSE`.
-
 #### `name_index_map`
 
-``` r
-cg@name_index_map
-```
-
-The `name_index_map` is a hashmap that takes node names as keys and
-outputs zero-based indices. This is used to access nodes’ zero-based
-indices, when converting node names to indices for Rust calls, as the
-Rust backend uses zero-based indices.
-
-#### `.state`
+#### `session`
 
 ``` r
-cg@.state
-#> <environment: 0x55cce5e02e08>
+cg@session
+#> <pointer: 0x560cd0da3120>
 ```
 
-This is the internal state of the `caugi` graph object. It is used to
-ensure that the `caugi` object can be modified in R and, so to speak,
-*saves* the modifications you might make to the graph in R without
-having to rebuild the graph in Rust each time. The most important
-takeaway about the state is that you should *avoid* modifying the state
-directly. Instead, you should use the verbs.
+This is the Rust GraphSession pointer that holds the canonical graph
+state. The session handles lazy compilation and caching of graph
+operations internally. You should *avoid* accessing or modifying the
+session directly. Instead, use the provided accessor properties
+(`@nodes`, `@edges`, `@simple`, `@graph_class`) and verb functions
+([`add_edges()`](https://caugi.org/dev/reference/caugi_verbs.md),
+[`remove_nodes()`](https://caugi.org/dev/reference/caugi_verbs.md),
+etc.).

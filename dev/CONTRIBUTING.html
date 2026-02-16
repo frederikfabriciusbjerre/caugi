@@ -137,9 +137,12 @@
 </div>
 <div class="section level3">
 <h3 id="how-it-works">How It Works<a class="anchor" aria-label="anchor" href="#how-it-works"></a></h3>
-<ol style="list-style-type: decimal"><li><p><strong>CSR Format</strong>: Graphs are stored in Compressed Sparse Row format in Rust, which makes queries very fast but mutations more expensive.</p></li>
-<li><p><strong>Lazy Building</strong>: When you mutate a graph (e.g., add edges), the changes are stored in R but not immediately applied in Rust. The graph rebuilds itself in Rust when you query it, or you can force a rebuild with <code>build(cg)</code>.</p></li>
-<li><p><strong>R + Rust Integration</strong>: The <code>extendr</code> framework handles the communication between R and Rust, with automatic type conversions and memory management.</p></li>
+<ol style="list-style-type: decimal"><li>
+<strong>CSR Format</strong>: Graphs are stored in Compressed Sparse Row format in Rust, which makes queries very fast but mutations more expensive.</li>
+<li>
+<strong>Lazy Building</strong>: When you mutate a graph (e.g., add edges), the changes are stored in R but not immediately applied in Rust. The graph rebuilds itself in Rust when you query it, or you can force a rebuild with <code>build(cg)</code>.</li>
+<li>
+<strong>R + Rust Integration</strong>: The <code>extendr</code> framework handles the communication between R and Rust, with automatic type conversions and memory management.</li>
 </ol></div>
 </div>
 <div class="section level2">

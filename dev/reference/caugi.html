@@ -85,9 +85,10 @@ infix operators. Nodes can be specified as symbols, strings, or numbers.</p>
 <span>  nodes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  edges_df <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  simple <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  build <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  build <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AUTO"</span>, <span class="st">"DAG"</span>, <span class="st">"UG"</span>, <span class="st">"PDAG"</span>, <span class="st">"ADMG"</span>, <span class="st">"AG"</span>, <span class="st">"UNKNOWN"</span><span class="op">)</span>,</span>
-<span>  state <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  state <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  .session <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -138,12 +139,7 @@ self-loops.</p></dd>
 
 
 <dt id="arg-build">build<a class="anchor" aria-label="anchor" href="#arg-build"></a></dt>
-<dd><p>Logical; if <code>TRUE</code> (default), the graph will be built using the
-Rust backend. If <code>FALSE</code>, the graph will not be built, and the Rust backend
-cannot be used. The graph will build, when queries are made to the graph or
-if calling <code><a href="build.html">build()</a></code>. <strong>Note</strong>: Even if <code>build = TRUE</code>, if no edges or
-nodes are provided, the graph will not be built and the pointer will be
-<code>NULL</code>.</p></dd>
+<dd><p>Deprecated.</p></dd>
 
 
 <dt id="arg-class">class<a class="anchor" aria-label="anchor" href="#arg-class"></a></dt>
@@ -155,8 +151,12 @@ It will default to <code>"UNKNOWN"</code> if no match is found.</p></dd>
 
 
 <dt id="arg-state">state<a class="anchor" aria-label="anchor" href="#arg-state"></a></dt>
-<dd><p>For internal use. Build a graph by supplying a pre-constructed
-state environment.</p></dd>
+<dd><p>Deprecated. Replaced by <code>.session</code>.</p></dd>
+
+
+<dt id="arg--session">.session<a class="anchor" aria-label="anchor" href="#arg--session"></a></dt>
+<dd><p>For internal use. Build a graph by supplying a
+pre-constructed session pointer from Rust.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -201,21 +201,8 @@ pointer to the underlying Rust graph structure.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cg4</span><span class="op">@</span><span class="va">simple</span> <span class="co"># FALSE</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-in"><span><span class="va">cg4</span><span class="op">@</span><span class="va">built</span> <span class="co"># TRUE</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span><span class="va">cg4</span><span class="op">@</span><span class="va">graph_class</span> <span class="co"># "UNKNOWN"</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "UNKNOWN"</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># create graph, but don't built Rust object yet, which is needed for queries</span></span></span>
-<span class="r-in"><span><span class="va">cg5</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>,</span></span>
-<span class="r-in"><span>  <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">D</span>,</span></span>
-<span class="r-in"><span>  class <span class="op">=</span> <span class="st">"DAG"</span>,</span></span>
-<span class="r-in"><span>  build <span class="op">=</span> <span class="cn">FALSE</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">cg5</span><span class="op">@</span><span class="va">built</span> <span class="co"># FALSE</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

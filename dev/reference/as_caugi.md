@@ -10,7 +10,6 @@ as_caugi(
   x,
   class = c("DAG", "PDAG", "ADMG", "PAG", "UNKNOWN"),
   simple = TRUE,
-  build = TRUE,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -33,12 +32,6 @@ as_caugi(
 
   logical. If `TRUE` (default) the graph will be simple (no multiple
   edges or self-loops).
-
-- build:
-
-  logical. If `TRUE` (default) build the graph now, otherwise build
-  lazily on first query or when using
-  [`build()`](https://caugi.org/dev/reference/build.md).
 
 - collapse:
 

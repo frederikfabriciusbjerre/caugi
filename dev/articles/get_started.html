@@ -95,10 +95,10 @@ edges.</p>
 <span>  class <span class="op">=</span> <span class="st">"DAG"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">cg</span></span>
-<span><span class="co">#&gt; &lt;caugi object; 4 nodes, 4 edges; simple: TRUE; built: TRUE; ptr=0x55cce4ed3290&gt;</span></span>
+<span><span class="co">#&gt; &lt;caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x560cd0da3120&gt;</span></span>
 <span><span class="co">#&gt;   graph_class: DAG</span></span>
 <span><span class="co">#&gt;   nodes: A, B, C, D</span></span>
-<span><span class="co">#&gt;   edges: A--&gt;B, B--&gt;C, B--&gt;D, A--&gt;C</span></span></code></pre></div>
+<span><span class="co">#&gt;   edges: A--&gt;B, A--&gt;C, B--&gt;C, B--&gt;D</span></span></code></pre></div>
 <p>You might scratch your head a bit, when looking at the call above. To
 clarify, <code>A %--&gt;% B</code> creates the edge <code>--&gt;</code>
 from <code>A</code> to <code>B</code>. The syntax
@@ -112,14 +112,15 @@ other properties.</p>
 <h3 id="properties">Properties<a class="anchor" aria-label="anchor" href="#properties"></a>
 </h3>
 <div class="section level4">
-<h4 id="ptr">
-<code>ptr</code><a class="anchor" aria-label="anchor" href="#ptr"></a>
+<h4 id="session">
+<code>session</code><a class="anchor" aria-label="anchor" href="#session"></a>
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">ptr</span></span>
-<span><span class="co">#&gt; &lt;pointer: 0x55cce4ed3290&gt;</span></span></code></pre></div>
-<p>This is the pointer to the Rust object that <code>caugi</code>
-utilizes for performance.</p>
+<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">session</span></span>
+<span><span class="co">#&gt; &lt;pointer: 0x560cd0da3120&gt;</span></span></code></pre></div>
+<p>This is the session pointer to the Rust graph object that
+<code>caugi</code> utilizes for performance. The session manages lazy
+compilation and caching of graph operations internally.</p>
 </div>
 <div class="section level4">
 <h4 id="simple">
@@ -132,8 +133,8 @@ utilizes for performance.</p>
 to create a non-simple graph:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">A</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `graph_builder_add_edges()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Parallel edges not allowed in simple graphs (0 -&gt; 1)</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `rs_resolve_class()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Parallel edges not allowed in simple graphs (A -&gt; B)</span></span></code></pre></div>
 <p>This cannot be done unless you initialize the graph with
 <code>simple = FALSE</code>. Note that, currently, all of the supported
 graph classes only support <code>simple = TRUE</code> unless the class
@@ -180,7 +181,7 @@ list that represents the descendants of that parent node.</p>
 <span>  <span class="fu"><a href="../reference/caugi_verbs.html">remove_edges</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">A</span>, <span class="va">D</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span><span class="op">)</span></span>
 <span><span class="va">cg_modified</span></span>
-<span><span class="co">#&gt; &lt;caugi object; 4 nodes, 3 edges; simple: TRUE; built: FALSE; ptr=NULL&gt;</span></span>
+<span><span class="co">#&gt; &lt;caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x560cd2bc27e0&gt;</span></span>
 <span><span class="co">#&gt;   graph_class: DAG</span></span>
 <span><span class="co">#&gt;   nodes: A, B, C, D</span></span>
 <span><span class="co">#&gt;   edges: A--&gt;C, B--&gt;A, D--&gt;C</span></span></code></pre></div>
@@ -222,41 +223,24 @@ motivation behind <code>caugi</code> and what we aspire to do with
 <h3 id="advanced-properties">Advanced properties<a class="anchor" aria-label="anchor" href="#advanced-properties"></a>
 </h3>
 <div class="section level4">
-<h4 id="built">
-<code>built</code><a class="anchor" aria-label="anchor" href="#built"></a>
-</h4>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">built</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p>This indicates whether the graph has been “built” or not on the Rust
-side. This is important, as the Rust object may not agree with the R
-object if <code>built = FALSE</code>.</p>
-</div>
-<div class="section level4">
 <h4 id="name_index_map">
 <code>name_index_map</code><a class="anchor" aria-label="anchor" href="#name_index_map"></a>
 </h4>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">name_index_map</span></span></code></pre></div>
-<p>The <code>name_index_map</code> is a hashmap that takes node names as
-keys and outputs zero-based indices. This is used to access nodes’
-zero-based indices, when converting node names to indices for Rust
-calls, as the Rust backend uses zero-based indices.</p>
 </div>
 <div class="section level4">
-<h4 id="state">
-<code>.state</code><a class="anchor" aria-label="anchor" href="#state"></a>
+<h4 id="session-1">
+<code>session</code><a class="anchor" aria-label="anchor" href="#session-1"></a>
 </h4>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">.state</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x55cce5e02e08&gt;</span></span></code></pre></div>
-<p>This is the internal state of the <code>caugi</code> graph object. It
-is used to ensure that the <code>caugi</code> object can be modified in
-R and, so to speak, <em>saves</em> the modifications you might make to
-the graph in R without having to rebuild the graph in Rust each time.
-The most important takeaway about the state is that you should
-<em>avoid</em> modifying the state directly. Instead, you should use the
-verbs.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">session</span></span>
+<span><span class="co">#&gt; &lt;pointer: 0x560cd0da3120&gt;</span></span></code></pre></div>
+<p>This is the Rust GraphSession pointer that holds the canonical graph
+state. The session handles lazy compilation and caching of graph
+operations internally. You should <em>avoid</em> accessing or modifying
+the session directly. Instead, use the provided accessor properties
+(<code>@nodes</code>, <code>@edges</code>, <code>@simple</code>,
+<code>@graph_class</code>) and verb functions (<code><a href="../reference/caugi_verbs.html">add_edges()</a></code>,
+<code><a href="../reference/caugi_verbs.html">remove_nodes()</a></code>, etc.).</p>
 </div>
 </div>
 </div>
