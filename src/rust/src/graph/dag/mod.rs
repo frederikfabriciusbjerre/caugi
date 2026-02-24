@@ -2,6 +2,7 @@
 //! DAG wrapper with O(1) slice queries via packed neighborhoods.
 
 mod adjustment;
+mod separation;
 mod transforms;
 
 use super::error::DagError;

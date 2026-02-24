@@ -120,6 +120,8 @@ rs_induced_subgraph <- function(session, keep) .Call(wrap__rs_induced_subgraph, 
 
 rs_d_separated <- function(session, xs, ys, z) .Call(wrap__rs_d_separated, session, xs, ys, z)
 
+rs_minimal_d_separator <- function(session, xs, ys, include, restrict) .Call(wrap__rs_minimal_d_separator, session, xs, ys, include, restrict)
+
 rs_m_separated <- function(session, xs, ys, z) .Call(wrap__rs_m_separated, session, xs, ys, z)
 
 rs_adjustment_set_parents <- function(session, xs, ys) .Call(wrap__rs_adjustment_set_parents, session, xs, ys)

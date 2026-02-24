@@ -129,10 +129,7 @@ impl Ag {
         packed_builder.sort_all();
         let packed = packed_builder.build();
 
-        let ag = Self {
-            core,
-            packed,
-        };
+        let ag = Self { core, packed };
 
         // Check anterior constraint: for each edge with arrowhead at v from u,
         // v must not be an anterior of u

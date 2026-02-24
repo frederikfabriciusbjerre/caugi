@@ -372,6 +372,20 @@ impl GraphView {
             _ => Err("d_separated is only defined for DAGs".into()),
         }
     }
+
+    pub fn minimal_d_separator(
+        &self,
+        xs: &[u32],
+        ys: &[u32],
+        include: &[u32],
+        restrict: &[u32],
+    ) -> Result<Option<Vec<u32>>, String> {
+        match self {
+            GraphView::Dag(d) => d.minimal_d_separator(xs, ys, include, restrict),
+            _ => Err("minimal_d_separator is only defined for DAGs".into()),
+        }
+    }
+
     pub fn adjustment_set_parents(&self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
         match self {
             GraphView::Dag(d) => Ok(d.adjustment_set_parents(xs, ys)),

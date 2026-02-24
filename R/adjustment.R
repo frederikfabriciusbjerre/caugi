@@ -282,6 +282,137 @@ all_backdoor_sets <- function(
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
+# ────────────────────────── Minimal d-separator ───────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+#' @title Compute a minimal d-separator
+#'
+#' @description Computes a minimal d-separator Z for sets X and Y in a DAG,
+#' optionally with mandatory inclusions and restrictions on the separator.
+#'
+#' @details
+#' A d-separator Z for X and Y is a set of nodes such that conditioning on Z
+#' d-separates X from Y in the graph. This function returns a minimal separator,
+#' meaning no proper subset of Z still d-separates X and Y.
+#'
+#' The algorithm:
+#' 1. Restricts to ancestors of X ∪ Y ∪ I
+#' 2. Computes initial separator candidate from R
+#' 3. Refines using Bayes-ball d-connection algorithm
+#' 4. Returns minimal separator or NULL if none exists within R
+#'
+#' @param cg A `caugi` object (must be a DAG).
+#' @param X,Y Node selectors: character vector of names or unquoted expression.
+#'   Use `*_index` to pass 1-based indices.
+#' @param I Nodes that must be included in the separator.
+#' @param R Nodes allowed in the separator. If `NULL`, uses all nodes excluding
+#'   X and Y.
+#' @param X_index,Y_index,I_index,R_index Optional numeric 1-based indices
+#'   (exclusive with corresponding name parameters).
+#'
+#' @returns A character vector of node names representing the minimal separator,
+#' or `NULL` if no valid separator exists within the restriction R.
+#'
+#' @source van der Zander, B. & Liśkiewicz, M. (2020). Finding Minimal
+#'   d-separators in Linear Time and Applications. Proceedings of The 35th
+#'   Uncertainty in Artificial Intelligence Conference, in Proceedings of
+#'   Machine Learning Research 115:637-647 Available from
+#'   <https://proceedings.mlr.press/v115/van-der-zander20a.html>.
+#'
+#' @examples
+#' cg <- caugi(
+#'   A %-->% X,
+#'   X %-->% M,
+#'   M %-->% Y,
+#'   A %-->% Y,
+#'   class = "DAG"
+#' )
+#'
+#' # Find any minimal separator between X and Y
+#' minimal_d_separator(cg, "X", "Y")
+#'
+#' # Force M to be in the separator
+#' minimal_d_separator(cg, "X", "Y", I = "M")
+#'
+#' # Restrict separator to only {A, M}
+#' minimal_d_separator(cg, "X", "Y", R = c("A", "M"))
+#'
+#' @family adjustment
+#' @concept adjustment
+#'
+#' @export
+minimal_d_separator <- function(
+  cg,
+  X = NULL,
+  Y = NULL,
+  I = character(0),
+  R = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  I_index = NULL,
+  R_index = NULL
+) {
+  is_caugi(cg, throw_error = TRUE)
+
+  if (!is_dag(cg)) {
+    stop(
+      "`minimal_d_separator()` is only defined for DAGs. ",
+      "The graph has class \"",
+      cg@graph_class,
+      "\".",
+      call. = FALSE
+    )
+  }
+
+  # Resolve X and Y indices
+  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+
+  # Validate that X and Y resolve to non-empty node sets
+  if (length(X_idx0) == 0L) {
+    stop(
+      "`X` did not match any nodes in the graph. Check that the node names exist.",
+      call. = FALSE
+    )
+  }
+  if (length(Y_idx0) == 0L) {
+    stop(
+      "`Y` did not match any nodes in the graph. Check that the node names exist.",
+      call. = FALSE
+    )
+  }
+  # Resolve I indices (default to empty)
+  I_idx0 <- .resolve_idx0_mget(cg@session, I, I_index)
+
+  # Resolve R indices (default to all nodes except X and Y)
+  if (is.null(R) && is.null(R_index)) {
+    # Default: all nodes except X and Y
+    all_idx0 <- seq.int(0L, nrow(cg@nodes) - 1L)
+    R_idx0 <- setdiff(setdiff(all_idx0, X_idx0), Y_idx0)
+  } else {
+    R_idx0 <- .resolve_idx0_mget(cg@session, R, R_index)
+  }
+
+  # Call Rust function
+  result_idx0 <- rs_minimal_d_separator(
+    cg@session,
+    as.integer(X_idx0),
+    as.integer(Y_idx0),
+    as.integer(I_idx0),
+    as.integer(R_idx0)
+  )
+
+  # Convert result
+  if (is.null(result_idx0)) {
+    return(NULL)
+  }
+
+  # Convert 0-based indices to node names
+  nm <- cg@nodes$name
+  nm[result_idx0 + 1L]
+}
+
+# ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────── ADMG Adjustment Functions ───────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 

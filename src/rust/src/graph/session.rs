@@ -606,6 +606,19 @@ impl GraphSession {
         view.d_separated(xs, ys, z).map_err(|e| self.map_error(e))
     }
 
+    /// Minimal d-separator computation (DAG only).
+    pub fn minimal_d_separator(
+        &mut self,
+        xs: &[u32],
+        ys: &[u32],
+        include: &[u32],
+        restrict: &[u32],
+    ) -> Result<Option<Vec<u32>>, String> {
+        let view = self.view()?;
+        view.minimal_d_separator(xs, ys, include, restrict)
+            .map_err(|e| self.map_error(e))
+    }
+
     /// M-separation query (ADMG/AG/DAG).
     pub fn m_separated(&mut self, xs: &[u32], ys: &[u32], z: &[u32]) -> Result<bool, String> {
         let view = self.view()?;

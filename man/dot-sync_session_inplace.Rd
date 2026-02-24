@@ -15,7 +15,7 @@
 
 \item{simple}{Logical; whether the graph is simple.}
 
-\item{class}{Character; target graph class or \code{"AUTO"}.}
+\item{class}{Character; target graph class.}
 }
 \value{
 A list with \code{session} and resolved \code{class}.

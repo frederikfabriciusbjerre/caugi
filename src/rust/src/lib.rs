@@ -1245,6 +1245,51 @@ fn rs_d_separated(
 }
 
 #[extendr]
+fn rs_minimal_d_separator(
+    mut session: ExternalPtr<GraphSession>,
+    xs: Integers,
+    ys: Integers,
+    include: Integers,
+    restrict: Integers,
+) -> Nullable<Integers> {
+    let xs_u: Vec<u32> = xs.iter().map(|ri| rint_to_u32(ri, "xs")).collect();
+    let ys_u: Vec<u32> = ys.iter().map(|ri| rint_to_u32(ri, "ys")).collect();
+    let inc_u: Vec<u32> = include
+        .iter()
+        .map(|ri| rint_to_u32(ri, "include"))
+        .collect();
+    let res_u: Vec<u32> = restrict
+        .iter()
+        .map(|ri| rint_to_u32(ri, "restrict"))
+        .collect();
+
+    let result = session
+        .as_mut()
+        .minimal_d_separator(&xs_u, &ys_u, &inc_u, &res_u)
+        .unwrap_or_else(|e| throw_r_error(e));
+
+    match result {
+        Some(sep) => {
+            let ints: Vec<i32> = sep
+                .iter()
+                .map(|&x| {
+                    i32::try_from(x).map_err(|_| {
+                        format!(
+                            "Node id {} exceeds the maximum allowed value ({}) for R integers.",
+                            x,
+                            i32::MAX
+                        )
+                    })
+                })
+                .collect::<std::result::Result<Vec<i32>, String>>()
+                .unwrap_or_else(|e| throw_r_error(&e));
+            Nullable::NotNull(Integers::from_values(ints))
+        }
+        None => Nullable::Null,
+    }
+}
+
+#[extendr]
 fn rs_m_separated(
     mut session: ExternalPtr<GraphSession>,
     xs: Integers,
@@ -1441,6 +1486,7 @@ extendr_module! {
     fn rs_latent_project;
     fn rs_induced_subgraph;
     fn rs_d_separated;
+    fn rs_minimal_d_separator;
     fn rs_m_separated;
     fn rs_adjustment_set_parents;
     fn rs_adjustment_set_backdoor;
