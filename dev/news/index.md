@@ -40,6 +40,14 @@
   layout if node names were not in the same order as in the graph object
   ([\#198](https://github.com/frederikfabriciusbjerre/caugi/issues/198)).
 
+### Deprecations
+
+- The parameter `all` in
+  [`districts()`](https://caugi.org/dev/reference/districts.md) has been
+  deprecated. Just use
+  [`districts()`](https://caugi.org/dev/reference/districts.md) without
+  arguments to get all districts.
+
 ## caugi 1.0.0
 
 CRAN release: 2026-01-22
