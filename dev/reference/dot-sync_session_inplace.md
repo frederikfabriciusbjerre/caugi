@@ -29,7 +29,7 @@ nodes and edges.
 
 - class:
 
-  Character; target graph class or `"AUTO"`.
+  Character; target graph class.
 
 ## Value
 

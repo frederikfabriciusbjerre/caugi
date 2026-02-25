@@ -148,6 +148,8 @@
   : Is a set a valid adjustment set in an ADMG?
 - [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
   : Is a backdoor set valid?
+- [`minimal_d_separator()`](https://caugi.org/dev/reference/minimal_d_separator.md)
+  : Compute a minimal d-separator
 
 ## Simulation
 

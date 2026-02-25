@@ -2,6 +2,13 @@
 
 ## caugi (development version)
 
+### New Features
+
+- Add
+  [`minimal_d_separator()`](https://caugi.org/dev/reference/minimal_d_separator.md),
+  which computes a minimal d-separator between sets of nodes in a DAG,
+  with support for mandatory inclusions and restrictions.
+
 ### Improvements
 
 - Rust remains the single source of truth for graph state. Graph
