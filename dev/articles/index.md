@@ -2,7 +2,7 @@
 
 ### All vignettes
 
-- [Get started](https://caugi.org/dev/articles/get_started.md):
+- [caugi](https://caugi.org/dev/articles/caugi.md):
 - [Motivation](https://caugi.org/dev/articles/motivation.md):
 - [How to use caugi in a
   package](https://caugi.org/dev/articles/package_use.md):
