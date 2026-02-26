@@ -107,7 +107,7 @@ test_that("caugi_options retrieves grid::unit values", {
   # Some options use grid::unit (spacing, tier_style$padding)
   spacing <- caugi_options("plot", "spacing")
   expect_s3_class(spacing, "unit")
-  
+
   tier_padding <- caugi_options("plot", "tier_style", "padding")
   expect_s3_class(tier_padding, "unit")
 })
@@ -116,7 +116,7 @@ test_that("caugi_options resets to defaults", {
   # Modify options
   caugi_options(plot = list(node_style = list(fill = "blue")))
   expect_equal(caugi_options("plot", "node_style", "fill"), "blue")
-  
+
   # Reset to defaults
   caugi_options(caugi_default_options())
   expect_equal(caugi_options("plot", "node_style", "fill"), "lightgrey")
@@ -124,22 +124,24 @@ test_that("caugi_options resets to defaults", {
 
 test_that("caugi_options sets multiple options at once", {
   original <- caugi_options("plot")
-  
+
   # Set multiple nested options simultaneously
-  caugi_options(plot = list(
-    spacing = grid::unit(2, "lines"),
-    node_style = list(fill = "red", padding = 5),
-    edge_style = list(arrow_size = 6)
-  ))
-  
+  caugi_options(
+    plot = list(
+      spacing = grid::unit(2, "lines"),
+      node_style = list(fill = "red", padding = 5),
+      edge_style = list(arrow_size = 6)
+    )
+  )
+
   expect_equal(as.numeric(caugi_options("plot", "spacing")), 2)
   expect_equal(caugi_options("plot", "node_style", "fill"), "red")
   expect_equal(caugi_options("plot", "node_style", "padding"), 5)
   expect_equal(caugi_options("plot", "edge_style", "arrow_size"), 6)
-  
+
   # Other options should be preserved
   expect_equal(caugi_options("plot", "node_style", "size"), 1)
-  
+
   # Restore
   caugi_options(plot = original)
 })
