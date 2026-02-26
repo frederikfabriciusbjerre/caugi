@@ -8,7 +8,9 @@ caugi_options(...)
 }
 \arguments{
 \item{...}{Named values to update options with, or unnamed option names to
-retrieve. To query all options, call without arguments.}
+retrieve. Multiple unnamed arguments drill down through nested options.
+To query all options, call without arguments. Attempting to access a
+non-existent option will raise an error.}
 }
 \value{
 When setting, returns (invisibly) the previous values for the updated
@@ -54,6 +56,10 @@ caugi_options()
 
 # Query specific option
 caugi_options("plot")
+
+# Query nested option
+caugi_options("plot", "tier_style")
+caugi_options("plot", "node_style", "fill")
 
 # Set plot spacing
 caugi_options(plot = list(spacing = grid::unit(2, "lines")))

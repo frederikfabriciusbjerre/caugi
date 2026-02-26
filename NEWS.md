@@ -12,6 +12,8 @@
 
 ## Improvements
 
+- `caugi_options()` now supports nested key drilling: multiple unnamed arguments
+  traverse nested options (e.g., `caugi_options("plot", "tier_style", "fill")`).
 - Rust remains the single source of truth for graph state. Graph properties
   (`simple`, `graph_class`, `nodes`, `edges`) are sourced from the `session`.
   - Session is always created, including empty graphs (n = 0), which simplifies
