@@ -54,6 +54,7 @@ Other queries:
 [`neighbors()`](https://caugi.org/dev/reference/neighbors.md),
 [`nodes()`](https://caugi.org/dev/reference/nodes.md),
 [`parents()`](https://caugi.org/dev/reference/parents.md),
+[`posteriors()`](https://caugi.org/dev/reference/posteriors.md),
 [`same_nodes()`](https://caugi.org/dev/reference/same_nodes.md),
 [`subgraph()`](https://caugi.org/dev/reference/subgraph.md),
 [`topological_sort()`](https://caugi.org/dev/reference/topological_sort.md)

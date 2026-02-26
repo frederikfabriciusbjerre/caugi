@@ -1,29 +1,38 @@
-# Is the `caugi` graph simple?
+# Get posteriors of nodes in a `caugi`
 
-Checks if the given `caugi` graph is simple (no self-loops and no
-parallel edges).
+Get the posterior set of nodes in a graph. The posterior set (dual of
+the anterior set from Richardson and Spirtes, 2002) includes all nodes
+reachable by following paths where every edge is either undirected or
+directed away from the source node.
+
+For DAGs, the posterior set equals the descendant set (since there are
+no undirected edges). For PDAGs, it includes both descendants and nodes
+reachable via undirected edges.
 
 ## Usage
 
 ``` r
-is_simple(cg, force_check = FALSE)
+posteriors(cg, nodes = NULL, index = NULL)
 ```
 
 ## Arguments
 
 - cg:
 
-  A `caugi` object.
+  A `caugi` object of class DAG, PDAG, or AG.
 
-- force_check:
+- nodes:
 
-  Logical; if `TRUE`, force a check against the compiled graph
-  representation. If `FALSE` (default), return the declared `simple`
-  property.
+  A vector of node names.
+
+- index:
+
+  A vector of node indexes.
 
 ## Value
 
-A logical value indicating whether the graph is simple.
+Either a character vector of node names (if a single node is requested)
+or a list of character vectors (if multiple nodes are requested).
 
 ## See also
 
@@ -45,13 +54,13 @@ Other queries:
 [`is_empty_caugi()`](https://caugi.org/dev/reference/is_empty_caugi.md),
 [`is_mag()`](https://caugi.org/dev/reference/is_mag.md),
 [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+[`is_simple()`](https://caugi.org/dev/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),
 [`m_separated()`](https://caugi.org/dev/reference/m_separated.md),
 [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md),
 [`neighbors()`](https://caugi.org/dev/reference/neighbors.md),
 [`nodes()`](https://caugi.org/dev/reference/nodes.md),
 [`parents()`](https://caugi.org/dev/reference/parents.md),
-[`posteriors()`](https://caugi.org/dev/reference/posteriors.md),
 [`same_nodes()`](https://caugi.org/dev/reference/same_nodes.md),
 [`spouses()`](https://caugi.org/dev/reference/spouses.md),
 [`subgraph()`](https://caugi.org/dev/reference/subgraph.md),
@@ -60,19 +69,25 @@ Other queries:
 ## Examples
 
 ``` r
-cg_simple <- caugi(
-  A %-->% B,
+# PDAG example with directed and undirected edges
+cg <- caugi(
+  A %-->% B %---% C,
+  B %-->% D,
+  class = "PDAG"
+)
+
+posteriors(cg, "A") # B, C, D
+#> [1] "B" "C" "D"
+posteriors(cg, "B") # C, D
+#> [1] "C" "D"
+posteriors(cg, "D") # NULL (no posteriors)
+#> NULL
+
+# For DAGs, posteriors equals descendants
+cg_dag <- caugi(
+  A %-->% B %-->% C,
   class = "DAG"
 )
-is_simple(cg_simple) # TRUE
-#> [1] TRUE
-
-cg_nonsimple <- caugi(
-  A %-->% B,
-  A %<->% B,
-  class = "UNKNOWN",
-  simple = FALSE
-)
-is_simple(cg_nonsimple) # FALSE
-#> [1] FALSE
+posteriors(cg_dag, "A") # B, C
+#> [1] "B" "C"
 ```

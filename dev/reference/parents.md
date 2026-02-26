@@ -59,6 +59,7 @@ Other queries:
 [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md),
 [`neighbors()`](https://caugi.org/dev/reference/neighbors.md),
 [`nodes()`](https://caugi.org/dev/reference/nodes.md),
+[`posteriors()`](https://caugi.org/dev/reference/posteriors.md),
 [`same_nodes()`](https://caugi.org/dev/reference/same_nodes.md),
 [`spouses()`](https://caugi.org/dev/reference/spouses.md),
 [`subgraph()`](https://caugi.org/dev/reference/subgraph.md),

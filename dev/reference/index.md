@@ -108,6 +108,10 @@
 
   Get parents of nodes in a `caugi`
 
+- [`posteriors()`](https://caugi.org/dev/reference/posteriors.md) :
+
+  Get posteriors of nodes in a `caugi`
+
 - [`same_nodes()`](https://caugi.org/dev/reference/same_nodes.md) : Same
   nodes?
 
