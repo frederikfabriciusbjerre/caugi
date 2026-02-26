@@ -49,7 +49,9 @@
 </ul></div>
 <div class="section level3">
 <h3 id="improvements-development-version">Improvements<a class="anchor" aria-label="anchor" href="#improvements-development-version"></a></h3>
-<ul><li>Rust remains the single source of truth for graph state. Graph properties (<code>simple</code>, <code>graph_class</code>, <code>nodes</code>, <code>edges</code>) are sourced from the <code>session</code>.
+<ul><li>
+<code><a href="../reference/caugi_options.html">caugi_options()</a></code> now supports nested key drilling: multiple unnamed arguments traverse nested options (e.g., <code>caugi_options("plot", "tier_style", "fill")</code>).</li>
+<li>Rust remains the single source of truth for graph state. Graph properties (<code>simple</code>, <code>graph_class</code>, <code>nodes</code>, <code>edges</code>) are sourced from the <code>session</code>.
 <ul><li>Session is always created, including empty graphs (n = 0), which simplifies property access.</li>
 <li>Deprecated compatibility properties <code>@.state</code>, <code>@name_index_map</code>, <code>@built</code>, and <code>@ptr</code> now warn on access and return <code>NULL</code>.</li>
 <li>Deprecated compatibility constructor arguments <code>build</code> and <code>state</code> in <code><a href="../reference/caugi.html">caugi()</a></code> now warn and are ignored.</li>

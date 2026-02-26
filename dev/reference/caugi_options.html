@@ -59,7 +59,9 @@ default visual styles for nodes, edges, labels, and titles.</p>
 
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Named values to update options with, or unnamed option names to
-retrieve. To query all options, call without arguments.</p></dd>
+retrieve. Multiple unnamed arguments drill down through nested options.
+To query all options, call without arguments. Attempting to access a
+non-existent option will raise an error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -168,73 +170,100 @@ available graphical parameters</p></div>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Query specific option</span></span></span>
 <span class="r-in"><span><span class="fu">caugi_options</span><span class="op">(</span><span class="st">"plot"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$spacing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $spacing</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1lines</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$node_style</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$node_style$fill</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $node_style</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $node_style$fill</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lightgrey"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$node_style$padding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $node_style$padding</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$node_style$size</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $node_style$size</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$edge_style</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$edge_style$arrow_size</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $edge_style</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $edge_style$arrow_size</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$edge_style$circle_size</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $edge_style$circle_size</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$edge_style$fill</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $edge_style$fill</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "black"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$label_style</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $label_style</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$title_style</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$title_style$col</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $title_style</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $title_style$col</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "black"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$title_style$fontface</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $title_style$fontface</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "bold"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$title_style$fontsize</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $title_style$fontsize</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 14.4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style$boxes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style$boxes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style$labels</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style$labels</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style$fill</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style$fill</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lightsteelblue"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style$col</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style$col</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "transparent"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style$label_style</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style$label_style</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style$lwd</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style$lwd</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style$alpha</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style$alpha</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$tier_style$padding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $tier_style$padding</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4mm</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Query nested option</span></span></span>
+<span class="r-in"><span><span class="fu">caugi_options</span><span class="op">(</span><span class="st">"plot"</span>, <span class="st">"tier_style"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $boxes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $labels</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $fill</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lightsteelblue"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $col</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "transparent"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $label_style</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $lwd</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $alpha</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $padding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4mm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="fu">caugi_options</span><span class="op">(</span><span class="st">"plot"</span>, <span class="st">"node_style"</span>, <span class="st">"fill"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "lightgrey"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Set plot spacing</span></span></span>
 <span class="r-in"><span><span class="fu">caugi_options</span><span class="op">(</span>plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>spacing <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"lines"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
