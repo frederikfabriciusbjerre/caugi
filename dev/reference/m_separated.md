@@ -27,10 +27,9 @@ m_separated(
 
 - X, Y, Z:
 
-  Node selectors: character vector of names, unquoted expression
-  (supports `+` and [`c()`](https://rdrr.io/r/base/c.html)), or `NULL`.
-  Use `*_index` to pass 1-based indices. If `Z` is `NULL` or missing, no
-  nodes are conditioned on.
+  Character vectors of node names, or `NULL`. Use `*_index` to pass
+  1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
+  on.
 
 - X_index, Y_index, Z_index:
 

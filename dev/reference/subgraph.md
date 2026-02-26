@@ -16,9 +16,7 @@ subgraph(cg, nodes = NULL, index = NULL)
 
 - nodes:
 
-  A vector of node names, a vector of unquoted node names, or an
-  expression combining these with `+` and
-  [`c()`](https://rdrr.io/r/base/c.html).
+  A character vector of node names.
 
 - index:
 

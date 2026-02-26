@@ -35,8 +35,8 @@ Research 115:637-647 Available from
 
 - X, Y:
 
-  Node selectors: character vector of names or unquoted expression. Use
-  `*_index` to pass 1-based indices.
+  Character vectors of node names. Use `*_index` to pass 1-based
+  indices.
 
 - I:
 

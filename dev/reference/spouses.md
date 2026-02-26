@@ -16,7 +16,7 @@ spouses(cg, nodes = NULL, index = NULL)
 
 - nodes:
 
-  A vector of node names.
+  A character vector of node names.
 
 - index:
 
