@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">0</article-id>
+<article-id pub-id-type="doi">N/A</article-id>
+<title-group>
+<article-title>caugi: a fast and flexible toolbox for causal graphs in
+R</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" corresp="yes">
+<name>
+<surname>Bjerre</surname>
+<given-names>Frederik Fabricius</given-names>
+</name>
+<xref ref-type="aff" rid="aff-1"/>
+<xref ref-type="aff" rid="aff-2"/>
+<xref ref-type="corresp" rid="cor-1"><sup>*</sup></xref>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Kristensen</surname>
+<given-names>Bjarke Hautop</given-names>
+</name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<contrib-id contrib-id-type="orcid">https://orcid.org/0000-0002-4029-5945</contrib-id>
+<name>
+<surname>Larsson</surname>
+<given-names>Johan</given-names>
+</name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<contrib-id contrib-id-type="orcid">https://orcid.org/0000-0002-1279-8676</contrib-id>
+<name>
+<surname>Sachs</surname>
+<given-names>Michael C</given-names>
+</name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Section of Biostatistics, University of Copenhagen,
+Denmark</institution>
+<institution-id institution-id-type="ROR">035b05819</institution-id>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Department of Mathematical Sciences, University of
+Copenhagen, Denmark</institution>
+<institution-id institution-id-type="ROR">035b05819</institution-id>
+</institution-wrap>
+</aff>
+</contrib-group>
+<author-notes>
+<corresp id="cor-1">* E-mail: <email></email></corresp>
+</author-notes>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-08-13">
+<day>13</day>
+<month>8</month>
+<year>2017</year>
+</pub-date>
+<volume>¿VOL?</volume>
+<issue>¿ISSUE?</issue>
+<fpage>¿PAGE?</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>1970</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>R</kwd>
+<kwd>causal inference</kwd>
+<kwd>causal discovery</kwd>
+<kwd>graphs</kwd>
+<kwd>networks</kwd>
+<kwd>statistics</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+</sec>
+<sec id="software-design">
+  <title>Software design</title>
+</sec>
+<sec id="research-impact-statement">
+  <title>Research impact statement</title>
+</sec>
+<sec id="ai-usage-disclosure">
+  <title>AI usage disclosure</title>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+</sec>
+</body>
+<back>
+</back>
+</article>
