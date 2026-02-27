@@ -5,6 +5,10 @@
 ### New Features
 
 - Add
+  [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md),
+  which normalizes the latent structure of a DAG while preserving the
+  marginal model over observed variables.
+- Add
   [`minimal_d_separator()`](https://caugi.org/dev/reference/minimal_d_separator.md),
   which computes a minimal d-separator between sets of nodes in a DAG,
   with support for mandatory inclusions and restrictions.

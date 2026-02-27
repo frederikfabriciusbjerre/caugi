@@ -39,6 +39,7 @@ Other operations:
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
 [`moralize()`](https://caugi.org/dev/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
+[`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md),
 [`skeleton()`](https://caugi.org/dev/reference/skeleton.md)
 
 ## Examples

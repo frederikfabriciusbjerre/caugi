@@ -236,6 +236,9 @@
 
   Mutate `caugi` class
 
+- [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md)
+  : Normalize latent structure in a DAG
+
 - [`skeleton()`](https://caugi.org/dev/reference/skeleton.md) : Get the
   skeleton of a graph
 

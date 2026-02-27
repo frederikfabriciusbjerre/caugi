@@ -42,6 +42,7 @@ Other operations:
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
 [`moralize()`](https://caugi.org/dev/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
+[`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md),
 [`skeleton()`](https://caugi.org/dev/reference/skeleton.md)
 
 ## Examples
@@ -55,12 +56,12 @@ mg <- caugi(
 )
 
 condition_marginalize(mg, marg_vars = "U") # ADMG
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55d1cc3ae700>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55fb7f7e8a40>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y, X<->Y
 condition_marginalize(mg, cond_vars = "U") # DAG
-#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x55d1ce4672c0>
+#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x55fb79174ec0>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y
