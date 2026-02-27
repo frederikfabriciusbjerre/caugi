@@ -61,6 +61,8 @@
   [`plot()`](https://caugi.org/dev/reference/plot.md) to use incorrect
   layout if node names were not in the same order as in the graph object
   ([\#198](https://github.com/frederikfabriciusbjerre/caugi/issues/198)).
+- Fixed [`set_edges()`](https://caugi.org/dev/reference/caugi_verbs.md)
+  so that it correctly replaces symmetric edges in simple graphs.
 
 ### Deprecations
 

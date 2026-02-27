@@ -11,7 +11,7 @@ session.
   cg,
   nodes = NULL,
   edges = NULL,
-  action = c("add", "remove"),
+  action = c("add", "remove", "replace"),
   inplace = FALSE
 )
 ```
@@ -33,7 +33,7 @@ session.
 
 - action:
 
-  One of `"add"` or `"remove"`.
+  One of `"add"`, `"remove"`, or `"replace"`.
 
 - inplace:
 
