@@ -540,3 +540,12 @@ test_that("AUTO class doesn't trigger after init", {
   cg <- caugi(A %-->% B, class = "AUTO")
   expect_equal(cg@graph_class, "DAG")
 })
+
+test_that("node order does not matter when removing edges", {
+  cg <- caugi(A %---% B, class = "PDAG")
+  cg_new <- set_edges(cg, B %-->% A)
+
+  cg_new
+
+  expect_equal(edges(cg_new)$edge, "-->")
+})
