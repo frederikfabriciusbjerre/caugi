@@ -47,7 +47,12 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ancestors</span><span class="op">(</span><span class="va">cg</span>, nodes <span class="op">=</span> <span class="cn">NULL</span>, index <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ancestors</span><span class="op">(</span></span>
+<span>  <span class="va">cg</span>,</span>
+<span>  nodes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  index <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  open <span class="op">=</span> <span class="fu"><a href="caugi_options.html">caugi_options</a></span><span class="op">(</span><span class="st">"use_open_graph_definition"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -64,6 +69,12 @@
 
 <dt id="arg-index">index<a class="anchor" aria-label="anchor" href="#arg-index"></a></dt>
 <dd><p>A vector of node indexes.</p></dd>
+
+
+<dt id="arg-open">open<a class="anchor" aria-label="anchor" href="#arg-open"></a></dt>
+<dd><p>Boolean. Determines how the graph is interpreted when retrieving ancestors.
+Default is taken from <code>caugi_options("use_open_graph_definition")</code>,
+which by default is TRUE.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -113,6 +124,8 @@ requested) or a list of character vectors (if multiple nodes are requested).</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">ancestors</span><span class="op">(</span><span class="va">cg</span>, <span class="st">"A"</span><span class="op">)</span> <span class="co"># NULL</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-in"><span><span class="fu">ancestors</span><span class="op">(</span><span class="va">cg</span>, <span class="st">"A"</span>, open <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="co"># A</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "A"</span>
 <span class="r-in"><span><span class="fu">ancestors</span><span class="op">(</span><span class="va">cg</span>, index <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># "A"</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "A"</span>
 <span class="r-in"><span><span class="fu">ancestors</span><span class="op">(</span><span class="va">cg</span>, <span class="st">"B"</span><span class="op">)</span> <span class="co"># "A"</span></span></span>

@@ -17,6 +17,16 @@
   [`descendants()`](https://caugi.org/dev/reference/descendants.md). For
   PDAGs and AGs, it includes both descendants and nodes reachable via
   undirected edges.
+- You can now specify whether to use an open or closed graph definition
+  for the queries
+  [`ancestors()`](https://caugi.org/dev/reference/ancestors.md),
+  [`anteriors()`](https://caugi.org/dev/reference/anteriors.md),
+  [`descendants()`](https://caugi.org/dev/reference/descendants.md), and
+  [`posteriors()`](https://caugi.org/dev/reference/posteriors.md). Can
+  be set globally with
+  [`caugi_options()`](https://caugi.org/dev/reference/caugi_options.md)
+  or locally with `open = TRUE/FALSE` argument. Default is
+  `open = TRUE`, like it was before implicitly.
 
 ### Improvements
 

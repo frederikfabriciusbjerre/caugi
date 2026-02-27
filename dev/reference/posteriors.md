@@ -12,7 +12,12 @@ reachable via undirected edges.
 ## Usage
 
 ``` r
-posteriors(cg, nodes = NULL, index = NULL)
+posteriors(
+  cg,
+  nodes = NULL,
+  index = NULL,
+  open = caugi_options("use_open_graph_definition")
+)
 ```
 
 ## Arguments
@@ -28,6 +33,13 @@ posteriors(cg, nodes = NULL, index = NULL)
 - index:
 
   A vector of node indexes.
+
+- open:
+
+  Boolean. Determines how the graph is interpreted when retrieving
+  posteriors. Default is taken from
+  `caugi_options("use_open_graph_definition")`, which by default is
+  TRUE.
 
 ## Value
 
@@ -78,6 +90,8 @@ cg <- caugi(
 
 posteriors(cg, "A") # B, C, D
 #> [1] "B" "C" "D"
+posteriors(cg, "A", open = FALSE) # A, B, C, D
+#> [1] "A" "B" "C" "D"
 posteriors(cg, "B") # C, D
 #> [1] "C" "D"
 posteriors(cg, "D") # NULL (no posteriors)

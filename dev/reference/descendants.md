@@ -5,7 +5,12 @@ Get descendants of nodes in a `caugi`
 ## Usage
 
 ``` r
-descendants(cg, nodes = NULL, index = NULL)
+descendants(
+  cg,
+  nodes = NULL,
+  index = NULL,
+  open = caugi_options("use_open_graph_definition")
+)
 ```
 
 ## Arguments
@@ -21,6 +26,13 @@ descendants(cg, nodes = NULL, index = NULL)
 - index:
 
   A vector of node indexes.
+
+- open:
+
+  Boolean. Determines how the graph is interpreted when retrieving
+  descendants. Default is taken from
+  `caugi_options("use_open_graph_definition")`, which by default is
+  TRUE.
 
 ## Value
 
@@ -69,6 +81,8 @@ cg <- caugi(
 )
 descendants(cg, "A") # "B" "C"
 #> [1] "B" "C"
+descendants(cg, "A", open = FALSE) # "A" "B" "C"
+#> [1] "A" "B" "C"
 descendants(cg, index = 2) # "C"
 #> [1] "C"
 descendants(cg, "B") # "C"

@@ -858,6 +858,9 @@ The following options can be configured under `plot`:
 ``` r
 # View all current options
 caugi_options()
+#> $use_open_graph_definition
+#> [1] TRUE
+#> 
 #> $plot
 #> $plot$spacing
 #> [1] 1lines

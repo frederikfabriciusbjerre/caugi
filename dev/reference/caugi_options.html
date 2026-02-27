@@ -72,7 +72,14 @@ the requested options.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Currently supported options are nested under the <code>plot</code> key:</p><ul><li><p><code>spacing</code>: A <code><a href="https://rdrr.io/r/grid/unit.html" class="external-link">grid::unit()</a></code> controlling space between composed plots
+    <p>The <code>use_open_graph_definition</code> option (<code>TRUE</code>/<code>FALSE</code>, default <code>TRUE</code>)
+controls how graph queries interpret reachability relations.
+When <code>TRUE</code> (open definition), queries such as <code><a href="ancestors.html">ancestors()</a></code>,
+<code><a href="descendants.html">descendants()</a></code>, <code><a href="posteriors.html">posteriors()</a></code>,and <code><a href="anteriors.html">anteriors()</a></code>
+exclude the queried node itself.
+When <code>FALSE</code> (closed definition), the queried node is included in the
+results.</p>
+<p>The plot options are nested under the <code>plot</code> key:</p><ul><li><p><code>spacing</code>: A <code><a href="https://rdrr.io/r/grid/unit.html" class="external-link">grid::unit()</a></code> controlling space between composed plots
 (default: <code>grid::unit(1, "lines")</code>)</p></li>
 <li><p><code>node_style</code>: List of default node appearance parameters:</p><ul><li><p><code>fill</code>: Fill color (default: <code>"lightgrey"</code>)</p></li>
 <li><p><code>padding</code>: Padding around labels in mm (default: <code>2</code>)</p></li>
@@ -100,6 +107,9 @@ available graphical parameters</p></div>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Query all options</span></span></span>
 <span class="r-in"><span><span class="fu">caugi_options</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $use_open_graph_definition</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $plot</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $plot$spacing</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1lines</span>
@@ -167,6 +177,9 @@ available graphical parameters</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Use closed graph definition</span></span></span>
+<span class="r-in"><span><span class="fu">caugi_options</span><span class="op">(</span>use_open_graph_definition <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Query specific option</span></span></span>
 <span class="r-in"><span><span class="fu">caugi_options</span><span class="op">(</span><span class="st">"plot"</span><span class="op">)</span></span></span>

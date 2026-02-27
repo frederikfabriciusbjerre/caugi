@@ -23,6 +23,9 @@ for setting and getting options
 ``` r
 # Get defaults
 caugi_default_options()
+#> $use_open_graph_definition
+#> [1] TRUE
+#> 
 #> $plot
 #> $plot$spacing
 #> [1] 1lines

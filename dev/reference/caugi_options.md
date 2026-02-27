@@ -26,7 +26,17 @@ returns the requested options.
 
 ## Details
 
-Currently supported options are nested under the `plot` key:
+The `use_open_graph_definition` option (`TRUE`/`FALSE`, default `TRUE`)
+controls how graph queries interpret reachability relations. When `TRUE`
+(open definition), queries such as
+[`ancestors()`](https://caugi.org/dev/reference/ancestors.md),
+[`descendants()`](https://caugi.org/dev/reference/descendants.md),
+[`posteriors()`](https://caugi.org/dev/reference/posteriors.md),and
+[`anteriors()`](https://caugi.org/dev/reference/anteriors.md) exclude
+the queried node itself. When `FALSE` (closed definition), the queried
+node is included in the results.
+
+The plot options are nested under the `plot` key:
 
 - `spacing`: A [`grid::unit()`](https://rdrr.io/r/grid/unit.html)
   controlling space between composed plots (default:
@@ -75,6 +85,9 @@ available graphical parameters
 ``` r
 # Query all options
 caugi_options()
+#> $use_open_graph_definition
+#> [1] TRUE
+#> 
 #> $plot
 #> $plot$spacing
 #> [1] 1lines
@@ -142,6 +155,9 @@ caugi_options()
 #> 
 #> 
 #> 
+
+# Use closed graph definition
+caugi_options(use_open_graph_definition = FALSE)
 
 # Query specific option
 caugi_options("plot")

@@ -11,7 +11,12 @@ reachable via undirected edges.
 ## Usage
 
 ``` r
-anteriors(cg, nodes = NULL, index = NULL)
+anteriors(
+  cg,
+  nodes = NULL,
+  index = NULL,
+  open = caugi_options("use_open_graph_definition")
+)
 ```
 
 ## Arguments
@@ -27,6 +32,13 @@ anteriors(cg, nodes = NULL, index = NULL)
 - index:
 
   A vector of node indexes.
+
+- open:
+
+  Boolean. Determines how the graph is interpreted when retrieving
+  anteriors. Default is taken from
+  `caugi_options("use_open_graph_definition")`, which by default is
+  TRUE.
 
 ## Value
 
@@ -81,6 +93,8 @@ cg <- caugi(
 )
 anteriors(cg, "A") # NULL (no anteriors)
 #> NULL
+anteriors(cg, "A", open = FALSE) # A
+#> [1] "A"
 anteriors(cg, "C") # A, B
 #> [1] "A" "B"
 anteriors(cg, "D") # A, B, C

@@ -5,7 +5,12 @@ Get ancestors of nodes in a `caugi`
 ## Usage
 
 ``` r
-ancestors(cg, nodes = NULL, index = NULL)
+ancestors(
+  cg,
+  nodes = NULL,
+  index = NULL,
+  open = caugi_options("use_open_graph_definition")
+)
 ```
 
 ## Arguments
@@ -21,6 +26,13 @@ ancestors(cg, nodes = NULL, index = NULL)
 - index:
 
   A vector of node indexes.
+
+- open:
+
+  Boolean. Determines how the graph is interpreted when retrieving
+  ancestors. Default is taken from
+  `caugi_options("use_open_graph_definition")`, which by default is
+  TRUE.
 
 ## Value
 
@@ -69,6 +81,8 @@ cg <- caugi(
 )
 ancestors(cg, "A") # NULL
 #> NULL
+ancestors(cg, "A", open = FALSE) # A
+#> [1] "A"
 ancestors(cg, index = 2) # "A"
 #> [1] "A"
 ancestors(cg, "B") # "A"
