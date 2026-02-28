@@ -695,3 +695,48 @@ test_that("dag_from_pdag orients each undirected edge exactly once", {
   expect_false(any(ed$edge == "---"))
   expect_equal(nrow(ed), 3L)
 })
+
+test_that("condition_marginalize and helper branches are covered", {
+  cg_ug <- caugi(A %o->% B, class = "UNKNOWN")
+  expect_error(
+    condition_marginalize(cg_ug, cond_vars = "A"),
+    "`cg` must be an AG for `condition_marginalize\\(\\)`"
+  )
+
+  cg <- caugi(A %-->% B, class = "DAG")
+  out_trivial <- condition_marginalize(cg, marg_vars = "B")
+  expect_equal(out_trivial@graph_class, "AG")
+  expect_setequal(out_trivial@nodes$name, "A")
+
+  # Force non-list anteriors branch (line coverage via expected error).
+  cg2 <- caugi(A %-->% B %-->% C, class = "DAG")
+  expect_error(
+    testthat::with_mocked_bindings(
+      condition_marginalize(cg2, cond_vars = "B"),
+      anteriors = function(...) "A",
+      .package = "caugi"
+    ),
+    "must be the same length"
+  )
+
+  expect_type(
+    caugi:::.not_m_separated_for_all_subsets(
+      cg = cg2,
+      node_a = "A",
+      node_b = "C",
+      other_nodes = character(0),
+      cond_vars = character(0)
+    ),
+    "logical"
+  )
+
+  edge_rev <- caugi:::.edge_type_from_anteriors(
+    node_a = "A",
+    node_b = "B",
+    cond_vars = character(0),
+    anteriors_list = list(A = "B", B = NULL)
+  )
+  expect_identical(edge_rev$from, "B")
+  expect_identical(edge_rev$edge, "-->")
+  expect_identical(edge_rev$to, "A")
+})

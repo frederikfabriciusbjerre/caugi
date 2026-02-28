@@ -507,3 +507,122 @@ test_that("as_caugi with bnlearn with both directed and undirected edges and col
 
   expect_identical(actual, expected)
 })
+
+test_that("integer matrix dead and error branches are covered", {
+  expect_error(as_caugi(1L), "`x` must be a matrix.")
+  expect_error(as_caugi(1.0), "`x` must be a matrix.")
+  expect_error(as_caugi(TRUE), "`x` must be a matrix.")
+
+  m_bad_pag <- matrix(c(0L, 4L, 0L, 0L), 2, 2)
+  expect_error(
+    as_caugi(m_bad_pag, class = "PAG"),
+    "integer codes 0-3"
+  )
+
+  # Force dispatch to integer method with non-integer payloads.
+  m_logical <- matrix(FALSE, 2, 2)
+  class(m_logical) <- c("integer", "matrix")
+  expect_error(
+    as_caugi(m_logical, class = "PAG"),
+    "PAG class is not supported for logical matrices."
+  )
+
+  m_double <- matrix(0.5, 1, 1)
+  class(m_double) <- c("integer", "matrix")
+  expect_error(
+    as_caugi(m_double, class = "DAG"),
+    "non-negative integer matrix"
+  )
+
+  m_character <- matrix("a", 1, 1)
+  class(m_character) <- c("integer", "matrix")
+  expect_error(
+    as_caugi(m_character, class = "DAG"),
+    "logical or numeric matrix"
+  )
+
+  # Trigger mark_sym() default branch with a one-sided PAG code.
+  m_bad_switch <- matrix(0L, 2, 2)
+  m_bad_switch[1, 2] <- 1L
+  expect_error(
+    as_caugi(m_bad_switch, class = "PAG"),
+    "Invalid PAG code"
+  )
+})
+
+test_that("PAG normalization swap branches are covered", {
+  nm <- c("A", "B", "C", "D")
+  m <- matrix(0L, 4, 4, dimnames = list(nm, nm))
+
+  # Reverse directed: A <- B (swap branch 1)
+  m["A", "B"] <- 3L
+  m["B", "A"] <- 2L
+
+  # Reverse partial: A o-- C (swap branch 2)
+  m["A", "C"] <- 3L
+  m["C", "A"] <- 1L
+
+  # Reverse partial: A <-o D (swap branch 3)
+  m["A", "D"] <- 1L
+  m["D", "A"] <- 2L
+
+  cg <- as_caugi(m, class = "PAG")
+  e <- edges(cg)
+
+  expect_true(any(e$from == "B" & e$edge == "-->" & e$to == "A"))
+  expect_true(any(e$from == "C" & e$edge == "--o" & e$to == "A"))
+  expect_true(any(e$from == "D" & e$edge == "o->" & e$to == "A"))
+})
+
+test_that("class-specific branches for optional backends are covered", {
+  skip_if_not_installed("igraph")
+  skip_if_not_installed("graph")
+  skip_if_not_installed("dagitty")
+  skip_if_not_installed("bnlearn")
+
+  g_ig <- igraph::graph_from_edgelist(
+    matrix(c("A", "B"), ncol = 2),
+    directed = TRUE
+  )
+  expect_error(
+    as_caugi(g_ig, class = "PAG"),
+    "PAG class is not supported for igraph objects."
+  )
+
+  g_graphnel <- graph::graphNEL(nodes = c("A", "B"), edgemode = "directed")
+  g_graphnel <- graph::addEdge("A", "B", g_graphnel)
+  methods::slot(g_graphnel, "nodes", check = FALSE) <- NULL
+  cg_graphnel <- as_caugi(g_graphnel, class = "DAG")
+  expect_setequal(cg_graphnel@nodes$name, c("V1", "V2"))
+
+  expect_error(as_caugi(1.0), "`x` must be a matrix.")
+  expect_error(as_caugi(TRUE), "`x` must be a matrix.")
+
+  obj_tidy <- structure(list(), class = "tidygraph")
+  expect_error(
+    as_caugi(obj_tidy, class = "PAG"),
+    "PAG class is not supported for tidygraph objects."
+  )
+  expect_error(
+    as_caugi(obj_tidy, class = "DAG"),
+    "there is no package called"
+  )
+
+  g_dagitty <- dagitty::dagitty("dag { A -> B }")
+  expect_error(
+    testthat::with_mocked_bindings(
+      as_caugi(g_dagitty, class = "DAG"),
+      edges = function(x) {
+        data.frame(v = "A", w = "B", e = "bad", stringsAsFactors = FALSE)
+      },
+      .package = "dagitty"
+    ),
+    "Unsupported dagitty edge code"
+  )
+
+  bn <- bnlearn::empty.graph(nodes = c("A", "B"))
+  expect_error(
+    as_caugi(bn, class = "PAG"),
+    "PAG class is not supported for bnlearn objects."
+  )
+})

@@ -520,3 +520,15 @@ test_that("NetworkX Case 6: complex graph for minimality check", {
     expect_true(d_separated(cg, "C", "F", Z = Zmin))
   }
 })
+
+test_that("minimal_d_separator validates empty X and Y", {
+  cg_sep <- caugi(A %-->% B %-->% C, class = "DAG")
+  expect_error(
+    minimal_d_separator(cg_sep, X = character(0), Y = "C"),
+    "`X` did not match any nodes"
+  )
+  expect_error(
+    minimal_d_separator(cg_sep, X = "A", Y = character(0)),
+    "`Y` did not match any nodes"
+  )
+})

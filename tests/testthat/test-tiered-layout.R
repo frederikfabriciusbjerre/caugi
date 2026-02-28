@@ -658,3 +658,34 @@ test_that("labels = FALSE does not draw labels", {
     )
   })
 })
+
+test_that("tiered layout validation branches are covered", {
+  cg <- caugi(A %-->% B, class = "DAG")
+
+  bad_df <- data.frame(name = c("A", "Z"), tier = c(0, 1))
+  expect_error(
+    caugi_layout_tiered(cg, bad_df),
+    "in tiers data.frame is not in the graph"
+  )
+
+  # Exercise defensive empty-tier branch by mocking table().
+  expect_error(
+    testthat::with_mocked_bindings(
+      caugi_layout_tiered(cg, tiers = c(A = 0, B = 1)),
+      table = function(...) c(`0` = 1L, `1` = 0L),
+      .package = "base"
+    ),
+    "Tiers cannot be empty"
+  )
+
+  cg3 <- caugi(A %-->% B %-->% C, class = "DAG")
+  tiered_with_fixed_min <- caugi_layout_tiered
+  environment(tiered_with_fixed_min) <- list2env(
+    list(min = function(...) 0L),
+    parent = environment(caugi_layout_tiered)
+  )
+  expect_error(
+    tiered_with_fixed_min(cg3, tiers = c(A = 0, B = 1, C = NA)),
+    "Nodes without tier assignments: C"
+  )
+})

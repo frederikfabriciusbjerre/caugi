@@ -93,3 +93,58 @@ test_that("normalize_latent_structure is idempotent", {
   expect_setequal(nodes(norm1)$name, nodes(norm2)$name)
   expect_equal(shd(norm1, norm2), 0)
 })
+
+test_that("normalize_latent_structure validation and loop branches are covered", {
+  cg_pdag <- caugi(A %---% B, class = "PDAG")
+  expect_error(
+    normalize_latent_structure(cg_pdag, latents = "A"),
+    "normalize_latent_structure\\(\\) can only be applied to DAGs\\."
+  )
+
+  cg <- caugi(U, A %-->% B, class = "DAG")
+  expect_error(
+    normalize_latent_structure(cg, latents = 1),
+    "`latents` must be a character vector of node names."
+  )
+
+  expect_identical(normalize_latent_structure(cg, latents = character(0)), cg)
+
+  expect_error(
+    normalize_latent_structure(cg, latents = "Z"),
+    "Unknown latent node\\(s\\): Z"
+  )
+
+  # Latent with no children exercises the NULL->0 branch.
+  out_no_children <- normalize_latent_structure(cg, latents = "U")
+  expect_false("U" %in% out_no_children@nodes$name)
+
+  # Nested child set branch (drop_one <- current_latents[i]).
+  dag_nested <- caugi(
+    U1 %-->% X + Y,
+    U2 %-->% X + Y + Z,
+    X %-->% W,
+    class = "DAG"
+  )
+  out_nested <- normalize_latent_structure(dag_nested, latents = c("U1", "U2"))
+  expect_false("U1" %in% out_nested@nodes$name && "U2" %in% out_nested@nodes$name)
+
+  # Force child_sets NULL branch in Lemma 2 (coverage for character(0) path).
+  dag_mock <- caugi(
+    U1 %-->% X + Y,
+    U2 %-->% X + Y,
+    class = "DAG"
+  )
+  normalize_for_null_children <- normalize_latent_structure
+  environment(normalize_for_null_children) <- list2env(
+    list(
+      vapply = function(X, FUN, FUN.VALUE, ..., USE.NAMES = TRUE) {
+        rep.int(2L, length(X))
+      },
+      children = function(cg, l) NULL
+    ),
+    parent = environment(normalize_latent_structure)
+  )
+  expect_silent(
+    normalize_for_null_children(dag_mock, latents = c("U1", "U2"))
+  )
+})

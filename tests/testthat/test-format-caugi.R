@@ -315,3 +315,21 @@ test_that("write_caugi validates inputs", {
     "`tags` must be NULL or a character vector"
   )
 })
+
+test_that("deprecated lazy warnings are covered", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  tmp <- tempfile(fileext = ".caugi.json")
+  on.exit(unlink(tmp))
+
+  write_caugi(cg, tmp)
+  expect_warning(
+    read_caugi(tmp, lazy = TRUE),
+    "deprecated"
+  )
+
+  json <- caugi_serialize(cg)
+  expect_warning(
+    caugi_deserialize(json, lazy = FALSE),
+    "deprecated"
+  )
+})

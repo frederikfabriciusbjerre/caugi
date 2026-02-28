@@ -80,3 +80,86 @@ test_that("length method works", {
   cg_nodes <- caugi(nodes = LETTERS[1:10], class = "DAG")
   expect_equal(length(cg_nodes), 10)
 })
+
+test_that("print defensive and helper branches are covered", {
+  cg <- caugi(A %-->% B %-->% C, class = "DAG")
+
+  # Exercise print() fallback for malformed objects without a session.
+  bad <- cg
+  attr(bad, "session") <- NULL
+  out_bad <- capture.output(print(bad))
+  expect_true(any(grepl("session=NULL", out_bad, fixed = TRUE)))
+  expect_true(any(grepl("graph_class: NA", out_bad, fixed = TRUE)))
+
+  # Exercise session formatting fallback branch (no hex pointer pattern).
+  out_fmt <- testthat::with_mocked_bindings(
+    capture.output(print(cg)),
+    format = function(x, ...) "session_text",
+    .package = "base"
+  )
+  expect_true(any(grepl("session=session_text", out_fmt, fixed = TRUE)))
+
+  # Exercise n_fit < 1 guards in both node and edge printing.
+  out_fit <- testthat::with_mocked_bindings(
+    capture.output(print(cg)),
+    .caugi_fit_on_line = function(...) 0L,
+    .package = "caugi"
+  )
+  expect_true(length(out_fit) > 0L)
+
+  # Exercise max_edges branch where edge_labels becomes empty.
+  out_edges <- capture.output(print(cg, max_edges = 0))
+  expect_true(any(grepl("edges: (none)", out_edges, fixed = TRUE)))
+
+  expect_identical(caugi:::.caugi_fit_on_line(character(), width = 80, indent = 2), 0L)
+})
+
+test_that("compare_proxy and all.equal branches are covered", {
+  proxy_fun <- caugi:::`compare_proxy.caugi::caugi`
+  eq_fun <- caugi:::`all.equal.caugi::caugi`
+
+  cg <- caugi(
+    from = c("B", "A"),
+    edge = c("-->", "-->"),
+    to = c("C", "B"),
+    nodes = c("A", "B", "C"),
+    class = "DAG"
+  )
+  proxy <- proxy_fun(cg, path = "cg")
+  expect_true(is.list(proxy$object))
+  expect_identical(proxy$path, "cg")
+
+  expect_match(eq_fun(cg, list()), "current is not a caugi object")
+
+  cg_simple <- caugi(A %-->% B, class = "DAG")
+  cg_non_simple <- caugi(A %-->% B, class = "UNKNOWN", simple = FALSE)
+  diff_simple <- eq_fun(cg_simple, cg_non_simple)
+  expect_true(any(grepl("^simple:", diff_simple)))
+  expect_true(any(grepl("^graph_class:", diff_simple)))
+
+  cg_nodes2 <- caugi(A %-->% B, C, class = "DAG")
+  diff_nodes <- eq_fun(cg_simple, cg_nodes2)
+  expect_true(any(grepl("^nodes differ:", diff_nodes)))
+
+  cg_edges_more <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  diff_n_edges <- eq_fun(cg_simple, cg_edges_more)
+  expect_true(any(grepl("^edges differ:", diff_n_edges)))
+
+  target <- caugi(
+    from = c("A", "B"),
+    edge = c("-->", "-->"),
+    to = c("B", "C"),
+    nodes = c("A", "B", "C"),
+    class = "DAG"
+  )
+  current <- caugi(
+    from = c("A", "C"),
+    edge = c("-->", "-->"),
+    to = c("B", "A"),
+    nodes = c("A", "B", "C"),
+    class = "DAG"
+  )
+  diff_content <- eq_fun(target, current)
+  expect_true(any(grepl("edges have different content", diff_content, fixed = TRUE)))
+  expect_type(diff_content, "character")
+})

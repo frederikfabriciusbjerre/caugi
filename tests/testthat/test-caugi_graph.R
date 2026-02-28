@@ -915,3 +915,26 @@ test_that("ADMG and AG allow simple=FALSE", {
   expect_s7_class(caugi(A %-->% B, class = "AG", simple = FALSE), caugi)
   expect_s7_class(caugi(A %-->% B, class = "UNKNOWN", simple = FALSE), caugi)
 })
+
+test_that("validator branch for non-simple DAG is covered", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  rs_set_simple(cg@session, FALSE)
+  rs_set_class(cg@session, "DAG")
+  expect_match(
+    caugi@validator(cg),
+    "If simple = FALSE, class must be 'UNKNOWN', 'ADMG', or 'AG'"
+  )
+})
+
+test_that("helper branches for field warning and node constructor are covered", {
+  expect_false(
+    testthat::with_mocked_bindings(
+      caugi:::.supress_field_warning(),
+      sys.calls = function() list(),
+      .package = "base"
+    )
+  )
+
+  n_dt <- caugi:::.node_constructor(c("B", "A"), sort = TRUE)
+  expect_identical(n_dt$name, c("A", "B"))
+})

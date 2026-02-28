@@ -147,3 +147,7 @@ test_that("read_graphml can override class", {
   cg2 <- read_graphml(tmp, class = "UNKNOWN")
   expect_equal(cg2@graph_class, "UNKNOWN")
 })
+
+test_that("read_graphml missing file branch is covered", {
+  expect_error(read_graphml("definitely-not-a-file.graphml"), "File not found")
+})

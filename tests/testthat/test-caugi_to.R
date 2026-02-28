@@ -340,3 +340,15 @@ test_that("as_dagitty errors on unsupported edge types", {
   expect_error(as_dagitty(cg1), "Unsupported edge type for dagitty")
   reset_caugi_registry()
 })
+
+test_that("conversion and wrapper branches are covered", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  rs_set_class(cg@session, "AUTO")
+  expect_error(
+    as_igraph(cg),
+    "cannot be converted to igraph objects"
+  )
+
+  cg2 <- caugi(A %-->% B, class = "DAG")
+  expect_identical(rs_graph_class(cg2@session), cg2@graph_class)
+})

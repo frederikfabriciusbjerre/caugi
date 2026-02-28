@@ -577,3 +577,36 @@ test_that("set_edges preserves opposite-direction edges in non-simple graphs", {
 
   expect_equivalent(cg_new, cg_correct)
 })
+
+test_that("replace-action branches in .update_caugi are covered", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    caugi:::.update_caugi(
+      cg,
+      nodes = data.table::data.table(name = "C"),
+      edges = data.table::data.table(from = "A", edge = "-->", to = "B"),
+      action = "replace"
+    ),
+    "nodes are not supported for `action = \"replace\"`."
+  )
+
+  expect_identical(
+    caugi:::.update_caugi(
+      cg,
+      edges = data.table::data.table(from = character(), edge = character(), to = character()),
+      action = "replace"
+    ),
+    cg
+  )
+
+  # Trigger rs_set_n/rs_set_names and resolved-class update branch.
+  cg_auto <- cg
+  rs_set_class(cg_auto@session, "AUTO")
+  out <- caugi:::.update_caugi(
+    cg_auto,
+    edges = data.table::data.table(from = "A", edge = "-->", to = "C"),
+    action = "replace"
+  )
+  expect_true("C" %in% out@nodes$name)
+  expect_equal(out@graph_class, "DAG")
+})

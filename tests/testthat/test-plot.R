@@ -789,3 +789,102 @@ test_that("plot handles self-loop edges for circle rendering", {
   # This should trigger the zero-length edge path
   expect_s7_class(plot(cg), caugi_plot)
 })
+
+test_that("plot-grobs internal branches are covered", {
+  # n_tiers == 0 branch
+  coords0 <- data.frame(name = character(), x = numeric(), y = numeric())
+  tier_style <- list(
+    global = list(
+      boxes = TRUE,
+      labels = character(0),
+      padding = grid::unit(1, "mm"),
+      fill = "grey95",
+      col = "grey70",
+      lwd = 1,
+      lty = 1,
+      alpha = 1,
+      label_style = list(col = "black", fontsize = 9)
+    ),
+    by_tier = list()
+  )
+  tiers0 <- caugi:::make_tiers(
+    circle_grobs = grid::gList(),
+    coords = coords0,
+    tiers = list(),
+    tier_style = tier_style,
+    orientation = "rows"
+  )
+  expect_true(length(tiers0$grobs) >= 1L)
+
+  # Recycled labels + empty tier skip branch
+  coords <- data.frame(name = c("A", "B"), x = c(0.2, 0.8), y = c(0.5, 0.5))
+  circles <- grid::gList(
+    grid::circleGrob(x = grid::unit(0.2, "npc"), y = grid::unit(0.5, "npc"), r = grid::unit(1, "mm")),
+    grid::circleGrob(x = grid::unit(0.8, "npc"), y = grid::unit(0.5, "npc"), r = grid::unit(1, "mm"))
+  )
+  tier_style$global$labels <- c("Tier")
+  tiers_gap <- c(A = 0L, B = 2L)
+  tiers_gap_out <- caugi:::make_tiers(
+    circle_grobs = circles,
+    coords = coords,
+    tiers = tiers_gap,
+    tier_style = tier_style,
+    orientation = "rows"
+  )
+  expect_true(length(tiers_gap_out$grobs) >= 1L)
+
+  # make_nodes() branch where labels are omitted -> nullGrob labels
+  node_style <- list(global = list(fill = "white", col = "black", lwd = 1, size = 1), by_node = list())
+  label_style <- list(col = "black", fontsize = 10)
+  nodes_out <- caugi:::make_nodes(
+    coords = data.frame(name = "A", x = 0.5, y = 0.5),
+    labels = character(0),
+    node_style = node_style,
+    label_style = label_style
+  )
+  expect_s3_class(nodes_out$label_grobs[[1]], "null")
+
+  # Zero-length edge branches (including o-> and o-o circles).
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  grid::grid.newpage()
+  grid::pushViewport(grid::viewport(xscale = c(0, 1), yscale = c(0, 1)))
+
+  eg_o_to <- caugi:::make_edge_grob(
+    x0 = 0.5, y0 = 0.5, x1 = 0.5, y1 = 0.5,
+    r_from = grid::unit(1, "mm"),
+    r_to = grid::unit(1, "mm"),
+    edge_type = "o->",
+    circle_size = 2
+  )
+  c1 <- caugi:::makeContent.caugi_edge_grob(eg_o_to)
+  expect_equal(length(c1$children), 2L)
+
+  eg_o_o <- caugi:::make_edge_grob(
+    x0 = 0.5, y0 = 0.5, x1 = 0.5, y1 = 0.5,
+    r_from = grid::unit(1, "mm"),
+    r_to = grid::unit(1, "mm"),
+    edge_type = "o-o",
+    circle_size = 2
+  )
+  c2 <- caugi:::makeContent.caugi_edge_grob(eg_o_o)
+  expect_equal(length(c2$children), 3L)
+})
+
+test_that("plot layout validation branch is covered", {
+  cg <- caugi(
+    from = LETTERS[1:7],
+    edge = rep("-->", 7),
+    to = LETTERS[2:8],
+    class = "DAG"
+  )
+  bad_layout <- data.frame(
+    name = rep("A", 8),
+    x = seq(0, 1, length.out = 8),
+    y = seq(0, 1, length.out = 8)
+  )
+  expect_error(
+    plot(cg, layout = bad_layout),
+    "and 2 more"
+  )
+})
