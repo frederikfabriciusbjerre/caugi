@@ -189,3 +189,39 @@ test_that("adjust functions fails with faulty input", {
     "Provide either a node name or node index"
   )
 })
+
+test_that("mediator-only graph keeps empty adjustment set and rejects mediator", {
+  cg <- caugi(
+    X %-->% M,
+    M %-->% Y,
+    Y %-->% S,
+    class = "DAG"
+  )
+
+  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = NULL))
+  expect_false(is_valid_backdoor(cg, X = "X", Y = "Y", Z = "M"))
+
+  sets <- all_backdoor_sets(cg, X = "X", Y = "Y", minimal = TRUE, max_size = 1L)
+  expect_equal(sets, list(character(0)))
+})
+
+test_that("collider-driven adjustment candidates are validated consistently", {
+  cg <- caugi(
+    A %-->% Z,
+    B %-->% Z,
+    A %-->% X,
+    B %-->% Y,
+    class = "DAG"
+  )
+
+  expect_false(is_valid_backdoor(cg, X = "X", Y = "Y", Z = "Z"))
+  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = "A"))
+  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("A", "Z")))
+  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("B", "Z")))
+
+  sets <- all_backdoor_sets(cg, X = "X", Y = "Y", minimal = FALSE, max_size = 2L)
+  set_strings <- vapply(sets, function(z) paste(sort(z), collapse = ","), character(1))
+  expect_true("" %in% set_strings)
+  expect_true("A,Z" %in% set_strings)
+  expect_true("B,Z" %in% set_strings)
+})

@@ -650,3 +650,48 @@ test_that("dag_from_pdag errors if PDAG cannot be extended to a DAG", {
   )
   expect_error(dag_from_pdag(PDAG), "PDAG cannot be extended to a DAG")
 })
+
+test_that("dag_from_pdag preserves directed edges in mixed extension cases", {
+  pdag <- caugi(
+    A %-->% B,
+    C %-->% B,
+    C %---% D,
+    D %---% A,
+    class = "PDAG"
+  )
+
+  dag <- dag_from_pdag(pdag)
+  ed <- edges(dag)
+  has_dir <- function(from, to) {
+    any(ed$from == from & ed$to == to & ed$edge == "-->")
+  }
+
+  expect_true(is_dag(dag))
+  expect_true(has_dir("A", "B"))
+  expect_true(has_dir("C", "B"))
+  expect_true(xor(has_dir("A", "D"), has_dir("D", "A")))
+  expect_true(xor(has_dir("C", "D"), has_dir("D", "C")))
+  expect_false(has_dir("A", "D") && has_dir("C", "D"))
+  expect_equal(nrow(ed), 4L)
+})
+
+test_that("dag_from_pdag orients each undirected edge exactly once", {
+  pdag <- caugi(
+    A %-->% C,
+    B %-->% C,
+    A %---% D,
+    class = "PDAG"
+  )
+
+  dag <- dag_from_pdag(pdag)
+  ed <- edges(dag)
+  has_dir <- function(from, to) {
+    any(ed$from == from & ed$to == to & ed$edge == "-->")
+  }
+
+  expect_true(has_dir("A", "C"))
+  expect_true(has_dir("B", "C"))
+  expect_true(xor(has_dir("A", "D"), has_dir("D", "A")))
+  expect_false(any(ed$edge == "---"))
+  expect_equal(nrow(ed), 3L)
+})

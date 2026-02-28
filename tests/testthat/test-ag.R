@@ -234,6 +234,23 @@ test_that("m_separated works for undirected paths in AG", {
   expect_true(m_separated(ag, X = "A", Y = "C", Z = "B"))
 })
 
+test_that("m_separated blocks a mixed path when conditioning on undirected bridge", {
+  ag <- caugi(
+    `1` %-->% `4`,
+    `2` %-->% `4`,
+    `2` %-->% `3`,
+    `3` %-->% `5`,
+    `4` %-->% `5`,
+    `1` %-->% `3`,
+    `1` %---% `6`,
+    `6` %---% `2`,
+    class = "AG"
+  )
+
+  expect_false(m_separated(ag, X = "1", Y = "2"))
+  expect_true(m_separated(ag, X = "1", Y = "2", Z = "6"))
+})
+
 test_that("m_separated handles bidirected confounding in AG", {
   ag <- caugi(
     A %-->% B,

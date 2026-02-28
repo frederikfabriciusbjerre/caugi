@@ -394,6 +394,20 @@ test_that("markov_blanket includes undirected neighbors in PDAGs", {
   expect_setequal(mb_B, c("A", "C", "D"))
 })
 
+test_that("markov_blanket matches a multi-parent fixture on DAGs", {
+  cg <- caugi(
+    W %-->% Y,
+    X %-->% W,
+    Z1 %-->% X + Z3,
+    Z2 %-->% Y + Z3,
+    Z3 %-->% X + Y,
+    class = "DAG"
+  )
+
+  expect_setequal(markov_blanket(cg, "Z1"), c("X", "Z2", "Z3"))
+  expect_setequal(markov_blanket(cg, "Y"), c("W", "Z2", "Z3"))
+})
+
 test_that("markov_blanket argument validation", {
   cg <- caugi(A %-->% B)
   expect_error(

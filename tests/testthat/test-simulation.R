@@ -80,6 +80,32 @@ test_that("CPDAG class returns PDAG class and same nodes", {
   expect_identical(nrow(nodes(g)), 6L)
 })
 
+test_that("CPDAG generation returns a valid CPDAG with supported edge types", {
+  set.seed(2026)
+  g <- generate_graph(10, m = 14L, class = "CPDAG")
+
+  expect_identical(g@graph_class, "PDAG")
+  expect_true(is_pdag(g))
+  expect_true(is_cpdag(g))
+  expect_true(is_acyclic(g, force_check = TRUE))
+  expect_true(all(edge_types(g) %in% c("-->", "---")))
+})
+
+test_that("CPDAG generation preserves sampled skeleton from DAG branch", {
+  set.seed(1234)
+  dag <- generate_graph(8, m = 9L, class = "DAG")
+
+  set.seed(1234)
+  cpdag <- generate_graph(8, m = 9L, class = "CPDAG")
+
+  normalized_skeleton <- function(g) {
+    edges(skeleton(g))[order(from, to, edge)]
+  }
+
+  expect_equal(normalized_skeleton(cpdag), normalized_skeleton(dag))
+  expect_true(is_cpdag(cpdag))
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────── simulate_data tests ──────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
