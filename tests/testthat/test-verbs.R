@@ -593,7 +593,11 @@ test_that("replace-action branches in .update_caugi are covered", {
   expect_identical(
     caugi:::.update_caugi(
       cg,
-      edges = data.table::data.table(from = character(), edge = character(), to = character()),
+      edges = data.table::data.table(
+        from = character(),
+        edge = character(),
+        to = character()
+      ),
       action = "replace"
     ),
     cg

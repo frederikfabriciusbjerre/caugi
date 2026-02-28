@@ -111,7 +111,10 @@ test_that("print defensive and helper branches are covered", {
   out_edges <- capture.output(print(cg, max_edges = 0))
   expect_true(any(grepl("edges: (none)", out_edges, fixed = TRUE)))
 
-  expect_identical(caugi:::.caugi_fit_on_line(character(), width = 80, indent = 2), 0L)
+  expect_identical(
+    caugi:::.caugi_fit_on_line(character(), width = 80, indent = 2),
+    0L
+  )
 })
 
 test_that("compare_proxy and all.equal branches are covered", {
@@ -160,6 +163,10 @@ test_that("compare_proxy and all.equal branches are covered", {
     class = "DAG"
   )
   diff_content <- eq_fun(target, current)
-  expect_true(any(grepl("edges have different content", diff_content, fixed = TRUE)))
+  expect_true(any(grepl(
+    "edges have different content",
+    diff_content,
+    fixed = TRUE
+  )))
   expect_type(diff_content, "character")
 })

@@ -219,8 +219,18 @@ test_that("collider-driven adjustment candidates are validated consistently", {
   expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("A", "Z")))
   expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("B", "Z")))
 
-  sets <- all_backdoor_sets(cg, X = "X", Y = "Y", minimal = FALSE, max_size = 2L)
-  set_strings <- vapply(sets, function(z) paste(sort(z), collapse = ","), character(1))
+  sets <- all_backdoor_sets(
+    cg,
+    X = "X",
+    Y = "Y",
+    minimal = FALSE,
+    max_size = 2L
+  )
+  set_strings <- vapply(
+    sets,
+    function(z) paste(sort(z), collapse = ","),
+    character(1)
+  )
   expect_true("" %in% set_strings)
   expect_true("A,Z" %in% set_strings)
   expect_true("B,Z" %in% set_strings)

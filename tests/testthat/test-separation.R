@@ -325,7 +325,12 @@ test_that("d_separated handles asia-style fixtures", {
     }
   }
 
-  expect_true(d_separated(cg, "tuberculosis", "bronchitis", Z = c("smoking", "xray")))
+  expect_true(d_separated(
+    cg,
+    "tuberculosis",
+    "bronchitis",
+    Z = c("smoking", "xray")
+  ))
   expect_true(d_separated(cg, "cancer", "bronchitis", Z = c("smoking", "xray")))
 })
 

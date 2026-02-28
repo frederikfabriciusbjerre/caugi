@@ -202,7 +202,10 @@ test_that("plot composition branches are covered", {
 
   add_method <- S7::method(S7:::as_generic(`+`), list(caugi_plot, caugi_plot))
   pipe_method <- S7::method(S7:::as_generic(`|`), list(caugi_plot, caugi_plot))
-  divide_method <- S7::method(S7:::as_generic(`/`), list(caugi_plot, caugi_plot))
+  divide_method <- S7::method(
+    S7:::as_generic(`/`),
+    list(caugi_plot, caugi_plot)
+  )
   expect_s7_class(add_method(p1, p2), caugi_plot)
   expect_s7_class(pipe_method(p1, p2), caugi_plot)
   expect_s7_class(divide_method(p1, p2), caugi_plot)

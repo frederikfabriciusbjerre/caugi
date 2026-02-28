@@ -819,8 +819,16 @@ test_that("plot-grobs internal branches are covered", {
   # Recycled labels + empty tier skip branch
   coords <- data.frame(name = c("A", "B"), x = c(0.2, 0.8), y = c(0.5, 0.5))
   circles <- grid::gList(
-    grid::circleGrob(x = grid::unit(0.2, "npc"), y = grid::unit(0.5, "npc"), r = grid::unit(1, "mm")),
-    grid::circleGrob(x = grid::unit(0.8, "npc"), y = grid::unit(0.5, "npc"), r = grid::unit(1, "mm"))
+    grid::circleGrob(
+      x = grid::unit(0.2, "npc"),
+      y = grid::unit(0.5, "npc"),
+      r = grid::unit(1, "mm")
+    ),
+    grid::circleGrob(
+      x = grid::unit(0.8, "npc"),
+      y = grid::unit(0.5, "npc"),
+      r = grid::unit(1, "mm")
+    )
   )
   tier_style$global$labels <- c("Tier")
   tiers_gap <- c(A = 0L, B = 2L)
@@ -834,7 +842,10 @@ test_that("plot-grobs internal branches are covered", {
   expect_true(length(tiers_gap_out$grobs) >= 1L)
 
   # make_nodes() branch where labels are omitted -> nullGrob labels
-  node_style <- list(global = list(fill = "white", col = "black", lwd = 1, size = 1), by_node = list())
+  node_style <- list(
+    global = list(fill = "white", col = "black", lwd = 1, size = 1),
+    by_node = list()
+  )
   label_style <- list(col = "black", fontsize = 10)
   nodes_out <- caugi:::make_nodes(
     coords = data.frame(name = "A", x = 0.5, y = 0.5),
@@ -851,7 +862,10 @@ test_that("plot-grobs internal branches are covered", {
   grid::pushViewport(grid::viewport(xscale = c(0, 1), yscale = c(0, 1)))
 
   eg_o_to <- caugi:::make_edge_grob(
-    x0 = 0.5, y0 = 0.5, x1 = 0.5, y1 = 0.5,
+    x0 = 0.5,
+    y0 = 0.5,
+    x1 = 0.5,
+    y1 = 0.5,
     r_from = grid::unit(1, "mm"),
     r_to = grid::unit(1, "mm"),
     edge_type = "o->",
@@ -861,7 +875,10 @@ test_that("plot-grobs internal branches are covered", {
   expect_equal(length(c1$children), 2L)
 
   eg_o_o <- caugi:::make_edge_grob(
-    x0 = 0.5, y0 = 0.5, x1 = 0.5, y1 = 0.5,
+    x0 = 0.5,
+    y0 = 0.5,
+    x1 = 0.5,
+    y1 = 0.5,
     r_from = grid::unit(1, "mm"),
     r_to = grid::unit(1, "mm"),
     edge_type = "o-o",

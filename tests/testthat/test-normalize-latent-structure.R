@@ -126,7 +126,9 @@ test_that("normalize_latent_structure validation and loop branches are covered",
     class = "DAG"
   )
   out_nested <- normalize_latent_structure(dag_nested, latents = c("U1", "U2"))
-  expect_false("U1" %in% out_nested@nodes$name && "U2" %in% out_nested@nodes$name)
+  expect_false(
+    "U1" %in% out_nested@nodes$name && "U2" %in% out_nested@nodes$name
+  )
 
   # Force child_sets NULL branch in Lemma 2 (coverage for character(0) path).
   dag_mock <- caugi(
