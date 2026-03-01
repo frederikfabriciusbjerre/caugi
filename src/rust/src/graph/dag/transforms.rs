@@ -1245,6 +1245,53 @@ mod tests {
     }
 
     #[test]
+    fn latent_project_self_loop_skipped_when_parent_is_also_child() {
+        
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        // 0:L1, 1:L2, 2:X
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, d).unwrap(); // L1 -> L2
+        b.add_edge(0, 2, d).unwrap(); // L1 -> X
+        b.add_edge(1, 2, d).unwrap(); // L2 -> X
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let admg = dag.latent_project(&[0, 1]).unwrap();
+        // Only X remains
+        assert_eq!(admg.n(), 1);
+        assert!(admg.spouses_of(0).is_empty());
+        assert!(admg.children_of(0).is_empty());
+    }
+
+    #[test]
+    fn to_cpdag_has_dir_path_src_eq_tgt() {
+        
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(2, 1, d).unwrap();
+        b.add_edge(1, 3, d).unwrap();
+        b.add_edge(0, 3, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let cpdag = dag.to_cpdag().unwrap();
+        // 0->3 should be directed (oriented by R4)
+        assert!(cpdag.children_of(0).contains(&3));
+        assert!(cpdag.parents_of(3).contains(&0));
+        // 0->1 directed (v-structure)
+        assert!(cpdag.children_of(0).contains(&1));
+        // 2->1 directed (v-structure)
+        assert!(cpdag.parents_of(1).contains(&2));
+        // 1->3 directed (R1)
+        assert!(cpdag.children_of(1).contains(&3));
+    }
+
+    #[test]
     fn dag_to_cpdag_randomized_larger_dags_do_not_error() {
         let mut reg = EdgeRegistry::new();
         reg.register_builtins().unwrap();

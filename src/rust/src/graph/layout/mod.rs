@@ -546,6 +546,60 @@ mod tests {
     }
 
     #[test]
+    fn test_compute_layout_two_nontrivial_disconnected_components() {
+        use crate::edges::EdgeRegistry;
+        use crate::graph::builder::GraphBuilder;
+        use std::sync::Arc;
+
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cdir = reg.code_of("-->").unwrap();
+
+        // Two disconnected components: {0->1} and {2->3}
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, cdir).unwrap();
+        b.add_edge(2, 3, cdir).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+
+        for method in [
+            LayoutMethod::Sugiyama,
+            LayoutMethod::ForceDirected,
+            LayoutMethod::KamadaKawai,
+        ] {
+            let coords = compute_layout(&core, method, 1.0).unwrap();
+            assert_eq!(coords.len(), 4, "wrong length for {:?}", method);
+
+            // All coordinates should be in [0, 1]
+            for &(x, y) in &coords {
+                assert!(
+                    (0.0..=1.0).contains(&x),
+                    "x={} out of range for {:?}",
+                    x,
+                    method
+                );
+                assert!(
+                    (0.0..=1.0).contains(&y),
+                    "y={} out of range for {:?}",
+                    y,
+                    method
+                );
+            }
+
+            // At least one coordinate should be ~1.0
+            let max_coord = coords
+                .iter()
+                .map(|&(x, y)| x.max(y))
+                .fold(0.0_f64, |a, b| a.max(b));
+            assert!(
+                max_coord > 0.9,
+                "max_coord={} too small for {:?}",
+                max_coord,
+                method
+            );
+        }
+    }
+
+    #[test]
     fn test_compute_layout_bipartite_error() {
         use crate::edges::EdgeRegistry;
         use crate::graph::builder::GraphBuilder;

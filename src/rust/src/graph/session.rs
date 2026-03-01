@@ -1591,4 +1591,329 @@ mod tests {
         let err4 = oob.core().unwrap_err();
         assert!(err4.contains("Node 3 out of range (max: B)"));
     }
+
+    #[test]
+    fn session_ag_queries() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+        let b = reg.code_of("<->").unwrap();
+        let u = reg.code_of("---").unwrap();
+
+        // Build AG: 0 --> 1, 1 <-> 2 (no mixing undirected + arrowhead on same node)
+        let mut ag = GraphSession::new(&reg, 4, true, GraphClass::Ag);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(1, 2, b);
+        e.push(0, 3, u); // node 3 has only undirected, node 0 has directed + undirected
+        ag.set_edges(e);
+
+        // anteriors_of and posteriors_of through session (AG supports these)
+        let ant = ag.anteriors_of(1).unwrap();
+        assert!(ant.contains(&0));
+        let post = ag.posteriors_of(0).unwrap();
+        assert!(post.contains(&1));
+
+        // m_separated through AG
+        let _ = ag.m_separated(&[0], &[2], &[1]).unwrap();
+
+        // districts and district_of through AG
+        let districts = ag.districts().unwrap();
+        assert!(!districts.is_empty());
+        let dist = ag.district_of(1).unwrap();
+        assert!(dist.contains(&1));
+
+        // spouses_of through AG
+        let sp = ag.spouses_of(1).unwrap();
+        assert!(sp.contains(&2));
+
+        // exogenous_nodes through AG (both flags)
+        let _exo = ag.exogenous_nodes(false).unwrap();
+        // node 3 has only undirected neighbors, no parents
+        let exo2 = ag.exogenous_nodes(true).unwrap();
+        // With undirected_as_parents, nodes with undirected edges are not exogenous
+        assert!(!exo2.contains(&3));
+
+        // skeleton through AG errors
+        assert!(ag.skeleton().is_err());
+
+        // Test AG with only undirected edges for undirected_of
+        let mut ag2 = GraphSession::new(&reg, 3, true, GraphClass::Ag);
+        let mut e2 = EdgeBuffer::new();
+        e2.push(0, 1, u);
+        e2.push(1, 2, u);
+        ag2.set_edges(e2);
+        let und = ag2.undirected_of(1).unwrap();
+        assert!(und.contains(&0) && und.contains(&2));
+    }
+
+    #[test]
+    fn session_admg_m_separated_and_error_propagation() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+        let b = reg.code_of("<->").unwrap();
+
+        // Build ADMG: 0 --> 1 <-> 2
+        let mut admg = GraphSession::new(&reg, 3, true, GraphClass::Admg);
+        admg.set_names(vec!["X".into(), "Y".into(), "Z".into()]);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(1, 2, b);
+        admg.set_edges(e);
+
+        // m_separated through ADMG session
+        assert!(admg.m_separated(&[0], &[2], &[1]).unwrap());
+
+        // anteriors_of errors on ADMG (not supported)
+        let err = admg.anteriors_of(0).unwrap_err();
+        assert!(err.contains("not defined for ADMG"));
+
+        // posteriors_of errors on ADMG
+        let err = admg.posteriors_of(0).unwrap_err();
+        assert!(err.contains("not defined for ADMG"));
+
+        // topological_sort errors on ADMG
+        let err = admg.topological_sort().unwrap_err();
+        assert!(err.contains("only defined for DAGs"));
+
+        // exogenous_nodes through ADMG
+        let exo = admg.exogenous_nodes(false).unwrap();
+        assert!(exo.contains(&0));
+
+        // is_acyclic through ADMG
+        assert!(admg.is_acyclic().unwrap());
+    }
+
+    #[test]
+    fn session_ug_queries_and_error_paths() {
+        let reg = make_registry();
+        let u = reg.code_of("---").unwrap();
+
+        // Build UG: 0 --- 1 --- 2
+        let mut ug = GraphSession::new(&reg, 3, true, GraphClass::Ug);
+        ug.set_names(vec!["A".into(), "B".into(), "C".into()]);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, u);
+        e.push(1, 2, u);
+        ug.set_edges(e);
+
+        // undirected_of through UG
+        let und = ug.undirected_of(1).unwrap();
+        assert!(und.contains(&0) && und.contains(&2));
+
+        // markov_blanket_of through UG
+        let mb = ug.markov_blanket_of(0).unwrap();
+        assert!(mb.contains(&1));
+
+        // exogenous_nodes through UG
+        let exo = ug.exogenous_nodes(false).unwrap();
+        assert!(exo.is_empty()); // all nodes have undirected neighbors
+
+        // Type checks through UG
+        assert!(!ug.is_dag_type().unwrap());
+        assert!(!ug.is_admg_type().unwrap());
+        assert!(ug.is_ug_type().unwrap());
+        assert!(ug.is_pdag_type().unwrap()); // UG edges are valid in PDAG
+        assert!(ug.is_ag_type().unwrap()); // UG is valid AG
+
+        // is_acyclic on UG (no directed edges, so acyclic)
+        assert!(ug.is_acyclic().unwrap());
+
+        // Error paths: districts on UG
+        assert!(ug.districts().is_err());
+        assert!(ug.district_of(0).is_err());
+
+        // Error: spouses_of on UG (bidirected mode not valid)
+        assert!(ug.spouses_of(0).is_err());
+
+        // Error: ancestors_of on UG
+        assert!(ug.ancestors_of(0).is_err());
+        assert!(ug.descendants_of(0).is_err());
+        assert!(ug.anteriors_of(0).is_err());
+        assert!(ug.posteriors_of(0).is_err());
+        assert!(ug.parents_of(0).is_err());
+        assert!(ug.children_of(0).is_err());
+
+        // m_separated on UG errors
+        assert!(ug.m_separated(&[0], &[2], &[1]).is_err());
+
+        // is_valid_adjustment_set_admg on UG errors
+        assert!(ug.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());
+        assert!(ug.all_adjustment_sets_admg(&[0], &[2], true, 2).is_err());
+    }
+
+    #[test]
+    fn session_pdag_queries() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+        let u = reg.code_of("---").unwrap();
+
+        // Build PDAG: 0 --> 1 --- 2
+        let mut pdag = GraphSession::new(&reg, 3, true, GraphClass::Pdag);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(1, 2, u);
+        pdag.set_edges(e);
+
+        // skeleton through PDAG
+        let skel = pdag.skeleton().unwrap();
+        assert!(matches!(skel, GraphView::Ug(_)));
+
+        // is_cpdag through a proper PDAG
+        let is_cp = pdag.is_cpdag().unwrap();
+        // Just verify it returns a bool without error
+        let _ = is_cp;
+
+        // exogenous_nodes through PDAG
+        let exo = pdag.exogenous_nodes(false).unwrap();
+        assert!(exo.contains(&0));
+        let exo2 = pdag.exogenous_nodes(true).unwrap();
+        assert!(exo2.contains(&0));
+
+        // to_cpdag on PDAG (returns clone)
+        let cpdag = pdag.to_cpdag().unwrap();
+        assert!(matches!(cpdag, GraphView::Pdag(_)));
+
+        // Error paths for PDAG
+        assert!(pdag.d_separated(&[0], &[2], &[1]).is_err());
+        assert!(pdag.minimal_d_separator(&[0], &[2], &[], &[]).is_err());
+        assert!(pdag.moralize().is_err());
+        assert!(pdag.latent_project(&[0]).is_err());
+        assert!(pdag.districts().is_err());
+        assert!(pdag.adjustment_set_parents(&[0], &[2]).is_err());
+        assert!(pdag.adjustment_set_backdoor(&[0], &[2]).is_err());
+        assert!(pdag.adjustment_set_optimal(&[0], &[2]).is_err());
+        assert!(pdag.is_valid_backdoor_set(&[0], &[2], &[1]).is_err());
+        assert!(pdag.all_backdoor_sets(&[0], &[2], true, 2).is_err());
+        assert!(pdag.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());
+        assert!(pdag.all_adjustment_sets_admg(&[0], &[2], true, 2).is_err());
+    }
+
+    #[test]
+    fn session_resolve_class_error_paths() {
+        let reg = make_registry();
+        let u = reg.code_of("---").unwrap();
+
+        // UG graph cannot resolve to DAG
+        let mut ug = GraphSession::new(&reg, 2, true, GraphClass::Unknown);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, u);
+        ug.set_edges(e);
+
+        assert!(ug.resolve_class(GraphClass::Dag).is_err());
+        assert!(ug.resolve_class(GraphClass::Admg).is_err());
+
+        let b = reg.code_of("<->").unwrap();
+        let mut admg = GraphSession::new(&reg, 2, true, GraphClass::Unknown);
+        let mut e2 = EdgeBuffer::new();
+        e2.push(0, 1, b);
+        admg.set_edges(e2);
+        assert!(admg.resolve_class(GraphClass::Dag).is_err());
+        assert!(admg.resolve_class(GraphClass::Ug).is_err());
+        assert!(admg.resolve_class(GraphClass::Pdag).is_err());
+    }
+
+    #[test]
+    fn session_is_mag_with_valid_ag() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+        let b = reg.code_of("<->").unwrap();
+
+        // Build AG: 0 --> 1, 0 <-> 2 (valid MAG if ancestral constraints hold)
+        let mut ag = GraphSession::new(&reg, 3, true, GraphClass::Ag);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(0, 2, b);
+        ag.set_edges(e);
+
+        let is_mag = ag.is_mag().unwrap();
+        // Just verify it returns without error
+        let _ = is_mag;
+
+        // is_cpdag on AG returns false
+        assert!(!ag.is_cpdag().unwrap());
+    }
+
+    #[test]
+    fn session_raw_view_error_paths() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+
+        let mut raw = GraphSession::new(&reg, 3, true, GraphClass::Unknown);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(1, 2, d);
+        raw.set_edges(e);
+
+        // Raw view should error on most query methods
+        assert!(raw.topological_sort().is_err());
+        assert!(raw.markov_blanket_of(0).is_err());
+        assert!(raw.exogenous_nodes(false).is_err());
+        assert!(raw.districts().is_err());
+        assert!(raw.spouses_of(0).is_err());
+    }
+
+    #[test]
+    fn session_query_api_view_failure_paths() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+
+        // Create a session with class=Dag but edges that form a cycle (0-->1, 1-->0).
+        // This means core() succeeds (the CSR builds fine), but view() fails because
+        // Dag::new detects the cycle. Every query method that calls self.view()? will
+        // propagate this Err, covering the early-return ? path.
+        let mut dag = GraphSession::new(&reg, 2, false, GraphClass::Dag);
+        dag.set_names(vec!["A".into(), "B".into()]);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(1, 0, d);
+        dag.set_edges(e);
+
+        // Verify the core builds successfully but the view fails
+        assert!(dag.core().is_ok());
+        assert!(dag.view().is_err());
+
+        // Every query method below goes through self.view()? which must fail
+        assert!(dag.topological_sort().is_err());
+        assert!(dag.parents_of(0).is_err());
+        assert!(dag.children_of(0).is_err());
+        assert!(dag.undirected_of(0).is_err());
+        assert!(dag.neighbors_of(0, NeighborMode::All).is_err());
+        assert!(dag.ancestors_of(0).is_err());
+        assert!(dag.descendants_of(0).is_err());
+        assert!(dag.anteriors_of(0).is_err());
+        assert!(dag.posteriors_of(0).is_err());
+        assert!(dag.markov_blanket_of(0).is_err());
+        assert!(dag.districts().is_err());
+        assert!(dag.district_of(0).is_err());
+        assert!(dag.spouses_of(0).is_err());
+        assert!(dag.exogenous_nodes(false).is_err());
+        assert!(dag.d_separated(&[0], &[1], &[]).is_err());
+        assert!(dag.minimal_d_separator(&[0], &[1], &[], &[0, 1]).is_err());
+        assert!(dag.m_separated(&[0], &[1], &[]).is_err());
+        assert!(dag.adjustment_set_parents(&[0], &[1]).is_err());
+        assert!(dag.adjustment_set_backdoor(&[0], &[1]).is_err());
+        assert!(dag.adjustment_set_optimal(&[0], &[1]).is_err());
+        assert!(dag.is_valid_backdoor_set(&[0], &[1], &[]).is_err());
+        assert!(dag.all_backdoor_sets(&[0], &[1], false, 10).is_err());
+        assert!(dag.is_valid_adjustment_set_admg(&[0], &[1], &[]).is_err());
+        assert!(dag.all_adjustment_sets_admg(&[0], &[1], false, 10).is_err());
+        assert!(dag.to_cpdag().is_err());
+        assert!(dag.skeleton().is_err());
+        assert!(dag.moralize().is_err());
+        assert!(dag.latent_project(&[]).is_err());
+
+        // resolve_class(Dag) should also fail on the cyclic graph since
+        // Dag::new will reject the cycle
+        assert!(dag.resolve_class(GraphClass::Dag).is_err());
+
+        // Verify error messages are name-mapped through map_error
+        let err = dag.view().unwrap_err();
+        assert!(
+            !err.contains("0") && !err.contains("1")
+                || err.contains("A")
+                || err.contains("B"),
+            "Error should use node names, got: {}",
+            err
+        );
+    }
 }

@@ -188,6 +188,30 @@ mod tests {
     }
 
     #[test]
+    fn test_line_search_exhausts_all_steps() {
+        let mut positions = vec![3.0, -2.0]; // already at the minimum
+        let compute_gradient = |_pos: &[f64], grad: &mut [f64]| {
+            grad[0] = 1e-12;
+            grad[1] = 1e-12;
+        };
+        let compute_objective = |pos: &[f64]| {
+            let _ = pos;
+            42.0
+        };
+
+        conjugate_gradient_optimize(
+            &mut positions,
+            compute_gradient,
+            compute_objective,
+            2,
+            -1.0,
+        );
+
+        assert!((positions[0] - 3.0).abs() < 0.01);
+        assert!((positions[1] + 2.0).abs() < 0.01);
+    }
+
+    #[test]
     fn test_conjugate_gradient_handles_zero_denominator_beta() {
         // Keep gradient identically zero while using a negative tolerance so the loop runs.
         // This exercises the beta fallback path (denominator <= 1e-10).
