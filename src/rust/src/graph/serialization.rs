@@ -206,3 +206,210 @@ pub fn read_caugi_file(path: &str, registry: &EdgeRegistry) -> Result<Deserializ
     file.read_to_string(&mut json).map_err(|e| e.to_string())?;
     deserialize_caugi(&json, registry)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::graph::builder::GraphBuilder;
+    use crate::graph::dag::Dag;
+    use crate::graph::pdag::Pdag;
+    use std::sync::Arc;
+
+    fn make_registry() -> EdgeRegistry {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        reg
+    }
+
+    fn make_dag_view(reg: &EdgeRegistry) -> GraphView {
+        let d = reg.code_of("-->").unwrap();
+        let mut b = GraphBuilder::new(3, true, reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(1, 2, d).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+        GraphView::Dag(Arc::new(Dag::new(core).unwrap()))
+    }
+
+    fn make_pdag_with_undirected(reg: &EdgeRegistry) -> GraphView {
+        let u = reg.code_of("---").unwrap();
+        let mut b = GraphBuilder::new(2, true, reg);
+        b.add_edge(0, 1, u).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+        GraphView::Pdag(Arc::new(Pdag::new(core).unwrap()))
+    }
+
+    #[test]
+    fn serialize_deserialize_roundtrip_for_dag() {
+        let reg = make_registry();
+        let view = make_dag_view(&reg);
+        let names = vec!["X".to_string(), "Y".to_string(), "Z".to_string()];
+
+        let json = serialize_caugi(
+            &view,
+            &reg,
+            "DAG",
+            names.clone(),
+            Some("example".to_string()),
+            Some(vec!["a".to_string(), "b".to_string()]),
+        )
+        .unwrap();
+
+        assert!(json.contains("\"format\": \"caugi\""));
+        assert!(json.contains("\"class\": \"DAG\""));
+        assert!(json.contains("\"comment\": \"example\""));
+        assert!(json.contains("\"tags\""));
+
+        let parsed = deserialize_caugi(&json, &reg).unwrap();
+        assert_eq!(parsed.nodes, names);
+        assert_eq!(parsed.graph_class, "DAG");
+        assert_eq!(parsed.edges_from, vec!["X".to_string(), "Y".to_string()]);
+        assert_eq!(parsed.edges_to, vec!["Y".to_string(), "Z".to_string()]);
+        assert_eq!(
+            parsed.edges_type,
+            vec!["-->".to_string(), "-->".to_string()]
+        );
+    }
+
+    #[test]
+    fn serialize_symmetric_edges_are_written_once() {
+        let reg = make_registry();
+        let view = make_pdag_with_undirected(&reg);
+        let json = serialize_caugi(
+            &view,
+            &reg,
+            "PDAG",
+            vec!["A".to_string(), "B".to_string()],
+            None,
+            None,
+        )
+        .unwrap();
+
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        let edges = parsed["graph"]["edges"].as_array().unwrap();
+        assert_eq!(edges.len(), 1);
+        assert_eq!(edges[0]["from"], "A");
+        assert_eq!(edges[0]["to"], "B");
+        assert_eq!(edges[0]["edge"], "---");
+    }
+
+    #[test]
+    fn serialize_rejects_wrong_name_length() {
+        let reg = make_registry();
+        let view = make_dag_view(&reg);
+        let err =
+            serialize_caugi(&view, &reg, "DAG", vec!["X".to_string()], None, None).unwrap_err();
+        assert!(err.contains("Node names length (1) does not match graph size (3)"));
+    }
+
+    #[test]
+    fn deserialize_rejects_invalid_payloads() {
+        let reg = make_registry();
+
+        let bad_format = r#"{
+          "format":"not-caugi",
+          "version":"1.0.0",
+          "graph":{"class":"DAG","nodes":["A"],"edges":[]}
+        }"#;
+        assert!(deserialize_caugi(bad_format, &reg)
+            .unwrap_err()
+            .contains("Invalid format"));
+
+        let bad_version = r#"{
+          "format":"caugi",
+          "version":"2.0.0",
+          "graph":{"class":"DAG","nodes":["A"],"edges":[]}
+        }"#;
+        assert!(deserialize_caugi(bad_version, &reg)
+            .unwrap_err()
+            .contains("Incompatible format version"));
+
+        let bad_node = r#"{
+          "format":"caugi",
+          "version":"1.0.0",
+          "graph":{
+            "class":"DAG",
+            "nodes":["A"],
+            "edges":[{"from":"A","to":"B","edge":"-->"}]
+          }
+        }"#;
+        assert!(deserialize_caugi(bad_node, &reg)
+            .unwrap_err()
+            .contains("Unknown node in edge: B"));
+
+        let bad_from = r#"{
+          "format":"caugi",
+          "version":"1.0.0",
+          "graph":{
+            "class":"DAG",
+            "nodes":["A"],
+            "edges":[{"from":"B","to":"A","edge":"-->"}]
+          }
+        }"#;
+        assert!(deserialize_caugi(bad_from, &reg)
+            .unwrap_err()
+            .contains("Unknown node in edge: B"));
+
+        let bad_edge = r#"{
+          "format":"caugi",
+          "version":"1.0.0",
+          "graph":{
+            "class":"DAG",
+            "nodes":["A","B"],
+            "edges":[{"from":"A","to":"B","edge":"??"}]
+          }
+        }"#;
+        assert!(deserialize_caugi(bad_edge, &reg)
+            .unwrap_err()
+            .contains("Unknown edge type: ??"));
+    }
+
+    #[test]
+    fn write_and_read_file_roundtrip_and_file_errors() {
+        let reg = make_registry();
+        let view = make_dag_view(&reg);
+        let names = vec!["X".to_string(), "Y".to_string(), "Z".to_string()];
+
+        let mut out = std::env::temp_dir();
+        out.push(format!(
+            "caugi-serialization-{}-{}.json",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+
+        write_caugi_file(
+            &view,
+            &reg,
+            "DAG",
+            names.clone(),
+            out.to_str().unwrap(),
+            Some("saved".to_string()),
+            None,
+        )
+        .unwrap();
+
+        let back = read_caugi_file(out.to_str().unwrap(), &reg).unwrap();
+        assert_eq!(back.nodes, names);
+        assert_eq!(back.graph_class, "DAG");
+        assert_eq!(back.edges_type, vec!["-->".to_string(), "-->".to_string()]);
+
+        let _ = std::fs::remove_file(&out);
+
+        let read_err = read_caugi_file("/definitely/not/a/real/path.json", &reg).unwrap_err();
+        assert!(!read_err.is_empty());
+
+        let write_err = write_caugi_file(
+            &view,
+            &reg,
+            "DAG",
+            vec!["X".to_string(), "Y".to_string(), "Z".to_string()],
+            "/definitely/not/a/real/dir/out.json",
+            None,
+            None,
+        )
+        .unwrap_err();
+        assert!(!write_err.is_empty());
+    }
+}

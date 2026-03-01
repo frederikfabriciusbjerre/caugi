@@ -232,6 +232,7 @@ mod tests {
     use super::*;
     use crate::edges::EdgeRegistry;
     use crate::graph::builder::GraphBuilder;
+    use crate::graph::{CaugiGraph, RegistrySnapshot};
     use std::sync::Arc;
 
     #[test]
@@ -250,6 +251,44 @@ mod tests {
         assert_eq!(components.len(), 3);
         assert_eq!(components[0], components[1]);
         assert_eq!(components[1], components[2]);
+    }
+
+    #[test]
+    fn test_detect_components_finds_incoming_only_neighbor() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cdir = reg.code_of("-->").unwrap();
+
+        // Edge only points from higher index to lower index.
+        // This exercises the incoming-edge scan branch in detect_components.
+        let mut b = GraphBuilder::new_with_registry(2, true, &reg);
+        b.add_edge(1, 0, cdir).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+
+        let components = detect_components(&core);
+        assert_eq!(components.len(), 2);
+        assert_eq!(components[0], components[1]);
+    }
+
+    #[test]
+    fn test_detect_components_handles_single_half_edge_representation() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        let specs: Arc<[_]> = (0..reg.len() as u8)
+            .map(|c| reg.spec_of_code(c).unwrap().clone())
+            .collect::<Vec<_>>()
+            .into();
+        let snapshot = RegistrySnapshot::from_specs(specs, 1);
+
+        // Deliberately sparse CSR: only node 1 stores the half-edge to node 0.
+        // This exercises the fallback incoming-edge scan branch in detect_components.
+        let core =
+            CaugiGraph::from_csr(vec![0, 0, 1], vec![0], vec![d], vec![1], true, snapshot).unwrap();
+
+        let components = detect_components(&core);
+        assert_eq!(components.len(), 2);
+        assert_eq!(components[0], components[1]);
     }
 
     #[test]

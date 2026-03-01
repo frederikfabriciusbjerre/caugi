@@ -717,6 +717,166 @@ mod tests {
         assert_eq!(ag.core_ref().n(), 2);
     }
 
+    #[test]
+    fn ag_posteriors_markov_blanket_and_is_ag() {
+        let (reg, dir, _bid, und) = setup();
+        let mut b = GraphBuilder::new_with_registry(6, true, &reg);
+        // Directed component with a co-parent:
+        // 0 -> 2 <- 1, 2 -> 3
+        b.add_edge(0, 2, dir).unwrap();
+        b.add_edge(1, 2, dir).unwrap();
+        b.add_edge(2, 3, dir).unwrap();
+        // Separate undirected component to exercise undirected MB contribution.
+        b.add_edge(4, 5, und).unwrap();
+
+        let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(ag.is_ag());
+        assert!(ag.is_anterior_of(2, 2));
+
+        // Posteriors via directed and undirected traversal.
+        assert_eq!(ag.posteriors_of(0), vec![2, 3]);
+        assert_eq!(ag.posteriors_of(4), vec![5]);
+
+        // MB(0) should include co-parent 1 via child 2.
+        let mb0 = ag.markov_blanket_of(0);
+        assert!(mb0.contains(&1));
+        assert!(mb0.contains(&2));
+
+        // MB(4) should include undirected neighbor 5.
+        assert_eq!(ag.markov_blanket_of(4), vec![5]);
+    }
+
+    #[test]
+    fn ag_district_of_handles_revisits() {
+        let (reg, _dir, bid, _und) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        // Triangle of spouses to force duplicate pushes/revisits in DFS stack.
+        b.add_edge(0, 1, bid).unwrap();
+        b.add_edge(1, 2, bid).unwrap();
+        b.add_edge(0, 2, bid).unwrap();
+
+        let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert_eq!(ag.district_of(0), vec![0, 1, 2]);
+    }
+
+    #[test]
+    fn ag_separator_search_recursion_true_and_false() {
+        let (reg, dir, _bid, _und) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        // Chain: 0 -> 1 -> 2
+        b.add_edge(0, 1, dir).unwrap();
+        b.add_edge(1, 2, dir).unwrap();
+        let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        // Recursive search should find separator {1}.
+        let mut cur = Vec::new();
+        assert!(ag.search_separator(0, 2, &[1], 0, &mut cur));
+
+        // Adjacent pair with no candidates cannot be separated by this search.
+        let mut cur2 = Vec::new();
+        assert!(!ag.search_separator(0, 1, &[], 0, &mut cur2));
+
+        // Backtracking branch: try an irrelevant candidate first and pop it.
+        let mut b2 = GraphBuilder::new_with_registry(4, true, &reg);
+        b2.add_edge(0, 1, dir).unwrap();
+        b2.add_edge(1, 2, dir).unwrap();
+        let ag2 = Ag::new(Arc::new(b2.finalize().unwrap())).unwrap();
+        let mut cur3 = Vec::new();
+        assert!(!ag2.search_separator(0, 2, &[3], 0, &mut cur3));
+    }
+
+    #[test]
+    fn ag_is_mag_singleton_true() {
+        let (reg, _dir, _bid, _und) = setup();
+        let b = GraphBuilder::new_with_registry(1, true, &reg);
+        let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(ag.is_mag());
+    }
+
+    #[test]
+    fn ag_anterior_constraint_violation_from_bidirected_when_left_is_anterior() {
+        let (reg, dir, bid, _und) = setup();
+        let mut b = GraphBuilder::new_with_registry(2, false, &reg);
+        // 0 -> 1 and 0 <-> 1 violates anterior constraint on the bidirected edge:
+        // 0 is an anterior of 1.
+        b.add_edge(0, 1, dir).unwrap();
+        b.add_edge(0, 1, bid).unwrap();
+
+        let err = Ag::try_new(Arc::new(b.finalize().unwrap())).unwrap_err();
+        assert!(matches!(
+            err,
+            AgError::AnteriorConstraintViolation {
+                source: 1,
+                target: 0
+            }
+        ));
+    }
+
+    #[test]
+    fn ag_anterior_constraint_violation_from_bidirected_when_right_is_anterior() {
+        let (reg, dir, bid, _und) = setup();
+        let mut b = GraphBuilder::new_with_registry(2, false, &reg);
+        // 1 -> 0 and 0 <-> 1 violates anterior constraint on the bidirected edge:
+        // 1 is an anterior of 0.
+        b.add_edge(1, 0, dir).unwrap();
+        b.add_edge(0, 1, bid).unwrap();
+
+        let err = Ag::try_new(Arc::new(b.finalize().unwrap())).unwrap_err();
+        assert!(matches!(
+            err,
+            AgError::AnteriorConstraintViolation {
+                source: 0,
+                target: 1
+            }
+        ));
+    }
+
+    #[test]
+    fn ag_is_mag_detects_non_mag_via_small_enumeration() {
+        let (reg, dir, bid, und) = setup();
+        let pairs: [(u32, u32); 6] = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)];
+
+        // Per pair state:
+        // 0 none, 1 a->b, 2 b->a, 3 a<->b, 4 a---b
+        let states = 5usize;
+        let total = states.pow(pairs.len() as u32);
+        let mut found_non_mag = false;
+
+        'search: for idx in 0..total {
+            let mut code = idx;
+            let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+            for &(a, c) in &pairs {
+                match code % states {
+                    1 => {
+                        b.add_edge(a, c, dir).unwrap();
+                    }
+                    2 => {
+                        b.add_edge(c, a, dir).unwrap();
+                    }
+                    3 => {
+                        b.add_edge(a, c, bid).unwrap();
+                    }
+                    4 => {
+                        b.add_edge(a, c, und).unwrap();
+                    }
+                    _ => {}
+                }
+                code /= states;
+            }
+
+            let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+            if !ag.is_mag() {
+                found_non_mag = true;
+                break 'search;
+            }
+        }
+
+        assert!(
+            found_non_mag,
+            "Expected at least one non-maximal AG among simple 4-node AG candidates"
+        );
+    }
+
     // Note: Anterior constraint validation tests would require carefully
     // constructed graphs that violate the constraint. Since our construction
     // validates this, we test via try_new error cases.

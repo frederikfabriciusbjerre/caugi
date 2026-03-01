@@ -377,6 +377,12 @@ mod tests {
         assert!(err.to_string().contains("255"));
     }
 
+    #[test]
+    fn builder_error_display_csr_length_mismatch() {
+        let err = BuilderError::CsrLengthMismatch;
+        assert_eq!(err.to_string(), "CSR arrays length mismatch");
+    }
+
     // ── GraphView Error Tests ─────────────────────────────────────────────────
 
     #[test]

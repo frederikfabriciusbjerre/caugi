@@ -297,6 +297,7 @@ mod tests {
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
         assert!(!g.is_valid_backdoor_set(1, 2, &[]));
         assert!(g.is_valid_backdoor_set(1, 2, &[0]));
+        assert!(!g.is_valid_backdoor_set(0, 2, &[1])); // 1 is a descendant of 0
 
         let mut sets = g.all_backdoor_sets(1, 2, true, 20);
         sets.sort();

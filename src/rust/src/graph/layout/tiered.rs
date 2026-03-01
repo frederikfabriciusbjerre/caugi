@@ -357,4 +357,34 @@ mod tests {
             .unwrap_err()
             .contains("Number of tiers must be at least 1"));
     }
+
+    #[test]
+    fn test_tiered_columns_error_paths() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+
+        // Size mismatch
+        let b = GraphBuilder::new_with_registry(4, true, &reg);
+        let core = Arc::new(b.finalize().unwrap());
+        let e = tiered_columns_layout(&core, &[0, 0], 2).unwrap_err();
+        assert!(e.contains("Tier assignment size 2 does not match node count 4"));
+
+        // Zero tiers
+        let b = GraphBuilder::new_with_registry(1, true, &reg);
+        let core = Arc::new(b.finalize().unwrap());
+        let e = tiered_columns_layout(&core, &[0], 0).unwrap_err();
+        assert!(e.contains("Number of tiers must be at least 1"));
+
+        // Tier index out of range
+        let b = GraphBuilder::new_with_registry(2, true, &reg);
+        let core = Arc::new(b.finalize().unwrap());
+        let e = tiered_columns_layout(&core, &[0, 3], 2).unwrap_err();
+        assert!(e.contains("Tier index 3 exceeds number of tiers 2"));
+
+        // Empty tier
+        let b = GraphBuilder::new_with_registry(2, true, &reg);
+        let core = Arc::new(b.finalize().unwrap());
+        let e = tiered_columns_layout(&core, &[0, 0], 2).unwrap_err();
+        assert!(e.contains("Tier 1 is empty"));
+    }
 }

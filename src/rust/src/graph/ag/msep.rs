@@ -383,4 +383,28 @@ mod tests {
         // Conditioning on both colliders opens the collider path.
         assert!(!ag.m_separated(&[0], &[3], &[1, 2]));
     }
+
+    #[test]
+    fn msep_internal_masks_and_augmented_adj_paths() {
+        let (reg, _dir, bid, _und) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        // Bidirected triangle gives multiple collider-path traversal routes.
+        b.add_edge(0, 1, bid).unwrap();
+        b.add_edge(1, 2, bid).unwrap();
+        b.add_edge(0, 2, bid).unwrap();
+
+        let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        // Cover internal ancestor-mask helper.
+        let an = ag.ancestors_mask(&[2]);
+        assert_eq!(an.len(), 3);
+        assert!(an[2]);
+
+        // Cover augmented adjacency construction for dense collider structure.
+        let mask = vec![true; 3];
+        let adj = ag.augmented_adj_ag(&mask);
+        assert_eq!(adj.len(), 3);
+        assert!(adj[0].contains(&1));
+        assert!(adj[0].contains(&2));
+    }
 }

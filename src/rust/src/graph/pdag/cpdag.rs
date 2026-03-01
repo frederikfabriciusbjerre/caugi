@@ -663,4 +663,74 @@ mod tests {
         let g = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
         assert!(g.is_cpdag());
     }
+
+    #[test]
+    fn cpdag_internal_meeks_rules_r2_r3_and_reverse_r2() {
+        let (reg, d, u) = setup();
+
+        // R2 (forward): a--b with a->w->b
+        let mut b1 = GraphBuilder::new_with_registry(3, true, &reg);
+        b1.add_edge(0, 1, u).unwrap();
+        b1.add_edge(0, 2, d).unwrap();
+        b1.add_edge(2, 1, d).unwrap();
+        let g1 = Pdag::new(Arc::new(b1.finalize().unwrap())).unwrap();
+        assert!(!g1.meeks_rules_blocked());
+
+        // R2 (reverse branch): a--b with b->w->a
+        let mut b2 = GraphBuilder::new_with_registry(3, true, &reg);
+        b2.add_edge(0, 1, u).unwrap();
+        b2.add_edge(1, 2, d).unwrap();
+        b2.add_edge(2, 0, d).unwrap();
+        let g2 = Pdag::new(Arc::new(b2.finalize().unwrap())).unwrap();
+        assert!(!g2.meeks_rules_blocked());
+
+        // R3: a--b and c->b, d->b with c !~ d and a--c, a--d
+        let mut b3 = GraphBuilder::new_with_registry(4, true, &reg);
+        b3.add_edge(0, 1, u).unwrap();
+        b3.add_edge(2, 1, d).unwrap();
+        b3.add_edge(3, 1, d).unwrap();
+        b3.add_edge(0, 2, u).unwrap();
+        b3.add_edge(0, 3, u).unwrap();
+        let g3 = Pdag::new(Arc::new(b3.finalize().unwrap())).unwrap();
+        assert!(!g3.meeks_rules_blocked());
+
+        // R4: a--b and directed path a=>b
+        let mut b4 = GraphBuilder::new_with_registry(4, true, &reg);
+        b4.add_edge(0, 1, u).unwrap();
+        b4.add_edge(0, 2, d).unwrap();
+        b4.add_edge(2, 3, d).unwrap();
+        b4.add_edge(3, 1, d).unwrap();
+        let g4 = Pdag::new(Arc::new(b4.finalize().unwrap())).unwrap();
+        assert!(!g4.meeks_rules_blocked());
+    }
+
+    #[test]
+    fn cpdag_internal_strong_protection_sp1_sp2_sp3() {
+        let (reg, d, u) = setup();
+
+        // SP1: c->a and c !~ b protect a->b
+        let mut b1 = GraphBuilder::new_with_registry(3, true, &reg);
+        b1.add_edge(0, 1, d).unwrap(); // a->b
+        b1.add_edge(2, 0, d).unwrap(); // c->a
+        let g1 = Pdag::new(Arc::new(b1.finalize().unwrap())).unwrap();
+        assert!(!g1.all_arrows_strongly_protected(&[]));
+
+        // SP2: a->c and c->b protect a->b
+        let mut b2 = GraphBuilder::new_with_registry(3, true, &reg);
+        b2.add_edge(0, 1, d).unwrap(); // a->b
+        b2.add_edge(0, 2, d).unwrap(); // a->c
+        b2.add_edge(2, 1, d).unwrap(); // c->b
+        let g2 = Pdag::new(Arc::new(b2.finalize().unwrap())).unwrap();
+        assert!(!g2.all_arrows_strongly_protected(&[]));
+
+        // SP3: c,d -> b with c !~ d and a--c, a--d protect a->b
+        let mut b3 = GraphBuilder::new_with_registry(4, true, &reg);
+        b3.add_edge(0, 1, d).unwrap(); // a->b
+        b3.add_edge(2, 1, d).unwrap(); // c->b
+        b3.add_edge(3, 1, d).unwrap(); // d->b
+        b3.add_edge(0, 2, u).unwrap(); // a--c
+        b3.add_edge(0, 3, u).unwrap(); // a--d
+        let g3 = Pdag::new(Arc::new(b3.finalize().unwrap())).unwrap();
+        assert!(g3.all_arrows_strongly_protected(&[]));
+    }
 }

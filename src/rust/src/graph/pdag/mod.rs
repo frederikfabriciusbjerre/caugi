@@ -328,4 +328,48 @@ mod tests {
         assert_eq!(g.exogenous_nodes(false), vec![0, 2, 3]);
         assert_eq!(g.exogenous_nodes(true), vec![0, 3]);
     }
+
+    #[test]
+    fn pdag_anteriors_and_posteriors() {
+        let mut r = EdgeRegistry::new();
+        r.register_builtins().unwrap();
+        let d = r.code_of("-->").unwrap();
+        let u = r.code_of("---").unwrap();
+
+        // 0 -> 1 --- 2 and 1 -> 3
+        let mut b = GraphBuilder::new_with_registry(4, true, &r);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(1, 2, u).unwrap();
+        b.add_edge(1, 3, d).unwrap();
+        let g = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        assert_eq!(g.anteriors_of(1), vec![0, 2]);
+        assert_eq!(g.posteriors_of(1), vec![2, 3]);
+    }
+
+    #[test]
+    fn pdag_internal_helpers_cover_intersection_and_paths() {
+        let mut r = EdgeRegistry::new();
+        r.register_builtins().unwrap();
+        let d = r.code_of("-->").unwrap();
+
+        // 0 -> 1, 0 -> 2, 1 -> 3, 2 -> 3
+        let mut b = GraphBuilder::new_with_registry(5, true, &r);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(0, 2, d).unwrap();
+        b.add_edge(1, 3, d).unwrap();
+        b.add_edge(2, 3, d).unwrap();
+        let g = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        // intersects_sorted equal-hit and miss branches
+        assert!(Pdag::intersects_sorted(&[1, 3, 7], &[0, 2, 3]));
+        assert!(!Pdag::intersects_sorted(&[1, 4], &[2, 3]));
+
+        // has_dir_path src==tgt fast-path
+        assert!(g.has_dir_path(0, 0));
+        // has_dir_path reaches target in BFS
+        assert!(g.has_dir_path(0, 3));
+        // has_dir_path false branch with revisit/continue path
+        assert!(!g.has_dir_path(0, 4));
+    }
 }

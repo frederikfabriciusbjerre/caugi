@@ -134,6 +134,10 @@ mod tests {
         let mask = ancestors_mask(&[0], parents_of, 3);
         // 0 and its ancestors {1, 2}
         assert_eq!(mask, vec![true, true, true]);
+
+        // Hit the fallback branch in the mock closure.
+        let mask2 = ancestors_mask(&[3], parents_of, 4);
+        assert_eq!(mask2, vec![false, false, false, true]);
     }
 
     #[test]
@@ -186,6 +190,10 @@ mod tests {
         let mask = descendants_mask(&[0], children_of, 3);
         // 0 and its descendants {1, 2}
         assert_eq!(mask, vec![true, true, true]);
+
+        // Hit the fallback branch in the mock closure.
+        let mask2 = descendants_mask(&[3], children_of, 4);
+        assert_eq!(mask2, vec![false, false, false, true]);
     }
 
     #[test]

@@ -293,4 +293,37 @@ mod tests {
         // Should be identical (deterministic)
         assert_eq!(coords1, coords2);
     }
+
+    #[test]
+    fn test_shortest_paths_symmetric_skip_and_disconnected_fill() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cund = reg.code_of("---").unwrap();
+
+        // Undirected edge between 0 and 1, plus isolated node 2.
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, cund).unwrap();
+        let core = Arc::new(b.finalize().unwrap());
+
+        let distances = compute_shortest_paths(&core, 3);
+        // Connected pair.
+        assert_eq!(distances[0 * 3 + 1], 1.0);
+        assert_eq!(distances[1 * 3 + 0], 1.0);
+        // Disconnected pairs are assigned 2*n.
+        assert_eq!(distances[0 * 3 + 2], 6.0);
+        assert_eq!(distances[2 * 3 + 1], 6.0);
+    }
+
+    #[test]
+    fn test_stress_gradient_skips_zero_euclidean_distance_pairs() {
+        let positions = vec![0.0, 0.0, 0.0, 0.0];
+        let distances = vec![
+            0.0, 1.0, //
+            1.0, 0.0,
+        ];
+        let mut gradient = vec![1.0, 1.0, 1.0, 1.0];
+
+        compute_stress_gradient(&positions, &distances, 1.0, 100.0, 2, &mut gradient);
+        assert_eq!(gradient, vec![0.0, 0.0, 0.0, 0.0]);
+    }
 }

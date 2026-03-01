@@ -195,6 +195,11 @@ mod tests {
         builder.inc_degree(2, 0); // node 2 has 1 parent
         builder.inc_degree(3, 0); // node 3 has 1 parent
 
+        assert_eq!(builder.degrees(0), [1, 2]);
+        assert_eq!(builder.degrees(1), [0, 1]);
+        assert_eq!(builder.degrees(2), [1, 0]);
+        assert_eq!(builder.degrees(3), [1, 0]);
+
         builder.finalize_degrees();
 
         // Scatter neighbors
@@ -207,6 +212,7 @@ mod tests {
 
         builder.sort_all();
         let packed = builder.build();
+        assert_eq!(packed.n(), 4);
 
         // Verify
         assert_eq!(packed.bucket_slice(0, 0), &[1]); // parents of 0
@@ -236,6 +242,7 @@ mod tests {
 
         builder.sort_all();
         let packed = builder.build();
+        assert_eq!(packed.n(), 3);
 
         assert_eq!(packed.bucket_slice(1, 0), &[0]); // parents of 1
         assert_eq!(packed.bucket_slice(1, 1), &[2]); // undirected of 1

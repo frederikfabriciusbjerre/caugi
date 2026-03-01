@@ -572,7 +572,7 @@ impl Dag {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::edges::EdgeRegistry;
+    use crate::edges::{EdgeClass, EdgeRegistry, EdgeSpec, Mark};
     use crate::graph::builder::GraphBuilder;
 
     #[test]
@@ -621,6 +621,74 @@ mod tests {
         assert_eq!(ug.neighbors_of(0), &[1, 2]);
         assert_eq!(ug.neighbors_of(1), &[0, 2]);
         assert_eq!(ug.neighbors_of(2), &[0, 1]);
+    }
+
+    #[test]
+    fn dag_core_transforms_match_graph_transforms() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 2, d).unwrap();
+        b.add_edge(1, 2, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let sk_core = dag.skeleton_core().unwrap();
+        let sk = Ug::new(Arc::new(sk_core)).unwrap();
+        assert_eq!(sk.neighbors_of(0), &[2]);
+        assert_eq!(sk.neighbors_of(1), &[2]);
+        assert_eq!(sk.neighbors_of(2), &[0, 1]);
+
+        let moral_core = dag.moralize_core().unwrap();
+        let moral = Ug::new(Arc::new(moral_core)).unwrap();
+        assert_eq!(moral.neighbors_of(0), &[1, 2]);
+        assert_eq!(moral.neighbors_of(1), &[0, 2]);
+        assert_eq!(moral.neighbors_of(2), &[0, 1]);
+    }
+
+    #[test]
+    fn dag_to_cpdag_meek_r1_orients_b_to_c() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        // a -> b <- d, and b -> c in the DAG.
+        // R1 should orient b -- c into b -> c after v-structure orientation at b.
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(2, 1, d).unwrap();
+        b.add_edge(1, 3, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let cpdag = dag.to_cpdag().unwrap();
+        assert_eq!(cpdag.parents_of(3), vec![1]);
+        assert_eq!(cpdag.children_of(1), vec![3]);
+    }
+
+    #[test]
+    fn dag_to_cpdag_meek_r2_orients_a_to_b() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        // Construct a DAG where:
+        // - a -> w is compelled via v-structure at w (x -> w <- a)
+        // - w -> b is compelled via v-structure at b (w -> b <- y)
+        // - a -> b is present but not initially compelled (a adjacent to w and y)
+        // R2 then orients a -- b into a -> b.
+        let mut b = GraphBuilder::new_with_registry(5, true, &reg);
+        // a=0, w=1, x=2, b=3, y=4
+        b.add_edge(0, 1, d).unwrap(); // a -> w
+        b.add_edge(2, 1, d).unwrap(); // x -> w
+        b.add_edge(1, 3, d).unwrap(); // w -> b
+        b.add_edge(0, 3, d).unwrap(); // a -> b (candidate to be oriented by R2)
+        b.add_edge(4, 3, d).unwrap(); // y -> b
+        b.add_edge(0, 4, d).unwrap(); // a adjacent y (prevents a->b v-structure orientation)
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let cpdag = dag.to_cpdag().unwrap();
+        assert_eq!(cpdag.parents_of(3), vec![0, 1, 4]);
     }
 
     // ── Latent projection tests ──────────────────────────────────────────────
@@ -948,5 +1016,273 @@ mod tests {
 
         // X has no spouses (X is not a child of L, so doesn't share L as ancestor)
         assert!(admg.spouses_of(0).is_empty());
+    }
+
+    #[test]
+    fn latent_project_triggers_sibling_to_child_projection() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        // 0:L0, 1:L1, 2:X, 3:Y
+        // L0 -> L1, L0 -> X, L1 -> Y, project out L0 and L1.
+        // After eliminating L0, we get L1 <-> X.
+        // Eliminating L1 then adds X <-> Y via sibling-to-child projection (step 2).
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(0, 2, d).unwrap();
+        b.add_edge(1, 3, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let admg = dag.latent_project(&[0, 1]).unwrap();
+        assert_eq!(admg.n(), 2);
+        assert_eq!(admg.spouses_of(0), &[1]);
+        assert_eq!(admg.spouses_of(1), &[0]);
+    }
+
+    #[test]
+    fn latent_project_marks_parallel_when_parent_and_spouse_overlap() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        // 0:Y, 1:X, 2:L1, 3:L2
+        // Y -> L1 -> X gives Y -> X after projection.
+        // L2 -> Y and L2 -> X gives Y <-> X after projection.
+        // Result has parent/spouse overlap on X, so simple=false.
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 2, d).unwrap();
+        b.add_edge(2, 1, d).unwrap();
+        b.add_edge(3, 0, d).unwrap();
+        b.add_edge(3, 1, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let admg = dag.latent_project(&[2, 3]).unwrap();
+        assert_eq!(admg.parents_of(1), &[0]);
+        assert_eq!(admg.spouses_of(1), &[0]);
+        assert!(!admg.core_ref().simple);
+    }
+
+    #[test]
+    fn latent_project_parent_spouse_overlap_hits_parent_spouse_scan_branch() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        // 0:B, 1:A, 2:L1, 3:L2
+        // A -> L1 -> B   gives A -> B after projection.
+        // L2 -> A and L2 -> B gives A <-> B after projection.
+        // For node B (old index 0), overlap appears in parents/spouses (no children),
+        // which drives the parent/spouse overlap branch in the parallel-edge scan.
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(1, 2, d).unwrap(); // A -> L1
+        b.add_edge(2, 0, d).unwrap(); // L1 -> B
+        b.add_edge(3, 1, d).unwrap(); // L2 -> A
+        b.add_edge(3, 0, d).unwrap(); // L2 -> B
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let admg = dag.latent_project(&[2, 3]).unwrap();
+        assert_eq!(admg.parents_of(0), &[1]);
+        assert_eq!(admg.spouses_of(0), &[1]);
+        assert!(!admg.core_ref().simple);
+    }
+
+    #[test]
+    fn to_cpdag_and_latent_project_with_multiple_registry_specs() {
+        let mut reg = EdgeRegistry::new();
+        // Add non-builtin directed/undirected/bidirected specs before builtins.
+        reg.register(EdgeSpec {
+            glyph: "d1".to_string(),
+            tail: Mark::Tail,
+            head: Mark::Arrow,
+            symmetric: false,
+            class: EdgeClass::Directed,
+        })
+        .unwrap();
+        reg.register(EdgeSpec {
+            glyph: "u1".to_string(),
+            tail: Mark::Tail,
+            head: Mark::Tail,
+            symmetric: true,
+            class: EdgeClass::Undirected,
+        })
+        .unwrap();
+        reg.register(EdgeSpec {
+            glyph: "b1".to_string(),
+            tail: Mark::Arrow,
+            head: Mark::Arrow,
+            symmetric: true,
+            class: EdgeClass::Bidirected,
+        })
+        .unwrap();
+        reg.register_builtins().unwrap();
+        // Add more non-builtin specs after builtins too.
+        reg.register(EdgeSpec {
+            glyph: "d2".to_string(),
+            tail: Mark::Tail,
+            head: Mark::Arrow,
+            symmetric: false,
+            class: EdgeClass::Directed,
+        })
+        .unwrap();
+        reg.register(EdgeSpec {
+            glyph: "u2".to_string(),
+            tail: Mark::Tail,
+            head: Mark::Tail,
+            symmetric: true,
+            class: EdgeClass::Undirected,
+        })
+        .unwrap();
+        reg.register(EdgeSpec {
+            glyph: "b2".to_string(),
+            tail: Mark::Arrow,
+            head: Mark::Arrow,
+            symmetric: true,
+            class: EdgeClass::Bidirected,
+        })
+        .unwrap();
+
+        let d = reg.code_of("-->").unwrap();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(1, 2, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let cpdag = dag.to_cpdag().unwrap();
+        assert_eq!(cpdag.n(), 3);
+
+        let admg = dag.latent_project(&[1]).unwrap();
+        assert_eq!(admg.n(), 2);
+    }
+
+    #[test]
+    fn dag_to_cpdag_exhaustive_small_dags_do_not_error() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        let pairs: [(u32, u32); 6] = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)];
+        // Per pair state:
+        // 0 none, 1 a->b, 2 b->a
+        let states = 3usize;
+        let total = states.pow(pairs.len() as u32);
+        let mut seen = 0usize;
+
+        for idx in 0..total {
+            let mut code = idx;
+            let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+            for &(a, c) in &pairs {
+                match code % states {
+                    1 => {
+                        b.add_edge(a, c, d).unwrap();
+                    }
+                    2 => {
+                        b.add_edge(c, a, d).unwrap();
+                    }
+                    _ => {}
+                }
+                code /= states;
+            }
+
+            let core = Arc::new(b.finalize().unwrap());
+            let Ok(dag) = Dag::new(core) else {
+                continue;
+            };
+            let _ = dag.to_cpdag().unwrap();
+            seen += 1;
+        }
+
+        assert!(seen > 0);
+    }
+
+    #[test]
+    fn dag_to_cpdag_exhaustive_five_node_dags_do_not_error() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        let pairs: [(u32, u32); 10] = [
+            (0, 1),
+            (0, 2),
+            (0, 3),
+            (0, 4),
+            (1, 2),
+            (1, 3),
+            (1, 4),
+            (2, 3),
+            (2, 4),
+            (3, 4),
+        ];
+        let states = 3usize; // 0 none, 1 a->b, 2 b->a
+        let total = states.pow(pairs.len() as u32);
+        let mut seen = 0usize;
+
+        for idx in 0..total {
+            let mut code = idx;
+            let mut b = GraphBuilder::new_with_registry(5, true, &reg);
+            for &(a, c) in &pairs {
+                match code % states {
+                    1 => {
+                        b.add_edge(a, c, d).unwrap();
+                    }
+                    2 => {
+                        b.add_edge(c, a, d).unwrap();
+                    }
+                    _ => {}
+                }
+                code /= states;
+            }
+
+            let core = Arc::new(b.finalize().unwrap());
+            let Ok(dag) = Dag::new(core) else {
+                continue;
+            };
+            let _ = dag.to_cpdag().unwrap();
+            seen += 1;
+        }
+
+        assert!(seen > 0);
+    }
+
+    #[test]
+    fn dag_to_cpdag_randomized_larger_dags_do_not_error() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        fn next_u64(state: &mut u64) -> u64 {
+            // Deterministic LCG for stable test behavior.
+            *state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+            *state
+        }
+
+        let n = 7u32;
+        let mut seed = 0xC0FFEE_u64;
+        let mut seen = 0usize;
+
+        for _ in 0..3000 {
+            let mut order: Vec<u32> = (0..n).collect();
+            for i in (1..order.len()).rev() {
+                let j = (next_u64(&mut seed) as usize) % (i + 1);
+                order.swap(i, j);
+            }
+
+            let mut b = GraphBuilder::new_with_registry(n, true, &reg);
+            for i in 0..order.len() {
+                for j in (i + 1)..order.len() {
+                    // Forward-only edges in randomized order keep the graph acyclic.
+                    if (next_u64(&mut seed) & 3) == 0 {
+                        b.add_edge(order[i], order[j], d).unwrap();
+                    }
+                }
+            }
+
+            let core = Arc::new(b.finalize().unwrap());
+            let dag = Dag::new(core).unwrap();
+            let _ = dag.to_cpdag().unwrap();
+            seen += 1;
+        }
+
+        assert_eq!(seen, 3000);
     }
 }

@@ -450,4 +450,25 @@ mod tests {
         assert!(msg.contains("already registered with different semantics"));
         assert!(msg.contains("'-->'"));
     }
+
+    #[test]
+    fn display_for_mark_and_edgeclass() {
+        assert_eq!(format!("{}", Mark::Arrow), "arrow");
+        assert_eq!(format!("{}", Mark::Tail), "tail");
+        assert_eq!(format!("{}", Mark::Circle), "circle");
+        assert_eq!(format!("{}", Mark::Other), "other");
+
+        assert_eq!(format!("{}", EdgeClass::Directed), "directed");
+        assert_eq!(format!("{}", EdgeClass::Undirected), "undirected");
+        assert_eq!(format!("{}", EdgeClass::Bidirected), "bidirected");
+        assert_eq!(format!("{}", EdgeClass::Partial), "partial");
+        assert_eq!(
+            format!("{}", EdgeClass::PartiallyDirected),
+            "partially_directed"
+        );
+        assert_eq!(
+            format!("{}", EdgeClass::PartiallyUndirected),
+            "partially_undirected"
+        );
+    }
 }

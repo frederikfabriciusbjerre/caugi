@@ -244,6 +244,11 @@ mod tests {
             markov_blanket_dag(4, 0, parents_of, children_of),
             vec![1, 2, 3]
         );
+        assert_eq!(
+            markov_blanket_dag(4, 2, parents_of, children_of),
+            vec![0, 1]
+        );
+        assert_eq!(markov_blanket_dag(4, 3, parents_of, children_of), vec![0]);
     }
 
     #[test]
@@ -301,6 +306,10 @@ mod tests {
         assert_eq!(anteriors_of(3, 0, parents_of, undirected_of), vec![1, 2]);
         assert_eq!(anteriors_of(3, 1, parents_of, undirected_of), vec![0, 2]);
         assert_eq!(anteriors_of(3, 2, parents_of, undirected_of), vec![0, 1]);
+        assert_eq!(
+            anteriors_of(4, 3, parents_of, undirected_of),
+            Vec::<u32>::new()
+        );
     }
 
     #[test]
@@ -362,5 +371,9 @@ mod tests {
         assert_eq!(posteriors_of(3, 0, children_of, undirected_of), vec![1, 2]);
         assert_eq!(posteriors_of(3, 1, children_of, undirected_of), vec![0, 2]);
         assert_eq!(posteriors_of(3, 2, children_of, undirected_of), vec![0, 1]);
+        assert_eq!(
+            posteriors_of(4, 3, children_of, undirected_of),
+            Vec::<u32>::new()
+        );
     }
 }

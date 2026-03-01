@@ -110,7 +110,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::edges::EdgeRegistry;
+    use crate::edges::{EdgeClass, EdgeRegistry, EdgeSpec, Mark};
     use crate::graph::builder::GraphBuilder;
 
     fn make_test_core() -> CaugiGraph {
@@ -193,5 +193,48 @@ mod tests {
         let code = undirected_code(&snap).unwrap();
         let spec = &snap.specs[code as usize];
         assert_eq!(spec.class, EdgeClass::Undirected);
+    }
+
+    #[test]
+    fn undirected_code_fallback_and_missing_error() {
+        // Fallback path: no standard '---' glyph, but an undirected spec exists.
+        let mut reg = EdgeRegistry::new();
+        reg.register(EdgeSpec {
+            glyph: "u".to_string(),
+            tail: Mark::Tail,
+            head: Mark::Tail,
+            symmetric: true,
+            class: EdgeClass::Undirected,
+        })
+        .unwrap();
+        let snap = crate::graph::RegistrySnapshot::from_specs(
+            (0..reg.len() as u8)
+                .map(|c| reg.spec_of_code(c).unwrap().clone())
+                .collect::<Vec<_>>()
+                .into(),
+            1,
+        );
+        let code = undirected_code(&snap).unwrap();
+        assert_eq!(code, 0);
+
+        // Error path: no undirected spec at all.
+        let mut reg2 = EdgeRegistry::new();
+        reg2.register(EdgeSpec {
+            glyph: "d".to_string(),
+            tail: Mark::Tail,
+            head: Mark::Arrow,
+            symmetric: false,
+            class: EdgeClass::Directed,
+        })
+        .unwrap();
+        let snap2 = crate::graph::RegistrySnapshot::from_specs(
+            (0..reg2.len() as u8)
+                .map(|c| reg2.spec_of_code(c).unwrap().clone())
+                .collect::<Vec<_>>()
+                .into(),
+            1,
+        );
+        let err = undirected_code(&snap2).unwrap_err();
+        assert!(err.contains("No undirected edge spec in registry"));
     }
 }

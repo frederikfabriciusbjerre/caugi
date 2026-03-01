@@ -349,28 +349,19 @@ mod tests {
         let dag = crate::graph::dag::Dag::new(Arc::new(core_dag.clone())).unwrap();
         let gv_dag = GraphView::Dag(Arc::new(dag));
         let sub_dag = gv_dag.induced_subgraph(&[0, 2]).unwrap();
-        match sub_dag {
-            GraphView::Dag(_) => {}
-            _ => panic!("expected DAG"),
-        }
+        assert!(matches!(sub_dag, GraphView::Dag(_)));
 
         // RAW
         let gv_raw = GraphView::Raw(Arc::new(core_dag.clone()));
         let sub_raw = gv_raw.induced_subgraph(&[0, 2]).unwrap();
-        match sub_raw {
-            GraphView::Raw(_) => {}
-            _ => panic!("expected RAW"),
-        }
+        assert!(matches!(sub_raw, GraphView::Raw(_)));
 
         // PDAG on empty core
         let core_empty = make_core(3, &[]);
         let pdag = crate::graph::pdag::Pdag::new(Arc::new(core_empty.clone())).unwrap();
         let gv_pdag = GraphView::Pdag(Arc::new(pdag));
         let sub_pdag = gv_pdag.induced_subgraph(&[1, 2]).unwrap();
-        match sub_pdag {
-            GraphView::Pdag(_) => {}
-            _ => panic!("expected PDAG"),
-        }
+        assert!(matches!(sub_pdag, GraphView::Pdag(_)));
     }
 
     #[test]
@@ -505,12 +496,14 @@ mod tests {
         for k in core.row_range(0) {
             assert_eq!(core.my_mark(k), Mark::Tail);
             assert_eq!(core.nbr_mark(k), Mark::Arrow);
+            assert_eq!(core.marks(k), (Mark::Tail, Mark::Arrow));
             assert!(core.is_outgoing_arrow(k));
             assert!(!core.is_incoming_arrow(k));
         }
         for k in core.row_range(1) {
             assert_eq!(core.my_mark(k), Mark::Arrow);
             assert_eq!(core.nbr_mark(k), Mark::Tail);
+            assert_eq!(core.marks(k), (Mark::Arrow, Mark::Tail));
             assert!(core.is_incoming_arrow(k));
             assert!(!core.is_outgoing_arrow(k));
         }

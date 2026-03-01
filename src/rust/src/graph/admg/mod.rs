@@ -419,6 +419,14 @@ mod tests {
     }
 
     #[test]
+    fn admg_num_districts_zero_nodes() {
+        let (reg, _dir, _bid) = setup();
+        let b = GraphBuilder::new_with_registry(0, true, &reg);
+        let admg = Admg::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert_eq!(admg.num_districts(), 0);
+    }
+
+    #[test]
     fn admg_only_bidirected() {
         let (reg, _dir, bid) = setup();
         let mut b = GraphBuilder::new_with_registry(3, true, &reg);
@@ -760,6 +768,19 @@ mod tests {
     }
 
     #[test]
+    fn admg_adjustment_set_helpers_return_none_when_invalid() {
+        let (reg, _dir, bid) = setup();
+        let mut b = GraphBuilder::new_with_registry(2, true, &reg);
+        // Pure latent confounding: X <-> Y
+        b.add_edge(0, 1, bid).unwrap();
+        let admg = Admg::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        // Parent-based/backdoor heuristics produce empty candidate, which is invalid here.
+        assert_eq!(admg.adjustment_set_parents(&[0], &[1]), None);
+        assert_eq!(admg.adjustment_set_backdoor(&[0], &[1]), None);
+    }
+
+    #[test]
     fn admg_all_adjustment_sets() {
         let (reg, dir, _bid) = setup();
         let mut b = GraphBuilder::new_with_registry(4, true, &reg);
@@ -777,6 +798,30 @@ mod tests {
 
         // {L} should be a minimal valid set
         assert!(sets.iter().any(|s| s == &vec![0]));
+    }
+
+    #[test]
+    fn admg_all_adjustment_sets_minimal_skips_supersets_of_empty_set() {
+        let (reg, dir, _bid) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        // 0:X -> 1:Y, 2 isolated.
+        b.add_edge(0, 1, dir).unwrap();
+        let admg = Admg::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let sets = admg.all_adjustment_sets(&[0], &[1], true, 2);
+        assert_eq!(sets, vec![Vec::<u32>::new()]);
+    }
+
+    #[test]
+    fn admg_adjustment_spouse_backdoor_can_be_blocked_by_conditioning() {
+        let (reg, dir, bid) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        // 0:X <-> 1:S -> 2:Y
+        b.add_edge(0, 1, bid).unwrap();
+        b.add_edge(1, 2, dir).unwrap();
+        let admg = Admg::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        assert!(admg.is_valid_adjustment_set(&[0], &[2], &[1]));
     }
 
     #[test]

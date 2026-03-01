@@ -380,6 +380,59 @@ mod tests {
     }
 
     #[test]
+    fn d_connected_restricted_skips_nodes_outside_mask() {
+        // 0 -> 1 -> 2
+        let g = build_dag(&[(0, 1), (1, 2)], 3);
+        let mask_only_1 = vec![false, true, false];
+
+        // Start at 1 without conditioning:
+        // - Down branch tries child 2 and skips via mask.
+        // - Up branch tries parent 0 and child 2 and skips via mask.
+        let reachable = g
+            .d_connected_restricted(&[1], &[], Some(&mask_only_1))
+            .unwrap();
+        assert!(reachable.is_empty());
+
+        // Condition on 1:
+        // - Conditioned Down branch tries parent 0 and skips via mask.
+        let reachable_cond = g
+            .d_connected_restricted(&[1], &[1], Some(&mask_only_1))
+            .unwrap();
+        assert!(reachable_cond.is_empty());
+    }
+
+    #[test]
+    fn d_connected_restricted_with_full_mask_propagates_up_and_down() {
+        // 0 -> 1 -> 2 and 0 -> 3
+        // Starting at 1 with full ancestor mask exercises:
+        // - Down propagation to child (line 131 path)
+        // - Up propagation to parent (line 152 path)
+        let g = build_dag(&[(0, 1), (1, 2), (0, 3)], 4);
+        let full_mask = vec![true, true, true, true];
+
+        let reachable = g
+            .d_connected_restricted(&[1], &[], Some(&full_mask))
+            .unwrap();
+        assert!(reachable.contains(&0));
+        assert!(reachable.contains(&2));
+        assert!(reachable.contains(&3));
+    }
+
+    #[test]
+    fn d_connected_restricted_revisit_paths_hit_visited_guards() {
+        // Force duplicate attempts for visited guards in both Down and Up branches.
+        // 0 -> 2 and 1 -> 2: from starts {0,1}, child 2 is discovered twice (Down guard).
+        let g1 = build_dag(&[(0, 2), (1, 2)], 3);
+        let reachable1 = g1.d_connected_restricted(&[0, 1], &[], None).unwrap();
+        assert!(reachable1.contains(&2));
+
+        // 0 -> 1 and 0 -> 2: from starts {1,2}, parent 0 is discovered twice (Up guard).
+        let g2 = build_dag(&[(0, 1), (0, 2)], 3);
+        let reachable2 = g2.d_connected_restricted(&[1, 2], &[], None).unwrap();
+        assert!(reachable2.contains(&0));
+    }
+
+    #[test]
     fn d_connected_fork() {
         // Fork: 0 -> 1, 0 -> 2
         let g = build_dag(&[(0, 1), (0, 2)], 3);

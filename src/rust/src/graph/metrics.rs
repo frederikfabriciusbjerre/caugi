@@ -705,6 +705,28 @@ mod tests {
         assert!(m > 0);
     }
 
+    #[cfg(feature = "gadjid")]
+    #[test]
+    fn aid_align_cpdag_with_undirected_edges_and_map() {
+        use super::aid::{ancestor_aid_align, AidInput};
+        use crate::graph::pdag::Pdag;
+
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let u = reg.code_of("---").unwrap();
+
+        // Valid CPDAG with undirected edge.
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, u).unwrap();
+        let p = Pdag::new(std::sync::Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(p.is_cpdag());
+
+        // Identity map still exercises the mapping path with undirected entries.
+        let inv = [0usize, 1usize, 2usize];
+        let (_f, m) = ancestor_aid_align(AidInput::Pdag(&p), AidInput::Pdag(&p), &inv).unwrap();
+        assert_eq!(m, 0);
+    }
+
     #[test]
     fn shd_finds_edge_when_neighbor_gt_target() {
         use crate::edges::EdgeRegistry;

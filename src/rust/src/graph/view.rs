@@ -871,6 +871,291 @@ mod tests {
     }
 
     #[test]
+    fn graphview_dispatch_for_ag_admg_ug_and_raw_error_paths() {
+        let mut r = EdgeRegistry::new();
+        r.register_builtins().unwrap();
+        let d = r.code_of("-->").unwrap();
+        let u = r.code_of("---").unwrap();
+        let bi = r.code_of("<->").unwrap();
+
+        // UG: 0---1---2
+        let mut bu = GraphBuilder::new_with_registry(3, true, &r);
+        bu.add_edge(0, 1, u).unwrap();
+        bu.add_edge(1, 2, u).unwrap();
+        let v_ug = GraphView::Ug(Arc::new(Ug::new(Arc::new(bu.finalize().unwrap())).unwrap()));
+
+        // ADMG: 0->1, 1->2, 0<->2
+        let mut ba = GraphBuilder::new_with_registry(3, true, &r);
+        ba.add_edge(0, 1, d).unwrap();
+        ba.add_edge(1, 2, d).unwrap();
+        ba.add_edge(0, 2, bi).unwrap();
+        let v_admg = GraphView::Admg(Arc::new(
+            Admg::new(Arc::new(ba.finalize().unwrap())).unwrap(),
+        ));
+
+        // AG: 0->1->2 and disjoint undirected edge 3---4
+        let mut bg = GraphBuilder::new_with_registry(5, true, &r);
+        bg.add_edge(0, 1, d).unwrap();
+        bg.add_edge(1, 2, d).unwrap();
+        bg.add_edge(3, 4, u).unwrap();
+        let ag_core = Arc::new(bg.finalize().unwrap());
+        let v_ag = GraphView::Ag(Arc::new(Ag::new(ag_core.clone()).unwrap()));
+
+        // Raw UNKNOWN view
+        let v_raw = GraphView::Raw(ag_core);
+
+        // core() + n() dispatch for UG/ADMG/AG
+        assert_eq!(v_ug.core().n(), 3);
+        assert_eq!(v_ug.n(), 3);
+        assert_eq!(v_admg.core().n(), 3);
+        assert_eq!(v_admg.n(), 3);
+        assert_eq!(v_ag.core().n(), 5);
+        assert_eq!(v_ag.n(), 5);
+
+        // ancestors/descendants dispatch
+        assert_eq!(v_admg.ancestors_of(2).unwrap(), vec![0, 1]);
+        assert_eq!(v_admg.descendants_of(0).unwrap(), vec![1, 2]);
+        assert_eq!(v_ag.ancestors_of(2).unwrap(), vec![0, 1]);
+        assert_eq!(v_ag.descendants_of(0).unwrap(), vec![1, 2]);
+        assert_eq!(
+            v_ug.ancestors_of(0).unwrap_err(),
+            "ancestors_of not defined for UG"
+        );
+        assert_eq!(
+            v_ug.descendants_of(0).unwrap_err(),
+            "descendants_of not defined for UG"
+        );
+        assert_eq!(
+            v_raw.ancestors_of(0).unwrap_err(),
+            "ancestors_of not implemented for UNKNOWN class"
+        );
+        assert_eq!(
+            v_raw.descendants_of(0).unwrap_err(),
+            "descendants_of not implemented for UNKNOWN class"
+        );
+
+        // anteriors/posteriors dispatch
+        assert_eq!(
+            v_admg.anteriors_of(0).unwrap_err(),
+            "anteriors_of not defined for ADMG"
+        );
+        assert_eq!(
+            v_admg.posteriors_of(0).unwrap_err(),
+            "posteriors_of not defined for ADMG"
+        );
+        assert_eq!(v_ag.anteriors_of(2).unwrap(), vec![0, 1]);
+        assert_eq!(v_ag.posteriors_of(0).unwrap(), vec![1, 2]);
+        assert_eq!(
+            v_ug.anteriors_of(0).unwrap_err(),
+            "anteriors_of not defined for UG"
+        );
+        assert_eq!(
+            v_ug.posteriors_of(0).unwrap_err(),
+            "posteriors_of not defined for UG"
+        );
+        assert_eq!(
+            v_raw.anteriors_of(0).unwrap_err(),
+            "anteriors_of not implemented for UNKNOWN class"
+        );
+        assert_eq!(
+            v_raw.posteriors_of(0).unwrap_err(),
+            "posteriors_of not implemented for UNKNOWN class"
+        );
+
+        // markov blanket and neighbors all-mode dispatch
+        assert_eq!(v_ug.markov_blanket_of(1).unwrap(), vec![0, 2]);
+        let mb_admg = v_admg.markov_blanket_of(1).unwrap();
+        assert!(mb_admg.contains(&0));
+        assert!(!mb_admg.is_empty());
+        let mb_ag = v_ag.markov_blanket_of(1).unwrap();
+        assert!(mb_ag.contains(&0));
+        assert!(!mb_ag.is_empty());
+        assert_eq!(v_ag.neighbors_of(1, NeighborMode::All).unwrap(), vec![0, 2]);
+
+        // exogenous nodes dispatch for UG/ADMG/AG + Raw error
+        assert_eq!(v_ug.exogenous_nodes(false).unwrap(), Vec::<u32>::new());
+        assert_eq!(v_admg.exogenous_nodes(false).unwrap(), vec![0]);
+        assert_eq!(v_ag.exogenous_nodes(false).unwrap(), vec![0, 3, 4]);
+        assert_eq!(v_ag.exogenous_nodes(true).unwrap(), vec![0]);
+        assert_eq!(
+            v_raw.exogenous_nodes(false).unwrap_err(),
+            "exogenous_nodes not implemented for UNKNOWN class"
+        );
+    }
+
+    #[test]
+    fn graphview_non_dag_specialized_methods_dispatch_and_errors() {
+        let mut r = EdgeRegistry::new();
+        r.register_builtins().unwrap();
+        let d = r.code_of("-->").unwrap();
+        let u = r.code_of("---").unwrap();
+        let bi = r.code_of("<->").unwrap();
+
+        // DAG for "only defined for ADMG" error checks.
+        let mut bd = GraphBuilder::new_with_registry(3, true, &r);
+        bd.add_edge(0, 1, d).unwrap();
+        bd.add_edge(1, 2, d).unwrap();
+        let v_dag = GraphView::Dag(Arc::new(
+            Dag::new(Arc::new(bd.finalize().unwrap())).unwrap(),
+        ));
+
+        // PDAG: 0->1---2
+        let mut bp = GraphBuilder::new_with_registry(3, true, &r);
+        bp.add_edge(0, 1, d).unwrap();
+        bp.add_edge(1, 2, u).unwrap();
+        let pdag_core = Arc::new(bp.finalize().unwrap());
+        let v_pdag = GraphView::Pdag(Arc::new(Pdag::new(pdag_core.clone()).unwrap()));
+        let v_raw = GraphView::Raw(pdag_core);
+
+        // AG with two districts: {0,1} and {2}
+        let mut bg = GraphBuilder::new_with_registry(3, true, &r);
+        bg.add_edge(0, 1, bi).unwrap();
+        let v_ag = GraphView::Ag(Arc::new(Ag::new(Arc::new(bg.finalize().unwrap())).unwrap()));
+
+        // ADMG for m-separation dispatch
+        let mut ba = GraphBuilder::new_with_registry(3, true, &r);
+        ba.add_edge(0, 1, d).unwrap();
+        ba.add_edge(1, 2, d).unwrap();
+        let v_admg = GraphView::Admg(Arc::new(
+            Admg::new(Arc::new(ba.finalize().unwrap())).unwrap(),
+        ));
+
+        // UG for topological_sort error branch
+        let mut bu = GraphBuilder::new_with_registry(2, true, &r);
+        bu.add_edge(0, 1, u).unwrap();
+        let v_ug = GraphView::Ug(Arc::new(Ug::new(Arc::new(bu.finalize().unwrap())).unwrap()));
+
+        // topological_sort non-DAG branches
+        assert_eq!(
+            v_admg.topological_sort().unwrap_err(),
+            "topological_sort is only defined for DAGs"
+        );
+        assert_eq!(
+            v_pdag.topological_sort().unwrap_err(),
+            "topological_sort is only defined for DAGs"
+        );
+        assert_eq!(
+            v_ug.topological_sort().unwrap_err(),
+            "topological_sort is only defined for DAGs"
+        );
+        assert_eq!(
+            v_ag.topological_sort().unwrap_err(),
+            "topological_sort is only defined for DAGs"
+        );
+        assert_eq!(
+            v_raw.topological_sort().unwrap_err(),
+            "topological_sort is only defined for DAGs"
+        );
+
+        // districts / district_of dispatch
+        assert_eq!(v_ag.districts().unwrap(), vec![vec![0, 1], vec![2]]);
+        assert_eq!(v_ag.district_of(0).unwrap(), vec![0, 1]);
+        assert_eq!(
+            v_dag.districts().unwrap_err(),
+            "districts is only defined for ADMGs and AGs"
+        );
+        assert_eq!(
+            v_dag.district_of(0).unwrap_err(),
+            "district_of is only defined for ADMGs and AGs"
+        );
+
+        // m-separation dispatch + error branch
+        assert_eq!(v_admg.m_separated(&[0], &[2], &[]).unwrap(), false);
+        assert_eq!(v_ag.m_separated(&[0], &[1], &[]).unwrap(), false);
+        assert_eq!(
+            v_pdag.m_separated(&[0], &[2], &[]).unwrap_err(),
+            "m_separated is only defined for ADMGs, AGs, and DAGs"
+        );
+        assert_eq!(v_pdag.anteriors_of(1).unwrap(), vec![0, 2]);
+        assert_eq!(v_pdag.posteriors_of(1).unwrap(), vec![2]);
+
+        // ADMG-only adjustment methods error branches
+        assert_eq!(
+            v_dag
+                .is_valid_adjustment_set_admg(&[0], &[2], &[])
+                .unwrap_err(),
+            "is_valid_adjustment_set_admg is only defined for ADMGs"
+        );
+        assert_eq!(
+            v_dag
+                .all_adjustment_sets_admg(&[0], &[2], true, 2)
+                .unwrap_err(),
+            "all_adjustment_sets_admg is only defined for ADMGs"
+        );
+
+        // Pdag -> CPDAG passthrough branch
+        let cp = v_pdag.to_cpdag().unwrap();
+        assert!(matches!(cp, GraphView::Pdag(_)));
+
+        // DAG-only transform helpers error branches on non-DAG
+        assert_eq!(
+            v_pdag.proper_backdoor_graph(&[0], &[1]).unwrap_err(),
+            "proper_backdoor_graph is only defined for DAGs"
+        );
+        assert_eq!(
+            v_ag.moral_of_ancestors(&[0]).unwrap_err(),
+            "moral_of_ancestors is only defined for DAGs"
+        );
+    }
+
+    #[test]
+    fn graphview_induced_subgraph_and_ancestral_reduction_non_dag_variants() {
+        let mut r = EdgeRegistry::new();
+        r.register_builtins().unwrap();
+        let d = r.code_of("-->").unwrap();
+        let u = r.code_of("---").unwrap();
+        let bi = r.code_of("<->").unwrap();
+
+        // UG branch in induced_subgraph + ancestral_reduction error branch.
+        let mut bug = GraphBuilder::new_with_registry(3, true, &r);
+        bug.add_edge(0, 1, u).unwrap();
+        bug.add_edge(1, 2, u).unwrap();
+        let v_ug = GraphView::Ug(Arc::new(
+            Ug::new(Arc::new(bug.finalize().unwrap())).unwrap(),
+        ));
+        let ug_sub = v_ug.induced_subgraph(&[0, 1]).unwrap();
+        assert!(matches!(ug_sub, GraphView::Ug(_)));
+        assert_eq!(
+            v_ug.ancestral_reduction(&[0]).unwrap_err(),
+            "ancestral_reduction is only defined for DAGs, PDAGs, ADMGs, and AGs"
+        );
+
+        // PDAG branch in ancestral_reduction.
+        let mut bp = GraphBuilder::new_with_registry(3, true, &r);
+        bp.add_edge(0, 1, d).unwrap();
+        bp.add_edge(1, 2, u).unwrap();
+        let v_pdag = GraphView::Pdag(Arc::new(
+            Pdag::new(Arc::new(bp.finalize().unwrap())).unwrap(),
+        ));
+        let p_red = v_pdag.ancestral_reduction(&[1]).unwrap();
+        assert!(matches!(p_red, GraphView::Pdag(_)));
+
+        // ADMG branch in induced_subgraph + ancestral_reduction.
+        let mut ba = GraphBuilder::new_with_registry(3, true, &r);
+        ba.add_edge(0, 1, d).unwrap();
+        ba.add_edge(1, 2, d).unwrap();
+        ba.add_edge(0, 2, bi).unwrap();
+        let v_admg = GraphView::Admg(Arc::new(
+            Admg::new(Arc::new(ba.finalize().unwrap())).unwrap(),
+        ));
+        let a_sub = v_admg.induced_subgraph(&[1, 2]).unwrap();
+        assert!(matches!(a_sub, GraphView::Admg(_)));
+        let a_red = v_admg.ancestral_reduction(&[2]).unwrap();
+        assert!(matches!(a_red, GraphView::Admg(_)));
+
+        // AG branch in induced_subgraph + ancestral_reduction.
+        let mut bg = GraphBuilder::new_with_registry(4, true, &r);
+        bg.add_edge(0, 1, d).unwrap();
+        bg.add_edge(1, 2, d).unwrap();
+        bg.add_edge(2, 3, bi).unwrap();
+        let v_ag = GraphView::Ag(Arc::new(Ag::new(Arc::new(bg.finalize().unwrap())).unwrap()));
+        let g_sub = v_ag.induced_subgraph(&[0, 1, 2]).unwrap();
+        assert!(matches!(g_sub, GraphView::Ag(_)));
+        let g_red = v_ag.ancestral_reduction(&[2]).unwrap();
+        assert!(matches!(g_red, GraphView::Ag(_)));
+    }
+
+    #[test]
     fn graphview_proper_backdoor_graph_public() {
         // Build L→A→Y with L→Y (classic confounder)
         let mut reg = EdgeRegistry::new();
@@ -889,16 +1174,12 @@ mod tests {
         let pbg = v.proper_backdoor_graph(&[1], &[2]).unwrap();
 
         // In the proper backdoor graph, A->Y edge should be removed
-        match pbg {
-            GraphView::Dag(ref d) => {
-                // Y should only have L as parent
-                assert_eq!(d.parents_of(2), &[0]);
-                // A and Y should NOT be d-separated without conditioning
-                // (backdoor path A <- L -> Y remains)
-                assert!(!d.d_separated(&[1], &[2], &[]));
-            }
-            _ => panic!("Expected DAG"),
-        }
+        assert!(matches!(pbg, GraphView::Dag(_)));
+        // Y should only have L as parent
+        assert_eq!(pbg.parents_of(2).unwrap(), vec![0]);
+        // A and Y should NOT be d-separated without conditioning
+        // (backdoor path A <- L -> Y remains)
+        assert!(!pbg.d_separated(&[1], &[2], &[]).unwrap());
     }
 
     #[test]
@@ -920,18 +1201,14 @@ mod tests {
         let moral = v.moral_of_ancestors(&[1, 2]).unwrap();
 
         // Should be a UG with all three nodes
-        match moral {
-            GraphView::Ug(ref u) => {
-                assert_eq!(u.n(), 3);
-                // L should be adjacent to A (parent of A)
-                // L should be adjacent to Y (parent of Y)
-                // A should be adjacent to Y (A->Y in original, also married via Y)
-                let mut l_nb = u.neighbors_of(0).to_vec();
-                l_nb.sort();
-                assert_eq!(l_nb, vec![1, 2]);
-            }
-            _ => panic!("Expected UG"),
-        }
+        assert!(matches!(moral, GraphView::Ug(_)));
+        assert_eq!(moral.n(), 3);
+        // L should be adjacent to A (parent of A)
+        // L should be adjacent to Y (parent of Y)
+        // A should be adjacent to Y (A->Y in original, also married via Y)
+        let mut l_nb = moral.undirected_of(0).unwrap();
+        l_nb.sort();
+        assert_eq!(l_nb, vec![1, 2]);
     }
 
     #[test]
@@ -952,12 +1229,8 @@ mod tests {
         let reduced = v.ancestral_reduction(&[1, 2]).unwrap();
 
         // Should only contain An({1,2}) ∪ {1,2} = {0,1,2}
-        match reduced {
-            GraphView::Dag(ref d) => {
-                assert_eq!(d.n(), 3); // nodes {0,1,2}
-            }
-            _ => panic!("Expected DAG"),
-        }
+        assert!(matches!(reduced, GraphView::Dag(_)));
+        assert_eq!(reduced.n(), 3); // nodes {0,1,2}
     }
 
     #[test]
@@ -975,13 +1248,11 @@ mod tests {
         let v_dag = GraphView::Dag(Arc::new(
             Dag::new(Arc::new(bd.finalize().unwrap())).unwrap(),
         ));
-        let ug = match v_dag.skeleton().unwrap() {
-            GraphView::Ug(g) => g,
-            _ => panic!("expected UG"),
-        };
-        assert_eq!(ug.neighbors_of(0), &[1]);
-        assert_eq!(ug.neighbors_of(1), &[0, 2]);
-        assert_eq!(ug.neighbors_of(2), &[1]);
+        let ug_gv = v_dag.skeleton().unwrap();
+        assert!(matches!(ug_gv, GraphView::Ug(_)));
+        assert_eq!(ug_gv.undirected_of(0).unwrap(), vec![1]);
+        assert_eq!(ug_gv.undirected_of(1).unwrap(), vec![0, 2]);
+        assert_eq!(ug_gv.undirected_of(2).unwrap(), vec![1]);
 
         // PDAG: 0->1, 1--2  ⇒ skeleton neighbors {0:[1], 1:[0,2], 2:[1]}
         let mut bp = GraphBuilder::new_with_registry(3, true, &r);
@@ -990,13 +1261,11 @@ mod tests {
         let v_pdag = GraphView::Pdag(Arc::new(
             Pdag::new(Arc::new(bp.finalize().unwrap())).unwrap(),
         ));
-        let ug2 = match v_pdag.skeleton().unwrap() {
-            GraphView::Ug(g) => g,
-            _ => panic!("expected UG"),
-        };
-        assert_eq!(ug2.neighbors_of(0), &[1]);
-        assert_eq!(ug2.neighbors_of(1), &[0, 2]);
-        assert_eq!(ug2.neighbors_of(2), &[1]);
+        let ug2_gv = v_pdag.skeleton().unwrap();
+        assert!(matches!(ug2_gv, GraphView::Ug(_)));
+        assert_eq!(ug2_gv.undirected_of(0).unwrap(), vec![1]);
+        assert_eq!(ug2_gv.undirected_of(1).unwrap(), vec![0, 2]);
+        assert_eq!(ug2_gv.undirected_of(2).unwrap(), vec![1]);
 
         // UG: calling skeleton() must error
         let mut bu = GraphBuilder::new_with_registry(2, true, &r);
@@ -1021,13 +1290,11 @@ mod tests {
         b.add_edge(0, 2, d).unwrap();
         b.add_edge(1, 2, d).unwrap();
         let v_dag = GraphView::Dag(Arc::new(Dag::new(Arc::new(b.finalize().unwrap())).unwrap()));
-        let ug = match v_dag.moralize().unwrap() {
-            GraphView::Ug(g) => g,
-            _ => panic!("expected UG"),
-        };
-        assert_eq!(ug.neighbors_of(0), &[1, 2]);
-        assert_eq!(ug.neighbors_of(1), &[0, 2]);
-        assert_eq!(ug.neighbors_of(2), &[0, 1]);
+        let ug_gv = v_dag.moralize().unwrap();
+        assert!(matches!(ug_gv, GraphView::Ug(_)));
+        assert_eq!(ug_gv.undirected_of(0).unwrap(), vec![1, 2]);
+        assert_eq!(ug_gv.undirected_of(1).unwrap(), vec![0, 2]);
+        assert_eq!(ug_gv.undirected_of(2).unwrap(), vec![0, 1]);
 
         // PDAG: moralize() must error
         let mut bp = GraphBuilder::new_with_registry(2, true, &r);

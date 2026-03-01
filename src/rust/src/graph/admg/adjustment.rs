@@ -266,3 +266,23 @@ impl Admg {
         *sets = out;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Admg;
+
+    #[test]
+    fn prune_minimal_skips_supersets_of_existing_sets() {
+        let mut sets = vec![
+            vec![2, 3],
+            vec![],
+            vec![2],
+            vec![3],
+            vec![2, 2, 3],
+            vec![2, 3, 4],
+        ];
+
+        Admg::prune_minimal(&mut sets);
+        assert_eq!(sets, vec![Vec::<u32>::new()]);
+    }
+}

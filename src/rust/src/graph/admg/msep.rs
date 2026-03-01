@@ -151,3 +151,39 @@ impl Admg {
         !Self::reachable_in_moral(&adj, &mask, xs, &blocked, ys)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::edges::EdgeRegistry;
+    use crate::graph::builder::GraphBuilder;
+    use std::sync::Arc;
+
+    fn two_parents_one_child() -> Admg {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        // 0 -> 2 <- 1
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 2, d).unwrap();
+        b.add_edge(1, 2, d).unwrap();
+        Admg::new(Arc::new(b.finalize().unwrap())).unwrap()
+    }
+
+    #[test]
+    fn moral_adj_admg_skips_masked_parents_in_parent_pair_loops() {
+        let g = two_parents_one_child();
+
+        // Hit line 47 path: first parent kept, second parent masked.
+        let adj = g.moral_adj_admg(&[true, false, true]);
+        assert_eq!(adj[2], vec![0]);
+        assert!(adj[0].contains(&2));
+        assert!(!adj[0].contains(&1));
+
+        // Hit line 42 path: first parent masked entirely.
+        let adj2 = g.moral_adj_admg(&[false, true, true]);
+        assert_eq!(adj2[2], vec![1]);
+        assert!(adj2[1].contains(&2));
+    }
+}

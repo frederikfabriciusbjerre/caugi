@@ -379,7 +379,7 @@ pub fn deserialize_graphml(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::edges::EdgeRegistry;
+    use crate::edges::{EdgeClass, EdgeRegistry, EdgeSpec, Mark};
     use crate::graph::builder::GraphBuilder;
 
     fn setup() -> EdgeRegistry {
@@ -643,5 +643,175 @@ mod tests {
         assert!(result.edges_from.is_empty());
         assert!(result.edges_to.is_empty());
         assert!(result.edges_type.is_empty());
+    }
+
+    #[test]
+    fn test_serialize_rejects_wrong_node_name_length() {
+        let reg = setup();
+        let dir = reg.code_of("-->").unwrap();
+        let mut builder = GraphBuilder::new_with_registry(2, true, &reg);
+        builder.add_edge(0, 1, dir).unwrap();
+        let graph = builder.finalize().unwrap();
+        let view = GraphView::Raw(std::sync::Arc::new(graph));
+
+        let err = serialize_graphml(&view, &reg, "DAG", vec!["A".to_string()]).unwrap_err();
+        assert!(err.contains("Node names length (1) does not match graph size (2)"));
+    }
+
+    #[test]
+    fn test_deserialize_start_nodes_default_edge_and_multiple_edge_data() {
+        let reg = setup();
+
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <graph id="G" edgedefault="directed">
+    <data key="graph_class">A&amp;B&apos;C&quot;D</data>
+    <node id="A"></node>
+    <node id="B"></node>
+    <edge source="A" target="B" extra="x"></edge>
+    <edge source="B" target="A">
+      <data key="edge_type">---</data>
+      <data key="edge_type">--&gt;</data>
+    </edge>
+  </graph>
+</graphml>"#;
+
+        let result = deserialize_graphml(xml, &reg).unwrap();
+        assert_eq!(result.graph_class, "A&B'C\"D");
+        assert_eq!(result.nodes, vec!["A", "B"]);
+        // Edge without edge_type defaults to -->
+        assert_eq!(result.edges_from, vec!["A", "B"]);
+        assert_eq!(result.edges_to, vec!["B", "A"]);
+        // Multiple edge_type entries keep the latest
+        assert_eq!(result.edges_type, vec!["-->", "-->"]);
+    }
+
+    #[test]
+    fn test_deserialize_handles_non_key_attrs_and_non_data_text() {
+        let reg = setup();
+
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <graph id="G" edgedefault="directed">
+    stray_text
+    <node dummy="x" id="A"></node>
+    <node id="B"></node>
+    <edge source="A" target="B">
+      edge_text
+      <data dummy="y" key="note">ignored</data>
+      <data key="edge_type">---</data>
+      <data key="edge_type">--&gt;</data>
+    </edge>
+  </graph>
+</graphml>"#;
+
+        let result = deserialize_graphml(xml, &reg).unwrap();
+        assert_eq!(result.nodes, vec!["A", "B"]);
+        assert_eq!(result.edges_from, vec!["A"]);
+        assert_eq!(result.edges_to, vec!["B"]);
+        assert_eq!(result.edges_type, vec!["-->"]);
+    }
+
+    #[test]
+    fn test_deserialize_unknown_edge_type_errors() {
+        let reg = setup();
+
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <graph id="G" edgedefault="directed">
+    <node id="A"/>
+    <node id="B"/>
+    <edge source="A" target="B">
+      <data key="edge_type">???</data>
+    </edge>
+  </graph>
+</graphml>"#;
+
+        let err = deserialize_graphml(xml, &reg).unwrap_err();
+        assert!(err.contains("Unknown edge type: ???"));
+    }
+
+    #[test]
+    fn test_deserialize_reports_parse_errors() {
+        let reg = setup();
+        let bad_xml = "<graphml><graph><node id=\"A\"></graphml>";
+        let err = deserialize_graphml(bad_xml, &reg).unwrap_err();
+        assert!(err.contains("XML parsing error"));
+    }
+
+    #[test]
+    fn test_deserialize_unknown_source_node_error() {
+        let reg = setup();
+
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <graph id="G" edgedefault="directed">
+    <node id="A"/>
+    <edge source="B" target="A">
+      <data key="edge_type">--&gt;</data>
+    </edge>
+  </graph>
+</graphml>"#;
+
+        let err = deserialize_graphml(xml, &reg).unwrap_err();
+        assert!(err.contains("Unknown node in edge: B"));
+    }
+
+    #[test]
+    fn test_deserialize_preserves_unknown_general_ref_literal() {
+        let reg = setup();
+
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <graph id="G" edgedefault="directed">
+    <data key="graph_class">AG&amp;foo;</data>
+    <node id="A"/>
+  </graph>
+</graphml>"#;
+
+        let result = deserialize_graphml(xml, &reg).unwrap();
+        assert_eq!(result.graph_class, "AG&foo;");
+    }
+
+    #[test]
+    fn test_deserialize_unknown_general_ref_literal_only() {
+        let reg = setup();
+
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <graph id="G" edgedefault="directed">
+    <data key="graph_class">&foo;</data>
+    <node id="A"/>
+  </graph>
+</graphml>"#;
+
+        let result = deserialize_graphml(xml, &reg).unwrap();
+        assert_eq!(result.graph_class, "&foo;");
+    }
+
+    #[test]
+    fn test_deserialize_default_edge_type_requires_builtin_directed() {
+        let mut reg = EdgeRegistry::new();
+        // Intentionally omit "-->" from this registry.
+        reg.register(EdgeSpec {
+            glyph: "---".to_string(),
+            tail: Mark::Tail,
+            head: Mark::Tail,
+            symmetric: true,
+            class: EdgeClass::Undirected,
+        })
+        .unwrap();
+
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <graph id="G" edgedefault="directed">
+    <node id="A"/>
+    <node id="B"/>
+    <edge source="A" target="B"></edge>
+  </graph>
+</graphml>"#;
+
+        let err = deserialize_graphml(xml, &reg).unwrap_err();
+        assert!(err.contains("Unknown default edge type: -->"));
     }
 }
