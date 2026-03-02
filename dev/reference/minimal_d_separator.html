@@ -108,7 +108,7 @@ or <code>NULL</code> if no valid separator exists within the restriction R.</p>
     <p>A d-separator Z for X and Y is a set of nodes such that conditioning on Z
 d-separates X from Y in the graph. This function returns a minimal separator,
 meaning no proper subset of Z still d-separates X and Y.</p>
-<p>The algorithm:</p><ol><li><p>Restricts to ancestors of X ∪ Y ∪ I</p></li>
+<p>The algorithm:</p><ol><li><p>Restricts to ancestors of X U Y U I</p></li>
 <li><p>Computes initial separator candidate from R</p></li>
 <li><p>Refines using Bayes-ball d-connection algorithm</p></li>
 <li><p>Returns minimal separator or NULL if none exists within R</p></li>

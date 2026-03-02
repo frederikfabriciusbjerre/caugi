@@ -29,7 +29,7 @@ input PDAG.
 
 Dor, D., & Tarsi, M. (1992). "A simple algorithm to construct a
 consistent extension of a partially directed acyclic graph",
-<https://api.semanticscholar.org/CorpusID:122949140>.
+<https://www.semanticscholar.org/paper/3cee18b1965fd94bd98a1e7f2155250276424925>.
 
 ## See also
 

@@ -65,7 +65,7 @@ separator, meaning no proper subset of Z still d-separates X and Y.
 
 The algorithm:
 
-1.  Restricts to ancestors of X ∪ Y ∪ I
+1.  Restricts to ancestors of X U Y U I
 
 2.  Computes initial separator candidate from R
 
