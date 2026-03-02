@@ -150,6 +150,10 @@ S7::method(plot, caugi) <- function(
 ) {
   is_caugi(x, throw_error = TRUE)
 
+  if (is_empty_caugi(x)) {
+    stop("Cannot plot an empty graph (0 nodes).", call. = FALSE)
+  }
+
   stopifnot(
     is.null(asp) ||
       is.na(asp) ||

@@ -55,9 +55,11 @@ make_tiers <- function(
   }
 
   # Normalize to 0-indexed
-  min_tier <- min(assignments)
-  if (min_tier > 0) {
-    assignments <- assignments - min_tier
+  if (length(assignments) > 0) {
+    min_tier <- min(assignments)
+    if (min_tier > 0) {
+      assignments <- assignments - min_tier
+    }
   }
 
   # Extract components

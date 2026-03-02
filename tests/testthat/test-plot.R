@@ -888,6 +888,15 @@ test_that("plot-grobs internal branches are covered", {
   expect_equal(length(c2$children), 3L)
 })
 
+test_that("plotting empty graph gives clear error", {
+  cg_empty <- caugi(class = "DAG")
+
+  expect_error(
+    plot(cg_empty),
+    "Cannot plot an empty graph \\(0 nodes\\)\\."
+  )
+})
+
 test_that("plot layout validation branch is covered", {
   cg <- caugi(
     from = LETTERS[1:7],
