@@ -1372,39 +1372,22 @@ test_that("getter and districts branches are covered", {
   )
   expect_setequal(spouses(cg_admg, index = 2), c("A", "C"))
 
+  # Test that deprecated 'all' parameter shows warning
   expect_warning(
     districts(cg_admg, all = TRUE),
     "deprecated"
   )
-  expect_error(
-    districts(cg_admg, all = "x"),
-    "`all` must be TRUE, FALSE, or NULL."
-  )
-  expect_error(
-    districts(cg_admg, all = TRUE, nodes = "A"),
-    "`all = TRUE` cannot be combined with `nodes` or `index`."
-  )
-  expect_error(
-    districts(cg_admg, all = FALSE),
-    "`all = FALSE` requires `nodes` or `index` to be supplied."
-  )
+
+  # Test error for invalid index
   expect_error(
     districts(cg_admg, index = c(1, NA)),
     "`index` must be numeric without NA."
   )
 
-  all_null <- districts(cg_admg, all = NULL)
-  expect_true(is.list(all_null))
-  expect_true(length(all_null) >= 1L)
-
-  all_flag <- structure(FALSE, class = "foo")
-  expect_warning(
-    expect_error(
-      districts(cg_admg, all = all_flag),
-      "Supply one of `nodes` or `index`, or set `all = TRUE`."
-    ),
-    "deprecated"
-  )
+  # Test getting all districts (new API - no parameters)
+  all_districts <- districts(cg_admg)
+  expect_true(is.list(all_districts))
+  expect_true(length(all_districts) >= 1L)
 })
 
 test_that("is_mag class short-circuit branch is covered", {
