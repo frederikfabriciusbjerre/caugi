@@ -650,3 +650,140 @@ test_that("dag_from_pdag errors if PDAG cannot be extended to a DAG", {
   )
   expect_error(dag_from_pdag(PDAG), "PDAG cannot be extended to a DAG")
 })
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────── Meek closure ───────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("meek_closure orients compelled edges and returns an MPDAG", {
+  check_oriented <- function(g, from, to) {
+    expect_true(to %in% children(g, from))
+    if (is_dag(g)) {
+      return()
+    } else {
+      und <- neighbors(g, from, mode = "undirected")
+      if (is.null(und)) {
+        und <- character(0)
+      }
+      expect_false(to %in% und)
+    }
+  }
+
+  # R1: A -> B, C -> B, B -- D, and C !~ D  =>  B -> D
+  g_r1 <- caugi(
+    A %-->% B,
+    C %-->% B,
+    B %---% D,
+    A %---% D,
+    class = "PDAG"
+  )
+  c_r1 <- meek_closure(g_r1)
+  check_oriented(c_r1, "B", "D")
+  expect_true(is_mpdag(c_r1))
+
+  # R2: A -- B and A -> C -> B  =>  A -> B
+  g_r2 <- caugi(
+    A %---% B,
+    A %-->% C,
+    C %-->% B,
+    class = "PDAG"
+  )
+  c_r2 <- meek_closure(g_r2)
+  check_oriented(c_r2, "A", "B")
+  expect_true(is_mpdag(c_r2))
+
+  # R3: A -- B, C -> B, D -> B, C !~ D, A -- C, A -- D  =>  A -> B
+  g_r3 <- caugi(
+    A %---% B,
+    C %-->% B,
+    D %-->% B,
+    A %---% C,
+    A %---% D,
+    class = "PDAG"
+  )
+  c_r3 <- meek_closure(g_r3)
+  check_oriented(c_r3, "A", "B")
+  expect_true(is_mpdag(c_r3))
+
+  # R4: A -- B and A => B through A -> C -> D -> B  =>  A -> B
+  g_r4 <- caugi(
+    A %---% B,
+    A %-->% C,
+    C %-->% D,
+    A %---% D,
+    D %-->% B,
+    class = "PDAG"
+  )
+  c_r4 <- meek_closure(g_r4)
+  check_oriented(c_r4, "A", "B")
+  expect_true(is_mpdag(c_r4))
+})
+
+test_that("meek_closure is idempotent and preserves node names", {
+  g <- caugi(
+    B %---% A,
+    B %---% D,
+    C %-->% E,
+    B %-->% E,
+    D %-->% F,
+    E %-->% F,
+    class = "PDAG"
+  )
+
+  c1 <- meek_closure(g)
+  c2 <- meek_closure(c1)
+
+  expect_equal(c1@graph_class, "PDAG")
+  expect_equal(nodes(c1)$name, nodes(g)$name)
+  expect_equal(edges(c1), edges(c2))
+})
+
+test_that("meek_closure errors on non-PDAG-compatible graphs", {
+  g <- caugi(A %o->% B, class = "UNKNOWN")
+  expect_error(
+    meek_closure(g),
+    "meek_closure\\(\\) can only be applied to PDAGs\\."
+  )
+})
+
+test_that("meek_closure matches causal-learn style multi-rule regression", {
+  # Skeleton: A-B-C, A->D<-C, B-D, D-E, C-E
+  # Meek progression:
+  #   R1: D -> E
+  #   R2: C -> E
+  #   R3: B -> D
+  g <- caugi(
+    A %---% B,
+    B %---% C,
+    A %-->% D,
+    C %-->% D,
+    B %---% D,
+    D %---% E,
+    C %---% E,
+    class = "PDAG"
+  )
+
+  g_closed <- meek_closure(g)
+
+  expected <- caugi(
+    A %---% B,
+    B %---% C,
+    A %-->% D,
+    B %-->% D,
+    C %-->% D,
+    D %-->% E,
+    C %-->% E,
+    class = "PDAG"
+  )
+
+  norm_edges <- function(x) edges(x)[order(from, to, edge)]
+  expect_equal(norm_edges(g_closed), norm_edges(expected))
+
+  # Invariants inspired by CPDAG/Meek references.
+  expect_equal(
+    norm_edges(skeleton(g_closed)),
+    norm_edges(skeleton(g))
+  )
+  expect_true(is_acyclic(g_closed, force_check = TRUE))
+  expect_true(is_mpdag(g_closed))
+})

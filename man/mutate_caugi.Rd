@@ -34,6 +34,7 @@ Other operations:
 \code{\link{dag_from_pdag}()},
 \code{\link{exogenize}()},
 \code{\link{latent_project}()},
+\code{\link{meek_closure}()},
 \code{\link{moralize}()},
 \code{\link{normalize_latent_structure}()},
 \code{\link{skeleton}()}

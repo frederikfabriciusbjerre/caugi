@@ -15,6 +15,9 @@
   `ancestors()`, `anteriors()`, `descendants()`, and `posteriors()`. Can be set
   globally with `caugi_options()` or locally with `open = TRUE/FALSE` argument. Default is `open = TRUE`, like
   it was before implicitly.
+- Add `is_mpdag()` query to check whether a PDAG is closed under Meek's
+  orientation rules (R1-R4), and `meek_closure()` to orient all implied edges
+  until Meek closure.
 
 ## Improvements
 

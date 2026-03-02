@@ -63,6 +63,47 @@ skeleton <- function(cg) {
   .session_to_caugi(skeleton_session, node_names = cg@nodes$name)
 }
 
+#' @title Apply Meek closure to a PDAG
+#'
+#' @description
+#' Applies Meek's orientation rules (R1--R4) repeatedly to a PDAG until no more
+#' orientations are implied.
+#'
+#' @param cg A `caugi` object. Must be PDAG-compatible.
+#'
+#' @returns A `caugi` object of class `"PDAG"` that is closed under Meek's
+#'   rules.
+#'
+#' @examples
+#' pdag <- caugi(
+#'   A %---% B,
+#'   A %-->% C,
+#'   C %-->% B,
+#'   class = "PDAG"
+#' )
+#' mpdag <- meek_closure(pdag)
+#' edges(mpdag)
+#'
+#' @family operations
+#' @concept operations
+#'
+#' @export
+meek_closure <- function(cg) {
+  is_caugi(cg, throw_error = TRUE)
+
+  if (!is_pdag(cg, force_check = TRUE)) {
+    stop("meek_closure() can only be applied to PDAGs.", call. = FALSE)
+  }
+
+  closed_session <- rs_meek_closure(cg@session)
+  closed_cg <- .session_to_caugi(closed_session, node_names = cg@nodes$name)
+  if (is_dag(closed_cg)) {
+    return(mutate_caugi(closed_cg, "DAG"))
+  } else {
+    return(closed_cg)
+  }
+}
+
 #' @title Project latent variables from a DAG to an ADMG
 #'
 #' @description

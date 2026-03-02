@@ -31,6 +31,7 @@ Other operations:
 \code{\link{dag_from_pdag}()},
 \code{\link{exogenize}()},
 \code{\link{latent_project}()},
+\code{\link{meek_closure}()},
 \code{\link{mutate_caugi}()},
 \code{\link{normalize_latent_structure}()},
 \code{\link{skeleton}()}

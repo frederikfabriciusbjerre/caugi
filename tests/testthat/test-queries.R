@@ -192,6 +192,88 @@ test_that("is_cpdag works", {
   expect_true(is_cpdag(cg))
 })
 
+test_that("is_mpdag works", {
+  cg_closed <- caugi(
+    A %-->% C,
+    B %-->% C,
+    class = "PDAG"
+  )
+  expect_true(is_mpdag(cg_closed))
+
+  # R1 applies: A -> B, C -> B, B -- D, and C not adjacent to D.
+  cg_r1 <- caugi(
+    A %-->% B,
+    C %-->% B,
+    B %---% D,
+    A %---% D,
+    class = "PDAG"
+  )
+  expect_false(is_mpdag(cg_r1))
+
+  # R2 applies: A -- B and A -> C -> B.
+  cg_r2 <- caugi(
+    A %---% B,
+    A %-->% C,
+    C %-->% B,
+    class = "PDAG"
+  )
+  expect_false(is_mpdag(cg_r2))
+
+  # R3 applies: A -- B, C -> B, D -> B, C !~ D, and A -- C, A -- D.
+  cg_r3 <- caugi(
+    A %---% B,
+    C %-->% B,
+    D %-->% B,
+    A %---% C,
+    A %---% D,
+    class = "PDAG"
+  )
+  expect_false(is_mpdag(cg_r3))
+
+  # R4 applies: A -- B and A => B through A -> C -> D -> B.
+  cg_r4 <- caugi(
+    A %---% B,
+    A %-->% C,
+    C %-->% D,
+    A %---% D,
+    D %-->% B,
+    class = "PDAG"
+  )
+  expect_false(is_mpdag(cg_r4))
+
+  cg_partial <- caugi(A %o->% B, class = "UNKNOWN")
+  expect_false(is_mpdag(cg_partial))
+})
+
+test_that("is_mpdag tracks causal-learn style multi-rule progression", {
+  # Same fixture as the operations regression test:
+  # A-B-C, A->D<-C, B-D, D-E, C-E
+  g <- caugi(
+    A %---% B,
+    B %---% C,
+    A %-->% D,
+    C %-->% D,
+    B %---% D,
+    D %---% E,
+    C %---% E,
+    class = "PDAG"
+  )
+
+  expect_false(is_mpdag(g))
+
+  g_closed <- meek_closure(g)
+  expect_true(is_mpdag(g_closed))
+
+  # Expected closure leaves only chain edges A---B---C undirected.
+  und_A <- neighbors(g_closed, "A", mode = "undirected")
+  und_B <- neighbors(g_closed, "B", mode = "undirected")
+  und_C <- neighbors(g_closed, "C", mode = "undirected")
+
+  expect_setequal(und_A, "B")
+  expect_setequal(und_B, c("A", "C"))
+  expect_setequal(und_C, "B")
+})
+
 test_that("same_nodes works", {
   cg1 <- caugi(A %-->% B, B %-->% C, class = "DAG")
   cg2 <- caugi(B %-->% C, A %-->% B, class = "DAG")

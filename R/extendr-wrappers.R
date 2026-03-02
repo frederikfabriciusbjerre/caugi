@@ -112,7 +112,11 @@ rs_is_mag <- function(session) .Call(wrap__rs_is_mag, session)
 
 rs_is_cpdag <- function(session) .Call(wrap__rs_is_cpdag, session)
 
+rs_is_mpdag <- function(session) .Call(wrap__rs_is_mpdag, session)
+
 rs_to_cpdag <- function(session) .Call(wrap__rs_to_cpdag, session)
+
+rs_meek_closure <- function(session) .Call(wrap__rs_meek_closure, session)
 
 rs_skeleton <- function(session) .Call(wrap__rs_skeleton, session)
 

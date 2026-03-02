@@ -1137,12 +1137,30 @@ fn rs_is_cpdag(mut session: ExternalPtr<GraphSession>) -> bool {
         .unwrap_or_else(|e| throw_r_error(e))
 }
 
+#[extendr]
+fn rs_is_mpdag(mut session: ExternalPtr<GraphSession>) -> bool {
+    session
+        .as_mut()
+        .is_mpdag()
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
 // ── Session transforms ───────────────────────────────────────────────────────
 #[extendr]
 fn rs_to_cpdag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
     let view = session
         .as_mut()
         .to_cpdag()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
+fn rs_meek_closure(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .meek_closure()
         .unwrap_or_else(|e| throw_r_error(e));
     let names: Vec<String> = session.as_ref().names().to_vec();
     ExternalPtr::new(session_from_view(view, names))
@@ -1512,7 +1530,9 @@ extendr_module! {
     fn rs_is_ag_type;
     fn rs_is_mag;
     fn rs_is_cpdag;
+    fn rs_is_mpdag;
     fn rs_to_cpdag;
+    fn rs_meek_closure;
     fn rs_skeleton;
     fn rs_moralize;
     fn rs_latent_project;

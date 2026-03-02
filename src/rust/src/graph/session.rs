@@ -577,6 +577,15 @@ impl GraphSession {
         }
     }
 
+    /// Check if the graph is an MPDAG (PDAG + Meek closure).
+    pub fn is_mpdag(&mut self) -> Result<bool, String> {
+        let core = self.core()?;
+        match Pdag::new(Arc::new(core.as_ref().clone())) {
+            Ok(p) => Ok(p.is_meek_closed()),
+            Err(_) => Ok(false),
+        }
+    }
+
     /// Check if the graph is a MAG (AG only).
     pub fn is_mag(&mut self) -> Result<bool, String> {
         let core = self.core()?;
@@ -633,6 +642,14 @@ impl GraphSession {
     pub fn to_cpdag(&mut self) -> Result<GraphView, String> {
         let view = self.view()?;
         view.to_cpdag().map_err(|e| self.map_error(e))
+    }
+
+    /// Apply Meek closure to a PDAG.
+    pub fn meek_closure(&mut self) -> Result<GraphView, String> {
+        let core = self.core()?;
+        let pdag = Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+        let closed = pdag.meek_closure().map_err(|e| self.map_error(e))?;
+        Ok(GraphView::Pdag(Arc::new(closed)))
     }
 
     /// Skeleton of the graph.

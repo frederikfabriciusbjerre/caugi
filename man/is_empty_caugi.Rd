@@ -48,6 +48,7 @@ Other queries:
 \code{\link{is_cpdag}()},
 \code{\link{is_dag}()},
 \code{\link{is_mag}()},
+\code{\link{is_mpdag}()},
 \code{\link{is_pdag}()},
 \code{\link{is_simple}()},
 \code{\link{is_ug}()},
