@@ -18,8 +18,8 @@
 #' @param edge Character vector of edge types. Default is `NULL`.
 #' @param to Character vector of target node names. Default is `NULL`.
 #' @param name Character vector of node names. Default is `NULL`.
-#' @param inplace Logical, whether to modify the graph inplace or not.
-#' If `FALSE` (default), a copy of the `caugi` is made and modified.
+#' @param inplace DEPRECATED This parameter is deprecated and will be ignored.
+#' Graphs are always modified via copy-on-write.
 #'
 #' @returns The updated `caugi`.
 #'
@@ -75,6 +75,14 @@ add_edges <- function(
   to = NULL,
   inplace = FALSE
 ) {
+  if (!missing(inplace)) {
+    warning(
+      "The `inplace` argument is deprecated and will be ignored. ",
+      "Graphs are always modified via copy-on-write.",
+      call. = FALSE
+    )
+  }
+
   calls <- as.list(substitute(list(...)))[-1L]
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
@@ -93,7 +101,7 @@ add_edges <- function(
   edges <- .get_edges(from, edge, to, calls)
 
   # update via helper and return
-  .update_caugi(cg, edges = edges, action = "add", inplace = inplace)
+  .update_caugi(cg, edges = edges, action = "add")
 }
 
 #' @describeIn caugi_verbs Remove edges.
@@ -106,6 +114,14 @@ remove_edges <- function(
   to = NULL,
   inplace = FALSE
 ) {
+  if (!missing(inplace)) {
+    warning(
+      "The `inplace` argument is deprecated and will be ignored. ",
+      "Graphs are always modified via copy-on-write.",
+      call. = FALSE
+    )
+  }
+
   calls <- as.list(substitute(list(...)))[-1L]
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
@@ -153,13 +169,12 @@ remove_edges <- function(
     return(.update_caugi(
       cg,
       edges = pairs,
-      action = "remove",
-      inplace = inplace
+      action = "remove"
     ))
   }
 
   edges <- .get_edges(from, edge, to, calls, simple = cg@simple)
-  .update_caugi(cg, edges = edges, action = "remove", inplace = inplace)
+  .update_caugi(cg, edges = edges, action = "remove")
 }
 
 
@@ -173,6 +188,14 @@ set_edges <- function(
   to = NULL,
   inplace = FALSE
 ) {
+  if (!missing(inplace)) {
+    warning(
+      "The `inplace` argument is deprecated and will be ignored. ",
+      "Graphs are always modified via copy-on-write.",
+      call. = FALSE
+    )
+  }
+
   calls <- as.list(substitute(list(...)))[-1L]
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
@@ -189,7 +212,7 @@ set_edges <- function(
 
   edges <- .get_edges(from, edge, to, calls)
 
-  .update_caugi(cg, edges = edges, action = "replace", inplace = inplace)
+  .update_caugi(cg, edges = edges, action = "replace")
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -199,23 +222,39 @@ set_edges <- function(
 #' @describeIn caugi_verbs Add nodes.
 #' @export
 add_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
+  if (!missing(inplace)) {
+    warning(
+      "The `inplace` argument is deprecated and will be ignored. ",
+      "Graphs are always modified via copy-on-write.",
+      call. = FALSE
+    )
+  }
+
   calls <- as.list(substitute(list(...)))[-1L]
   nodes <- .get_nodes(name, calls)
   if (!nrow(nodes)) {
     return(cg)
   }
-  .update_caugi(cg, nodes = nodes, action = "add", inplace = inplace)
+  .update_caugi(cg, nodes = nodes, action = "add")
 }
 
 #' @describeIn caugi_verbs Remove nodes.
 #' @export
 remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
+  if (!missing(inplace)) {
+    warning(
+      "The `inplace` argument is deprecated and will be ignored. ",
+      "Graphs are always modified via copy-on-write.",
+      call. = FALSE
+    )
+  }
+
   calls <- as.list(substitute(list(...)))[-1L]
   nodes <- .get_nodes(name, calls)
   if (!nrow(nodes)) {
     return(cg)
   }
-  .update_caugi(cg, nodes = nodes, action = "remove", inplace = inplace)
+  .update_caugi(cg, nodes = nodes, action = "remove")
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -345,7 +384,7 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 #' @param edges A `data.frame` with columns `from`, `edge`, `to` for edges to
 #' add/remove.
 #' @param action One of `"add"`, `"remove"`, or `"replace"`.
-#' @param inplace Logical, whether to modify the graph inplace or not.
+#' @param inplace DEPRECATED Ignored. Kept for backward compatibility.
 #'
 #' @importFrom data.table `%chin%`
 #'
@@ -359,6 +398,14 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   action = c("add", "remove", "replace"),
   inplace = FALSE
 ) {
+  if (!missing(inplace)) {
+    warning(
+      "The `inplace` argument is deprecated and will be ignored. ",
+      "Graphs are always modified via copy-on-write.",
+      call. = FALSE
+    )
+  }
+
   action <- match.arg(action)
   session <- cg@session
 
@@ -377,11 +424,7 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
     }
 
     new_nodes <- unique(c(current_nodes, edges$from, edges$to))
-    target_session <- if (isTRUE(inplace)) {
-      session
-    } else {
-      rs_clone(session)
-    }
+    target_session <- rs_clone(session)
 
     if (
       length(new_nodes) != length(current_nodes) ||
@@ -407,9 +450,6 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
       rs_set_class(target_session, resolved_class)
     }
 
-    if (isTRUE(inplace)) {
-      return(cg)
-    }
     return(caugi(.session = target_session))
   }
 
@@ -447,18 +487,8 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
     current_nodes <- unique(current_nodes)
     current_edges <- unique(current_edges)
   }
-  if (isTRUE(inplace)) {
-    .sync_session_inplace(
-      session = session,
-      node_names = current_nodes,
-      edges_dt = current_edges,
-      simple = current_simple,
-      class = current_class
-    )
-    return(cg)
-  }
 
-  # Copy-on-write path: clone then sync clone.
+  # Copy-on-write: clone then sync clone
   cloned_session <- rs_clone(session)
   .sync_session_inplace(
     session = cloned_session,

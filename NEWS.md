@@ -28,6 +28,10 @@
     and `@ptr` now warn on access and return `NULL`.
   - Deprecated compatibility constructor arguments `build` and `state` in
     `caugi()` now warn and are ignored.
+- Deprecated `inplace` parameter in verb functions (`add_edges()`, `remove_edges()`,
+  `set_edges()`, `add_nodes()`, `remove_nodes()`). All graph modifications now use
+  copy-on-write semantics for consistency with R conventions. The parameter is
+  ignored with a deprecation warning.
 - Added `all.equal` and `compare_proxy` methods for caugi objects to support
   graph-content comparison in tests.
 - Add `asp` parameter to `plot()` for controlling aspect ratio. When `asp = 1`,

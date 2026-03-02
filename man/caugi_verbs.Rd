@@ -31,8 +31,8 @@ or nodes to add using unquoted names, vectors via \code{c()}, or \code{+} compos
 
 \item{to}{Character vector of target node names. Default is \code{NULL}.}
 
-\item{inplace}{Logical, whether to modify the graph inplace or not.
-If \code{FALSE} (default), a copy of the \code{caugi} is made and modified.}
+\item{inplace}{DEPRECATED This parameter is deprecated and will be ignored.
+Graphs are always modified via copy-on-write.}
 
 \item{name}{Character vector of node names. Default is \code{NULL}.}
 }
