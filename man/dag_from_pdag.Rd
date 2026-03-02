@@ -34,7 +34,7 @@ edges(DAG)
 \references{
 Dor, D., & Tarsi, M. (1992). "A simple algorithm to construct a consistent
 extension of a partially directed acyclic graph",
-\url{https://api.semanticscholar.org/CorpusID:122949140}.
+\url{https://www.semanticscholar.org/paper/3cee18b1965fd94bd98a1e7f2155250276424925}.
 }
 \seealso{
 Other operations: 
