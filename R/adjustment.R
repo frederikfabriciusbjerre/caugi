@@ -296,7 +296,7 @@ all_backdoor_sets <- function(
 #' meaning no proper subset of Z still d-separates X and Y.
 #'
 #' The algorithm:
-#' 1. Restricts to ancestors of X ∪ Y ∪ I
+#' 1. Restricts to ancestors of X U Y U I
 #' 2. Computes initial separator candidate from R
 #' 3. Refines using Bayes-ball d-connection algorithm
 #' 4. Returns minimal separator or NULL if none exists within R

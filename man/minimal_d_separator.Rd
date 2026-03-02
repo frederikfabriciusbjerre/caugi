@@ -52,7 +52,7 @@ meaning no proper subset of Z still d-separates X and Y.
 
 The algorithm:
 \enumerate{
-\item Restricts to ancestors of X ∪ Y ∪ I
+\item Restricts to ancestors of X U Y U I
 \item Computes initial separator candidate from R
 \item Refines using Bayes-ball d-connection algorithm
 \item Returns minimal separator or NULL if none exists within R

@@ -408,10 +408,10 @@ test_that("markov_blanket uses district-based definition", {
 
   mb_x <- markov_blanket(admg, "X")
 
-  # MB(X) = Pa(Dis(X)) ∪ (Dis(X) \ {X})
+  # MB(X) = Pa(Dis(X)) U (Dis(X) \ {X})
   # Dis(X) = {X, Z} (nodes connected via bidirected edges)
 
-  # Pa(Dis(X)) = Pa(X) ∪ Pa(Z) = {L} ∪ {} = {L}
+  # Pa(Dis(X)) = Pa(X) U Pa(Z) = {L} U {} = {L}
   # Dis(X) \ {X} = {Z}
   # MB(X) = {L, Z}
   expect_true("L" %in% mb_x) # Parent of X
