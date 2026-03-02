@@ -95,7 +95,7 @@ edges.</p>
 <span>  class <span class="op">=</span> <span class="st">"DAG"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">cg</span></span>
-<span><span class="co">#&gt; &lt;caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x55f20c7e0380&gt;</span></span>
+<span><span class="co">#&gt; &lt;caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x5608909c0940&gt;</span></span>
 <span><span class="co">#&gt;   graph_class: DAG</span></span>
 <span><span class="co">#&gt;   nodes: A, B, C, D</span></span>
 <span><span class="co">#&gt;   edges: A--&gt;B, A--&gt;C, B--&gt;C, B--&gt;D</span></span></code></pre></div>
@@ -117,7 +117,7 @@ other properties.</p>
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">session</span></span>
-<span><span class="co">#&gt; &lt;pointer: 0x55f20c7e0380&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;pointer: 0x5608909c0940&gt;</span></span></code></pre></div>
 <p>This is the session pointer to the Rust graph object that
 <code>caugi</code> utilizes for performance. The session manages lazy
 compilation and caching of graph operations internally.</p>
@@ -181,7 +181,7 @@ list that represents the descendants of that parent node.</p>
 <span>  <span class="fu"><a href="../reference/caugi_verbs.html">remove_edges</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span> <span class="op">+</span> <span class="va">D</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/caugi_verbs.html">add_edges</a></span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">A</span>, <span class="va">D</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span><span class="op">)</span></span>
 <span><span class="va">cg_modified</span></span>
-<span><span class="co">#&gt; &lt;caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55f2111541d0&gt;</span></span>
+<span><span class="co">#&gt; &lt;caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x560893b84cc0&gt;</span></span>
 <span><span class="co">#&gt;   graph_class: DAG</span></span>
 <span><span class="co">#&gt;   nodes: A, B, C, D</span></span>
 <span><span class="co">#&gt;   edges: A--&gt;C, B--&gt;A, D--&gt;C</span></span></code></pre></div>
@@ -233,7 +233,7 @@ motivation behind <code>caugi</code> and what we aspire to do with
 </h4>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg</span><span class="op">@</span><span class="va">session</span></span>
-<span><span class="co">#&gt; &lt;pointer: 0x55f20c7e0380&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;pointer: 0x5608909c0940&gt;</span></span></code></pre></div>
 <p>This is the Rust GraphSession pointer that holds the canonical graph
 state. The session handles lazy compilation and caching of graph
 operations internally. You should <em>avoid</em> accessing or modifying
