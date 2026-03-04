@@ -109,7 +109,7 @@ shd(cg, cg_modified, normalized = TRUE)
 
 You have now created a graph, inspected it, modified it, and measured the difference between the two graphs -- both structurally and interventionally. 
 
-For further reading, we recommend the vignettes `vignette("package_use")` and `vignette("performance")` to see how to use `caugi` in your own packages, and to see how `caugi` performs compared to other graph packages in R. For the interested reader, we also recommend `vignette("motivation")`, which goes deeper into the motivation behind `caugi` and what we aspire to do with `caugi`.
+For further reading, we recommend the vignettes `vignette("package_use")` and [performance vignette](performance.html) to see how to use `caugi` in your own packages, and to see how `caugi` performs compared to other graph packages in R. For the interested reader, we also recommend `vignette("motivation")`, which goes deeper into the motivation behind `caugi` and what we aspire to do with `caugi`.
 
 ## Appendix
 
