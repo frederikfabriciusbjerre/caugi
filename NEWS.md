@@ -52,6 +52,10 @@
 - The parameter `all` in `districts()` has been deprecated. Just use
   `districts()` without arguments to get all districts.
 
+- The `build()` function is deprecated and will be removed in a future release. Graphs are now built
+  automatically, so there is no need for a separate build step.
+  If you have code that calls `build()`, simply remove those calls.
+
 # caugi 1.0.0
 
 ## New Features

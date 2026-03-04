@@ -69,7 +69,11 @@ test_that("build initializes session without querying", {
   expect_true(state_before$core_valid)
   expect_false(state_before$view_valid)
 
-  expect_invisible(build(cg))
+  expect_warning(
+    build(cg),
+    "The `build()` function is deprecated and no longer has any effect.",
+    fixed = TRUE
+  )
 
   state_after <- rs_is_valid(cg@session)
   expect_true(state_after$core_valid)
@@ -82,13 +86,21 @@ test_that("build initializes session without querying", {
 
 test_that("build is idempotent and survives updates", {
   cg <- caugi(A %-->% B, class = "DAG")
-  build(cg)
+  expect_warning(
+    build(cg),
+    "The `build()` function is deprecated and no longer has any effect.",
+    fixed = TRUE
+  )
   state_built <- rs_is_valid(cg@session)
   expect_true(state_built$core_valid)
   expect_true(state_built$view_valid)
 
   # idempotent
-  build(cg)
+  expect_warning(
+    build(cg),
+    "The `build()` function is deprecated and no longer has any effect.",
+    fixed = TRUE
+  )
   state_built2 <- rs_is_valid(cg@session)
   expect_true(state_built2$core_valid)
   expect_true(state_built2$view_valid)
@@ -99,7 +111,11 @@ test_that("build is idempotent and survives updates", {
   expect_true(state_after_update$core_valid)
   expect_false(state_after_update$view_valid)
 
-  build(cg)
+  expect_warning(
+    build(cg),
+    "The `build()` function is deprecated and no longer has any effect.",
+    fixed = TRUE
+  )
   state_rebuilt <- rs_is_valid(cg@session)
   expect_true(state_rebuilt$core_valid)
   expect_true(state_rebuilt$view_valid)

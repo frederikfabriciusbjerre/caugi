@@ -35,9 +35,13 @@ This format is memory efficient for sparse graphs. The `caugi` graph object also
 
 #### Mutation and lazy building
 
-The `caugi` graph objects are expensive to build. This is the performance downside of using `caugi`. For each time we make a modification to a `caugi` graph object, we need to rebuild the graph completely since the graph object is immutable by design. This has complexity $\mathcal{O}(|V| + |E|)$, where $V$ is the vertex set and $E$ is the edge set. 
+The `caugi` graph objects are expensive to build. This is the performance downside of using `caugi`. For each time we
+make a modification to a `caugi` graph object, we need to rebuild the graph completely since the graph object is
+immutable by design. This has complexity $\mathcal{O}(|V| + |E|)$, where $V$ is the vertex set and $E$ is the edge set. 
 
-However, the graph object will only be rebuilt when the user either calls `build()` directly or queries the graph. Therefore, you do not need to worry about wasting compute time by iteratively making changes to a `caugi` graph object, as the graph rebuilds lazily when queried. By doing this, `caugi` graphs _feel_ mutable, but, in reality, they are not. 
+However, the graph object will only be rebuilt when the user queries the graph. Therefore, you do not need to worry
+about wasting compute time by iteratively making changes to a `caugi` graph object, as the graph rebuilds lazily when
+queried. By doing this, `caugi` graphs _feel_ mutable, but, in reality, they are not. 
 
 By doing it this way, we ensure 
 - that the graph object is always in a consistent state when queried, and

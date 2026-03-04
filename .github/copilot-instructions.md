@@ -89,10 +89,9 @@ caugi/
 ### Making Changes
 
 1. **Minimal changes**: Make the smallest possible changes to accomplish the goal
-2. **Lazy building**: Remember that graph mutations are batched - test both before and after explicit `build()` calls
-3. **Edge registry**: Be careful when modifying the edge registry system
-4. **Backward compatibility**: Maintain API compatibility when possible
-5. **Update NEWS.md**: Add entries to `NEWS.md` for user-facing changes under the appropriate section:
+2. **Edge registry**: Be careful when modifying the edge registry system
+3. **Backward compatibility**: Maintain API compatibility when possible
+4. **Update NEWS.md**: Add entries to `NEWS.md` for user-facing changes under the appropriate section:
    - **New Features**: New functions, methods, or capabilities
    - **Improvements**: Enhancements to existing functionality, performance, or documentation
    - **Bug Fixes**: Corrections to existing behavior

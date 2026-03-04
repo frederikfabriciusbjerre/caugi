@@ -93,8 +93,7 @@ caugi/
 ### How It Works
 
 1. **CSR Format**: Graphs are stored in Compressed Sparse Row format in Rust, which makes queries very fast but mutations more expensive.
-2. **Lazy Building**: When you mutate a graph (e.g., add edges), the changes are stored in R but not immediately applied in Rust. The graph rebuilds itself in Rust when you query it, or you can force a rebuild with `build(cg)`.
-3. **R + Rust Integration**: The `extendr` framework handles the communication between R and Rust, with automatic type conversions and memory management.
+2. **R + Rust Integration**: The `extendr` framework handles the communication between R and Rust, with automatic type conversions and memory management.
 
 ## Code Style Guidelines
 
@@ -201,9 +200,8 @@ test_that("parents() returns correct parents", {
 
 ### Important Testing Considerations
 
-1. **Lazy building**: Remember that graph mutations are batched. Test both before and after explicit `build()` calls if relevant.
-2. **Graph class invariants**: When testing graph classes, ensure that operations maintain the class invariants (e.g., DAGs remain acyclic).
-3. **Edge registry**: If modifying the edge registry system, test thoroughly including edge cases.
+1. **Graph class invariants**: When testing graph classes, ensure that operations maintain the class invariants (e.g., DAGs remain acyclic).
+2. **Edge registry**: If modifying the edge registry system, test thoroughly including edge cases.
 
 ## Submitting Changes
 

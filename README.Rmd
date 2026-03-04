@@ -112,7 +112,7 @@ We expect this feature to be needing further polishing in future releases, and w
 
 `caugi` graphs are represented in a compact Compressed Sparse Row (CSR) format in Rust. `caugi` works with a front-loading philosophy. Since the `caugi` graph is stored in a CSR format, mutations of the graph is computationally expensive compared to other graph storage systems, _but_ it allows for very fast querying. Additionally to the storage format of the graph itself, `caugi` also stores additional information about node relations in such a way that it allows for faster queries without blowing up the object too much.
 
-To accommodate for the cost of mutations, `caugi` graphs are built lazily. This means that when you mutate the graph, for example by adding edges to it, the graph edits are stored in R, but not in Rust. When you then need to query the graphs, the graph will rebuild itself in Rust, and the query will be executed on the newly built graph. You can also use the `build(cg)` function to force building the graph in Rust at any time.
+To accommodate for the cost of mutations, `caugi` graphs are built lazily.
 
 ## Why?
 It's fast, _dawg_ 🐶 See the [vignette on performance](https://caugi.org/articles/performance.html) for benchmarks.
