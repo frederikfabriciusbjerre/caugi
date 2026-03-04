@@ -45,8 +45,8 @@ remove_nodes(cg, ..., name = NULL, inplace = FALSE)
 
 - inplace:
 
-  Logical, whether to modify the graph inplace or not. If `FALSE`
-  (default), a copy of the `caugi` is made and modified.
+  DEPRECATED This parameter is deprecated and will be ignored. Graphs
+  are always modified via copy-on-write.
 
 - name:
 

@@ -37,7 +37,7 @@ session.
 
 - inplace:
 
-  Logical, whether to modify the graph inplace or not.
+  DEPRECATED Ignored. Kept for backward compatibility.
 
 ## Value
 
