@@ -120,9 +120,13 @@ do not need to worry about wasting compute time by iteratively making
 changes to a <code>caugi</code> graph object, as the graph rebuilds
 lazily when queried. By doing this, <code>caugi</code> graphs
 <em>feel</em> mutable, but, in reality, they are not.</p>
-<p>By doing it this way, we ensure - that the graph object is always in
-a consistent state when queried, and - that queries are as fast as
-possible, while keeping the user experience smooth.</p>
+<p>By doing it this way, we ensure</p>
+<ul>
+<li>that the graph object is always in a consistent state when queried,
+and</li>
+<li>that queries are as fast as possible,</li>
+</ul>
+<p>while keeping the user experience smooth.</p>
 </div>
 </div>
 <div class="section level3">

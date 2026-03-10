@@ -42,9 +42,13 @@ compute time by iteratively making changes to a `caugi` graph object, as
 the graph rebuilds lazily when queried. By doing this, `caugi` graphs
 *feel* mutable, but, in reality, they are not.
 
-By doing it this way, we ensure - that the graph object is always in a
-consistent state when queried, and - that queries are as fast as
-possible, while keeping the user experience smooth.
+By doing it this way, we ensure
+
+- that the graph object is always in a consistent state when queried,
+  and
+- that queries are as fast as possible,
+
+while keeping the user experience smooth.
 
 ### Comparison
 
