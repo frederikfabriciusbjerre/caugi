@@ -19,8 +19,8 @@ caugi_deserialize(json, lazy)
 
 - lazy:
 
-  Deprecated, no longer necessary. Logical indicating whether to lazily
-  deserialize the graph.
+  DEPRECATED, no longer necessary. The graph is always built lazily, so
+  this argument is ignored.
 
 ## Value
 

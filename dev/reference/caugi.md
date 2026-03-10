@@ -84,7 +84,9 @@ caugi(
 
 - build:
 
-  Deprecated.
+  DEPRECATED. The graph is always built lazily, so this argument is
+  ignored. Can use [`build()`](https://caugi.org/dev/reference/build.md)
+  to force lazy compilation if desired.
 
 - class:
 
@@ -96,7 +98,7 @@ caugi(
 
 - state:
 
-  Deprecated. Replaced by `.session`.
+  DEPRECATED. Replaced by `.session`.
 
 - .session:
 

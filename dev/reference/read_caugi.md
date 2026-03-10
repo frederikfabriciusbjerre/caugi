@@ -16,8 +16,8 @@ read_caugi(path, lazy)
 
 - lazy:
 
-  Deprecated, no longer necessary. Logical indicating whether to lazily
-  read the graph.
+  DEPRECATED, no longer necessary. The graph is always built lazily, so
+  this argument is ignored.
 
 ## Value
 
