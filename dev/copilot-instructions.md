@@ -115,13 +115,10 @@ the user-facing API.
 
 1.  **Minimal changes**: Make the smallest possible changes to
     accomplish the goal
-2.  **Lazy building**: Remember that graph mutations are batched - test
-    both before and after explicit
-    [`build()`](https://caugi.org/dev/reference/build.md) calls
-3.  **Edge registry**: Be careful when modifying the edge registry
+2.  **Edge registry**: Be careful when modifying the edge registry
     system
-4.  **Backward compatibility**: Maintain API compatibility when possible
-5.  **Update NEWS.md**: Add entries to `NEWS.md` for user-facing changes
+3.  **Backward compatibility**: Maintain API compatibility when possible
+4.  **Update NEWS.md**: Add entries to `NEWS.md` for user-facing changes
     under the appropriate section:
     - **New Features**: New functions, methods, or capabilities
     - **Improvements**: Enhancements to existing functionality,

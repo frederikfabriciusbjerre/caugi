@@ -145,7 +145,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op">%&lt;--%</span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5679606fdb60&gt;</span></span>
+<span><span class="co">#&gt; &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x000001a2318f5e90&gt;</span></span>
 <span><span class="co">#&gt;   graph_class: DAG</span></span>
 <span><span class="co">#&gt;   nodes: A, B, C</span></span>
 <span><span class="co">#&gt;   edges: A--&gt;B, B&lt;--C</span></span>
@@ -170,7 +170,7 @@
 <h2 id="how-it-works">How it works<a class="anchor" aria-label="anchor" href="#how-it-works"></a>
 </h2>
 <p><code>caugi</code> graphs are represented in a compact Compressed Sparse Row (CSR) format in Rust. <code>caugi</code> works with a front-loading philosophy. Since the <code>caugi</code> graph is stored in a CSR format, mutations of the graph is computationally expensive compared to other graph storage systems, <em>but</em> it allows for very fast querying. Additionally to the storage format of the graph itself, <code>caugi</code> also stores additional information about node relations in such a way that it allows for faster queries without blowing up the object too much.</p>
-<p>To accommodate for the cost of mutations, <code>caugi</code> graphs are built lazily. This means that when you mutate the graph, for example by adding edges to it, the graph edits are stored in R, but not in Rust. When you then need to query the graphs, the graph will rebuild itself in Rust, and the query will be executed on the newly built graph. You can also use the <code>build(cg)</code> function to force building the graph in Rust at any time.</p>
+<p>To accommodate for the cost of mutations, <code>caugi</code> graphs are built lazily, but you can force a build by using the function <code><a href="reference/build.html">build()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="why">Why?<a class="anchor" aria-label="anchor" href="#why"></a>

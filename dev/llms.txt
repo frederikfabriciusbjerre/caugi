@@ -88,7 +88,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5679606fdb60>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x000001a2318f5e90>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -133,12 +133,8 @@ relations in such a way that it allows for faster queries without
 blowing up the object too much.
 
 To accommodate for the cost of mutations, `caugi` graphs are built
-lazily. This means that when you mutate the graph, for example by adding
-edges to it, the graph edits are stored in R, but not in Rust. When you
-then need to query the graphs, the graph will rebuild itself in Rust,
-and the query will be executed on the newly built graph. You can also
-use the `build(cg)` function to force building the graph in Rust at any
-time.
+lazily, but you can force a build by using the function
+[`build()`](https://caugi.org/dev/reference/build.md).
 
 ## Why?
 
