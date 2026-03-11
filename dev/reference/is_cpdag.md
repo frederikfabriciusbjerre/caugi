@@ -19,6 +19,12 @@ is_cpdag(cg)
 
 A logical value indicating whether the graph is a CPDAG.
 
+## References
+
+C. Meek (1995). Causal inference and causal explanation with background
+knowledge. In *Proceedings of the Eleventh Conference on Uncertainty in
+Artificial Intelligence (UAI-95)*, pp. 403–411. Morgan Kaufmann.
+
 ## See also
 
 Other queries:
@@ -37,6 +43,7 @@ Other queries:
 [`is_dag()`](https://caugi.org/dev/reference/is_dag.md),
 [`is_empty_caugi()`](https://caugi.org/dev/reference/is_empty_caugi.md),
 [`is_mag()`](https://caugi.org/dev/reference/is_mag.md),
+[`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md),
 [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
 [`is_simple()`](https://caugi.org/dev/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),

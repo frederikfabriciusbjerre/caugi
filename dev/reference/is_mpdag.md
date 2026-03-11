@@ -1,15 +1,13 @@
-# Is the `caugi` graph a MAG?
+# Is the `caugi` graph an MPDAG?
 
-Checks if the given `caugi` graph is a Maximal Ancestral Graph (MAG).
-
-A MAG is an ancestral graph where no additional edge can be added
-without violating the ancestral graph constraints or changing the
-encoded independence model.
+Checks if the given `caugi` graph is a Maximally oriented Partially
+Directed Acyclic Graph (MPDAG), i.e. a PDAG where no additional edge
+orientations are implied by Meek's rules (R1–R4).
 
 ## Usage
 
 ``` r
-is_mag(cg, force_check = FALSE)
+is_mpdag(cg)
 ```
 
 ## Arguments
@@ -18,15 +16,19 @@ is_mag(cg, force_check = FALSE)
 
   A `caugi` object.
 
-- force_check:
-
-  Logical; if `TRUE`, the function will test if the graph is a MAG, if
-  `FALSE` (default), it will look at the graph class and match it, if
-  possible.
-
 ## Value
 
-A logical value indicating whether the graph is a MAG.
+A logical value indicating whether the graph is an MPDAG.
+
+## Details
+
+If the graph is not PDAG-compatible, the function returns `FALSE`.
+
+## References
+
+C. Meek (1995). Causal inference and causal explanation with background
+knowledge. In *Proceedings of the Eleventh Conference on Uncertainty in
+Artificial Intelligence (UAI-95)*, pp. 403–411. Morgan Kaufmann.
 
 ## See also
 
@@ -46,7 +48,7 @@ Other queries:
 [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md),
 [`is_dag()`](https://caugi.org/dev/reference/is_dag.md),
 [`is_empty_caugi()`](https://caugi.org/dev/reference/is_empty_caugi.md),
-[`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md),
+[`is_mag()`](https://caugi.org/dev/reference/is_mag.md),
 [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
 [`is_simple()`](https://caugi.org/dev/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),
@@ -64,11 +66,12 @@ Other queries:
 ## Examples
 
 ``` r
-cg_ag <- caugi(
-  A %-->% B,
-  B %-->% C,
-  class = "AG"
+cg_not_mpdag <- caugi(
+  A %---% B,
+  A %-->% C,
+  C %-->% B,
+  class = "PDAG"
 )
-is_mag(cg_ag) # TRUE (0 and 2 are m-separated by {B})
-#> [1] TRUE
+is_mpdag(cg_not_mpdag) # FALSE
+#> [1] FALSE
 ```

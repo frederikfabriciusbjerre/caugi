@@ -39,6 +39,7 @@ Other queries:
 [`is_dag()`](https://caugi.org/dev/reference/is_dag.md),
 [`is_empty_caugi()`](https://caugi.org/dev/reference/is_empty_caugi.md),
 [`is_mag()`](https://caugi.org/dev/reference/is_mag.md),
+[`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md),
 [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
 [`is_simple()`](https://caugi.org/dev/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),

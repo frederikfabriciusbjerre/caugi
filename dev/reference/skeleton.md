@@ -31,6 +31,7 @@ Other operations:
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
+[`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md),
 [`moralize()`](https://caugi.org/dev/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
 [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md)
@@ -40,7 +41,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 skeleton(cg) # A --- B
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x55b6b21048f0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x5595b94a7860>
 #>   graph_class: UG
 #>   nodes: A, B
 #>   edges: A---B

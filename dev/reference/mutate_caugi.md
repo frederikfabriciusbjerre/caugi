@@ -36,6 +36,7 @@ Other operations:
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
+[`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md),
 [`moralize()`](https://caugi.org/dev/reference/moralize.md),
 [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md),
 [`skeleton()`](https://caugi.org/dev/reference/skeleton.md)

@@ -40,6 +40,7 @@ Other operations:
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
+[`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md),
 [`moralize()`](https://caugi.org/dev/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
 [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md),
@@ -56,12 +57,12 @@ mg <- caugi(
 )
 
 condition_marginalize(mg, marg_vars = "U") # ADMG
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55b6addfb790>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5595abd89830>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y, X<->Y
 condition_marginalize(mg, cond_vars = "U") # DAG
-#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x55b6acff9670>
+#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x5595b7d13520>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y

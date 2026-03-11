@@ -31,6 +31,11 @@
   [`caugi_options()`](https://caugi.org/dev/reference/caugi_options.md)
   or locally with `open = TRUE/FALSE` argument. Default is
   `open = TRUE`, like it was before implicitly.
+- Add [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md) query
+  to check whether a PDAG is closed under Meek’s orientation rules
+  (R1-R4), and
+  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md) to
+  orient all implied edges until Meek closure.
 
 ### Improvements
 

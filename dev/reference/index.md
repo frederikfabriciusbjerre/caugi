@@ -73,6 +73,10 @@
 
   Is the `caugi` graph a MAG?
 
+- [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md) :
+
+  Is the `caugi` graph an MPDAG?
+
 - [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md) :
 
   Is the `caugi` graph a PDAG?
@@ -228,6 +232,9 @@
 
 - [`latent_project()`](https://caugi.org/dev/reference/latent_project.md)
   : Project latent variables from a DAG to an ADMG
+
+- [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md) :
+  Apply Meek closure to a PDAG
 
 - [`moralize()`](https://caugi.org/dev/reference/moralize.md) : Moralize
   a DAG
