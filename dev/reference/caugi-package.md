@@ -11,6 +11,8 @@ Useful links:
 
 - <https://caugi.org/>
 
+- <https://github.com/frederikfabriciusbjerre/caugi>
+
 - Report bugs at
   <https://github.com/frederikfabriciusbjerre/caugi/issues>
 

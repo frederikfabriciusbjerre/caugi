@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.0.0.9000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.1.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,36 +42,39 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="caugi-development-version">caugi (development version)<a class="anchor" aria-label="anchor" href="#caugi-development-version"></a></h2>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.0" id="caugi-110">caugi 1.1.0<a class="anchor" aria-label="anchor" href="#caugi-110"></a></h2>
 <div class="section level3">
-<h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-1-1-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-1-0"></a></h3>
 <ul><li>Add <code><a href="../reference/normalize_latent_structure.html">normalize_latent_structure()</a></code>, which normalizes the latent structure of a DAG while preserving the marginal model over observed variables.</li>
 <li>Add <code><a href="../reference/minimal_d_separator.html">minimal_d_separator()</a></code>, which computes a minimal d-separator between sets of nodes in a DAG, with support for mandatory inclusions and restrictions.</li>
 <li>Add <code><a href="../reference/posteriors.html">posteriors()</a></code> query function, which is the dual of <code><a href="../reference/anteriors.html">anteriors()</a></code>. It returns all nodes reachable by following paths where every edge is either undirected or directed away from the source node. For DAGs, <code><a href="../reference/posteriors.html">posteriors()</a></code> equals <code><a href="../reference/descendants.html">descendants()</a></code>. For PDAGs and AGs, it includes both descendants and nodes reachable via undirected edges.</li>
-<li>You can now specify whether to use an open or closed graph definition for the queries <code><a href="../reference/ancestors.html">ancestors()</a></code>, <code><a href="../reference/anteriors.html">anteriors()</a></code>, <code><a href="../reference/descendants.html">descendants()</a></code>, and <code><a href="../reference/posteriors.html">posteriors()</a></code>. Can be set globally with <code><a href="../reference/caugi_options.html">caugi_options()</a></code> or locally with <code>open = TRUE/FALSE</code> argument. Default is <code>open = TRUE</code>, like it was before implicitly.</li>
+<li>You can now specify whether to use an open or closed graph definition for the queries <code><a href="../reference/ancestors.html">ancestors()</a></code>, <code><a href="../reference/anteriors.html">anteriors()</a></code>, <code><a href="../reference/descendants.html">descendants()</a></code>, and <code><a href="../reference/posteriors.html">posteriors()</a></code>. This can be set globally with <code><a href="../reference/caugi_options.html">caugi_options()</a></code> or locally with the <code>open = TRUE/FALSE</code> argument. The default remains <code>open = TRUE</code>.</li>
 <li>Add <code><a href="../reference/is_mpdag.html">is_mpdag()</a></code> query to check whether a PDAG is closed under Meek’s orientation rules (R1-R4), and <code><a href="../reference/meek_closure.html">meek_closure()</a></code> to orient all implied edges until Meek closure.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="improvements-development-version">Improvements<a class="anchor" aria-label="anchor" href="#improvements-development-version"></a></h3>
+<h3 id="improvements-1-1-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/caugi_options.html">caugi_options()</a></code> now supports nested key drilling: multiple unnamed arguments traverse nested options (e.g., <code>caugi_options("plot", "tier_style", "fill")</code>).</li>
 <li>Rust remains the single source of truth for graph state. Graph properties (<code>simple</code>, <code>graph_class</code>, <code>nodes</code>, <code>edges</code>) are sourced from the <code>session</code>.
-<ul><li>Session is always created, including empty graphs (n = 0), which simplifies property access.</li>
+<ul><li>A session is always created, including empty graphs (n = 0), which simplifies property access.</li>
 <li>Deprecated compatibility properties <code>@.state</code>, <code>@name_index_map</code>, <code>@built</code>, and <code>@ptr</code> now warn on access and return <code>NULL</code>.</li>
 <li>Deprecated compatibility constructor arguments <code>build</code> and <code>state</code> in <code><a href="../reference/caugi.html">caugi()</a></code> now warn and are ignored.</li>
 </ul></li>
-<li>Deprecated <code>inplace</code> parameter in verb functions (<code><a href="../reference/caugi_verbs.html">add_edges()</a></code>, <code><a href="../reference/caugi_verbs.html">remove_edges()</a></code>, <code><a href="../reference/caugi_verbs.html">set_edges()</a></code>, <code><a href="../reference/caugi_verbs.html">add_nodes()</a></code>, <code><a href="../reference/caugi_verbs.html">remove_nodes()</a></code>). All graph modifications now use copy-on-write semantics for consistency with R conventions. The parameter is ignored with a deprecation warning.</li>
+<li>The <code>inplace</code> parameter in verb functions (<code><a href="../reference/caugi_verbs.html">add_edges()</a></code>, <code><a href="../reference/caugi_verbs.html">remove_edges()</a></code>, <code><a href="../reference/caugi_verbs.html">set_edges()</a></code>, <code><a href="../reference/caugi_verbs.html">add_nodes()</a></code>, <code><a href="../reference/caugi_verbs.html">remove_nodes()</a></code>). All graph modifications now use copy-on-write semantics for consistency with R conventions. The parameter is deprecated and ignored with a warning.</li>
 <li>Added <code>all.equal</code> and <code>compare_proxy</code> methods for caugi objects to support graph-content comparison in tests.</li>
-<li>Add <code>asp</code> parameter to <code><a href="../reference/plot.html">plot()</a></code> for controlling aspect ratio. When <code>asp = 1</code>, the plot respects equal units on both axes, preserving the layout coordinates. Works like base R’s <code>asp</code> parameter (y/x aspect ratio) (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/195" class="external-link">#195</a>).</li>
+<li>Add <code>asp</code> parameter to <code><a href="../reference/plot.html">plot()</a></code> for controlling the aspect ratio. When <code>asp = 1</code>, the plot respects equal units on both axes, preserving the layout coordinates. Works like base R’s <code>asp</code> parameter (y/x aspect ratio) (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/195" class="external-link">#195</a>).</li>
 <li>Add <code>pdag_to_dag()</code> function that generates a random DAG consistent with a given CPDAG/PDAG structure if possible (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/201" class="external-link">#201</a>).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-1-1-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-1-0"></a></h3>
 <ul><li>Fixed a bug causing <code><a href="../reference/plot.html">plot()</a></code> to use incorrect layout if node names were not in the same order as in the graph object (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/198" class="external-link">#198</a>).</li>
 <li>Fixed <code><a href="../reference/caugi_verbs.html">set_edges()</a></code> so that it correctly replaces symmetric edges in simple graphs.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="deprecations-development-version">Deprecations<a class="anchor" aria-label="anchor" href="#deprecations-development-version"></a></h3>
-<ul><li>The parameter <code>all</code> in <code><a href="../reference/districts.html">districts()</a></code> has been deprecated. Just use <code><a href="../reference/districts.html">districts()</a></code> without arguments to get all districts.</li>
+<h3 id="deprecations-1-1-0">Deprecations<a class="anchor" aria-label="anchor" href="#deprecations-1-1-0"></a></h3>
+<ul><li>The parameter <code>all</code> in <code><a href="../reference/districts.html">districts()</a></code> has been deprecated. Use <code><a href="../reference/districts.html">districts()</a></code> without arguments to get all districts.</li>
 </ul></div>
 </div>
     <div class="section level2">

@@ -519,7 +519,7 @@ plot(cg_tiered, tiers = tiers)
 ![](visualization_files/figure-html/tiered-boxes-basic-1.png)
 
 But you can customize the appearance of tier boxes using the
-`tier_style` parameter. Here, for isntance, we specify different fill
+`tier_style` parameter. Here, for instance, we specify different fill
 colors for each tier using a vector.
 
 ``` r
