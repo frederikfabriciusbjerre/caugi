@@ -35,7 +35,7 @@ Description: Create, query, and modify causal graphs. 'caugi' (Causal Graph
     relationships.
 License: MIT + file LICENSE
 Language: en-US
-URL: https://caugi.org/
+URL: https://caugi.org/, https://github.com/frederikfabriciusbjerre/caugi
 BugReports: https://github.com/frederikfabriciusbjerre/caugi/issues
 Depends:
     R (>= 4.2)
