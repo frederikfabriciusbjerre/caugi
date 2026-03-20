@@ -472,7 +472,7 @@ plot(cg_tiered, tiers = tiers)
 ```
 
 But you can customize the appearance of tier boxes using the `tier_style` parameter.
-Here, for isntance, we specify different fill colors for each tier using a vector.
+Here, for instance, we specify different fill colors for each tier using a vector.
 
 ```{r tiered-boxes-vector}
 plot(
