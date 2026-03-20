@@ -11,10 +11,10 @@
   undirected or directed away from the source node. For DAGs, `posteriors()`
   equals `descendants()`. For PDAGs and AGs, it includes both descendants and
   nodes reachable via undirected edges.
-- You can now specify whether to use an open or closed graph definition for the queries
-  `ancestors()`, `anteriors()`, `descendants()`, and `posteriors()`. Can be set
-  globally with `caugi_options()` or locally with `open = TRUE/FALSE` argument. Default is `open = TRUE`, like
-  it was before implicitly.
+- You can now specify whether to use an open or closed graph definition for the
+  queries `ancestors()`, `anteriors()`, `descendants()`, and `posteriors()`.
+  This can be set globally with `caugi_options()` or locally with the
+  `open = TRUE/FALSE` argument. The default remains `open = TRUE`.
 - Add `is_mpdag()` query to check whether a PDAG is closed under Meek's
   orientation rules (R1-R4), and `meek_closure()` to orient all implied edges
   until Meek closure.
@@ -25,19 +25,19 @@
   traverse nested options (e.g., `caugi_options("plot", "tier_style", "fill")`).
 - Rust remains the single source of truth for graph state. Graph properties
   (`simple`, `graph_class`, `nodes`, `edges`) are sourced from the `session`.
-  - Session is always created, including empty graphs (n = 0), which simplifies
+  - A session is always created, including empty graphs (n = 0), which simplifies
     property access.
   - Deprecated compatibility properties `@.state`, `@name_index_map`, `@built`,
     and `@ptr` now warn on access and return `NULL`.
   - Deprecated compatibility constructor arguments `build` and `state` in
     `caugi()` now warn and are ignored.
-- Deprecated `inplace` parameter in verb functions (`add_edges()`, `remove_edges()`,
+- The `inplace` parameter in verb functions (`add_edges()`, `remove_edges()`,
   `set_edges()`, `add_nodes()`, `remove_nodes()`). All graph modifications now use
   copy-on-write semantics for consistency with R conventions. The parameter is
-  ignored with a deprecation warning.
+  deprecated and ignored with a warning.
 - Added `all.equal` and `compare_proxy` methods for caugi objects to support
   graph-content comparison in tests.
-- Add `asp` parameter to `plot()` for controlling aspect ratio. When `asp = 1`,
+- Add `asp` parameter to `plot()` for controlling the aspect ratio. When `asp = 1`,
   the plot respects equal units on both axes, preserving the layout
   coordinates. Works like base R's `asp` parameter (y/x aspect ratio) (#195).
 - Add `pdag_to_dag()` function that generates a random DAG consistent with a
@@ -52,8 +52,8 @@
 
 ## Deprecations
 
-- The parameter `all` in `districts()` has been deprecated. Just use
-  `districts()` without arguments to get all districts.
+- The parameter `all` in `districts()` has been deprecated. Use `districts()`
+  without arguments to get all districts.
 
 # caugi 1.0.0
 
