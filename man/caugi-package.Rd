@@ -13,6 +13,7 @@ interface to build, structure, and examine causal relationships.
 Useful links:
 \itemize{
   \item \url{https://caugi.org/}
+  \item \url{https://github.com/frederikfabriciusbjerre/caugi}
   \item Report bugs at \url{https://github.com/frederikfabriciusbjerre/caugi/issues}
 }
 
