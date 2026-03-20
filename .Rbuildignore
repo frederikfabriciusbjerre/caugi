@@ -31,3 +31,4 @@
 ^Taskfile\.yml$
 ^extras$
 ^paper$
+^\.task$
