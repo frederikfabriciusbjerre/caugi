@@ -5,7 +5,7 @@ Reads a caugi graph from a file in the native caugi JSON format.
 ## Usage
 
 ``` r
-read_caugi(path, lazy = FALSE)
+read_caugi(path, lazy)
 ```
 
 ## Arguments
@@ -16,8 +16,8 @@ read_caugi(path, lazy = FALSE)
 
 - lazy:
 
-  Logical; if `FALSE` (default), the graph is built immediately. If
-  `TRUE`, graph building is deferred until needed.
+  DEPRECATED, no longer necessary. The graph is always built lazily, so
+  this argument is ignored.
 
 ## Value
 

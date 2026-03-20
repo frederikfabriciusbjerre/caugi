@@ -25,7 +25,7 @@
   Get descendants of nodes in a `caugi`
 
 - [`districts()`](https://caugi.org/reference/districts.md) : Get
-  districts (c-components) of an ADMG
+  districts (c-components) of an ADMG or AG
 
 - [`edge_types()`](https://caugi.org/reference/edge_types.md) :
 
@@ -72,9 +72,17 @@
 
   Is the `caugi` graph a MAG?
 
+- [`is_mpdag()`](https://caugi.org/reference/is_mpdag.md) :
+
+  Is the `caugi` graph an MPDAG?
+
 - [`is_pdag()`](https://caugi.org/reference/is_pdag.md) :
 
   Is the `caugi` graph a PDAG?
+
+- [`is_simple()`](https://caugi.org/reference/is_simple.md) :
+
+  Is the `caugi` graph simple?
 
 - [`is_ug()`](https://caugi.org/reference/is_ug.md) :
 
@@ -102,6 +110,10 @@
 
   Get parents of nodes in a `caugi`
 
+- [`posteriors()`](https://caugi.org/reference/posteriors.md) :
+
+  Get posteriors of nodes in a `caugi`
+
 - [`same_nodes()`](https://caugi.org/reference/same_nodes.md) : Same
   nodes?
 
@@ -116,8 +128,9 @@
 
 ## Verbs
 
-- [`build()`](https://caugi.org/reference/build.md) : Build the graph
-  now
+- [`build()`](https://caugi.org/reference/build.md) :
+
+  Build the `caugi` graph
 
 - [`add_edges()`](https://caugi.org/reference/caugi_verbs.md)
   [`remove_edges()`](https://caugi.org/reference/caugi_verbs.md)
@@ -141,6 +154,8 @@
   : Is a set a valid adjustment set in an ADMG?
 - [`is_valid_backdoor()`](https://caugi.org/reference/is_valid_backdoor.md)
   : Is a backdoor set valid?
+- [`minimal_d_separator()`](https://caugi.org/reference/minimal_d_separator.md)
+  : Compute a minimal d-separator
 
 ## Simulation
 
@@ -204,11 +219,17 @@
 - [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md)
   : Marginalize and/or condition on variables in an ancestral graph (AG)
 
+- [`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md) :
+  Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
+
 - [`exogenize()`](https://caugi.org/reference/exogenize.md) : Exogenize
   a graph
 
 - [`latent_project()`](https://caugi.org/reference/latent_project.md) :
   Project latent variables from a DAG to an ADMG
+
+- [`meek_closure()`](https://caugi.org/reference/meek_closure.md) :
+  Apply Meek closure to a PDAG
 
 - [`moralize()`](https://caugi.org/reference/moralize.md) : Moralize a
   DAG
@@ -216,6 +237,9 @@
 - [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md) :
 
   Mutate `caugi` class
+
+- [`normalize_latent_structure()`](https://caugi.org/reference/normalize_latent_structure.md)
+  : Normalize latent structure in a DAG
 
 - [`skeleton()`](https://caugi.org/reference/skeleton.md) : Get the
   skeleton of a graph

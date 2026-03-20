@@ -6,7 +6,7 @@ generation.
 ## Usage
 
 ``` r
-generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"))
+generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"), seed = NULL)
 ```
 
 ## Arguments
@@ -28,6 +28,10 @@ generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"))
 - class:
 
   "DAG" or "CPDAG".
+
+- seed:
+
+  Optional integer; random seed for reproducibility.
 
 ## Value
 

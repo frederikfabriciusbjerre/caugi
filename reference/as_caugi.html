@@ -9,7 +9,7 @@ graphNEL, matrix, tidygraph, daggity, bn, or igraph."><meta property="og:image" 
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,11 +17,11 @@ graphNEL, matrix, tidygraph, daggity, bn, or igraph."><meta property="og:image" 
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/caugi.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/get_started.html">Get started</a></li>
-    <li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
     <li><a class="dropdown-item" href="../articles/package_use.html">How to use caugi in a package</a></li>
     <li><a class="dropdown-item" href="../articles/performance.html">Performance</a></li>
     <li><a class="dropdown-item" href="../articles/serialization.html">Saving and Sharing Graphs with the Caugi Format</a></li>
@@ -54,7 +54,6 @@ graphNEL, matrix, tidygraph, daggity, bn, or igraph."><meta property="og:image" 
 <span>  <span class="va">x</span>,</span>
 <span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DAG"</span>, <span class="st">"PDAG"</span>, <span class="st">"ADMG"</span>, <span class="st">"PAG"</span>, <span class="st">"UNKNOWN"</span><span class="op">)</span>,</span>
 <span>  simple <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  build <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  collapse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  collapse_to <span class="op">=</span> <span class="st">"---"</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -78,11 +77,6 @@ graphNEL, matrix, tidygraph, daggity, bn, or igraph."><meta property="og:image" 
 <dt id="arg-simple">simple<a class="anchor" aria-label="anchor" href="#arg-simple"></a></dt>
 <dd><p>logical. If <code>TRUE</code> (default) the graph will be simple
 (no multiple edges or self-loops).</p></dd>
-
-
-<dt id="arg-build">build<a class="anchor" aria-label="anchor" href="#arg-build"></a></dt>
-<dd><p>logical. If <code>TRUE</code> (default) build the graph now, otherwise
-build lazily on first query or when using <code><a href="build.html">build()</a></code>.</p></dd>
 
 
 <dt id="arg-collapse">collapse<a class="anchor" aria-label="anchor" href="#arg-collapse"></a></dt>
@@ -192,7 +186,7 @@ For PAGs, the integer codes are as follows (as used in <code>pcalg</code>):</p><
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs.</p>
+  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs, Bjarke Hautop Kristensen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

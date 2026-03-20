@@ -97,5 +97,5 @@ many times after being created once. This makes `caugi` suitable for
 large graphs, where performance matters, but even for small graphs the
 performance gain is significant to other packages.
 
-You can read more about the performance of `caugi` in
-`vignette("performance")`.
+You can read more about the performance of `caugi` in the [performance
+article](https://caugi.org/articles/performance.html) on our website.

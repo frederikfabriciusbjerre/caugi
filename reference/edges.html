@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,11 +15,11 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/caugi.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/get_started.html">Get started</a></li>
-    <li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
     <li><a class="dropdown-item" href="../articles/package_use.html">How to use caugi in a package</a></li>
     <li><a class="dropdown-item" href="../articles/performance.html">Performance</a></li>
     <li><a class="dropdown-item" href="../articles/serialization.html">Saving and Sharing Graphs with the Caugi Format</a></li>
@@ -47,9 +47,9 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">edges</span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">edges</span><span class="op">(</span><span class="va">cg</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">E</span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">E</span><span class="op">(</span><span class="va">cg</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -58,6 +58,10 @@
 
 <dl><dt id="arg-cg">cg<a class="anchor" aria-label="anchor" href="#arg-cg"></a></dt>
 <dd><p>A <code>caugi</code> object.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments (currently unused).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -82,13 +86,16 @@
 <code><a href="is_dag.html">is_dag()</a></code>,
 <code><a href="is_empty_caugi.html">is_empty_caugi()</a></code>,
 <code><a href="is_mag.html">is_mag()</a></code>,
+<code><a href="is_mpdag.html">is_mpdag()</a></code>,
 <code><a href="is_pdag.html">is_pdag()</a></code>,
+<code><a href="is_simple.html">is_simple()</a></code>,
 <code><a href="is_ug.html">is_ug()</a></code>,
 <code><a href="m_separated.html">m_separated()</a></code>,
 <code><a href="markov_blanket.html">markov_blanket()</a></code>,
 <code><a href="neighbors.html">neighbors()</a></code>,
 <code><a href="nodes.html">nodes()</a></code>,
 <code><a href="parents.html">parents()</a></code>,
+<code><a href="posteriors.html">posteriors()</a></code>,
 <code><a href="same_nodes.html">same_nodes()</a></code>,
 <code><a href="spouses.html">spouses()</a></code>,
 <code><a href="subgraph.html">subgraph()</a></code>,
@@ -116,7 +123,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs.</p>
+  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs, Bjarke Hautop Kristensen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

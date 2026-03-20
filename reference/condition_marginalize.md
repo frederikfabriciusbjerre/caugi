@@ -37,10 +37,13 @@ Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
 ## See also
 
 Other operations:
+[`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md),
 [`exogenize()`](https://caugi.org/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/reference/latent_project.md),
+[`meek_closure()`](https://caugi.org/reference/meek_closure.md),
 [`moralize()`](https://caugi.org/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md),
+[`normalize_latent_structure()`](https://caugi.org/reference/normalize_latent_structure.md),
 [`skeleton()`](https://caugi.org/reference/skeleton.md)
 
 ## Examples
@@ -54,12 +57,12 @@ mg <- caugi(
 )
 
 condition_marginalize(mg, marg_vars = "U") # ADMG
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; built: TRUE; ptr=0x557451ac2180>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x561906f57fd0>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y, X<->Y
 condition_marginalize(mg, cond_vars = "U") # DAG
-#> <caugi object; 4 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x557451ffa1a0>
+#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x561905979160>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y

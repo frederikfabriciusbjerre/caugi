@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,11 +15,11 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/caugi.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/get_started.html">Get started</a></li>
-    <li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
     <li><a class="dropdown-item" href="../articles/package_use.html">How to use caugi in a package</a></li>
     <li><a class="dropdown-item" href="../articles/performance.html">Performance</a></li>
     <li><a class="dropdown-item" href="../articles/serialization.html">Saving and Sharing Graphs with the Caugi Format</a></li>
@@ -98,7 +98,7 @@
           <code><a href="districts.html">districts()</a></code>
 
         </dt>
-        <dd>Get districts (c-components) of an ADMG</dd>
+        <dd>Get districts (c-components) of an ADMG or AG</dd>
 
         <dt>
 
@@ -179,10 +179,24 @@
 
         <dt>
 
+          <code><a href="is_mpdag.html">is_mpdag()</a></code>
+
+        </dt>
+        <dd>Is the <code>caugi</code> graph an MPDAG?</dd>
+
+        <dt>
+
           <code><a href="is_pdag.html">is_pdag()</a></code>
 
         </dt>
         <dd>Is the <code>caugi</code> graph a PDAG?</dd>
+
+        <dt>
+
+          <code><a href="is_simple.html">is_simple()</a></code>
+
+        </dt>
+        <dd>Is the <code>caugi</code> graph simple?</dd>
 
         <dt>
 
@@ -228,6 +242,13 @@
 
         <dt>
 
+          <code><a href="posteriors.html">posteriors()</a></code>
+
+        </dt>
+        <dd>Get posteriors of nodes in a <code>caugi</code></dd>
+
+        <dt>
+
           <code><a href="same_nodes.html">same_nodes()</a></code>
 
         </dt>
@@ -268,7 +289,7 @@
           <code><a href="build.html">build()</a></code>
 
         </dt>
-        <dd>Build the graph now</dd>
+        <dd>Build the <code>caugi</code> graph</dd>
 
         <dt>
 
@@ -327,6 +348,13 @@
 
         </dt>
         <dd>Is a backdoor set valid?</dd>
+
+        <dt>
+
+          <code><a href="minimal_d_separator.html">minimal_d_separator()</a></code>
+
+        </dt>
+        <dd>Compute a minimal d-separator</dd>
       </dl></div><div class="section level2">
       <h2 id="simulation">Simulation<a class="anchor" aria-label="anchor" href="#simulation"></a></h2>
 
@@ -489,6 +517,13 @@
 
         <dt>
 
+          <code><a href="dag_from_pdag.html">dag_from_pdag()</a></code>
+
+        </dt>
+        <dd>Extend a PDAG to a DAG using the Dor-Tarsi Algorithm</dd>
+
+        <dt>
+
           <code><a href="exogenize.html">exogenize()</a></code>
 
         </dt>
@@ -503,6 +538,13 @@
 
         <dt>
 
+          <code><a href="meek_closure.html">meek_closure()</a></code>
+
+        </dt>
+        <dd>Apply Meek closure to a PDAG</dd>
+
+        <dt>
+
           <code><a href="moralize.html">moralize()</a></code>
 
         </dt>
@@ -514,6 +556,13 @@
 
         </dt>
         <dd>Mutate <code>caugi</code> class</dd>
+
+        <dt>
+
+          <code><a href="normalize_latent_structure.html">normalize_latent_structure()</a></code>
+
+        </dt>
+        <dd>Normalize latent structure in a DAG</dd>
 
         <dt>
 
@@ -785,7 +834,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs.</p>
+  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs, Bjarke Hautop Kristensen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

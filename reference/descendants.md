@@ -5,7 +5,12 @@ Get descendants of nodes in a `caugi`
 ## Usage
 
 ``` r
-descendants(cg, nodes = NULL, index = NULL)
+descendants(
+  cg,
+  nodes = NULL,
+  index = NULL,
+  open = caugi_options("use_open_graph_definition")
+)
 ```
 
 ## Arguments
@@ -16,13 +21,18 @@ descendants(cg, nodes = NULL, index = NULL)
 
 - nodes:
 
-  A vector of node names, a vector of unquoted node names, or an
-  expression combining these with `+` and
-  [`c()`](https://rdrr.io/r/base/c.html).
+  A character vector of node names.
 
 - index:
 
   A vector of node indexes.
+
+- open:
+
+  Boolean. Determines how the graph is interpreted when retrieving
+  descendants. Default is taken from
+  `caugi_options("use_open_graph_definition")`, which by default is
+  TRUE.
 
 ## Value
 
@@ -47,13 +57,16 @@ Other queries:
 [`is_dag()`](https://caugi.org/reference/is_dag.md),
 [`is_empty_caugi()`](https://caugi.org/reference/is_empty_caugi.md),
 [`is_mag()`](https://caugi.org/reference/is_mag.md),
+[`is_mpdag()`](https://caugi.org/reference/is_mpdag.md),
 [`is_pdag()`](https://caugi.org/reference/is_pdag.md),
+[`is_simple()`](https://caugi.org/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/reference/is_ug.md),
 [`m_separated()`](https://caugi.org/reference/m_separated.md),
 [`markov_blanket()`](https://caugi.org/reference/markov_blanket.md),
 [`neighbors()`](https://caugi.org/reference/neighbors.md),
 [`nodes()`](https://caugi.org/reference/nodes.md),
 [`parents()`](https://caugi.org/reference/parents.md),
+[`posteriors()`](https://caugi.org/reference/posteriors.md),
 [`same_nodes()`](https://caugi.org/reference/same_nodes.md),
 [`spouses()`](https://caugi.org/reference/spouses.md),
 [`subgraph()`](https://caugi.org/reference/subgraph.md),
@@ -69,6 +82,8 @@ cg <- caugi(
 )
 descendants(cg, "A") # "B" "C"
 #> [1] "B" "C"
+descendants(cg, "A", open = FALSE) # "A" "B" "C"
+#> [1] "A" "B" "C"
 descendants(cg, index = 2) # "C"
 #> [1] "C"
 descendants(cg, "B") # "C"

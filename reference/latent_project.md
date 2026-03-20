@@ -28,9 +28,12 @@ variables.
 
 Other operations:
 [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md),
+[`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md),
 [`exogenize()`](https://caugi.org/reference/exogenize.md),
+[`meek_closure()`](https://caugi.org/reference/meek_closure.md),
 [`moralize()`](https://caugi.org/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md),
+[`normalize_latent_structure()`](https://caugi.org/reference/normalize_latent_structure.md),
 [`skeleton()`](https://caugi.org/reference/skeleton.md)
 
 ## Examples

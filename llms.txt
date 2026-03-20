@@ -88,7 +88,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x562aff8da3a0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x000001a2318f5e90>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -112,7 +112,10 @@ objects. Some of the available functions are:
 - Structural queries, such as
   [`is_acyclic()`](https://caugi.org/reference/is_acyclic.md),
   [`is_cpdag()`](https://caugi.org/reference/is_cpdag.md), and more.
-- Graph manipulations, such as `add_edge()`, `remove_node()`, and more.
+- Graph manipulations, such as
+  [`add_edges()`](https://caugi.org/reference/caugi_verbs.md),
+  [`remove_nodes()`](https://caugi.org/reference/caugi_verbs.md), and
+  more.
 - Graph metrics, such as [`shd()`](https://caugi.org/reference/shd.md)
   and [`aid()`](https://caugi.org/reference/aid.md).
 
@@ -128,18 +131,14 @@ relations in such a way that it allows for faster queries without
 blowing up the object too much.
 
 To accommodate for the cost of mutations, `caugi` graphs are built
-lazily. This means that when you mutate the graph, for example by adding
-edges to it, the graph edits are stored in R, but not in Rust. When you
-then need to query the graphs, the graph will rebuild itself in Rust,
-and the query will be executed on the newly built graph. You can also
-use the `build(cg)` function to force building the graph in Rust at any
-time.
+lazily, but you can force a build by using the function
+[`build()`](https://caugi.org/reference/build.md).
 
 ## Why?
 
-It’s fast, *dawg* 🐶 See the [vignette on
-performance](https://caugi.org/articles/performance.html) for
-benchmarks.
+It’s fast, *dawg* 🐶 See the [article on
+performance](https://caugi.org/articles/performance.html) on our website
+for benchmarks.
 
 ## Contribution
 
@@ -179,7 +178,7 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   Get descendants of nodes in a `caugi`
 
 - [`districts()`](https://caugi.org/reference/districts.md) : Get
-  districts (c-components) of an ADMG
+  districts (c-components) of an ADMG or AG
 
 - [`edge_types()`](https://caugi.org/reference/edge_types.md) :
 
@@ -226,9 +225,17 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
   Is the `caugi` graph a MAG?
 
+- [`is_mpdag()`](https://caugi.org/reference/is_mpdag.md) :
+
+  Is the `caugi` graph an MPDAG?
+
 - [`is_pdag()`](https://caugi.org/reference/is_pdag.md) :
 
   Is the `caugi` graph a PDAG?
+
+- [`is_simple()`](https://caugi.org/reference/is_simple.md) :
+
+  Is the `caugi` graph simple?
 
 - [`is_ug()`](https://caugi.org/reference/is_ug.md) :
 
@@ -256,6 +263,10 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
   Get parents of nodes in a `caugi`
 
+- [`posteriors()`](https://caugi.org/reference/posteriors.md) :
+
+  Get posteriors of nodes in a `caugi`
+
 - [`same_nodes()`](https://caugi.org/reference/same_nodes.md) : Same
   nodes?
 
@@ -270,8 +281,9 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 ## Verbs
 
-- [`build()`](https://caugi.org/reference/build.md) : Build the graph
-  now
+- [`build()`](https://caugi.org/reference/build.md) :
+
+  Build the `caugi` graph
 
 - [`add_edges()`](https://caugi.org/reference/caugi_verbs.md)
   [`remove_edges()`](https://caugi.org/reference/caugi_verbs.md)
@@ -295,6 +307,8 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   : Is a set a valid adjustment set in an ADMG?
 - [`is_valid_backdoor()`](https://caugi.org/reference/is_valid_backdoor.md)
   : Is a backdoor set valid?
+- [`minimal_d_separator()`](https://caugi.org/reference/minimal_d_separator.md)
+  : Compute a minimal d-separator
 
 ## Simulation
 
@@ -358,11 +372,17 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 - [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md)
   : Marginalize and/or condition on variables in an ancestral graph (AG)
 
+- [`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md) :
+  Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
+
 - [`exogenize()`](https://caugi.org/reference/exogenize.md) : Exogenize
   a graph
 
 - [`latent_project()`](https://caugi.org/reference/latent_project.md) :
   Project latent variables from a DAG to an ADMG
+
+- [`meek_closure()`](https://caugi.org/reference/meek_closure.md) :
+  Apply Meek closure to a PDAG
 
 - [`moralize()`](https://caugi.org/reference/moralize.md) : Moralize a
   DAG
@@ -370,6 +390,9 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 - [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md) :
 
   Mutate `caugi` class
+
+- [`normalize_latent_structure()`](https://caugi.org/reference/normalize_latent_structure.md)
+  : Normalize latent structure in a DAG
 
 - [`skeleton()`](https://caugi.org/reference/skeleton.md) : Get the
   skeleton of a graph
@@ -454,7 +477,7 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 ### All vignettes
 
-- [Get started](https://caugi.org/articles/get_started.md):
+- [caugi](https://caugi.org/articles/caugi.md):
 - [Motivation](https://caugi.org/articles/motivation.md):
 - [How to use caugi in a
   package](https://caugi.org/articles/package_use.md):

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,11 +15,11 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="articles/caugi.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/get_started.html">Get started</a></li>
-    <li><a class="dropdown-item" href="articles/motivation.html">Motivation</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/motivation.html">Motivation</a></li>
     <li><a class="dropdown-item" href="articles/package_use.html">How to use caugi in a package</a></li>
     <li><a class="dropdown-item" href="articles/performance.html">Performance</a></li>
     <li><a class="dropdown-item" href="articles/serialization.html">Saving and Sharing Graphs with the Caugi Format</a></li>
@@ -162,8 +162,6 @@
 <ol style="list-style-type: decimal"><li>
 <strong>Minimal changes</strong>: Make the smallest possible changes to accomplish the goal</li>
 <li>
-<strong>Lazy building</strong>: Remember that graph mutations are batched - test both before and after explicit <code><a href="reference/build.html">build()</a></code> calls</li>
-<li>
 <strong>Edge registry</strong>: Be careful when modifying the edge registry system</li>
 <li>
 <strong>Backward compatibility</strong>: Maintain API compatibility when possible</li>
@@ -230,6 +228,14 @@
 <li>
 <code>fdg-sim = "0.9.1"</code> - Force-directed graph simulation for layout</li>
 <li>
+<code>serde = "1.0"</code> - Serialization framework</li>
+<li>
+<code>serde_json = "1.0"</code> - JSON serialization</li>
+<li>
+<code>quick-xml = "0.39"</code> - XML serialization</li>
+<li>
+<code>rustc-hash = "2.1"</code> - Fast hash functions</li>
+<li>
 <code>gadjid</code> (optional, default enabled) - For adjustment identification distance</li>
 </ul></div>
 <div class="section level3">
@@ -295,6 +301,10 @@
 <code>"fruchterman-reingold"</code>: Fast force-directed layout (all edge types)</li>
 <li>
 <code>"kamada-kawai"</code>: High-quality stress minimization (all edge types)</li>
+<li>
+<code>"bipartite"</code>: Two-group layout with auto-detection or explicit partition</li>
+<li>
+<code>"tiered"</code>: Multi-tier layout with custom tier assignments</li>
 </ul></div>
 <div class="section level3">
 <h3 id="testing-pattern">Testing pattern<a class="anchor" aria-label="anchor" href="#testing-pattern"></a></h3>
@@ -333,7 +343,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs.</p>
+  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs, Bjarke Hautop Kristensen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -5,9 +5,9 @@ Get edges of a `caugi`.
 ## Usage
 
 ``` r
-edges(cg)
+edges(cg, ...)
 
-E(cg)
+E(cg, ...)
 ```
 
 ## Arguments
@@ -15,6 +15,10 @@ E(cg)
 - cg:
 
   A `caugi` object.
+
+- ...:
+
+  Additional arguments (currently unused).
 
 ## Value
 
@@ -38,13 +42,16 @@ Other queries:
 [`is_dag()`](https://caugi.org/reference/is_dag.md),
 [`is_empty_caugi()`](https://caugi.org/reference/is_empty_caugi.md),
 [`is_mag()`](https://caugi.org/reference/is_mag.md),
+[`is_mpdag()`](https://caugi.org/reference/is_mpdag.md),
 [`is_pdag()`](https://caugi.org/reference/is_pdag.md),
+[`is_simple()`](https://caugi.org/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/reference/is_ug.md),
 [`m_separated()`](https://caugi.org/reference/m_separated.md),
 [`markov_blanket()`](https://caugi.org/reference/markov_blanket.md),
 [`neighbors()`](https://caugi.org/reference/neighbors.md),
 [`nodes()`](https://caugi.org/reference/nodes.md),
 [`parents()`](https://caugi.org/reference/parents.md),
+[`posteriors()`](https://caugi.org/reference/posteriors.md),
 [`same_nodes()`](https://caugi.org/reference/same_nodes.md),
 [`spouses()`](https://caugi.org/reference/spouses.md),
 [`subgraph()`](https://caugi.org/reference/subgraph.md),

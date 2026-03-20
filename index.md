@@ -88,7 +88,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; built: TRUE; ptr=0x562aff8da3a0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x000001a2318f5e90>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -112,7 +112,10 @@ objects. Some of the available functions are:
 - Structural queries, such as
   [`is_acyclic()`](https://caugi.org/reference/is_acyclic.md),
   [`is_cpdag()`](https://caugi.org/reference/is_cpdag.md), and more.
-- Graph manipulations, such as `add_edge()`, `remove_node()`, and more.
+- Graph manipulations, such as
+  [`add_edges()`](https://caugi.org/reference/caugi_verbs.md),
+  [`remove_nodes()`](https://caugi.org/reference/caugi_verbs.md), and
+  more.
 - Graph metrics, such as [`shd()`](https://caugi.org/reference/shd.md)
   and [`aid()`](https://caugi.org/reference/aid.md).
 
@@ -128,18 +131,14 @@ relations in such a way that it allows for faster queries without
 blowing up the object too much.
 
 To accommodate for the cost of mutations, `caugi` graphs are built
-lazily. This means that when you mutate the graph, for example by adding
-edges to it, the graph edits are stored in R, but not in Rust. When you
-then need to query the graphs, the graph will rebuild itself in Rust,
-and the query will be executed on the newly built graph. You can also
-use the `build(cg)` function to force building the graph in Rust at any
-time.
+lazily, but you can force a build by using the function
+[`build()`](https://caugi.org/reference/build.md).
 
 ## Why?
 
-It’s fast, *dawg* 🐶 See the [vignette on
-performance](https://caugi.org/articles/performance.html) for
-benchmarks.
+It’s fast, *dawg* 🐶 See the [article on
+performance](https://caugi.org/articles/performance.html) on our website
+for benchmarks.
 
 ## Contribution
 

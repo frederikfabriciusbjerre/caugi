@@ -27,10 +27,9 @@ m_separated(
 
 - X, Y, Z:
 
-  Node selectors: character vector of names, unquoted expression
-  (supports `+` and [`c()`](https://rdrr.io/r/base/c.html)), or `NULL`.
-  Use `*_index` to pass 1-based indices. If `Z` is `NULL` or missing, no
-  nodes are conditioned on.
+  Character vectors of node names, or `NULL`. Use `*_index` to pass
+  1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
+  on.
 
 - X_index, Y_index, Z_index:
 
@@ -60,12 +59,15 @@ Other queries:
 [`is_dag()`](https://caugi.org/reference/is_dag.md),
 [`is_empty_caugi()`](https://caugi.org/reference/is_empty_caugi.md),
 [`is_mag()`](https://caugi.org/reference/is_mag.md),
+[`is_mpdag()`](https://caugi.org/reference/is_mpdag.md),
 [`is_pdag()`](https://caugi.org/reference/is_pdag.md),
+[`is_simple()`](https://caugi.org/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/reference/is_ug.md),
 [`markov_blanket()`](https://caugi.org/reference/markov_blanket.md),
 [`neighbors()`](https://caugi.org/reference/neighbors.md),
 [`nodes()`](https://caugi.org/reference/nodes.md),
 [`parents()`](https://caugi.org/reference/parents.md),
+[`posteriors()`](https://caugi.org/reference/posteriors.md),
 [`same_nodes()`](https://caugi.org/reference/same_nodes.md),
 [`spouses()`](https://caugi.org/reference/spouses.md),
 [`subgraph()`](https://caugi.org/reference/subgraph.md),

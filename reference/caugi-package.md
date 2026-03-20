@@ -11,6 +11,8 @@ Useful links:
 
 - <https://caugi.org/>
 
+- <https://github.com/frederikfabriciusbjerre/caugi>
+
 - Report bugs at
   <https://github.com/frederikfabriciusbjerre/caugi/issues>
 
@@ -26,3 +28,5 @@ Authors:
 
 - Michael Sachs <sachsmc@gmail.com>
   ([ORCID](https://orcid.org/0000-0002-1279-8676))
+
+- Bjarke Hautop Kristensen <bjarke.hautop@gmail.com>

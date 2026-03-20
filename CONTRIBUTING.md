@@ -108,12 +108,10 @@ or build the package.
 
 1.  **CSR Format**: Graphs are stored in Compressed Sparse Row format in
     Rust, which makes queries very fast but mutations more expensive.
-
 2.  **Lazy Building**: When you mutate a graph (e.g., add edges), the
     changes are stored in R but not immediately applied in Rust. The
     graph rebuilds itself in Rust when you query it, or you can force a
     rebuild with `build(cg)`.
-
 3.  **R + Rust Integration**: The `extendr` framework handles the
     communication between R and Rust, with automatic type conversions
     and memory management.

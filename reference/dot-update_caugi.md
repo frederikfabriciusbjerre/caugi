@@ -1,7 +1,8 @@
 # Update nodes and edges of a `caugi`
 
-Internal helper to add or remove nodes/edges and mark graph as not
-built.
+Internal helper to add or remove nodes/edges. Rust is the source of
+truth - we get current state from Rust, modify it, and build a new
+session.
 
 ## Usage
 
@@ -10,7 +11,7 @@ built.
   cg,
   nodes = NULL,
   edges = NULL,
-  action = c("add", "remove"),
+  action = c("add", "remove", "replace"),
   inplace = FALSE
 )
 ```
@@ -32,11 +33,11 @@ built.
 
 - action:
 
-  One of `"add"` or `"remove"`.
+  One of `"add"`, `"remove"`, or `"replace"`.
 
 - inplace:
 
-  Logical, whether to modify the graph inplace or not.
+  DEPRECATED Ignored. Kept for backward compatibility.
 
 ## Value
 

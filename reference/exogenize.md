@@ -29,9 +29,12 @@ A `caugi` object representing the exogenized graph.
 
 Other operations:
 [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md),
+[`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md),
 [`latent_project()`](https://caugi.org/reference/latent_project.md),
+[`meek_closure()`](https://caugi.org/reference/meek_closure.md),
 [`moralize()`](https://caugi.org/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md),
+[`normalize_latent_structure()`](https://caugi.org/reference/normalize_latent_structure.md),
 [`skeleton()`](https://caugi.org/reference/skeleton.md)
 
 ## Examples
@@ -39,7 +42,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 exogenize(cg, nodes = "B") # A, B
-#> <caugi object; 2 nodes, 0 edges; simple: TRUE; built: FALSE; ptr=0x55744bca0390>
+#> <caugi object; 2 nodes, 0 edges; simple: TRUE; session=0x5618fb7e8240>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: (none)

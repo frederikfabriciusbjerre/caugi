@@ -50,7 +50,8 @@ Other adjustment:
 [`all_adjustment_sets_admg()`](https://caugi.org/reference/all_adjustment_sets_admg.md),
 [`d_separated()`](https://caugi.org/reference/d_separated.md),
 [`is_valid_adjustment_admg()`](https://caugi.org/reference/is_valid_adjustment_admg.md),
-[`is_valid_backdoor()`](https://caugi.org/reference/is_valid_backdoor.md)
+[`is_valid_backdoor()`](https://caugi.org/reference/is_valid_backdoor.md),
+[`minimal_d_separator()`](https://caugi.org/reference/minimal_d_separator.md)
 
 ## Examples
 

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,12 +34,12 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/caugi.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/get_started.html">Get started</a></li>
-    <li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
+<li><a class="dropdown-item" href="../articles/motivation.html">Motivation</a></li>
     <li><a class="dropdown-item" href="../articles/package_use.html">How to use caugi in a package</a></li>
     <li><a class="dropdown-item" href="../articles/performance.html">Performance</a></li>
     <li><a class="dropdown-item" href="../articles/serialization.html">Saving and Sharing Graphs with the Caugi Format</a></li>
@@ -532,7 +532,7 @@ and labels indicating the tier names (if provided).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">cg_tiered</span>, tiers <span class="op">=</span> <span class="va">tiers</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/tiered-boxes-basic-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>But you can customize the appearance of tier boxes using the
-<code>tier_style</code> parameter. Here, for isntance, we specify
+<code>tier_style</code> parameter. Here, for instance, we specify
 different fill colors for each tier using a vector.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
@@ -840,6 +840,9 @@ controlling space between composed plots</li>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View all current options</span></span>
 <span><span class="fu"><a href="../reference/caugi_options.html">caugi_options</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $use_open_graph_definition</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $plot</span></span>
 <span><span class="co">#&gt; $plot$spacing</span></span>
 <span><span class="co">#&gt; [1] 1lines</span></span>
@@ -907,69 +910,68 @@ controlling space between composed plots</li>
 <span></span>
 <span><span class="co"># Query specific option</span></span>
 <span><span class="fu"><a href="../reference/caugi_options.html">caugi_options</a></span><span class="op">(</span><span class="st">"plot"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $plot</span></span>
-<span><span class="co">#&gt; $plot$spacing</span></span>
+<span><span class="co">#&gt; $spacing</span></span>
 <span><span class="co">#&gt; [1] 1lines</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$node_style</span></span>
-<span><span class="co">#&gt; $plot$node_style$fill</span></span>
+<span><span class="co">#&gt; $node_style</span></span>
+<span><span class="co">#&gt; $node_style$fill</span></span>
 <span><span class="co">#&gt; [1] "lightgrey"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$node_style$padding</span></span>
+<span><span class="co">#&gt; $node_style$padding</span></span>
 <span><span class="co">#&gt; [1] 2</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$node_style$size</span></span>
+<span><span class="co">#&gt; $node_style$size</span></span>
 <span><span class="co">#&gt; [1] 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$edge_style</span></span>
-<span><span class="co">#&gt; $plot$edge_style$arrow_size</span></span>
+<span><span class="co">#&gt; $edge_style</span></span>
+<span><span class="co">#&gt; $edge_style$arrow_size</span></span>
 <span><span class="co">#&gt; [1] 3</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$edge_style$circle_size</span></span>
+<span><span class="co">#&gt; $edge_style$circle_size</span></span>
 <span><span class="co">#&gt; [1] 1.5</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$edge_style$fill</span></span>
+<span><span class="co">#&gt; $edge_style$fill</span></span>
 <span><span class="co">#&gt; [1] "black"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$label_style</span></span>
+<span><span class="co">#&gt; $label_style</span></span>
 <span><span class="co">#&gt; list()</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$title_style</span></span>
-<span><span class="co">#&gt; $plot$title_style$col</span></span>
+<span><span class="co">#&gt; $title_style</span></span>
+<span><span class="co">#&gt; $title_style$col</span></span>
 <span><span class="co">#&gt; [1] "black"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$title_style$fontface</span></span>
+<span><span class="co">#&gt; $title_style$fontface</span></span>
 <span><span class="co">#&gt; [1] "bold"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$title_style$fontsize</span></span>
+<span><span class="co">#&gt; $title_style$fontsize</span></span>
 <span><span class="co">#&gt; [1] 14.4</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$tier_style</span></span>
-<span><span class="co">#&gt; $plot$tier_style$boxes</span></span>
+<span><span class="co">#&gt; $tier_style</span></span>
+<span><span class="co">#&gt; $tier_style$boxes</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$tier_style$labels</span></span>
+<span><span class="co">#&gt; $tier_style$labels</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$tier_style$fill</span></span>
+<span><span class="co">#&gt; $tier_style$fill</span></span>
 <span><span class="co">#&gt; [1] "lightsteelblue"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$tier_style$col</span></span>
+<span><span class="co">#&gt; $tier_style$col</span></span>
 <span><span class="co">#&gt; [1] "transparent"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$tier_style$label_style</span></span>
+<span><span class="co">#&gt; $tier_style$label_style</span></span>
 <span><span class="co">#&gt; list()</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$tier_style$lwd</span></span>
+<span><span class="co">#&gt; $tier_style$lwd</span></span>
 <span><span class="co">#&gt; [1] 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$tier_style$alpha</span></span>
+<span><span class="co">#&gt; $tier_style$alpha</span></span>
 <span><span class="co">#&gt; [1] 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $plot$tier_style$padding</span></span>
+<span><span class="co">#&gt; $tier_style$padding</span></span>
 <span><span class="co">#&gt; [1] 4mm</span></span></code></pre></div>
 </div>
 </div>
@@ -1055,7 +1057,7 @@ for Visual Understanding of Hierarchical System Structures.”</span>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs.</p>
+  <p>Developed by Frederik Fabricius-Bjerre, Johan Larsson, Michael Sachs, Bjarke Hautop Kristensen.</p>
 </div>
 
 <div class="pkgdown-footer-right">
