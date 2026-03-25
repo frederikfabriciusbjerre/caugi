@@ -46,7 +46,7 @@ jobs:
           
           # Make a table
           result_table <- tibble::tibble(
-            Benchmark = names(bench_result$expression),
+            Benchmark = names(pr$expression),
             PR_median = pr$median,
             PR_total_time = pr$total_time,
             Main_median = main$median,
