@@ -24,12 +24,12 @@ test_node_index_new <- sample(n, 1)
 test_node_name_new <- paste0("V", test_node_index_new)
 
 bench_result <- bench::mark(
-  parents(cg, test_node_name),
-  children(cg, test_node_name),
-  ancestors(cg, test_node_name),
-  descendants(cg, test_node_name),
-  subgraph(cg, test_node_name),
-  {
+  parents = parents(cg, test_node_name),
+  children = children(cg, test_node_name),
+  ancestors = ancestors(cg, test_node_name),
+  descendants = descendants(cg, test_node_name),
+  subgraph = subgraph(cg, test_node_name),
+  d_seperated = {
     valid_adjustment_set <- adjustment_set(cg, test_node_name, test_node_name_new, type="backdoor")
     d_separated(cg, test_node_name, test_node_name_new, valid_adjustment_set)
   },
