@@ -51,11 +51,11 @@ jobs:
             PR_total_time = pr$total_time,
             Main_median = main$median,
             Main_total_time = main$total_time,
-            Slowdown_percent_median = slowdown_median
+            Slowdown_percent_median = as.numeric(slowdown_median)
           )
           
           cat("\n=== Benchmark Comparison ===\n")
-          print(result_table, row.names = FALSE)
+          print(result_table, row.names = FALSE, width = Inf)
           
           if (any(slowdown_median >= 20)) {
             cat("\nERROR: PR branch is >=20% (median time) slower than main for at least one benchmark entry\n")
