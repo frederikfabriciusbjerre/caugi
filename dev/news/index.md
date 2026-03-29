@@ -2,7 +2,15 @@
 
 ## caugi (development version)
 
+### Improvements
+
+- Improved performance of all queries. Speedups are more significant on
+  larger graphs, but even on small graphs, queries are roughly 5x
+  faster.
+
 ## caugi 1.1.0
+
+CRAN release: 2026-03-20
 
 ### New Features
 

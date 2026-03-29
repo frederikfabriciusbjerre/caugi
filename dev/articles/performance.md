@@ -120,11 +120,11 @@ packages.](performance_files/figure-html/benchmark-parents-children-1.png)
 
 Benchmarking parents/children queries for different packages.
 
-As you can see, `bnlearn` performs best for this particular example. In
-our next experiment, however, we will examine if this extends to
-different graph sizes and densities, by parameterizing our benchmark
-over `n` and `p`. Note that we adjust `p` as a function of `n` to keep
-the graphs reasonably sparse.
+As you can see, `caugi` followed by `bnlearn` performs the best for this
+particular example. In our next experiment, however, we will examine if
+this extends to different graph sizes and densities, by parameterizing
+our benchmark over `n` and `p`. Note that we adjust `p` as a function of
+`n` to keep the graphs reasonably sparse.
 
 ``` r
 bm_parents_children_np <-
@@ -257,13 +257,16 @@ d-separation.](performance_files/figure-html/benchmark-d-sep-1.png)
 
 Benchmarks for obtaining a valid adjustment set for d-separation.
 
+We see that `caugi` again outperforms the other packages by a large
+margin.
+
 #### Subgraph (building)
 
 Here we see an example of where the frontloading hurts performance. When
 we build a subgraph, we have to rebuild the entire `caugi` graph object.
-Here, we see that while `caugi` outperforms other packages for queries
-(except for parents/children for `bnlearn`), it is slower for building
-the graph objects themselves, which shows in the subgraph benchmark:
+Here, we see that while `caugi` outperforms other packages for queries,
+it is slower for building the graph object itself compared to `igraph`,
+as seen below:
 
 ``` r
 subgraph_nodes_index <- sample.int(1000, 500)
@@ -296,7 +299,7 @@ Benchmarking subgraph extraction for different packages.
 sessionInfo()
 #> R version 4.5.3 (2026-03-11)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.3 LTS
+#> Running under: Ubuntu 24.04.4 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -329,16 +332,16 @@ sessionInfo()
 #> [25] yaml_2.3.12         otel_0.2.0          ggbeeswarm_0.7.3   
 #> [28] tools_4.5.3         parallel_4.5.3      dplyr_1.2.0        
 #> [31] profmem_0.7.0       boot_1.3-32         BiocGenerics_0.56.0
-#> [34] curl_7.0.0          vctrs_0.7.1         R6_2.6.1           
-#> [37] stats4_4.5.3        lifecycle_1.0.5     fs_1.6.7           
+#> [34] curl_7.0.0          vctrs_0.7.2         R6_2.6.1           
+#> [37] stats4_4.5.3        lifecycle_1.0.5     fs_2.0.1           
 #> [40] V8_8.0.1            htmlwidgets_1.6.4   vipor_0.4.7        
-#> [43] MASS_7.3-65         ragg_1.5.1          beeswarm_0.4.0     
+#> [43] MASS_7.3-65         ragg_1.5.2          beeswarm_0.4.0     
 #> [46] pkgconfig_2.0.3     desc_1.4.3          pkgdown_2.2.0      
 #> [49] pillar_1.11.1       bslib_0.10.0        gtable_0.3.6       
 #> [52] data.table_1.18.2.1 glue_1.8.0          Rcpp_1.1.1         
-#> [55] systemfonts_1.3.2   tidyselect_1.2.1    xfun_0.56          
+#> [55] systemfonts_1.3.2   tidyselect_1.2.1    xfun_0.57          
 #> [58] tibble_3.3.1        knitr_1.51          farver_2.1.2       
 #> [61] htmltools_0.5.9     igraph_2.2.2        labeling_0.4.3     
-#> [64] rmarkdown_2.30      caugi_1.1.0.9000    compiler_4.5.3     
+#> [64] rmarkdown_2.31      caugi_1.1.0.9000    compiler_4.5.3     
 #> [67] S7_0.2.1
 ```

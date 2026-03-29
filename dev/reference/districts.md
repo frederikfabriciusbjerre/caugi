@@ -8,7 +8,7 @@ the graph.
 ## Usage
 
 ``` r
-districts(cg, nodes = NULL, index = NULL, all)
+districts(cg, nodes = NULL, index = NULL, all = NULL)
 ```
 
 ## Arguments
