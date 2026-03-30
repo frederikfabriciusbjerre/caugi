@@ -82,6 +82,22 @@ test_that("glyph arbitary length works", {
   reset_caugi_registry()
 })
 
+# ──────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────── View edges ─────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("View edges work with caugi_registry", {
+  reset_caugi_registry()
+  before_edges <- list_caugi_edges()
+  register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
+  after_edges <- list_caugi_edges()
+
+  expect_equal(nrow(after_edges), nrow(before_edges) + 1)
+  expect_true("<--" %in% after_edges$glyph)
+
+  reset_caugi_registry()
+})
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────────── Sealing ────────────────────────────────────
