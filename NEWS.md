@@ -1,5 +1,9 @@
 # caugi (development version)
 
+## New Features
+
+- Add `list_caugi_edges()` function to list all available edge types.
+
 ## Improvements
 
 - Improved performance of all queries. Speedups are more significant on larger graphs,
