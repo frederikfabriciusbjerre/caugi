@@ -3,11 +3,14 @@
 \name{registry}
 \alias{registry}
 \alias{caugi_registry}
+\alias{list_caugi_edges}
 \alias{reset_caugi_registry}
 \alias{seal_caugi_registry}
 \title{\code{caugi} edge registry}
 \usage{
 caugi_registry()
+
+list_caugi_edges()
 
 reset_caugi_registry()
 
@@ -15,6 +18,9 @@ seal_caugi_registry()
 }
 \value{
 An \code{edge_registry} external pointer.
+
+A \code{data.table} with columns \code{glyph}, \code{tail}, \code{head}, \code{class}, and
+\code{symmetric}, where each row corresponds to a registered edge type.
 }
 \description{
 The \code{caugi} edge registry stores information about the different edge types
@@ -36,6 +42,8 @@ reverse edges, this preserves correctness of reason over these edges.
 \itemize{
 \item \code{caugi_registry()}: Access the global edge registry, creating it if needed.
 
+\item \code{list_caugi_edges()}: List all registered edge types in the global registry.
+
 \item \code{reset_caugi_registry()}: Reset the global edge registry to its default state.
 
 \item \code{seal_caugi_registry()}: Seal the global edge registry to prevent further
@@ -49,6 +57,9 @@ reset_caugi_registry()
 # create a new registry
 reg <- caugi_registry()
 
+# list registered edges
+list_caugi_edges()
+
 # register an edge
 register_caugi_edge(
   glyph = "<--",
@@ -59,6 +70,7 @@ register_caugi_edge(
 )
 
 # now, this edge is available for caugi graphs:
+list_caugi_edges()
 cg <- caugi(A \%-->\% B, B \%<--\% C, class = "DAG")
 
 # reset the registry to default
