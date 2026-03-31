@@ -79,8 +79,16 @@ list_caugi_edges <- function() {
   reg <- caugi_registry()
   n <- edge_registry_len(reg)
 
+  empty_dt <- data.table::data.table(
+    glyph = character(),
+    tail = character(),
+    head = character(),
+    class = character(),
+    symmetric = logical()
+  )
+
   if (n == 0) {
-    return(data.table::data.table())
+    return(empty_dt)
   }
 
   dt <- data.table::rbindlist(
