@@ -185,6 +185,7 @@
   : Register a new edge type in the global registry.
 
 - [`caugi_registry()`](https://caugi.org/dev/reference/registry.md)
+  [`list_caugi_edges()`](https://caugi.org/dev/reference/registry.md)
   [`reset_caugi_registry()`](https://caugi.org/dev/reference/registry.md)
   [`seal_caugi_registry()`](https://caugi.org/dev/reference/registry.md)
   :

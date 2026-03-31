@@ -67,6 +67,8 @@ global instance of the registry throughout the R session.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_registry</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">list_caugi_edges</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu">reset_caugi_registry</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">seal_caugi_registry</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -75,6 +77,8 @@ global instance of the registry throughout the R session.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An <code>edge_registry</code> external pointer.</p>
+<p>A <code>data.table</code> with columns <code>glyph</code>, <code>tail</code>, <code>head</code>, <code>class</code>, and
+<code>symmetric</code>, where each row corresponds to a registered edge type.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -88,6 +92,7 @@ reverse edges, this preserves correctness of reason over these edges.</p>
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
 <ul><li><p><code>caugi_registry()</code>: Access the global edge registry, creating it if needed.</p></li>
+<li><p><code>list_caugi_edges()</code>: List all registered edge types in the global registry.</p></li>
 <li><p><code>reset_caugi_registry()</code>: Reset the global edge registry to its default state.</p></li>
 <li><p><code>seal_caugi_registry()</code>: Seal the global edge registry to prevent further
 modifications.</p></li>
@@ -106,6 +111,17 @@ modifications.</p></li>
 <span class="r-in"><span><span class="co"># create a new registry</span></span></span>
 <span class="r-in"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu">caugi_registry</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># list registered edges</span></span></span>
+<span class="r-in"><span><span class="fu">list_caugi_edges</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     glyph   tail   head                class symmetric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;char&gt; &lt;char&gt; &lt;char&gt;               &lt;char&gt;    &lt;lgcl&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:    --&gt;   tail  arrow             directed     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:    ---   tail   tail           undirected      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:    &lt;-&gt;  arrow  arrow           bidirected      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:    o-o circle circle              partial      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:    --o   tail circle partially_undirected     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6:    o-&gt; circle  arrow   partially_directed     FALSE</span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># register an edge</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="register_caugi_edge.html">register_caugi_edge</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  glyph <span class="op">=</span> <span class="st">"&lt;--"</span>,</span></span>
@@ -116,6 +132,16 @@ modifications.</p></li>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># now, this edge is available for caugi graphs:</span></span></span>
+<span class="r-in"><span><span class="fu">list_caugi_edges</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     glyph   tail   head                class symmetric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;char&gt; &lt;char&gt; &lt;char&gt;               &lt;char&gt;    &lt;lgcl&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:    --&gt;   tail  arrow             directed     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:    ---   tail   tail           undirected      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:    &lt;-&gt;  arrow  arrow           bidirected      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:    o-o circle circle              partial      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:    --o   tail circle partially_undirected     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6:    o-&gt; circle  arrow   partially_directed     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7:    &lt;--  arrow   tail             directed     FALSE</span>
 <span class="r-in"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op">%&lt;--%</span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># reset the registry to default</span></span></span>
