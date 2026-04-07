@@ -32,3 +32,9 @@
 ^extras$
 ^paper$
 ^\.task$
+^\.direnv$
+^\.devenv$
+^\.envrc$
+^\devenv.lock$
+^\devenv.nix$
+^\devenv.yaml$

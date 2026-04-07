@@ -32,6 +32,9 @@ To contribute to `caugi`, you'll need:
 2. **Rust toolchain** - See the DESCRIPTION file for minimum version requirements and system dependencies
 3. **Development tools** - Install the package using `pak::pak("frederikfabriciusbjerre/caugi")` which will handle all dependencies
 
+Alternatively, you can also use the [devenv](https://devenv.sh) configuration
+provided in the repository for a consistent development environment.
+
 ### Installing Rust
 
 If you don't have Rust installed, visit [rustup.rs](https://rustup.rs/) for installation instructions appropriate for your platform.
