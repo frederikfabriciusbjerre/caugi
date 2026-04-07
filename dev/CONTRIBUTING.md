@@ -41,6 +41,10 @@ To contribute to `caugi`, you’ll need:
     `pak::pak("frederikfabriciusbjerre/caugi")` which will handle all
     dependencies
 
+Alternatively, you can also use the [devenv](https://devenv.sh)
+configuration provided in the repository for a consistent development
+environment.
+
 ### Installing Rust
 
 If you don’t have Rust installed, visit [rustup.rs](https://rustup.rs/)
