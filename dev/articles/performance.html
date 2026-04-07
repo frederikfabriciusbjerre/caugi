@@ -163,6 +163,9 @@ become prohibitively slow for larger graphs.</p>
 <span><span class="va">bng</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">bng</span></span>
 <span><span class="va">dg</span> <span class="op">&lt;-</span> <span class="va">graphs</span><span class="op">$</span><span class="va">dg</span></span>
 <span></span>
+<span><span class="co"># build the caugi to reflect correct runtime</span></span>
+<span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">test_node_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">test_node_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="va">test_node_index</span><span class="op">)</span></span>
 <span></span>
@@ -331,19 +334,20 @@ by a large margin.</p>
 <div class="section level4">
 <h4 id="subgraph-building">Subgraph (building)<a class="anchor" aria-label="anchor" href="#subgraph-building"></a>
 </h4>
-<p>Here we see an example of where the frontloading hurts performance.
-When we build a subgraph, we have to rebuild the entire
-<code>caugi</code> graph object. Here, we see that while
-<code>caugi</code> outperforms other packages for queries, it is slower
-for building the graph object itself compared to <code>igraph</code>, as
-seen below:</p>
+<p>Subgraph extraction is where we explicitly test graph
+<em>building</em> performance. When extracting a subgraph,
+<code>caugi</code> must construct a new graph object with its CSR
+indexes, so this benchmark captures the cost of that frontloaded work.
+Note that <code><a href="../reference/subgraph.html">caugi::subgraph()</a></code> is called on a graph that has
+already been built.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">subgraph_nodes_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">500</span><span class="op">)</span></span>
 <span><span class="va">subgraph_nodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="va">subgraph_nodes_index</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bm_subgraph</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
 <span>  caugi <span class="op">=</span> <span class="op">{</span></span>
-<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/subgraph.html">subgraph</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">subgraph_nodes</span><span class="op">)</span></span>
+<span>    <span class="va">sg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/subgraph.html">subgraph</a></span><span class="op">(</span><span class="va">cg</span>, <span class="va">subgraph_nodes</span><span class="op">)</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">sg</span><span class="op">)</span></span>
 <span>  <span class="op">}</span>,</span>
 <span>  igraph <span class="op">=</span> <span class="op">{</span></span>
 <span>    <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/subgraph.html" class="external-link">subgraph</a></span><span class="op">(</span><span class="va">ig</span>, <span class="va">subgraph_nodes</span><span class="op">)</span></span>
@@ -360,12 +364,72 @@ seen below:</p>
 Benchmarking subgraph extraction for different packages.
 </p>
 </div>
-</div>
-</div>
-<div class="section level3">
-<h3 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
-</h3>
+<p>To make the comparison more demanding, we also benchmark two larger
+settings where we only compare <code>caugi</code> and
+<code>igraph</code> directly. This isolates subgraph building
+performance at scale without the conversion overhead of other
+packages.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">n_large</span> <span class="op">&lt;-</span> <span class="fl">10000</span></span>
+<span><span class="va">sub_frac</span> <span class="op">&lt;-</span> <span class="fl">0.10</span></span>
+<span><span class="va">sub_k</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">n_large</span> <span class="op">*</span> <span class="va">sub_frac</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cg_large_sparse</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/generate_graph.html">generate_graph</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">n_large</span>, p <span class="op">=</span> <span class="fl">0.05</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
+<span><span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">cg_large_sparse</span><span class="op">)</span></span>
+<span><span class="va">ig_large_sparse</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">cg_large_sparse</span><span class="op">)</span></span>
+<span><span class="va">sub_idx_sparse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="va">n_large</span>, <span class="va">sub_k</span><span class="op">)</span></span>
+<span><span class="va">sub_nodes_sparse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="va">sub_idx_sparse</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bm_subgraph_large_sparse</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<span>  caugi <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="va">sg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/subgraph.html">subgraph</a></span><span class="op">(</span><span class="va">cg_large_sparse</span>, <span class="va">sub_nodes_sparse</span><span class="op">)</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">sg</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  igraph <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/subgraph.html" class="external-link">subgraph</a></span><span class="op">(</span><span class="va">ig_large_sparse</span>, <span class="va">sub_nodes_sparse</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  iterations <span class="op">=</span> <span class="fl">30</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_subgraph_large_sparse</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="performance_files/figure-html/benchmark-subgraph-large-sparse-1.png" class="r-plt" alt="Subgraph extraction on a large sparse graph (n = 10000, p = 0.05)." width="480"><p class="caption">
+Subgraph extraction on a large sparse graph (n = 10000, p = 0.05).
+</p>
+</div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg_large_dense</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/generate_graph.html">generate_graph</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">n_large</span>, p <span class="op">=</span> <span class="fl">0.25</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span>
+<span><span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">cg_large_dense</span><span class="op">)</span></span>
+<span><span class="va">ig_large_dense</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/as_igraph.html">as_igraph</a></span><span class="op">(</span><span class="va">cg_large_dense</span><span class="op">)</span></span>
+<span><span class="va">sub_idx_dense</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="va">n_large</span>, <span class="va">sub_k</span><span class="op">)</span></span>
+<span><span class="va">sub_nodes_dense</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"V"</span>, <span class="va">sub_idx_dense</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bm_subgraph_large_dense</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<span>  caugi <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="va">sg</span> <span class="op">&lt;-</span> <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/subgraph.html">subgraph</a></span><span class="op">(</span><span class="va">cg_large_dense</span>, <span class="va">sub_nodes_dense</span><span class="op">)</span></span>
+<span>    <span class="fu">caugi</span><span class="fu">::</span><span class="fu"><a href="../reference/build.html">build</a></span><span class="op">(</span><span class="va">sg</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  igraph <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/subgraph.html" class="external-link">subgraph</a></span><span class="op">(</span><span class="va">ig_large_dense</span>, <span class="va">sub_nodes_dense</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  iterations <span class="op">=</span> <span class="fl">20</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">bm_subgraph_large_dense</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="performance_files/figure-html/benchmark-subgraph-large-dense-1.png" class="r-plt" alt="Subgraph extraction on a large dense graph (`n = 10000`, `p = 0.25`)." width="480"><p class="caption">
+Subgraph extraction on a large dense graph (<code>n = 10000</code>,
+<code>p = 0.25</code>).
+</p>
+</div>
+<p>We see that <code>caugi</code> is competitive with
+<code>igraph</code> for subgraph extraction, even though
+<code>caugi</code> must rebuild its full CSR representation for the
+result. <code>igraph</code> does still have a slight edge. ### Session
+info</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.5.3 (2026-03-11)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -414,6 +478,7 @@ Benchmarking subgraph extraction for different packages.
 <span><span class="co">#&gt; [61] htmltools_0.5.9     igraph_2.2.2        labeling_0.4.3     </span></span>
 <span><span class="co">#&gt; [64] rmarkdown_2.31      caugi_1.1.0.9000    compiler_4.5.3     </span></span>
 <span><span class="co">#&gt; [67] S7_0.2.1</span></span></code></pre></div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

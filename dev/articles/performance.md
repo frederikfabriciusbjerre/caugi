@@ -85,6 +85,9 @@ ggmg <- graphs$ggmg
 bng <- graphs$bng
 dg <- graphs$dg
 
+# build the caugi to reflect correct runtime
+cg <- caugi::build(cg)
+
 test_node_index <- sample(1000, 1)
 test_node_name <- paste0("V", test_node_index)
 
@@ -262,11 +265,12 @@ margin.
 
 #### Subgraph (building)
 
-Here we see an example of where the frontloading hurts performance. When
-we build a subgraph, we have to rebuild the entire `caugi` graph object.
-Here, we see that while `caugi` outperforms other packages for queries,
-it is slower for building the graph object itself compared to `igraph`,
-as seen below:
+Subgraph extraction is where we explicitly test graph *building*
+performance. When extracting a subgraph, `caugi` must construct a new
+graph object with its CSR indexes, so this benchmark captures the cost
+of that frontloaded work. Note that
+[`caugi::subgraph()`](https://caugi.org/dev/reference/subgraph.md) is
+called on a graph that has already been built.
 
 ``` r
 subgraph_nodes_index <- sample.int(1000, 500)
@@ -274,7 +278,8 @@ subgraph_nodes <- paste0("V", subgraph_nodes_index)
 
 bm_subgraph <- bench::mark(
   caugi = {
-    caugi::subgraph(cg, subgraph_nodes)
+    sg <- caugi::subgraph(cg, subgraph_nodes)
+    caugi::build(sg)
   },
   igraph = {
     igraph::subgraph(ig, subgraph_nodes)
@@ -293,7 +298,73 @@ packages.](performance_files/figure-html/benchmark-subgraph-1.png)
 
 Benchmarking subgraph extraction for different packages.
 
-### Session info
+To make the comparison more demanding, we also benchmark two larger
+settings where we only compare `caugi` and `igraph` directly. This
+isolates subgraph building performance at scale without the conversion
+overhead of other packages.
+
+``` r
+n_large <- 10000
+sub_frac <- 0.10
+sub_k <- as.integer(n_large * sub_frac)
+
+cg_large_sparse <- caugi::generate_graph(n = n_large, p = 0.05, class = "DAG")
+caugi::build(cg_large_sparse)
+ig_large_sparse <- caugi::as_igraph(cg_large_sparse)
+sub_idx_sparse <- sample.int(n_large, sub_k)
+sub_nodes_sparse <- paste0("V", sub_idx_sparse)
+
+bm_subgraph_large_sparse <- bench::mark(
+  caugi = {
+    sg <- caugi::subgraph(cg_large_sparse, sub_nodes_sparse)
+    caugi::build(sg)
+  },
+  igraph = {
+    igraph::subgraph(ig_large_sparse, sub_nodes_sparse)
+  },
+  check = FALSE,
+  iterations = 30
+)
+
+plot(bm_subgraph_large_sparse)
+```
+
+![Subgraph extraction on a large sparse graph (n = 10000, p =
+0.05).](performance_files/figure-html/benchmark-subgraph-large-sparse-1.png)
+
+Subgraph extraction on a large sparse graph (n = 10000, p = 0.05).
+
+``` r
+cg_large_dense <- caugi::generate_graph(n = n_large, p = 0.25, class = "DAG")
+caugi::build(cg_large_dense)
+ig_large_dense <- caugi::as_igraph(cg_large_dense)
+sub_idx_dense <- sample.int(n_large, sub_k)
+sub_nodes_dense <- paste0("V", sub_idx_dense)
+
+bm_subgraph_large_dense <- bench::mark(
+  caugi = {
+    sg <- caugi::subgraph(cg_large_dense, sub_nodes_dense)
+    caugi::build(sg)
+  },
+  igraph = {
+    igraph::subgraph(ig_large_dense, sub_nodes_dense)
+  },
+  check = FALSE,
+  iterations = 20
+)
+
+plot(bm_subgraph_large_dense)
+```
+
+![Subgraph extraction on a large dense graph (\`n = 10000\`, \`p =
+0.25\`).](performance_files/figure-html/benchmark-subgraph-large-dense-1.png)
+
+Subgraph extraction on a large dense graph (`n = 10000`, `p = 0.25`).
+
+We see that `caugi` is competitive with `igraph` for subgraph
+extraction, even though `caugi` must rebuild its full CSR representation
+for the result. `igraph` does still have a slight edge. \### Session
+info
 
 ``` r
 sessionInfo()
