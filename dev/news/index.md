@@ -7,6 +7,9 @@
 - Add
   [`list_caugi_edges()`](https://caugi.org/dev/reference/registry.md)
   function to list all available edge types.
+- Add first-class `"MPDAG"` graph class support across constructor,
+  class mutation, and class resolution. `class = "AUTO"` now resolves
+  Meek-closed PDAGs to `"MPDAG"`.
 
 ### Improvements
 

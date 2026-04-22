@@ -26,10 +26,10 @@ A logical value indicating whether the graph is acyclic.
 
 ## Details
 
-Logically, it should not be possible to have a graph class of "DAG" or
-"PDAG" that has cycles, but in case the user modified the graph after
-creation in some unforeseen way that could have introduced cycles, this
-function allows to force a check of acyclicity, if needed.
+Logically, it should not be possible to have a graph class of "DAG",
+"PDAG", or "MPDAG" that has cycles, but in case the user modified the
+graph after creation in some unforeseen way that could have introduced
+cycles, this function allows to force a check of acyclicity, if needed.
 
 ## See also
 
