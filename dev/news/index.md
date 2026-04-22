@@ -16,6 +16,8 @@
 - Improved performance of all queries. Speedups are more significant on
   larger graphs, but even on small graphs, queries are roughly 5x
   faster.
+- [`exogenize()`](https://caugi.org/dev/reference/exogenize.md) is now
+  implemented in Rust for DAGs, which reduces overhead on larger graphs.
 
 ## caugi 1.1.0
 
