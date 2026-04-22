@@ -312,39 +312,11 @@ exogenize <- function(cg, nodes) {
     if (!u %in% all_nodes) {
       stop(paste0("Node ", u, " not in graph."), call. = FALSE)
     }
-
-    pa_u <- parents(cg, u) # NULL or character vector
-    ch_u <- children(cg, u) # NULL or character vector
-
-    # Step (i): add edges from every parent of u to every child of u
-    if (!is.null(pa_u) && !is.null(ch_u)) {
-      # cross-product of pa(u) x ch(u)
-      grid <- data.table::CJ(from = pa_u, to = ch_u, unique = TRUE)
-
-      # Avoid self-loops (l -> l)
-      grid <- grid[from != to]
-
-      if (nrow(grid) > 0L) {
-        cg <- add_edges(
-          cg,
-          from = grid$from,
-          edge = rep("-->", nrow(grid)),
-          to = grid$to
-        )
-      }
-    }
-
-    # Step (ii): delete incoming edges into u (l -> u)
-    if (!is.null(pa_u) && length(pa_u) > 0L) {
-      cg <- remove_edges(
-        cg,
-        from = pa_u,
-        to = rep(u, length(pa_u))
-      )
-    }
   }
 
-  cg
+  node_indices <- .nodes_to_indices(cg, nodes)
+  exogenized_session <- rs_exogenize(cg@session, node_indices)
+  .session_to_caugi(exogenized_session, node_names = all_nodes)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────

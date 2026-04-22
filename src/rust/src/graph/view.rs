@@ -551,6 +551,16 @@ impl GraphView {
         }
     }
 
+    pub fn exogenize(&self, nodes: &[u32]) -> Result<GraphView, String> {
+        match self {
+            GraphView::Dag(d) => {
+                let out = d.exogenize(nodes)?;
+                Ok(GraphView::Dag(Arc::new(out)))
+            }
+            _ => Err("exogenize is only defined for DAGs".into()),
+        }
+    }
+
     /// Proper backdoor graph for Xs → Ys. Defined for DAG only.
     pub fn proper_backdoor_graph(&self, xs: &[u32], ys: &[u32]) -> Result<GraphView, String> {
         match self {

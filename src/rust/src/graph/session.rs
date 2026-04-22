@@ -351,7 +351,8 @@ impl GraphSession {
     }
 
     pub fn replace_edges_for_pairs(&mut self, new_edges: EdgeBuffer) {
-        let mut remove_pairs: FxHashSet<(u32, u32)> = FxHashSet::with_capacity_and_hasher(new_edges.len(), Default::default());
+        let mut remove_pairs: FxHashSet<(u32, u32)> =
+            FxHashSet::with_capacity_and_hasher(new_edges.len(), Default::default());
         if self.simple {
             for i in 0..new_edges.len() {
                 let u = new_edges.from[i];
@@ -366,8 +367,10 @@ impl GraphSession {
         }
 
         let mut kept = EdgeBuffer::with_capacity(self.edges.len() + new_edges.len());
-        let mut seen: FxHashSet<(u32, u32, u8)> =
-            FxHashSet::with_capacity_and_hasher(self.edges.len() + new_edges.len(), Default::default());
+        let mut seen: FxHashSet<(u32, u32, u8)> = FxHashSet::with_capacity_and_hasher(
+            self.edges.len() + new_edges.len(),
+            Default::default(),
+        );
 
         for i in 0..self.edges.len() {
             let u = self.edges.from[i];
@@ -755,6 +758,12 @@ impl GraphSession {
     pub fn latent_project(&mut self, latents: &[u32]) -> Result<GraphView, String> {
         let view = self.view()?;
         view.latent_project(latents).map_err(|e| self.map_error(e))
+    }
+
+    /// Exogenize a set of nodes (DAG only).
+    pub fn exogenize(&mut self, nodes: &[u32]) -> Result<GraphView, String> {
+        let view = self.view()?;
+        view.exogenize(nodes).map_err(|e| self.map_error(e))
     }
 
     /// D-separation query (DAG only).

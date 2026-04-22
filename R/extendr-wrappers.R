@@ -122,6 +122,8 @@ rs_moralize <- function(session) .Call(wrap__rs_moralize, session)
 
 rs_latent_project <- function(session, latents) .Call(wrap__rs_latent_project, session, latents)
 
+rs_exogenize <- function(session, nodes) .Call(wrap__rs_exogenize, session, nodes)
+
 rs_induced_subgraph <- function(session, keep) .Call(wrap__rs_induced_subgraph, session, keep)
 
 subgraph <- function(cg, nodes, index) .Call(wrap__subgraph, cg, nodes, index)

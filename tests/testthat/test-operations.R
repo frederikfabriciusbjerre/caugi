@@ -512,6 +512,35 @@ test_that("exogenize agrees with exogenous query", {
   )
 })
 
+test_that("exogenize supports multiple nodes", {
+  cg <- caugi(
+    A %-->% B,
+    B %-->% C,
+    C %-->% D,
+    class = "DAG"
+  )
+  exogenized_cg <- exogenize(cg, nodes = c("B", "C"))
+
+  expect_null(parents(exogenized_cg, "B"))
+  expect_null(parents(exogenized_cg, "C"))
+  expect_setequal(parents(exogenized_cg, "D"), c("B", "C", "A"))
+})
+
+test_that("exogenize handles duplicate node inputs", {
+  cg <- caugi(
+    A %-->% B,
+    B %-->% C,
+    class = "DAG"
+  )
+
+  exo_once <- exogenize(cg, nodes = "B")
+  exo_twice <- exogenize(cg, nodes = c("B", "B"))
+
+  actual_once <- edges(exo_once)[order(from, to, edge)]
+  actual_twice <- edges(exo_twice)[order(from, to, edge)]
+  expect_equal(actual_once, actual_twice)
+})
+
 test_that("exogenize fails with non-simple graphs", {
   cg <- caugi(
     A %-->% B,

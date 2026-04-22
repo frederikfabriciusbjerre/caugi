@@ -58,6 +58,106 @@ impl Dag {
         Ug::new(Arc::new(core))
     }
 
+    /// Exogenize a set of nodes in a DAG.
+    ///
+    /// For each selected node `u` in the supplied order:
+    /// 1. add directed edges `p -> c` for every `p ∈ Pa(u)` and `c ∈ Ch(u)` (excluding `p == c`)
+    /// 2. remove every incoming edge `p -> u`
+    pub fn exogenize(&self, nodes: &[u32]) -> Result<Dag, String> {
+        let n = self.n() as usize;
+
+        // Find directed edge code
+        let specs = &self.core_ref().registry.specs;
+        let mut dir_code: Option<u8> = None;
+        for (i, s) in specs.iter().enumerate() {
+            if matches!(s.class, EdgeClass::Directed) && (dir_code.is_none() || s.glyph == "-->") {
+                dir_code = Some(i as u8);
+            }
+        }
+        let dir = dir_code.ok_or("No Directed edge spec in registry")?;
+
+        // Mutable deterministic adjacency
+        let mut pa: Vec<BTreeSet<u32>> = vec![BTreeSet::new(); n];
+        let mut ch: Vec<BTreeSet<u32>> = vec![BTreeSet::new(); n];
+
+        for u in 0..self.n() {
+            for &c in self.children_of(u) {
+                ch[u as usize].insert(c);
+                pa[c as usize].insert(u);
+            }
+        }
+
+        fn add_dir(u: u32, v: u32, pa: &mut [BTreeSet<u32>], ch: &mut [BTreeSet<u32>]) {
+            if u == v {
+                return;
+            }
+            if ch[u as usize].insert(v) {
+                pa[v as usize].insert(u);
+            }
+        }
+
+        for &u in nodes {
+            if u >= self.n() {
+                return Err(format!("Index {} is out of bounds", u));
+            }
+            let ui = u as usize;
+
+            let parents_u: Vec<u32> = pa[ui].iter().copied().collect();
+            let children_u: Vec<u32> = ch[ui].iter().copied().collect();
+
+            for &p in &parents_u {
+                for &c in &children_u {
+                    add_dir(p, c, &mut pa, &mut ch);
+                }
+            }
+
+            for &p in &parents_u {
+                ch[p as usize].remove(&u);
+            }
+            pa[ui].clear();
+        }
+
+        let mut row_index = Vec::with_capacity(n + 1);
+        row_index.push(0u32);
+        for i in 0..n {
+            let c = pa[i].len() + ch[i].len();
+            row_index.push(row_index[i] + c as u32);
+        }
+
+        let nnz = *row_index.last().unwrap() as usize;
+        let mut col_index = vec![0u32; nnz];
+        let mut etype = vec![0u8; nnz];
+        let mut side = vec![0u8; nnz];
+        let mut cur = row_index[..n].to_vec();
+
+        for i in 0..n {
+            for &p in pa[i].iter() {
+                let k = cur[i] as usize;
+                col_index[k] = p;
+                etype[k] = dir;
+                side[k] = 1;
+                cur[i] += 1;
+            }
+            for &c in ch[i].iter() {
+                let k = cur[i] as usize;
+                col_index[k] = c;
+                etype[k] = dir;
+                side[k] = 0;
+                cur[i] += 1;
+            }
+        }
+
+        let core = CaugiGraph::from_csr(
+            row_index,
+            col_index,
+            etype,
+            side,
+            /*simple=*/ true,
+            self.core_ref().registry.clone(),
+        )?;
+        Dag::new(Arc::new(core))
+    }
+
     /// Project out latent variables from a DAG to produce an ADMG.
     ///
     /// Uses the vertex elimination algorithm for latent projection:
@@ -491,6 +591,41 @@ mod tests {
         assert_eq!(ug.neighbors_of(0), &[1, 2]);
         assert_eq!(ug.neighbors_of(1), &[0, 2]);
         assert_eq!(ug.neighbors_of(2), &[0, 1]);
+    }
+
+    #[test]
+    fn dag_exogenize_basic() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, d).unwrap(); // A -> B
+        b.add_edge(1, 2, d).unwrap(); // B -> C
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let exo = dag.exogenize(&[1]).unwrap();
+        assert_eq!(exo.parents_of(0), Vec::<u32>::new());
+        assert_eq!(exo.parents_of(1), Vec::<u32>::new());
+        assert_eq!(exo.parents_of(2), vec![0, 1]); // A -> C added, B -> C kept
+    }
+
+    #[test]
+    fn dag_exogenize_duplicate_nodes_are_idempotent() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(1, 2, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let exo_once = dag.exogenize(&[1]).unwrap();
+        let exo_twice = dag.exogenize(&[1, 1]).unwrap();
+
+        for i in 0..3 {
+            assert_eq!(exo_once.parents_of(i), exo_twice.parents_of(i));
+            assert_eq!(exo_once.children_of(i), exo_twice.children_of(i));
+        }
     }
 
     #[test]
