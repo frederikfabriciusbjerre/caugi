@@ -1623,3 +1623,71 @@ test_that("nodes_to_indices errors when session is missing", {
     "Cannot look up indices for empty graph."
   )
 })
+
+
+################# NetworkX tests ##############
+# topological sort tests:
+# https://github.com/networkx/networkx/blob/main/networkx/algorithms/tests/test_dag.py
+# All the other ones are just raising errors, etc, and thus only the below are ported.
+
+test_that("topological sort NetworkX 1 test", {
+  cg <- caugi(A %-->% B + C, B %-->% C, class = "DAG")
+  ts_cg <- topological_sort(cg)
+  expect_equal(ts_cg, c("A", "B", "C"))
+
+  cg <- caugi(A %-->% B + C, C %-->% B, class = "DAG")
+  ts_cg <- topological_sort(cg)
+  expect_equal(ts_cg, c("A", "C", "B"))
+})
+
+test_that("topological sort NetworkX 2 test", {
+  cg <- caugi(A %-->% B, B %-->% C, C %-->% D, D %-->% E, class = "DAG")
+  ts_cg <- topological_sort(cg)
+  expect_equal(ts_cg, c("A", "B", "C", "D", "E"))
+
+  cg <- caugi(A %-->% B + C, C %-->% B, class = "DAG")
+  ts_cg <- topological_sort(cg)
+  expect_equal(ts_cg, c("A", "C", "B"))
+})
+
+
+# ancestors and descendants tests:
+# https://github.com/networkx/networkx/blob/main/networkx/algorithms/tests/test_dag.py
+
+test_that("ancestors NetworkX 1 test", {
+  cg <- caugi(
+    A %-->% B + C,
+    D %-->% B + E,
+    D %-->% C,
+    B %-->% F,
+    E %-->% F,
+    class = "DAG"
+  )
+  ancestors_cg_f <- ancestors(cg, nodes = "F")
+  expect_setequal(ancestors_cg_f, c("A", "B", "D", "E"))
+
+  ancestors_cg_c <- ancestors(cg, nodes = "C")
+  expect_setequal(ancestors_cg_c, c("A", "D"))
+
+  ancestors_cg_a <- ancestors(cg, nodes = "A")
+  expect_null(ancestors_cg_a)
+})
+
+test_that("descendants NetworkX 1 test", {
+  cg <- caugi(
+    A %-->% B + C,
+    D %-->% B + E,
+    D %-->% C,
+    B %-->% F,
+    E %-->% F,
+    class = "DAG"
+  )
+  descendants_cg_a <- descendants(cg, nodes = "A")
+  expect_setequal(descendants_cg_a, c("B", "C", "F"))
+
+  descendants_cg_d <- descendants(cg, nodes = "D")
+  expect_setequal(descendants_cg_d, c("B", "C", "E", "F"))
+
+  descendants_cg_c <- descendants(cg, nodes = "C")
+  expect_null(descendants_cg_c)
+})
