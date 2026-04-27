@@ -108,6 +108,36 @@ test_that("moralize fails on non-DAGs", {
   )
 })
 
+############# NetworkX tests for moralization #############
+# https://github.com/networkx/networkx/blob/main/networkx/algorithms/tests/test_moral.py
+
+test_that("NetworkX moralize test 1", {
+  cg <- caugi(
+    A %-->% B,
+    C %-->% B,
+    D %-->% A,
+    D %-->% E,
+    F %-->% E,
+    G %-->% E,
+    class = "DAG"
+  )
+  moral_cg <- moralize(cg)
+  expect_equal(moral_cg@graph_class, "UG")
+
+  has_edge <- function(edges, u, v) {
+    any(
+      (edges$from == u & edges$to == v) |
+        (edges$from == v & edges$to == u)
+    )
+  }
+
+  expect_true(has_edge(moral_cg@edges, "A", "C"))
+  expect_true(has_edge(moral_cg@edges, "D", "F"))
+  expect_true(has_edge(moral_cg@edges, "F", "G"))
+  expect_true(has_edge(moral_cg@edges, "D", "G"))
+  expect_false(has_edge(moral_cg@edges, "A", "E"))
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────────── Mutation ───────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
