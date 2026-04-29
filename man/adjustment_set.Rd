@@ -63,6 +63,6 @@ Other adjustment:
 \code{\link{d_separated}()},
 \code{\link{is_valid_adjustment_admg}()},
 \code{\link{is_valid_backdoor}()},
-\code{\link{minimal_d_separator}()}
+\code{\link{minimal_separator}()}
 }
 \concept{adjustment}

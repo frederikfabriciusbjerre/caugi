@@ -807,8 +807,8 @@ impl GraphSession {
         view.d_separated(xs, ys, z).map_err(|e| self.map_error(e))
     }
 
-    /// Minimal d-separator computation (DAG only).
-    pub fn minimal_d_separator(
+    /// Minimal separator computation (DAG / ADMG / AG).
+    pub fn minimal_separator(
         &mut self,
         xs: &[u32],
         ys: &[u32],
@@ -816,7 +816,7 @@ impl GraphSession {
         restrict: &[u32],
     ) -> Result<Option<Vec<u32>>, String> {
         let view = self.view()?;
-        view.minimal_d_separator(xs, ys, include, restrict)
+        view.minimal_separator(xs, ys, include, restrict)
             .map_err(|e| self.map_error(e))
     }
 
@@ -1448,7 +1448,7 @@ mod tests {
         assert!(session.d_separated(&[0], &[3], &[2]).unwrap());
         assert_eq!(
             session
-                .minimal_d_separator(&[0], &[3], &[], &[0, 1, 2, 3])
+                .minimal_separator(&[0], &[3], &[], &[0, 1, 2, 3])
                 .unwrap(),
             Some(vec![2])
         );
@@ -1520,7 +1520,7 @@ mod tests {
         assert!(ug.moralize().is_err());
         assert!(ug.latent_project(&[0]).is_err());
         assert!(ug.d_separated(&[0], &[1], &[]).is_err());
-        assert!(ug.minimal_d_separator(&[0], &[1], &[], &[]).is_err());
+        assert!(ug.minimal_separator(&[0], &[1], &[], &[]).is_err());
         assert!(ug.adjustment_set_parents(&[0], &[1]).is_err());
         assert!(ug.adjustment_set_backdoor(&[0], &[1]).is_err());
         assert!(ug.adjustment_set_optimal(&[0], &[1]).is_err());
@@ -1949,7 +1949,7 @@ mod tests {
 
         // Error paths for PDAG
         assert!(pdag.d_separated(&[0], &[2], &[1]).is_err());
-        assert!(pdag.minimal_d_separator(&[0], &[2], &[], &[]).is_err());
+        assert!(pdag.minimal_separator(&[0], &[2], &[], &[]).is_err());
         assert!(pdag.moralize().is_err());
         assert!(pdag.latent_project(&[0]).is_err());
         assert!(pdag.districts().is_err());
@@ -2062,7 +2062,7 @@ mod tests {
         assert!(dag.spouses_of(0).is_err());
         assert!(dag.exogenous_nodes(false).is_err());
         assert!(dag.d_separated(&[0], &[1], &[]).is_err());
-        assert!(dag.minimal_d_separator(&[0], &[1], &[], &[0, 1]).is_err());
+        assert!(dag.minimal_separator(&[0], &[1], &[], &[0, 1]).is_err());
         assert!(dag.m_separated(&[0], &[1], &[]).is_err());
         assert!(dag.adjustment_set_parents(&[0], &[1]).is_err());
         assert!(dag.adjustment_set_backdoor(&[0], &[1]).is_err());

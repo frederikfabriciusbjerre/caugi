@@ -282,26 +282,28 @@ all_backdoor_sets <- function(
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ────────────────────────── Minimal d-separator ───────────────────────────────
+# ────────────────────────── Minimal separator ─────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-#' @title Compute a minimal d-separator
+#' @title Compute a minimal separator
 #'
-#' @description Computes a minimal d-separator Z for sets X and Y in a DAG,
-#' optionally with mandatory inclusions and restrictions on the separator.
+#' @description Computes a minimal separator Z for sets X and Y, optionally with
+#' mandatory inclusions and restrictions on the separator. Supports DAGs (where
+#' the result is a d-separator), ADMGs, and ancestral graphs (where the result
+#' is an m-separator).
 #'
 #' @details
-#' A d-separator Z for X and Y is a set of nodes such that conditioning on Z
-#' d-separates X from Y in the graph. This function returns a minimal separator,
-#' meaning no proper subset of Z still d-separates X and Y.
+#' A separator Z for X and Y is a set of nodes such that conditioning on Z
+#' d- or m-separates X from Y in the graph. This function returns a minimal
+#' separator: no proper subset of Z (excluding I) still separates X and Y.
 #'
-#' The algorithm:
-#' 1. Restricts to ancestors of X U Y U I
-#' 2. Computes initial separator candidate from R
-#' 3. Refines using Bayes-ball d-connection algorithm
-#' 4. Returns minimal separator or NULL if none exists within R
+#' The algorithm runs in linear time O(n + m) and is unified across graph
+#' classes via the Bayes-ball reachability of van der Zander & Liśkiewicz
+#' (2020). For DAGs the algorithm specializes to FINDMINSEPINDAG; for ADMGs and
+#' AGs (and their subclasses CPDAG, RCG, MAG) it uses the general FINDMINSEP
+#' over mixed graphs.
 #'
-#' @param cg A `caugi` object (must be a DAG).
+#' @param cg A `caugi` object (DAG, ADMG, or AG).
 #' @param X,Y Character vectors of node names. Use `*_index` to pass 1-based
 #'   indices.
 #' @param I Nodes that must be included in the separator.
@@ -329,19 +331,28 @@ all_backdoor_sets <- function(
 #' )
 #'
 #' # Find any minimal separator between X and Y
-#' minimal_d_separator(cg, "X", "Y")
+#' minimal_separator(cg, "X", "Y")
 #'
 #' # Force M to be in the separator
-#' minimal_d_separator(cg, "X", "Y", I = "M")
+#' minimal_separator(cg, "X", "Y", I = "M")
 #'
 #' # Restrict separator to only {A, M}
-#' minimal_d_separator(cg, "X", "Y", R = c("A", "M"))
+#' minimal_separator(cg, "X", "Y", R = c("A", "M"))
+#'
+#' # Works on ADMGs (returns a minimal m-separator)
+#' admg <- caugi(
+#'   X %-->% Y,
+#'   L %-->% X,
+#'   L %-->% Y,
+#'   class = "ADMG"
+#' )
+#' minimal_separator(admg, "X", "Y")
 #'
 #' @family adjustment
 #' @concept adjustment
 #'
 #' @export
-minimal_d_separator <- function(
+minimal_separator <- function(
   cg,
   X = NULL,
   Y = NULL,
@@ -354,9 +365,9 @@ minimal_d_separator <- function(
 ) {
   is_caugi(cg, throw_error = TRUE)
 
-  if (!is_dag(cg)) {
+  if (!is_dag(cg) && !is_admg(cg) && !is_ag(cg)) {
     stop(
-      "`minimal_d_separator()` is only defined for DAGs. ",
+      "`minimal_separator()` is only defined for DAGs, ADMGs, and AGs. ",
       "The graph has class \"",
       cg@graph_class,
       "\".",
@@ -394,7 +405,7 @@ minimal_d_separator <- function(
   }
 
   # Call Rust function
-  result_idx0 <- rs_minimal_d_separator(
+  result_idx0 <- rs_minimal_separator(
     cg@session,
     as.integer(X_idx0),
     as.integer(Y_idx0),
@@ -410,6 +421,33 @@ minimal_d_separator <- function(
   # Convert 0-based indices to node names
   nm <- cg@nodes$name
   nm[result_idx0 + 1L]
+}
+
+#' @rdname minimal_separator
+#' @export
+minimal_d_separator <- function(
+  cg,
+  X = NULL,
+  Y = NULL,
+  I = character(0),
+  R = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  I_index = NULL,
+  R_index = NULL
+) {
+  .Deprecated("minimal_separator")
+  minimal_separator(
+    cg = cg,
+    X = X,
+    Y = Y,
+    I = I,
+    R = R,
+    X_index = X_index,
+    Y_index = Y_index,
+    I_index = I_index,
+    R_index = R_index
+  )
 }
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -1863,7 +1863,7 @@ fn rs_d_separated(
 }
 
 #[extendr]
-fn rs_minimal_d_separator(
+fn rs_minimal_separator(
     mut session: ExternalPtr<GraphSession>,
     xs: Integers,
     ys: Integers,
@@ -1883,7 +1883,7 @@ fn rs_minimal_d_separator(
 
     let result = session
         .as_mut()
-        .minimal_d_separator(&xs_u, &ys_u, &inc_u, &res_u)
+        .minimal_separator(&xs_u, &ys_u, &inc_u, &res_u)
         .unwrap_or_else(|e| throw_r_error(e));
 
     match result {
@@ -2183,7 +2183,7 @@ extendr_module! {
     fn rs_induced_subgraph;
     fn subgraph;
     fn rs_d_separated;
-    fn rs_minimal_d_separator;
+    fn rs_minimal_separator;
     fn rs_m_separated;
     fn rs_not_m_separated_for_all_subsets;
     fn rs_adjustment_set_parents;

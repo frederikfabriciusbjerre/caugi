@@ -51,6 +51,6 @@ Other adjustment:
 \code{\link{all_backdoor_sets}()},
 \code{\link{d_separated}()},
 \code{\link{is_valid_backdoor}()},
-\code{\link{minimal_d_separator}()}
+\code{\link{minimal_separator}()}
 }
 \concept{adjustment}

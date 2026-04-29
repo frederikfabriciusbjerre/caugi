@@ -383,7 +383,7 @@ impl GraphView {
         }
     }
 
-    pub fn minimal_d_separator(
+    pub fn minimal_separator(
         &self,
         xs: &[u32],
         ys: &[u32],
@@ -392,7 +392,9 @@ impl GraphView {
     ) -> Result<Option<Vec<u32>>, String> {
         match self {
             GraphView::Dag(d) => d.minimal_d_separator(xs, ys, include, restrict),
-            _ => Err("minimal_d_separator is only defined for DAGs".into()),
+            GraphView::Admg(a) => a.minimal_m_separator(xs, ys, include, restrict),
+            GraphView::Ag(g) => g.minimal_m_separator(xs, ys, include, restrict),
+            _ => Err("minimal_separator is only defined for DAGs, ADMGs, and AGs".into()),
         }
     }
 

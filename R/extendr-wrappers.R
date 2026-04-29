@@ -132,7 +132,7 @@ subgraph <- function(cg, nodes, index) .Call(wrap__subgraph, cg, nodes, index)
 
 rs_d_separated <- function(session, xs, ys, z) .Call(wrap__rs_d_separated, session, xs, ys, z)
 
-rs_minimal_d_separator <- function(session, xs, ys, include, restrict) .Call(wrap__rs_minimal_d_separator, session, xs, ys, include, restrict)
+rs_minimal_separator <- function(session, xs, ys, include, restrict) .Call(wrap__rs_minimal_separator, session, xs, ys, include, restrict)
 
 rs_m_separated <- function(session, xs, ys, z) .Call(wrap__rs_m_separated, session, xs, ys, z)
 

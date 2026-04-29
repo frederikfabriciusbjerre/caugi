@@ -3,7 +3,30 @@
 
 use super::Admg;
 use crate::graph::alg::bitset;
+use crate::graph::alg::min_msep::{self, MixedGraph};
 use std::collections::HashSet;
+
+impl MixedGraph for Admg {
+    fn n(&self) -> u32 {
+        Admg::n(self)
+    }
+    fn parents_of(&self, v: u32) -> &[u32] {
+        Admg::parents_of(self, v)
+    }
+    fn children_of(&self, v: u32) -> &[u32] {
+        Admg::children_of(self, v)
+    }
+    fn spouses_of(&self, v: u32) -> &[u32] {
+        Admg::spouses_of(self, v)
+    }
+    fn undirected_of(&self, _v: u32) -> &[u32] {
+        &[]
+    }
+    fn anteriors_mask(&self, seeds: &[u32]) -> Vec<bool> {
+        // ADMGs have no undirected edges, so pAn = An.
+        self.ancestors_mask(seeds)
+    }
+}
 
 impl Admg {
     /// Ancestors mask including the seeds themselves.
@@ -254,6 +277,20 @@ impl Admg {
 
         !Self::reachable_in_moral(&adj, &mask, xs, &blocked, ys)
     }
+
+    /// Computes a minimal m-separator for `xs` and `ys` in the ADMG.
+    ///
+    /// See [`crate::graph::alg::min_msep::find_min_msep`] for the algorithm
+    /// (van der Zander & Liśkiewicz, UAI 2020). Linear time.
+    pub fn minimal_m_separator(
+        &self,
+        xs: &[u32],
+        ys: &[u32],
+        include: &[u32],
+        restrict: &[u32],
+    ) -> Result<Option<Vec<u32>>, String> {
+        min_msep::find_min_msep(self, xs, ys, include, restrict)
+    }
 }
 
 #[cfg(test)]
@@ -273,6 +310,105 @@ mod tests {
         b.add_edge(0, 2, d).unwrap();
         b.add_edge(1, 2, d).unwrap();
         Admg::new(Arc::new(b.finalize().unwrap())).unwrap()
+    }
+
+    fn build_admg(n: u32, directed: &[(u32, u32)], bidirected: &[(u32, u32)]) -> Admg {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        let b = reg.code_of("<->").unwrap();
+        let mut builder = GraphBuilder::new_with_registry(n, true, &reg);
+        for &(u, v) in directed {
+            builder.add_edge(u, v, d).unwrap();
+        }
+        for &(u, v) in bidirected {
+            builder.add_edge(u, v, b).unwrap();
+        }
+        Admg::new(Arc::new(builder.finalize().unwrap())).unwrap()
+    }
+
+    #[test]
+    fn minimal_m_separator_chain() {
+        // 0 -> 1 -> 2; sep for (0, 2) given restrict={1} is {1}.
+        let g = build_admg(3, &[(0, 1), (1, 2)], &[]);
+        let z = g.minimal_m_separator(&[0], &[2], &[], &[1]).unwrap();
+        assert_eq!(z, Some(vec![1]));
+    }
+
+    #[test]
+    fn minimal_m_separator_bidirected_confounder_unblockable() {
+        // 0 <-> 1: latent confounder, no separator.
+        let g = build_admg(2, &[], &[(0, 1)]);
+        let z = g.minimal_m_separator(&[0], &[1], &[], &[]).unwrap();
+        assert!(z.is_none());
+    }
+
+    #[test]
+    fn minimal_m_separator_directed_through_bidirected() {
+        // 0 -> 1, 1 <-> 2, 2 -> 3; minimal sep for (0, 3) within {1, 2}.
+        let g = build_admg(4, &[(0, 1), (2, 3)], &[(1, 2)]);
+        let z = g
+            .minimal_m_separator(&[0], &[3], &[], &[1, 2])
+            .unwrap()
+            .expect("expected a separator");
+        // Z must m-separate.
+        assert!(g.m_separated(&[0], &[3], &z));
+        // Removing any element breaks separation.
+        for i in 0..z.len() {
+            let mut shrunk = z.clone();
+            shrunk.remove(i);
+            assert!(
+                !g.m_separated(&[0], &[3], &shrunk),
+                "Z = {:?} not minimal: removing index {} still m-separates",
+                z,
+                i
+            );
+        }
+    }
+
+    #[test]
+    fn minimal_m_separator_iv_collider_blocks_separation() {
+        // Instrumental variable: Z -> X -> Y, X <-> Y.
+        // 0:Z, 1:X, 2:Y. Conditioning on X blocks the chain Z -> X -> Y but
+        // simultaneously opens the collider X on the path Z -> X <-> Y, so no
+        // separator with restrict={X} exists.
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        let b = reg.code_of("<->").unwrap();
+        let mut builder = GraphBuilder::new_with_registry(3, false, &reg);
+        builder.add_edge(0, 1, d).unwrap();
+        builder.add_edge(1, 2, d).unwrap();
+        builder.add_edge(1, 2, b).unwrap();
+        let g = Admg::new(Arc::new(builder.finalize().unwrap())).unwrap();
+
+        // No separator exists.
+        assert!(g
+            .minimal_m_separator(&[0], &[2], &[], &[1])
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn minimal_m_separator_empty_inputs() {
+        let g = build_admg(2, &[(0, 1)], &[]);
+        assert!(g
+            .minimal_m_separator(&[], &[1], &[], &[])
+            .unwrap()
+            .is_none());
+        assert!(g
+            .minimal_m_separator(&[0], &[], &[], &[])
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn minimal_m_separator_out_of_bounds_errors() {
+        let g = build_admg(2, &[(0, 1)], &[]);
+        assert!(g.minimal_m_separator(&[5], &[1], &[], &[]).is_err());
+        assert!(g.minimal_m_separator(&[0], &[5], &[], &[]).is_err());
+        assert!(g.minimal_m_separator(&[0], &[1], &[5], &[]).is_err());
+        assert!(g.minimal_m_separator(&[0], &[1], &[], &[5]).is_err());
     }
 
     #[test]

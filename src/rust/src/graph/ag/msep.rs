@@ -14,6 +14,28 @@
 
 use super::Ag;
 use crate::graph::alg::bitset;
+use crate::graph::alg::min_msep::{self, MixedGraph};
+
+impl MixedGraph for Ag {
+    fn n(&self) -> u32 {
+        Ag::n(self)
+    }
+    fn parents_of(&self, v: u32) -> &[u32] {
+        Ag::parents_of(self, v)
+    }
+    fn children_of(&self, v: u32) -> &[u32] {
+        Ag::children_of(self, v)
+    }
+    fn spouses_of(&self, v: u32) -> &[u32] {
+        Ag::spouses_of(self, v)
+    }
+    fn undirected_of(&self, v: u32) -> &[u32] {
+        Ag::undirected_of(self, v)
+    }
+    fn anteriors_mask(&self, seeds: &[u32]) -> Vec<bool> {
+        Ag::anteriors_mask(self, seeds)
+    }
+}
 
 impl Ag {
     /// Ancestors mask including the seeds themselves.
@@ -225,6 +247,20 @@ impl Ag {
         // Check if xs can reach ys in the augmented graph
         !Self::reachable_in_augmented(&adj, &mask, xs, &blocked, ys)
     }
+
+    /// Computes a minimal m-separator for `xs` and `ys` in the ancestral graph.
+    ///
+    /// See [`crate::graph::alg::min_msep::find_min_msep`] for the algorithm
+    /// (van der Zander & Liśkiewicz, UAI 2020). Linear time.
+    pub fn minimal_m_separator(
+        &self,
+        xs: &[u32],
+        ys: &[u32],
+        include: &[u32],
+        restrict: &[u32],
+    ) -> Result<Option<Vec<u32>>, String> {
+        min_msep::find_min_msep(self, xs, ys, include, restrict)
+    }
 }
 
 #[cfg(test)]
@@ -382,6 +418,84 @@ mod tests {
 
         // Conditioning on both colliders opens the collider path.
         assert!(!ag.m_separated(&[0], &[3], &[1, 2]));
+    }
+
+    fn ag_from_edges(
+        n: u32,
+        directed: &[(u32, u32)],
+        bidirected: &[(u32, u32)],
+        undirected: &[(u32, u32)],
+    ) -> Ag {
+        let (reg, dir, bid, und) = setup();
+        let mut b = GraphBuilder::new_with_registry(n, true, &reg);
+        for &(u, v) in directed {
+            b.add_edge(u, v, dir).unwrap();
+        }
+        for &(u, v) in bidirected {
+            b.add_edge(u, v, bid).unwrap();
+        }
+        for &(u, v) in undirected {
+            b.add_edge(u, v, und).unwrap();
+        }
+        Ag::new(Arc::new(b.finalize().unwrap())).unwrap()
+    }
+
+    #[test]
+    fn minimal_m_separator_directed_chain() {
+        let ag = ag_from_edges(3, &[(0, 1), (1, 2)], &[], &[]);
+        let z = ag.minimal_m_separator(&[0], &[2], &[], &[1]).unwrap();
+        assert_eq!(z, Some(vec![1]));
+    }
+
+    #[test]
+    fn minimal_m_separator_undirected_chain() {
+        let ag = ag_from_edges(3, &[], &[], &[(0, 1), (1, 2)]);
+        let z = ag.minimal_m_separator(&[0], &[2], &[], &[1]).unwrap();
+        assert_eq!(z, Some(vec![1]));
+    }
+
+    #[test]
+    fn minimal_m_separator_bidirected_unblockable() {
+        let ag = ag_from_edges(2, &[], &[(0, 1)], &[]);
+        assert!(ag
+            .minimal_m_separator(&[0], &[1], &[], &[])
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn minimal_m_separator_m_bias() {
+        // U1 -> X, U1 -> M, U2 -> M, U2 -> Y. Sep for (X, Y) is {} unconditionally.
+        let ag = ag_from_edges(5, &[(0, 2), (0, 3), (1, 3), (1, 4)], &[], &[]);
+        let z = ag
+            .minimal_m_separator(&[2], &[4], &[], &[0, 1, 2, 3, 4])
+            .unwrap()
+            .unwrap();
+        // Should not include the collider M (=3).
+        assert!(!z.contains(&3));
+        assert!(ag.m_separated(&[2], &[4], &z));
+    }
+
+    #[test]
+    fn minimal_m_separator_empty_inputs() {
+        let ag = ag_from_edges(2, &[(0, 1)], &[], &[]);
+        assert!(ag
+            .minimal_m_separator(&[], &[1], &[], &[])
+            .unwrap()
+            .is_none());
+        assert!(ag
+            .minimal_m_separator(&[0], &[], &[], &[])
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn minimal_m_separator_out_of_bounds() {
+        let ag = ag_from_edges(2, &[(0, 1)], &[], &[]);
+        assert!(ag.minimal_m_separator(&[5], &[1], &[], &[]).is_err());
+        assert!(ag.minimal_m_separator(&[0], &[5], &[], &[]).is_err());
+        assert!(ag.minimal_m_separator(&[0], &[1], &[5], &[]).is_err());
+        assert!(ag.minimal_m_separator(&[0], &[1], &[], &[5]).is_err());
     }
 
     #[test]
