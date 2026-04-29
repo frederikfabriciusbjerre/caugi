@@ -710,7 +710,8 @@ impl GraphSession {
                 Ok(GraphClass::Pdag)
             }
             GraphClass::Mpdag => {
-                let pdag = Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                let pdag =
+                    Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
                 if pdag.is_meek_closed() {
                     Ok(GraphClass::Mpdag)
                 } else {
@@ -1826,8 +1827,10 @@ mod tests {
         e.push(1, 2, b);
         admg.set_edges(e);
 
-        // m_separated through ADMG session
-        assert!(admg.m_separated(&[0], &[2], &[1]).unwrap());
+        // m_separated through ADMG session.
+        // 0 --> 1 <-> 2 lifts to 0 -> 1, U -> 1, U -> 2; conditioning on the
+        // collider 1 opens the path, so 0 is m-connected to 2 given {1}.
+        assert!(!admg.m_separated(&[0], &[2], &[1]).unwrap());
 
         // anteriors_of errors on ADMG (not supported)
         let err = admg.anteriors_of(0).unwrap_err();

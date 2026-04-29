@@ -194,9 +194,8 @@ impl GraphBuilder {
         } else {
             0
         };
-        let mut rows: Vec<Vec<HalfEdge>> = (0..n_us)
-            .map(|_| Vec::with_capacity(avg_degree))
-            .collect();
+        let mut rows: Vec<Vec<HalfEdge>> =
+            (0..n_us).map(|_| Vec::with_capacity(avg_degree)).collect();
 
         for i in 0..edge_count {
             let u = edges.from[i];

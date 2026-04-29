@@ -15,7 +15,8 @@ impl Admg {
     ///
     /// This extends the standard moralization to handle bidirected edges:
     /// 1. Connect parents with children (undirected)
-    /// 2. Marry parents of common children
+    /// 2. Marry every pair of arrowhead endpoints at a common node
+    ///    (i.e. every pair in `pa(v) ∪ sp(v)`)
     /// 3. Add bidirected edges as undirected edges
     fn moral_adj_admg(&self, mask: &[bool]) -> Vec<Vec<u32>> {
         let n = self.n() as usize;
@@ -35,27 +36,31 @@ impl Admg {
                 }
             }
 
-            // Marry parents of common children
-            for i in 0..pa.len() {
-                let pi = pa[i] as usize;
-                if !mask[pi] {
-                    continue;
-                }
-                for j in i + 1..pa.len() {
-                    let pj = pa[j] as usize;
-                    if !mask[pj] {
-                        continue;
-                    }
-                    adj[pi].push(pa[j]);
-                    adj[pj].push(pa[i]);
-                }
-            }
-
             // Add bidirected edges as undirected (spouses connect in moral graph)
             for &s in self.spouses_of(v) {
                 if mask[s as usize] {
                     adj[v as usize].push(s);
                     // Note: the reverse will be added when we process node s
+                }
+            }
+
+            // Marry every pair of arrowhead endpoints at v: pa(v) ∪ sp(v).
+            // Both directed parents and spouses contribute an arrowhead at v,
+            // so the full moralization rule must form a clique on this union.
+            let mut heads: Vec<u32> = pa
+                .iter()
+                .copied()
+                .chain(self.spouses_of(v).iter().copied())
+                .filter(|u| mask[*u as usize])
+                .collect();
+            heads.sort_unstable();
+            heads.dedup();
+            for i in 0..heads.len() {
+                for j in i + 1..heads.len() {
+                    let hi = heads[i] as usize;
+                    let hj = heads[j] as usize;
+                    adj[hi].push(heads[j]);
+                    adj[hj].push(heads[i]);
                 }
             }
         }

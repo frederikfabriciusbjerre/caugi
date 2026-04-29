@@ -608,10 +608,11 @@ mod tests {
         // In this subgraph, 0 and 2 have no connecting edges, so they are m-separated.
         assert!(admg.m_separated(&[0], &[2], &[]));
 
-        // When conditioning on 1, the ancestral subgraph includes An({0,1,2}) = {0,1,2}.
-        // In this subgraph, the bidirected edges create moral edges 0-1 and 1-2.
-        // But node 1 is blocked, so 0 and 2 are still m-separated.
-        assert!(admg.m_separated(&[0], &[2], &[1]));
+        // Conditioning on 1 opens the latent collider: 0 <-> 1 <-> 2 lifts to
+        // 0 <- L1 -> 1 <- L2 -> 2; conditioning on the collider 1 connects 0 and 2.
+        // The moralization marries the spouses of 1 (i.e. {0, 2}), so 0 and 2 are
+        // m-connected given {1}.
+        assert!(!admg.m_separated(&[0], &[2], &[1]));
     }
 
     #[test]
@@ -641,10 +642,10 @@ mod tests {
 
         let admg = Admg::new(Arc::new(b.finalize().unwrap())).unwrap();
 
-        // Z is m-separated from Y given X
-        // The path Z -> X -> Y is blocked by X
-        // The confounding X <-> Y doesn't create a path from Z to Y
-        assert!(admg.m_separated(&[0], &[2], &[1]));
+        // Z is NOT m-separated from Y given X.
+        // Lifting X <-> Y to a latent U with U -> X, U -> Y, the path
+        // Z -> X <- U -> Y has a collider at X; conditioning on X opens it.
+        assert!(!admg.m_separated(&[0], &[2], &[1]));
 
         // Z is not m-separated from Y unconditionally (path Z -> X -> Y)
         assert!(!admg.m_separated(&[0], &[2], &[]));

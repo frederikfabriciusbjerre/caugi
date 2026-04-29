@@ -14,6 +14,12 @@ but even on small graphs, queries are roughly 5x faster.
 - `exogenize()` is now implemented in Rust for DAGs, which reduces overhead on larger graphs.
 - `normalize_latent_structure()` is now implemented in Rust for DAGs for faster latent normalization workflows.
 
+## Bug Fixes
+
+- Fix `m_separated()` on ADMGs: moralization now marries every pair in
+  `pa(v) ∪ sp(v)`, not just `pa(v)`. The old code missed moral edges from
+  bidirected co-parents and gave false positives (e.g. claimed `Z ⊥ Y | X` for
+  `Z -> X -> Y`, `X <-> Y`).
 
 # caugi 1.1.0
 
