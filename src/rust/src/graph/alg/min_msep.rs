@@ -170,7 +170,28 @@ fn relax(
     if !a_mask[ni] {
         return;
     }
-    let collider = matches!(in_mark_at_v, Mark::Head) && matches!(out_mark_at_v, Mark::Head);
+    // Paper §2: (e, V, f) is of almost definite status iff V is a collider
+    // (Head, Head) or an almost definite non-collider — i.e., at least one
+    // of the two endpoints at V is a tail, or both are undirected.
+    // Forbidden configurations are (Head, Undir) and (Undir, Head). For AGs
+    // and ADMGs these never occur (ADMG has no undirected edges; AGs forbid
+    // any node having both an undirected edge and an arrowhead), so the check
+    // is vacuous on today's implementors but kept here to faithfully match
+    // pseudocode REACHABLE for future MixedGraph implementors (RCGs, MPDAGs).
+    let head_in = matches!(in_mark_at_v, Mark::Head);
+    let head_out = matches!(out_mark_at_v, Mark::Head);
+    let tail_in = matches!(in_mark_at_v, Mark::Tail);
+    let tail_out = matches!(out_mark_at_v, Mark::Tail);
+    let undir_in = matches!(in_mark_at_v, Mark::Undir);
+    let undir_out = matches!(out_mark_at_v, Mark::Undir);
+
+    let collider = head_in && head_out;
+    let almost_definite_non_collider = tail_in || tail_out || (undir_in && undir_out);
+    let almost_definite_status = collider || almost_definite_non_collider;
+    if !almost_definite_status {
+        return;
+    }
+
     let pass = if v_in_z { collider } else { !collider };
     if !pass {
         return;
