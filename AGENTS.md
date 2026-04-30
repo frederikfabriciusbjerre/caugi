@@ -96,6 +96,11 @@ caugi/
    - **Improvements**: Enhancements to existing functionality, performance, or documentation
    - **Bug Fixes**: Corrections to existing behavior
    - Use bullet points starting with `*` and include function names in backticks
+5. **Check vignettes**: Before concluding a task or session, review the files in
+   `vignettes/` to see whether any of them need updating to reflect the change
+   (new methods/options to document, examples that have become inaccurate, lists
+   of "available X" that need extending, etc.). If a vignette is affected,
+   update it; if not, no action is needed.
 
 ## Special Considerations
 
