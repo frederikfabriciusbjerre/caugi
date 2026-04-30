@@ -100,6 +100,13 @@ the user-facing API.
 6.  **Build documentation site**:
     [`pkgdown::build_site()`](https://pkgdown.r-lib.org/reference/build_site.html)
     builds the package website configured in `_pkgdown.yml`
+7.  **Re-vendor Rust deps**: Whenever `src/rust/Cargo.lock` changes
+    (added, removed, or bumped Rust dependency), regenerate the
+    offline-build cache by running
+    `rextendr::vendor_pkgs(overwrite = TRUE)` from the package root.
+    This refreshes `src/rust/vendor.tar.xz` and
+    `src/rust/vendor-config.toml`; commit both alongside the
+    `Cargo.toml`/`Cargo.lock` change.
 
 ### Testing Requirements
 
@@ -170,7 +177,6 @@ the user-facing API.
 - `bitflags = "2.9.3"` - Bitflag operations
 - `rust-sugiyama = "0.4.0"` - Sugiyama layout algorithm for graph
   visualization
-- `fdg-sim = "0.9.1"` - Force-directed graph simulation for layout
 - `serde = "1.0"` - Serialization framework
 - `serde_json = "1.0"` - JSON serialization
 - `quick-xml = "0.39"` - XML serialization

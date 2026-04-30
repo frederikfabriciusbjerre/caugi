@@ -42,7 +42,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 exogenize(cg, nodes = "B") # A, B
-#> <caugi object; 2 nodes, 0 edges; simple: TRUE; session=0x55b0c35fa980>
+#> <caugi object; 2 nodes, 0 edges; simple: TRUE; session=0x5588f8955cc0>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: (none)

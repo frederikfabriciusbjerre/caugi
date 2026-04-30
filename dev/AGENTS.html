@@ -142,6 +142,8 @@
 <li>
 <strong>Build documentation site</strong>: <code><a href="https://pkgdown.r-lib.org/reference/build_site.html" class="external-link">pkgdown::build_site()</a></code> builds the package website configured in <code>_pkgdown.yml</code>
 </li>
+<li>
+<strong>Re-vendor Rust deps</strong>: Whenever <code>src/rust/Cargo.lock</code> changes (added, removed, or bumped Rust dependency), regenerate the offline-build cache by running <code>rextendr::vendor_pkgs(overwrite = TRUE)</code> from the package root. This refreshes <code>src/rust/vendor.tar.xz</code> and <code>src/rust/vendor-config.toml</code>; commit both alongside the <code>Cargo.toml</code>/<code>Cargo.lock</code> change.</li>
 </ol></div>
 <div class="section level3">
 <h3 id="testing-requirements">Testing Requirements<a class="anchor" aria-label="anchor" href="#testing-requirements"></a></h3>
@@ -225,8 +227,6 @@
 <code>bitflags = "2.9.3"</code> - Bitflag operations</li>
 <li>
 <code>rust-sugiyama = "0.4.0"</code> - Sugiyama layout algorithm for graph visualization</li>
-<li>
-<code>fdg-sim = "0.9.1"</code> - Force-directed graph simulation for layout</li>
 <li>
 <code>serde = "1.0"</code> - Serialization framework</li>
 <li>
