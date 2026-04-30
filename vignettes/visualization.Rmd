@@ -8,7 +8,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r}
+#| include: false
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -16,7 +18,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r}
+#| label: setup
+
 library(caugi)
 ```
 
@@ -28,7 +32,9 @@ with different layout algorithms and customize their appearance.
 
 The simplest way to visualize a `caugi` graph is with the `plot()` function:
 
-```{r basic-plot}
+```{r}
+#| label: basic-plot
+
 # Create a simple DAG
 cg <- caugi(
   A %-->% B + C,
@@ -53,11 +59,13 @@ different use cases.
 
 ### Sugiyama (Hierarchical Layout)
 
-The Sugiyama layout [@sugiyama1981] is ideal for directed acyclic graphs
-(DAGs). It arranges nodes in layers to emphasize hierarchical structure
-and causal flow from top to bottom, minimizing edge crossings.
+The Sugiyama layout [@sugiyama1981] is ideal for directed acyclic graphs (DAGs).
+It arranges nodes in layers to emphasize hierarchical structure and causal flow
+from top to bottom, minimizing edge crossings.
 
-```{r sugiyama-layout}
+```{r}
+#| label: sugiyama-layout
+
 # Create a more complex DAG
 dag <- caugi(
   X1 %-->% M1 + M2,
@@ -79,10 +87,12 @@ plot(dag, layout = "sugiyama", main = "Sugiyama")
 ### Fruchterman-Reingold (Spring-Electrical)
 
 The Fruchterman-Reingold layout [@fruchterman1991] uses a physical simulation
-where edges act as springs and nodes repel each other like charged particles.
-It produces organic, symmetric layouts with relatively uniform edge lengths.
+where edges act as springs and nodes repel each other like charged particles. It
+produces organic, symmetric layouts with relatively uniform edge lengths.
 
-```{r fruchterman-reingold}
+```{r}
+#| label: fruchterman-reingold
+
 # Create a graph with bidirected edges (ADMG)
 admg <- caugi(
   A %-->% C,
@@ -106,7 +116,9 @@ distances in the plot proportional to graph-theoretic distances. This produces
 high-quality layouts that better preserve the global structure compared to
 Fruchterman-Reingold.
 
-```{r kamada-kawai}
+```{r}
+#| label: kamada-kawai
+
 # Create an undirected graph
 ug <- caugi(
   A %---% B,
@@ -118,20 +130,22 @@ ug <- caugi(
 plot(ug, layout = "kamada-kawai", main = "Kamada-Kawai")
 ```
 
-**Best for:** Publication-quality figures, when accurate distance
-representation matters
+**Best for:** Publication-quality figures, when accurate distance representation
+matters
 
 **Advantages:** Better global structure preservation
 
 ### Bipartite Layout
 
 The bipartite layout is designed for graphs with a clear two-group structure,
-such as treatment/outcome or exposure/response relationships. It arranges
-nodes in two parallel lines (rows or columns).
+such as treatment/outcome or exposure/response relationships. It arranges nodes
+in two parallel lines (rows or columns).
 
 Here's an example bipartite causal graph with treatments and outcomes:
 
-```{r bipartite-layout}
+```{r}
+#| label: bipartite-layout
+
 bipartite_graph <- caugi(
   Treatment_A %-->% Outcome_1 + Outcome_2 + Outcome_3,
   Treatment_B %-->% Outcome_1 + Outcome_2,
@@ -142,8 +156,10 @@ bipartite_graph <- caugi(
 
 Horizontal rows (treatments on top, outcomes on bottom)
 
-```{r bipartite-basic}
+```{r}
+#| label: bipartite-basic
 #| fig-width: 5
+
 plot(
   bipartite_graph,
   layout = "bipartite",
@@ -153,8 +169,10 @@ plot(
 
 Vertical columns (treatments on left, outcomes on right)
 
-```{r bipartite-vertical}
+```{r}
+#| label: bipartite-vertical
 #| fig-height: 4
+
 plot(
   bipartite_graph,
   layout = "bipartite",
@@ -163,12 +181,14 @@ plot(
 ```
 
 The bipartite layout automatically detects which nodes should be in which
-partition based on incoming edges. Nodes with no incoming edges are placed
-in one group, while nodes with incoming edges are placed in the other. You
-can also specify the partition explicitly:
+partition based on incoming edges. Nodes with no incoming edges are placed in
+one group, while nodes with incoming edges are placed in the other. You can also
+specify the partition explicitly:
 
-```{r bipartite-explicit}
+```{r}
+#| label: bipartite-explicit
 #| fig-width: 5
+
 partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE)
 plot(
   bipartite_graph,
@@ -178,8 +198,8 @@ plot(
 )
 ```
 
-**Best for:** Treatment-outcome structures, exposure-response models,
-bipartite causal relationships
+**Best for:** Treatment-outcome structures, exposure-response models, bipartite
+causal relationships
 
 **Advantages:** Clear visual separation, emphasizes directed relationships
 between groups
@@ -192,7 +212,9 @@ structures with clear stages, such as exposures → mediators → outcomes.
 
 First, create a simple three-tier causal graph:
 
-```{r tiered-basic}
+```{r}
+#| label: tiered-basic
+
 cg_tiered <- caugi(
   X1 %-->% M1 + M2,
   X2 %-->% M1 + M2,
@@ -203,8 +225,10 @@ cg_tiered <- caugi(
 
 We can define tiers using a named list:
 
-```{r tiered-named-list}
+```{r}
+#| label: tiered-named-list
 #| fig-height: 4
+
 tiers <- list(
   exposures = c("X1", "X2"),
   mediators = c("M1", "M2"),
@@ -220,18 +244,21 @@ The tiered layout supports three input formats:
 - named numeric vectors, and
 - `data.frame`s.
 
+Named lists is the most intuitive format, and what we have already shown. But
+you can also use a named numeric vector:
 
-Named lists is the most intuitive format, and what 
-we have already shown. But you can also use a named numeric vector:
+```{r}
+#| label: tiered-vector
 
-```{r tiered-vector}
 tiers_vector <- c(X1 = 1, X2 = 1, M1 = 2, M2 = 2, Y = 3)
 plot(cg_tiered, layout = "tiered", tiers = tiers_vector, orientation = "columns")
 ```
 
 Finally, you can use a `data.frame` to specify tiers directly.
 
-```{r tiered-dataframe}
+```{r}
+#| label: tiered-dataframe
+
 tiers_df <- data.frame(
   name = c("X1", "X2", "M1", "M2", "Y"),
   tier = c(1, 1, 2, 2, 3)
@@ -250,19 +277,20 @@ tiers, multiple input formats
 
 ### Circle Layout
 
-The circle layout places nodes evenly along the perimeter of a circle. The
-first node is placed at the top and subsequent nodes proceed counter-clockwise.
-Edge structure is ignored, so the layout is the same for any graph with the
-same number of nodes.
+The circle layout places nodes evenly along the perimeter of a circle. The first
+node is placed at the top and subsequent nodes proceed counter-clockwise. Edge
+structure is ignored, so the layout is the same for any graph with the same
+number of nodes.
 
-```{r circle-layout}
+```{r}
+#| label: circle-layout
+
 cycle <- caugi(
   A %-->% B,
   B %-->% C,
   C %-->% D,
   D %-->% E,
-  E %-->% A,
-  class = "DAG"
+  E %-->% A
 )
 
 plot(cycle, layout = "circle", main = "Circle")
@@ -277,7 +305,9 @@ edge-based layouts are not informative
 
 You can compute and examine layout coordinates directly using `caugi_layout()`:
 
-```{r compare-layouts}
+```{r}
+#| label: compare-layouts
+
 layout_sug <- caugi_layout(dag, method = "sugiyama")
 layout_fr <- caugi_layout(dag, method = "fruchterman-reingold")
 layout_kk <- caugi_layout(dag, method = "kamada-kawai")
@@ -288,8 +318,8 @@ head(layout_sug)
 
 ## Customizing Plots
 
-The `plot()` function provides extensive customization options for nodes,
-edges, and labels.
+The `plot()` function provides extensive customization options for nodes, edges,
+and labels.
 
 ### Node Styling
 
@@ -298,7 +328,9 @@ Styles may be applied globally (to all nodes) or locally (to specific nodes).
 
 Apply the same style to all nodes:
 
-```{r node-styling-global}
+```{r}
+#| label: node-styling-global
+
 plot(
   cg,
   node_style = list(
@@ -313,7 +345,9 @@ plot(
 
 Customize styles for individual nodes using the `by_node` option:
 
-```{r node-styling-locally}
+```{r}
+#| label: node-styling-locally
+
 plot(
   cg,
   node_style = list(
@@ -332,12 +366,14 @@ Available node style parameters:
 
 ### Edge Styling
 
-You can customize edge appearance using the `edge_style` parameter.
-Styles can be applied globally, by edge type, by source node, or to individual edges.
+You can customize edge appearance using the `edge_style` parameter. Styles can
+be applied globally, by edge type, by source node, or to individual edges.
 
 Apply the same styling to all edges in the graph:
 
-```{r edge-styling-global}
+```{r}
+#| label: edge-styling-global
+
 plot(
   dag,
   edge_style = list(
@@ -350,7 +386,9 @@ plot(
 
 Customize different edge types (e.g., directed vs. bidirected edges):
 
-```{r edge-styling-per-type}
+```{r}
+#| label: edge-styling-per-type
+
 plot(
   admg,
   layout = "fruchterman-reingold",
@@ -363,7 +401,9 @@ plot(
 
 Apply styling to all edges from a given node:
 
-```{r edge-styling-per-node}
+```{r}
+#| label: edge-styling-per-node
+
 plot(
   admg,
   layout = "fruchterman-reingold",
@@ -377,7 +417,9 @@ plot(
 
 Target an individual edge between two nodes:
 
-```{r edge-styling-per-specific-edge}
+```{r}
+#| label: edge-styling-per-specific-edge
+
 plot(
   admg,
   layout = "fruchterman-reingold",
@@ -398,10 +440,13 @@ The style precedence is as follows (highest to lowest):
 3. Per-type edge styles (`directed`, `undirected`, etc.)
 4. Global edge styles
 
-The example below combines global, per-type, per-node, and per-edge styling in a single plot.
-More specific styles override more general ones according to the precedence rules above.
+The example below combines global, per-type, per-node, and per-edge styling in a
+single plot. More specific styles override more general ones according to the
+precedence rules above.
 
-```{r edge-styling-combined}
+```{r}
+#| label: edge-styling-combined
+
 plot(
   admg,
   layout = "fruchterman-reingold",
@@ -434,16 +479,19 @@ plot(
 Available edge style parameters:
 
 - **Appearance (passed to `gpar()`)**: `col`, `lwd`, `lty`, `alpha`, `fill`
-- **Geometry**: `arrow_size` (arrow length in mm), `circle_size` (radius of endpoint circles for partial edges in mm)
+- **Geometry**: `arrow_size` (arrow length in mm), `circle_size` (radius of
+  endpoint circles for partial edges in mm)
 - **Per-type options**: `directed`, `undirected`, `bidirected`, `partial`
 
 #### Partial Edges
 
 Partial edges (`o->` and `o-o`) are rendered with circles at their endpoints to
-indicate uncertainty about edge orientation. These edges appear in PAGs
-(Partial Ancestral Graphs). You can customize the circle size:
+indicate uncertainty about edge orientation. These edges appear in PAGs (Partial
+Ancestral Graphs). You can customize the circle size:
 
-```{r partial-edges}
+```{r}
+#| label: partial-edges
+
 g <- caugi(
   A %o->% B,
   B %-->% C,
@@ -467,7 +515,9 @@ plot(
 
 Customize node labels with the `label_style` parameter:
 
-```{r label-styling}
+```{r}
+#| label: label-styling
+
 plot(
   cg,
   main = "Customized Labels",
@@ -489,17 +539,22 @@ Available label style parameters (passed to `gpar()`):
 
 ### Styling Tiered Layouts
 
-By default, tiered layouts are plotted with boxes around each tier
-and labels indicating the tier names (if provided).
+By default, tiered layouts are plotted with boxes around each tier and labels
+indicating the tier names (if provided).
 
-```{r tiered-boxes-basic}
+```{r}
+#| label: tiered-boxes-basic
+
 plot(cg_tiered, tiers = tiers)
 ```
 
-But you can customize the appearance of tier boxes using the `tier_style` parameter.
-Here, for instance, we specify different fill colors for each tier using a vector.
+But you can customize the appearance of tier boxes using the `tier_style`
+parameter. Here, for instance, we specify different fill colors for each tier
+using a vector.
 
-```{r tiered-boxes-vector}
+```{r}
+#| label: tiered-boxes-vector
+
 plot(
   cg_tiered,
   tiers = tiers,
@@ -512,10 +567,12 @@ plot(
 )
 ```
 
-For more granular control, you can specify styles for individual tiers. 
-Here, we customize the "exposures" and "outcome" tiers specifically:
+For more granular control, you can specify styles for individual tiers. Here, we
+customize the "exposures" and "outcome" tiers specifically:
 
-```{r tiered-boxes-by-tier}
+```{r}
+#| label: tiered-boxes-by-tier
+
 plot(
   cg_tiered,
   tiers = tiers,
@@ -540,10 +597,12 @@ plot(
 )
 ```
 
-Labels for the tiers can also be customized. 
-Here, for example, we change the font size and color of the tier labels:
+Labels for the tiers can also be customized. Here, for example, we change the
+font size and color of the tier labels:
 
-```{r tiered-boxes-labels}
+```{r}
+#| label: tiered-boxes-labels
+
 plot(
   cg_tiered,
   tiers = tiers, # Named list: exposures, mediators, outcome
@@ -558,11 +617,13 @@ plot(
 )
 ```
 
-You can also provide custom labels for each tier instead of using the
-names from the tiers object
+You can also provide custom labels for each tier instead of using the names from
+the tiers object
 
-```{r tiered-boxes-custom-labels}
+```{r}
+#| label: tiered-boxes-custom-labels
 #| fig-width: 5
+
 plot(
   cg_tiered,
   tiers = tiers,
@@ -575,7 +636,9 @@ plot(
 
 If you don't want any boxes or labels around the tiers, you can disable them:
 
-```{r tiered-boxes-none}
+```{r}
+#| label: tiered-boxes-none
+
 plot(
   cg_tiered,
   tiers = tiers,
@@ -591,7 +654,9 @@ The plotting system works with all graph types supported by `caugi`.
 
 First, let's create a PDAG with both directed and undirected edges:
 
-```{r pdag-plot}
+```{r}
+#| label: pdag-plot
+
 pdag <- caugi(
   A %-->% B,
   B %---% C, # Undirected edge
@@ -612,7 +677,9 @@ plot(
 
 Here's an example of an ADMG with directed and bidirected edges:
 
-```{r admg-plot}
+```{r}
+#| label: admg-plot
+
 complex_admg <- caugi(
   X %-->% M1 + M2,
   M1 %-->% Y,
@@ -636,7 +703,9 @@ plot(
 
 We also support undirected graphs. Here's a Markov random field example:
 
-```{r ug-plot}
+```{r}
+#| label: ug-plot
+
 markov <- caugi(
   A %---% B + C,
   B %---% D,
@@ -666,7 +735,9 @@ into complex layouts, similar to the patchwork package.
 
 Use `+` or `|` for horizontal arrangement and `/` for vertical stacking:
 
-```{r composition-basic}
+```{r}
+#| label: composition-basic
+
 # Create two different graphs
 g1 <- caugi(
   A %-->% B,
@@ -691,15 +762,19 @@ p1 + p2
 
 The `|` operator is an alias for `+`:
 
-```{r composition-pipe}
+```{r}
+#| label: composition-pipe
+
 # Equivalent to p1 + p2
 p1 | p2
 ```
 
 For vertical stacking, use the `/` operator:
 
-```{r composition-vertical}
+```{r}
+#| label: composition-vertical
 #| fig-height: 5
+
 p1 / p2
 ```
 
@@ -707,8 +782,10 @@ p1 / p2
 
 Compositions can be nested to create complex multi-plot layouts:
 
-```{r composition-nested}
+```{r}
+#| label: composition-nested
 #| fig-height: 5
+
 g3 <- caugi(
   M1 %-->% M2,
   M2 %-->% M3,
@@ -721,10 +798,13 @@ p3 <- plot(g3, main = "Graph 3")
 (p1 + p2) / p3
 ```
 
-You can mix operators freely. Here's an example combining horizontal and vertical arrangements:
+You can mix operators freely. Here's an example combining horizontal and
+vertical arrangements:
 
-```{r composition-mixed}
+```{r}
+#| label: composition-mixed
 #| fig-height: 5
+
 (p1 + p2) / (p3 + p1)
 ```
 
@@ -732,16 +812,19 @@ You can mix operators freely. Here's an example combining horizontal and vertica
 
 The spacing between composed plots is controlled globally via `caugi_options()`:
 
-```{r composition-spacing}
+```{r}
+#| label: composition-spacing
+
 caugi_options(plot = list(spacing = grid::unit(2, "lines")))
 
 p1 + p2
 ```
 
-To reset the default, you can call
-`caugi_default_options()`:
+To reset the default, you can call `caugi_default_options()`:
 
-```{r reset-global-options}
+```{r}
+#| label: reset-global-options
+
 caugi_options(caugi_default_options())
 ```
 
@@ -752,7 +835,9 @@ appearance, which can be overridden on a per-plot basis.
 
 ### Setting Default Styles
 
-```{r global-options}
+```{r}
+#| label: global-options
+
 # Configure global defaults
 caugi_options(plot = list(
   node_style = list(fill = "lightblue", padding = 3),
@@ -768,7 +853,9 @@ plot(cg, main = "Using Global Defaults")
 
 Global options serve as defaults that can be overridden:
 
-```{r override-options}
+```{r}
+#| label: override-options
+
 # Set global node color
 caugi_options(plot = list(
   node_style = list(fill = "lightblue")
@@ -794,7 +881,9 @@ The following options can be configured under `plot`:
 - **`label_style`**: List of text parameters (see `grid::gpar()`)
 - **`title_style`**: List with `col`, `fontface`, and `fontsize`
 
-```{r query-options}
+```{r}
+#| label: query-options
+
 # View all current options
 caugi_options()
 
@@ -806,10 +895,12 @@ caugi_options("plot")
 
 ### Manual Layouts
 
-You can compute layouts separately and reuse them.
-First, compute the layout coordinates:
+You can compute layouts separately and reuse them. First, compute the layout
+coordinates:
 
-```{r manual-layout}
+```{r}
+#| label: manual-layout
+
 coords <- caugi_layout(dag, method = "sugiyama")
 
 # The layout can be used for analysis or custom plotting
@@ -825,7 +916,9 @@ plot(dag, layout = "sugiyama")
 grid `grob` object in the `@grob` slot of the plot output. This allows for
 further customization using grid functions.
 
-```{r grid-integration}
+```{r}
+#| label: grid-integration
+
 # Create a plot
 p <- plot(cg)
 
@@ -845,4 +938,3 @@ The composition operators work by manipulating these grid grobs, creating
 flexible and performant multi-plot layouts without requiring external packages.
 
 ## References
-
