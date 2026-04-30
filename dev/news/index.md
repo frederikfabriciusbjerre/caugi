@@ -18,6 +18,9 @@
   faster.
 - [`exogenize()`](https://caugi.org/dev/reference/exogenize.md) is now
   implemented in Rust for DAGs, which reduces overhead on larger graphs.
+- [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md)
+  is now implemented in Rust for DAGs for faster latent normalization
+  workflows.
 
 ## caugi 1.1.0
 
