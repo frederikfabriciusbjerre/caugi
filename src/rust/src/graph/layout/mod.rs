@@ -2,6 +2,7 @@
 //! Graph layout algorithms.
 
 mod bipartite;
+mod circle;
 mod components;
 mod force_directed;
 mod kamada_kawai;
@@ -15,6 +16,7 @@ use components::{detect_components, group_by_component, pack_component_layouts};
 use normalize::{normalize_to_unit_box, rotate_to_principal_axes};
 
 pub use bipartite::{bipartite_columns_layout, bipartite_rows_layout};
+pub use circle::circle_layout;
 pub use force_directed::force_directed_layout;
 pub use kamada_kawai::kamada_kawai_layout;
 pub use sugiyama::sugiyama_layout;
@@ -63,6 +65,7 @@ pub enum LayoutMethod {
     KamadaKawai,
     Bipartite,
     Tiered,
+    Circle,
 }
 
 impl std::str::FromStr for LayoutMethod {
@@ -75,6 +78,7 @@ impl std::str::FromStr for LayoutMethod {
             "kamada_kawai" | "kamada-kawai" | "kk" => Ok(Self::KamadaKawai),
             "bipartite" => Ok(Self::Bipartite),
             "tiered" => Ok(Self::Tiered),
+            "circle" => Ok(Self::Circle),
             _ => Err(format!("Unknown layout method: '{}'", s)),
         }
     }
@@ -107,6 +111,12 @@ pub fn compute_layout(
     let n = graph.n() as usize;
     if n == 0 {
         return Ok(Vec::new());
+    }
+
+    // Circle layout places all nodes on a single circle regardless of components,
+    // and is already normalized to [0, 1].
+    if matches!(method, LayoutMethod::Circle) {
+        return circle_layout(graph);
     }
 
     // Detect connected components
@@ -280,6 +290,10 @@ mod tests {
         assert!(matches!(
             LayoutMethod::from_str("tiered"),
             Ok(LayoutMethod::Tiered)
+        ));
+        assert!(matches!(
+            LayoutMethod::from_str("circle"),
+            Ok(LayoutMethod::Circle)
         ));
     }
 

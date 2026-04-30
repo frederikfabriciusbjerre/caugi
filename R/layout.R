@@ -29,6 +29,13 @@
 #' accurate distance representation matters. Works with all edge types and
 #' produces deterministic results.
 #'
+#' **Circle**
+#'
+#' Places nodes evenly along the perimeter of a circle. The first node is at
+#' the top and subsequent nodes proceed counter-clockwise. Useful for small
+#' graphs, cycle visualization, and as a deterministic fallback. Works with
+#' all edge types and ignores edge structure.
+#'
 #' @param x A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
 #' @param method Character string specifying the layout method. Options:
@@ -44,6 +51,7 @@
 #'     types)
 #'   * `"bipartite"`: Bipartite layout (requires `partition` parameter)
 #'   * `"tiered"`: Multi-tier layout (requires `tiers` parameter)
+#'   * `"circle"`: Place nodes evenly along a circle
 #' @param packing_ratio Aspect ratio for packing disconnected components
 #'   (width/height). Default is the golden ratio (1.618) which works well with
 #'   widescreen displays. Use `1.0` for square grid, `2.0` for wider layouts,
@@ -81,6 +89,9 @@
 #'
 #' # Use stress minimization for publication quality
 #' layout_kk <- caugi_layout(cg, method = "kamada-kawai")
+#'
+#' # Place nodes on a circle
+#' layout_circle <- caugi_layout(cg, method = "circle")
 #'
 #' # Bipartite layout with auto-detected partition
 #' cg_bp <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
@@ -139,7 +150,8 @@ caugi_layout <- function(
     "fruchterman-reingold",
     "kamada-kawai",
     "bipartite",
-    "tiered"
+    "tiered",
+    "circle"
   ),
   packing_ratio = 1.618034,
   ...
@@ -176,7 +188,8 @@ caugi_layout <- function(
     "fruchterman-reingold" = caugi_layout_fruchterman_reingold,
     "kamada-kawai" = caugi_layout_kamada_kawai,
     "bipartite" = caugi_layout_bipartite,
-    "tiered" = caugi_layout_tiered
+    "tiered" = caugi_layout_tiered,
+    "circle" = caugi_layout_circle
   )
 
   # Call the layout function with appropriate parameters
@@ -650,6 +663,45 @@ caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
   is_caugi(x, throw_error = TRUE)
 
   coords <- rs_compute_layout(x@session, "kamada-kawai", packing_ratio)
+
+  data.frame(
+    name = nodes(x)[["name"]],
+    x = coords[["x"]],
+    y = coords[["y"]],
+    stringsAsFactors = FALSE
+  )
+}
+
+#' Circle Layout
+#'
+#' Computes node coordinates by placing nodes evenly along the perimeter of a
+#' circle. The first node is placed at the top of the circle, and subsequent
+#' nodes proceed counter-clockwise. Edge structure is ignored. Works with all
+#' edge types and produces deterministic results.
+#'
+#' @param x A `caugi` object.
+#' @param ... Ignored. For future extensibility.
+#'
+#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
+#'   names and their coordinates.
+#'
+#' @examples
+#' cg <- caugi(
+#'   A %-->% B,
+#'   B %-->% C,
+#'   C %-->% D,
+#'   D %-->% A
+#' )
+#' layout <- caugi_layout_circle(cg)
+#'
+#' @family plotting
+#' @concept plotting
+#'
+#' @export
+caugi_layout_circle <- function(x, ...) {
+  is_caugi(x, throw_error = TRUE)
+
+  coords <- rs_compute_layout(x@session, "circle", 1.0)
 
   data.frame(
     name = nodes(x)[["name"]],

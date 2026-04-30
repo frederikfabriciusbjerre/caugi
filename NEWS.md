@@ -2,6 +2,8 @@
 
 ## New Features
 
+- Add `caugi_layout_circle()` and a `"circle"` method for `caugi_layout()` that
+  places nodes evenly along the perimeter of a circle (#108).
 - Add `list_caugi_edges()` function to list all available edge types.
 - Add first-class `"MPDAG"` graph class support across constructor, class
   mutation, and class resolution. `class = "AUTO"` now resolves Meek-closed

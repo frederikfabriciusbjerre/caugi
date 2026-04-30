@@ -21,7 +21,7 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 caugi_layout(
   x,
   method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite",
-    "tiered"),
+    "tiered", "circle"),
   packing_ratio = 1.618034,
   ...
 )
@@ -46,6 +46,7 @@ edge types)
 types)
 \item \code{"bipartite"}: Bipartite layout (requires \code{partition} parameter)
 \item \code{"tiered"}: Multi-tier layout (requires \code{tiers} parameter)
+\item \code{"circle"}: Place nodes evenly along a circle
 }}
 
 \item{packing_ratio}{Aspect ratio for packing disconnected components
@@ -93,6 +94,13 @@ preserves the global structure and path lengths compared to
 Fruchterman-Reingold. Ideal for publication-quality visualizations where
 accurate distance representation matters. Works with all edge types and
 produces deterministic results.
+
+\strong{Circle}
+
+Places nodes evenly along the perimeter of a circle. The first node is at
+the top and subsequent nodes proceed counter-clockwise. Useful for small
+graphs, cycle visualization, and as a deterministic fallback. Works with
+all edge types and ignores edge structure.
 }
 
 \examples{
@@ -119,6 +127,9 @@ layout_fr <- caugi_layout(cg, method = "fruchterman-reingold")
 
 # Use stress minimization for publication quality
 layout_kk <- caugi_layout(cg, method = "kamada-kawai")
+
+# Place nodes on a circle
+layout_circle <- caugi_layout(cg, method = "circle")
 
 # Bipartite layout with auto-detected partition
 cg_bp <- caugi(A \%-->\% X, A \%-->\% Y, B \%-->\% X, B \%-->\% Y)
@@ -157,6 +168,7 @@ layout_tiered <- caugi_layout(
 Other plotting: 
 \code{\link{add-caugi_plot-caugi_plot}},
 \code{\link{caugi_layout_bipartite}()},
+\code{\link{caugi_layout_circle}()},
 \code{\link{caugi_layout_fruchterman_reingold}()},
 \code{\link{caugi_layout_kamada_kawai}()},
 \code{\link{caugi_layout_sugiyama}()},
