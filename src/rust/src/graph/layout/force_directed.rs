@@ -1,82 +1,113 @@
 // SPDX-License-Identifier: MIT
-//! Force-directed layout using Fruchterman-Reingold algorithm.
+//! Force-directed layout using the Fruchterman-Reingold (1991) algorithm.
 
 use crate::graph::CaugiGraph;
 
 pub fn force_directed_layout(graph: &CaugiGraph) -> Result<Vec<(f64, f64)>, String> {
-    use fdg_sim::{ForceGraph, ForceGraphHelper, Simulation, SimulationParameters};
-
     let n = graph.n() as usize;
 
     if n == 0 {
         return Ok(Vec::new());
     }
-
-    let mut force_graph: ForceGraph<(), ()> = ForceGraph::default();
-
-    // Add nodes (positions will be set after simulation creation)
-    let mut node_indices = Vec::with_capacity(n);
-    for i in 0..n {
-        let idx = force_graph.add_force_node(i.to_string(), ());
-        node_indices.push(idx);
+    if n == 1 {
+        return Ok(vec![(0.0, 0.0)]);
     }
 
-    // Add edges to force graph
+    // Frame and FR parameters. The exact scale is irrelevant: callers
+    // PCA-rotate and normalize the output to the unit box.
+    const W: f64 = 1000.0;
+    const H: f64 = 1000.0;
+    const ITERS: usize = 500;
+    const EPS: f64 = 1e-9;
+
+    let area = W * H;
+    let k = (area / n as f64).sqrt();
+    let k2 = k * k;
+    let t0 = W / 10.0;
+
+    // Deterministic circular initialization at radius 100 (matches the
+    // pre-existing behaviour so determinism tests stay meaningful).
+    let radius = 100.0;
+    let mut pos: Vec<(f64, f64)> = (0..n)
+        .map(|i| {
+            let angle = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
+            (radius * angle.cos(), radius * angle.sin())
+        })
+        .collect();
+
+    // Pre-collect a unique edge list from the CSR. Skip self-loops, the
+    // mirrored half of symmetric edges, and the side != 0 storage of
+    // directed edges (each pair is recorded twice in CSR: once on each side).
+    let mut edges: Vec<(usize, usize)> = Vec::new();
     for i in 0..n {
         let range = graph.row_range(i as u32);
         for idx in range {
             let j = graph.col_index[idx] as usize;
+            if i == j {
+                continue;
+            }
             let etype = graph.etype[idx];
-            let side = graph.side[idx];
-
-            // For force-directed layout, we consider all edge types
-            // Skip duplicates for symmetric edges
             let spec = &graph.registry.specs[etype as usize];
-            if spec.symmetric && i > j {
+            if spec.symmetric {
+                if i > j {
+                    continue;
+                }
+            } else if graph.side[idx] != 0 {
                 continue;
             }
-
-            // Only add edge once per pair (use side == 0 for directed edges)
-            if !spec.symmetric && side != 0 {
-                continue;
-            }
-
-            force_graph.add_edge(node_indices[i], node_indices[j], ());
+            edges.push((i, j));
         }
     }
 
-    // Create simulation with default parameters
-    let parameters = SimulationParameters::default();
-    let mut simulation = Simulation::from_graph(force_graph, parameters);
+    let mut disp = vec![(0.0, 0.0); n];
 
-    // Set deterministic circular initialization after creation
-    // This overwrites the random positions set by from_graph()
-    let radius = 100.0;
-    for (i, &node_idx) in node_indices.iter().enumerate() {
-        let angle = 2.0 * std::f32::consts::PI * (i as f32) / (n as f32);
-        let node = &mut simulation.get_graph_mut()[node_idx];
-        node.location = fdg_sim::glam::Vec3::new(radius * angle.cos(), radius * angle.sin(), 0.0);
-        node.old_location = node.location;
-        node.velocity = fdg_sim::glam::Vec3::ZERO;
+    for iter in 0..ITERS {
+        for d in disp.iter_mut() {
+            *d = (0.0, 0.0);
+        }
+
+        // Repulsive forces: every unordered pair contributes k^2 / d.
+        for u in 0..n {
+            for v in (u + 1)..n {
+                let dx = pos[v].0 - pos[u].0;
+                let dy = pos[v].1 - pos[u].1;
+                let dist = (dx * dx + dy * dy).sqrt().max(EPS);
+                let f = k2 / dist;
+                let ux = dx / dist;
+                let uy = dy / dist;
+                disp[v].0 += ux * f;
+                disp[v].1 += uy * f;
+                disp[u].0 -= ux * f;
+                disp[u].1 -= uy * f;
+            }
+        }
+
+        // Attractive forces along edges: d^2 / k.
+        for &(u, v) in &edges {
+            let dx = pos[v].0 - pos[u].0;
+            let dy = pos[v].1 - pos[u].1;
+            let dist = (dx * dx + dy * dy).sqrt().max(EPS);
+            let f = (dist * dist) / k;
+            let ux = dx / dist;
+            let uy = dy / dist;
+            disp[v].0 -= ux * f;
+            disp[v].1 -= uy * f;
+            disp[u].0 += ux * f;
+            disp[u].1 += uy * f;
+        }
+
+        // Cap each node's displacement by the current temperature.
+        let t = t0 * (1.0 - (iter as f64) / (ITERS as f64));
+        for i in 0..n {
+            let (dx, dy) = disp[i];
+            let dlen = (dx * dx + dy * dy).sqrt().max(EPS);
+            let scale = dlen.min(t) / dlen;
+            pos[i].0 += dx * scale;
+            pos[i].1 += dy * scale;
+        }
     }
 
-    // Run simulation
-    // Use reasonable iteration count for stable layout
-    for _ in 0..500 {
-        simulation.update(0.035);
-    }
-
-    // Extract coordinates from simulation
-    let sim_graph = simulation.get_graph();
-    let mut coords = vec![(0.0, 0.0); n];
-
-    for i in 0..n {
-        let node_idx = node_indices[i];
-        let node = &sim_graph[node_idx];
-        coords[i] = (node.location.x as f64, node.location.y as f64);
-    }
-
-    Ok(coords)
+    Ok(pos)
 }
 
 #[cfg(test)]
