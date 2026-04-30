@@ -227,6 +227,31 @@ test_that("all_adjustment_sets_admg finds valid sets", {
   expect_true(any(sapply(sets, function(s) identical(s, "L"))))
 })
 
+test_that("M-bias collider at confounder admits no adjustment set (#277)", {
+  admg <- caugi(
+    C %-->% X + Y,
+    X %-->% Y,
+    C %<->% X,
+    C %<->% Y,
+    class = "ADMG",
+    simple = FALSE
+  )
+
+  # X <-> C <-> Y has a collider at C; conditioning on C opens it,
+  # while leaving Z empty leaves the directed back-door C -> Y open.
+  expect_false(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = NULL))
+  expect_false(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = "C"))
+
+  expect_identical(
+    all_adjustment_sets_admg(admg, X = "X", Y = "Y", minimal = TRUE),
+    list()
+  )
+  expect_identical(
+    all_adjustment_sets_admg(admg, X = "X", Y = "Y", minimal = FALSE),
+    list()
+  )
+})
+
 test_that("is_valid_adjustment_admg errors when X or Y is missing", {
   admg <- caugi(
     L %-->% X,

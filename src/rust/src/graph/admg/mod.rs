@@ -957,6 +957,35 @@ mod tests {
     }
 
     #[test]
+    fn admg_gac_m_bias_collider_at_confounder_has_no_valid_adjustment() {
+        // Regression for issue #277.
+        // Graph: C -> X, C <-> X, C -> Y, C <-> Y, X -> Y (3 nodes).
+        // Conditioning on C blocks the directed back-door path C -> Y, but the
+        // path X <-> C <-> Y has a collider at C, which conditioning opens.
+        // No subset of {C} is a valid adjustment set.
+        let (reg, dir, bid) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, false, &reg);
+        // 0:C, 1:X, 2:Y
+        b.add_edge(0, 1, dir).unwrap(); // C -> X
+        b.add_edge(0, 1, bid).unwrap(); // C <-> X
+        b.add_edge(0, 2, dir).unwrap(); // C -> Y
+        b.add_edge(0, 2, bid).unwrap(); // C <-> Y
+        b.add_edge(1, 2, dir).unwrap(); // X -> Y
+
+        let admg = Admg::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        // Empty set is invalid (back-door C -> Y is open).
+        assert!(!admg.is_valid_adjustment_set(&[1], &[2], &[]));
+
+        // {C} is invalid: it blocks C -> Y but opens the X <-> C <-> Y collider.
+        assert!(!admg.is_valid_adjustment_set(&[1], &[2], &[0]));
+
+        // No valid adjustment set exists.
+        let sets = admg.all_adjustment_sets(&[1], &[2], false, 5);
+        assert!(sets.is_empty());
+    }
+
+    #[test]
     fn admg_gac_bidirected_with_forbidden_descendant() {
         // Test with bidirected edges and forbidden descendants
         // Graph: X -> M -> Y, X <-> Y (latent confounding), M -> W

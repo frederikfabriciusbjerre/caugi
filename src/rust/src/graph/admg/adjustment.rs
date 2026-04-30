@@ -62,16 +62,19 @@ impl Admg {
 
     /// Validate whether Z is a valid adjustment set for estimating X → Y.
     ///
-    /// Uses the generalized adjustment criterion (GAC) for ADMGs:
+    /// Uses the generalized adjustment criterion (GAC) for ADMGs (Perković,
+    /// Textor, Kalisch, Maathuis 2018):
     /// 1. Z ∩ forb(X,Y) = ∅, where forb(X,Y) = De(cn(X,Y) \ Y) ∪ X
     ///    (Z must not contain any node in the forbidden set)
-    /// 2. All non-causal paths from X to Y are blocked by Z
+    /// 2. X and Y are m-separated by Z in the proper backdoor graph
+    ///    (G with the first edges of every proper causal path from X to Y
+    ///    removed).
     ///
     /// The forbidden set includes X, all nodes on proper causal paths from X to Y,
     /// and all descendants of those path nodes (except Y). Conditioning on forbidden
     /// nodes can block the causal effect or open spurious paths via collider bias.
     pub fn is_valid_adjustment_set(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> bool {
-        // Check condition 1: Z contains no forbidden nodes
+        // Condition 1: Z contains no forbidden nodes.
         let forbidden = self.forbidden_set(xs, ys);
         for &v in z {
             if forbidden[v as usize] {
@@ -79,35 +82,8 @@ impl Admg {
             }
         }
 
-        // Check condition 2: X and Y are m-separated given Z in the proper backdoor graph
-        // For ADMGs, we need to check m-separation while considering that:
-        // - Proper causal paths from X to Y should be "blocked"
-        // - Bidirected edges still create confounding paths
-
-        // Build the conditioning set: Z ∪ X (we condition on X to block causal paths)
-        let mut obs = Vec::with_capacity(z.len() + xs.len());
-        obs.extend_from_slice(z);
-        obs.extend_from_slice(xs);
-
-        // For each x ∈ X, check that all backdoor paths are blocked
-        // A backdoor path starts with an edge INTO x or a bidirected edge from x
-        for &x in xs {
-            // Check parents of x (backdoor through directed edges into x)
-            for &p in self.parents_of(x) {
-                if !self.m_separated(&[p], ys, &obs) {
-                    return false;
-                }
-            }
-
-            // Check spouses of x (backdoor through bidirected edges)
-            for &s in self.spouses_of(x) {
-                if !self.m_separated(&[s], ys, &obs) {
-                    return false;
-                }
-            }
-        }
-
-        true
+        // Condition 2: X ⊥_m Y | Z in the proper backdoor graph.
+        self.m_separated_pbg(xs, ys, z)
     }
 
     /// Simple parent-based adjustment set for ADMGs.

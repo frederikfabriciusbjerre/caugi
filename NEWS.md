@@ -20,6 +20,12 @@ but even on small graphs, queries are roughly 5x faster.
   `pa(v) ∪ sp(v)`, not just `pa(v)`. The old code missed moral edges from
   bidirected co-parents and gave false positives (e.g. claimed `Z ⊥ Y | X` for
   `Z -> X -> Y`, `X <-> Y`).
+- Fix `is_valid_adjustment_admg()` and `all_adjustment_sets_admg()` to verify
+  the GAC's m-separation condition in the proper backdoor graph rather than
+  via a per-neighbour decomposition. The old check trivially accepted neighbours
+  of `X` that were themselves in `Z`, so it falsely classified `{C}` as a valid
+  adjustment set in the M-bias ADMG `C -> X, C <-> X, C -> Y, C <-> Y, X -> Y`
+  (#277).
 
 # caugi 1.1.0
 

@@ -3,12 +3,47 @@
 
 use super::Admg;
 use crate::graph::alg::bitset;
+use std::collections::HashSet;
 
 impl Admg {
     /// Ancestors mask including the seeds themselves.
     /// `mask[v] == true` iff `v ∈ An(seeds) ∪ seeds`.
     pub(super) fn ancestors_mask(&self, seeds: &[u32]) -> Vec<bool> {
         bitset::ancestors_mask(seeds, |u| self.parents_of(u), self.n())
+    }
+
+    /// Ancestors mask in the graph obtained by deleting every directed edge
+    /// `(u → v)` in `removed_directed`.
+    fn ancestors_mask_filtered(
+        &self,
+        seeds: &[u32],
+        removed_directed: &HashSet<(u32, u32)>,
+    ) -> Vec<bool> {
+        let n = self.n() as usize;
+        let mut a = vec![false; n];
+        let mut st: Vec<u32> = Vec::new();
+        let push_parents = |u: u32, st: &mut Vec<u32>| {
+            for &p in self.parents_of(u) {
+                if !removed_directed.contains(&(p, u)) {
+                    st.push(p);
+                }
+            }
+        };
+        for &s in seeds {
+            if !a[s as usize] {
+                a[s as usize] = true;
+                push_parents(s, &mut st);
+            }
+        }
+        while let Some(u) = st.pop() {
+            let ui = u as usize;
+            if a[ui] {
+                continue;
+            }
+            a[ui] = true;
+            push_parents(u, &mut st);
+        }
+        a
     }
 
     /// Build a moral adjacency for m-separation in an ADMG.
@@ -19,6 +54,17 @@ impl Admg {
     ///    (i.e. every pair in `pa(v) ∪ sp(v)`)
     /// 3. Add bidirected edges as undirected edges
     fn moral_adj_admg(&self, mask: &[bool]) -> Vec<Vec<u32>> {
+        self.moral_adj_admg_filtered(mask, &HashSet::new())
+    }
+
+    /// Variant of [`moral_adj_admg`](Self::moral_adj_admg) that ignores every
+    /// directed edge `(u → v)` listed in `removed_directed`. Used to moralize
+    /// the proper backdoor graph without rebuilding the underlying CSR.
+    fn moral_adj_admg_filtered(
+        &self,
+        mask: &[bool],
+        removed_directed: &HashSet<(u32, u32)>,
+    ) -> Vec<Vec<u32>> {
         let n = self.n() as usize;
         let mut adj = vec![Vec::<u32>::new(); n];
 
@@ -27,9 +73,16 @@ impl Admg {
                 continue;
             }
 
+            // Effective directed parents (after deleting edges in `removed_directed`).
+            let pa: Vec<u32> = self
+                .parents_of(v)
+                .iter()
+                .copied()
+                .filter(|&u| !removed_directed.contains(&(u, v)))
+                .collect();
+
             // Connect with parents (as in standard moralization)
-            let pa = self.parents_of(v);
-            for &p in pa {
+            for &p in &pa {
                 if mask[p as usize] {
                     adj[v as usize].push(p);
                     adj[p as usize].push(v);
@@ -153,6 +206,52 @@ impl Admg {
         }
 
         // Check if xs can reach ys in the moral graph
+        !Self::reachable_in_moral(&adj, &mask, xs, &blocked, ys)
+    }
+
+    /// M-separation in the proper backdoor graph for `(xs, ys)`.
+    ///
+    /// The proper backdoor graph is `G` with the first edge of every proper
+    /// causal path from `xs` to `ys` removed. A proper causal path is a
+    /// directed path `x = v0 → v1 → ... → vk = y` whose internal nodes
+    /// `v1, …, vk` are not in `xs`. Equivalently, the deleted edges are
+    /// `x → v` with `x ∈ xs`, `v ∉ xs`, and `v ∈ An(ys) ∪ ys`.
+    ///
+    /// Returns `true` iff `xs ⊥_m ys | z` in that graph. Together with the
+    /// forbidden-set check, this is the second condition of the Generalized
+    /// Adjustment Criterion of Perković et al. (2018).
+    pub(super) fn m_separated_pbg(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> bool {
+        if xs.is_empty() || ys.is_empty() {
+            return true;
+        }
+
+        // First edges of proper causal paths from `xs` to `ys`.
+        let an_y = self.ancestors_mask(ys);
+        let x_set: HashSet<u32> = xs.iter().copied().collect();
+        let mut removed: HashSet<(u32, u32)> = HashSet::new();
+        for &x in xs {
+            for &v in self.children_of(x) {
+                if !x_set.contains(&v) && an_y[v as usize] {
+                    removed.insert((x, v));
+                }
+            }
+        }
+
+        // m-separation in the proper backdoor graph.
+        let mut seeds = xs.to_vec();
+        seeds.extend_from_slice(ys);
+        seeds.extend_from_slice(z);
+        seeds.sort_unstable();
+        seeds.dedup();
+
+        let mask = self.ancestors_mask_filtered(&seeds, &removed);
+        let adj = self.moral_adj_admg_filtered(&mask, &removed);
+
+        let mut blocked = vec![false; self.n() as usize];
+        for &v in z {
+            blocked[v as usize] = true;
+        }
+
         !Self::reachable_in_moral(&adj, &mask, xs, &blocked, ys)
     }
 }
