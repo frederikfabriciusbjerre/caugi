@@ -1,4 +1,6 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://caugi.org/dev/AGENTS.html</loc></url>
+<url><loc>https://caugi.org/dev/CLAUDE.html</loc></url>
 <url><loc>https://caugi.org/dev/CONTRIBUTING.html</loc></url>
 <url><loc>https://caugi.org/dev/LICENSE-text.html</loc></url>
 <url><loc>https://caugi.org/dev/LICENSE.html</loc></url>
@@ -10,7 +12,6 @@
 <url><loc>https://caugi.org/dev/articles/serialization.html</loc></url>
 <url><loc>https://caugi.org/dev/articles/visualization.html</loc></url>
 <url><loc>https://caugi.org/dev/authors.html</loc></url>
-<url><loc>https://caugi.org/dev/copilot-instructions.html</loc></url>
 <url><loc>https://caugi.org/dev/index.html</loc></url>
 <url><loc>https://caugi.org/dev/news/index.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.html</loc></url>
