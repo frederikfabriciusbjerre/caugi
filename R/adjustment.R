@@ -321,6 +321,12 @@ all_backdoor_sets <- function(
 #'   Machine Learning Research 115:637-647 Available from
 #'   <https://proceedings.mlr.press/v115/van-der-zander20a.html>.
 #'
+#' @references
+#' van der Zander, B. & Liśkiewicz, M. (2020). Finding Minimal d-separators in
+#' Linear Time and Applications. In \emph{Proceedings of the 35th Conference on
+#' Uncertainty in Artificial Intelligence (UAI 2020)}, PMLR 115:637--647.
+#' \url{https://proceedings.mlr.press/v115/van-der-zander20a.html}.
+#'
 #' @examples
 #' cg <- caugi(
 #'   A %-->% X,
