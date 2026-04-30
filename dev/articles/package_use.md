@@ -1,6 +1,7 @@
 # How to use caugi in a package
 
 ``` r
+
 library(caugi)
 set.seed(42)
 ```
@@ -14,9 +15,10 @@ Imagine that you want to build a causal discovery function that utilizes
 `caugi` for graph representation and manipulation. While seemingly not a
 very good idea, let’s pretend your algorithmic idea is to measure the
 correlation between variables and then draw causal conclusions based on
-this[¹](#fn1).
+this[^1].
 
 ``` r
+
 #' @title Correlation implies causation!
 #'
 #' @param df A `data.frame` with numeric columns
@@ -30,6 +32,7 @@ correlation_implies_causation <- function(df) {
 Let’s assume we have a named data frame:
 
 ``` r
+
 # create correlated data using MASS
 df <- MASS::mvrnorm(
   n = 100,
@@ -58,6 +61,7 @@ so we will create a graph of the `UNKNOWN` class. We can begin with
 that, as a start:
 
 ``` r
+
 #' @title Correlation implies causation!
 #'
 #' @param df A `data.frame` with numeric columns
@@ -75,6 +79,7 @@ We can now compute the correlation matrix and add edges based on some
 arbitrary threshold:
 
 ``` r
+
 #' @title Correlation implies causation!
 #'
 #' @param df A `data.frame` with numeric columns
@@ -105,9 +110,10 @@ Now, when you call `correlation_implies_causation(df)`, it will return a
 Let’s try it out!
 
 ``` r
+
 cg <- correlation_implies_causation(df)
 cg
-#> <caugi object; 3 nodes, 1 edges; simple: TRUE; session=0x563d42e79320>
+#> <caugi object; 3 nodes, 1 edges; simple: TRUE; session=0x55db707cefd0>
 #>   graph_class: UNKNOWN
 #>   nodes: V1, V2, V3
 #>   edges: V1-->V2
@@ -125,6 +131,7 @@ error. You would rather have it return a graph in any case, but if it
 *is* a DAG, then we return a DAG.
 
 ``` r
+
 #' @title Correlation implies causation!
 #'
 #' @param df A `data.frame` with numeric columns
@@ -155,9 +162,10 @@ Now, when you call `correlation_implies_causation(df)`, it will return a
 `caugi` graph that is a DAG if possible, otherwise an `"UNKNOWN"` graph.
 
 ``` r
+
 cg <- correlation_implies_causation(df)
 cg
-#> <caugi object; 3 nodes, 1 edges; simple: TRUE; session=0x563d40732910>
+#> <caugi object; 3 nodes, 1 edges; simple: TRUE; session=0x55db7193eb40>
 #>   graph_class: DAG
 #>   nodes: V1, V2, V3
 #>   edges: V1-->V2
@@ -170,6 +178,4 @@ cg@graph_class
 You have now successfully integrated `caugi` into your own R package
 function! Good luck and happy coding!
 
-------------------------------------------------------------------------
-
-1.  Note that correlation does not imply causation!
+[^1]: Note that correlation does not imply causation!

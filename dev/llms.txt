@@ -16,12 +16,14 @@ causality or if you are learning about causal graphs for the first time,
 You can install the development version of `caugi` from GitHub with:
 
 ``` r
+
 pak::pak("frederikfabriciusbjerre/caugi")
 ```
 
 or directly from CRAN with:
 
 ``` r
+
 install.packages("caugi")
 ```
 
@@ -39,6 +41,7 @@ A `caugi` graph object is the bread and butter of the `caugi` package.
 It is easy to create, query, and modify.
 
 ``` r
+
 library(caugi)
 ```
 
@@ -48,6 +51,7 @@ and `"UG"`. We plan on supporting several other causal graph types in
 future releases, such as `"PAG"`, `"MAG"`, and `"SWIG"`.
 
 ``` r
+
 # a tiny DAG
 cg <- caugi(
   A %-->% B + C,
@@ -79,6 +83,7 @@ if you want to represent a directed edge in the reverse direction, you
 can do so like this:
 
 ``` r
+
 register_caugi_edge(
   glyph = "<--",
   tail_mark = "arrow",

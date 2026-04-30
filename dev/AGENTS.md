@@ -209,6 +209,7 @@ Quick reference:
 ### Creating a caugi object
 
 ``` r
+
 cg <- caugi(
   A %-->% B + C,
   B %-->% D,
@@ -220,6 +221,7 @@ cg <- caugi(
 ### Querying graphs
 
 ``` r
+
 parents(cg, "D") # Get parents of node D
 ancestors(cg, "D") # Get all ancestors
 is_acyclic(cg) # Check if acyclic
@@ -228,6 +230,7 @@ is_acyclic(cg) # Check if acyclic
 ### Plotting graphs
 
 ``` r
+
 # Basic plotting with automatic layout selection
 plot(cg)
 
@@ -256,6 +259,7 @@ plot(
 ### Testing pattern
 
 ``` r
+
 test_that("feature description", {
   cg <- caugi(A %-->% B)
   result <- some_function(cg)

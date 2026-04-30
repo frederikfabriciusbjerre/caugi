@@ -1,6 +1,7 @@
 # caugi
 
 ``` r
+
 # load the package
 library(caugi)
 ```
@@ -16,13 +17,14 @@ with infix operators to define edges. Let’s create a directed acyclic
 graph (DAG) with 5 nodes and 5 edges.
 
 ``` r
+
 cg <- caugi(
   A %-->% B %-->% C + D,
   A %-->% C,
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x557aaabafe60>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x55a0f7ab2f50>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, A-->C, B-->C, B-->D
@@ -40,8 +42,9 @@ other *properties*. Let’s check the other properties.
 #### `session`
 
 ``` r
+
 cg@session
-#> <pointer: 0x557aaabafe60>
+#> <pointer: 0x55a0f7ab2f50>
 ```
 
 This is the session pointer to the Rust graph object that `caugi`
@@ -51,6 +54,7 @@ caching of graph operations internally.
 #### `simple`
 
 ``` r
+
 cg@simple
 #> [1] TRUE
 ```
@@ -59,6 +63,7 @@ This indicates whether the graph is *simple* or not. Let’s try to create
 a non-simple graph:
 
 ``` r
+
 caugi(A %-->% B, B %-->% A)
 #> Error in `rs_resolve_class()`:
 #> ! Parallel edges not allowed in simple graphs (A -> B)
@@ -71,6 +76,7 @@ classes only support `simple = TRUE` unless the class is `UNKNOWN`.
 #### `graph_class`
 
 ``` r
+
 cg@graph_class
 #> [1] "DAG"
 ```
@@ -84,6 +90,7 @@ in the package. Let’s try to find the descendants of all the parents of
 the node `C`:
 
 ``` r
+
 descendants(cg, parents(cg, "C"))
 #> $A
 #> [1] "B" "C" "D"
@@ -96,6 +103,7 @@ First note that the output is a list of named character vectors. How
 come? Since the parents of `C` is `c(A, B)`:
 
 ``` r
+
 parents(cg, "C")
 #> [1] "A" "B"
 ```
@@ -108,11 +116,12 @@ represents the descendants of that parent node.
 Let’s try to modify the graph from before, so we get a new DAG.
 
 ``` r
+
 cg_modified <- cg |>
   remove_edges(A %-->% B, B %-->% C + D) |>
   add_edges(B %-->% A, D %-->% C)
 cg_modified
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x557aafc74a00>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55a0f9efa020>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->C, B-->A, D-->C
@@ -129,6 +138,7 @@ adjustment identification distance (AID) and the structural Hamming
 distance (SHD):
 
 ``` r
+
 aid(cg, cg_modified)
 #> [1] 0.5833333
 shd(cg, cg_modified, normalized = TRUE)
@@ -160,8 +170,9 @@ to do with `caugi`.
 #### `session`
 
 ``` r
+
 cg@session
-#> <pointer: 0x557aaabafe60>
+#> <pointer: 0x55a0f7ab2f50>
 ```
 
 This is the Rust GraphSession pointer that holds the canonical graph

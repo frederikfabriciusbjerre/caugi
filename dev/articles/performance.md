@@ -23,7 +23,7 @@ contiguous slice of neighbor IDs with a pointer (offset) array that
 marks the start/end of each slice. This format is memory efficient for
 sparse graphs. The `caugi` graph object also stores important query
 information in the object, leading to parent, child, and neighbor
-queries being done in $\mathcal{O}(1)$. This yields a larger memory
+queries being done in $`\mathcal{O}(1)`$. This yields a larger memory
 footprint, but the trade-off is that queries are extremely fast.
 
 #### Mutation and lazy building
@@ -32,8 +32,8 @@ The `caugi` graph objects are expensive to build. This is the
 performance downside of using `caugi`. For each time we make a
 modification to a `caugi` graph object, we need to rebuild the graph
 completely since the graph object is immutable by design. This has
-complexity $\mathcal{O}\left( |V| + |E| \right)$, where $V$ is the
-vertex set and $E$ is the edge set.
+complexity $`\mathcal{O}(|V| + |E|)`$, where $`V`$ is the vertex set and
+$`E`$ is the edge set.
 
 However, the graph object will only be rebuilt when the user either
 calls [`build()`](https://caugi.org/dev/reference/build.md) directly or
@@ -55,14 +55,16 @@ while keeping the user experience smooth.
 #### Setup
 
 ``` r
+
 set.seed(42)
 ```
 
-We are limiting ourselves to comparing graphs up to size $n = 1000$, as
-the conversion to `bnlearn` and `dagitty` become prohibitively slow for
-larger graphs.
+We are limiting ourselves to comparing graphs up to size $`n = 1000`$,
+as the conversion to `bnlearn` and `dagitty` become prohibitively slow
+for larger graphs.
 
 ``` r
+
 generate_graphs <- function(n, p) {
   cg <- caugi::generate_graph(n = n, p = p, class = "DAG")
   ig <- caugi::as_igraph(cg)
@@ -78,6 +80,7 @@ generate_graphs <- function(n, p) {
 We start with parents/children:
 
 ``` r
+
 graphs <- generate_graphs(1000, p = 0.25) # dense graph
 cg <- graphs$cg
 ig <- graphs$ig
@@ -130,6 +133,7 @@ our benchmark over `n` and `p`. Note that we adjust `p` as a function of
 `n` to keep the graphs reasonably sparse.
 
 ``` r
+
 bm_parents_children_np <-
   bench::press(
     n = c(10, 100, 500, 1000, 5000, 10000),
@@ -190,6 +194,7 @@ packages by a several magnitudes, except for `igraph`, which it still
 beats, but by a smaller margin:
 
 ``` r
+
 bm_ancestors_descendants <- bench::mark(
   caugi = {
     caugi::ancestors(cg, "V500")
@@ -224,6 +229,7 @@ Using the graph from before, we obtain a valid adjustment set and then
 check for d-separation.
 
 ``` r
+
 valid_adjustment_set <- caugi::adjustment_set(
   cg,
   "V500",
@@ -246,6 +252,7 @@ valid_adjustment_set
 ```
 
 ``` r
+
 bm_dsep <- bench::mark(
   caugi = caugi::d_separated(cg, "V500", "V681", valid_adjustment_set),
   bnlearn = bnlearn::dsep(bng, "V500", "V681", valid_adjustment_set),
@@ -273,6 +280,7 @@ of that frontloaded work. Note that
 called on a graph that has already been built.
 
 ``` r
+
 subgraph_nodes_index <- sample.int(1000, 500)
 subgraph_nodes <- paste0("V", subgraph_nodes_index)
 
@@ -304,6 +312,7 @@ isolates subgraph building performance at scale without the conversion
 overhead of other packages.
 
 ``` r
+
 n_large <- 10000
 sub_frac <- 0.10
 sub_k <- as.integer(n_large * sub_frac)
@@ -335,6 +344,7 @@ plot(bm_subgraph_large_sparse)
 Subgraph extraction on a large sparse graph (n = 10000, p = 0.05).
 
 ``` r
+
 cg_large_dense <- caugi::generate_graph(n = n_large, p = 0.25, class = "DAG")
 caugi::build(cg_large_dense)
 ig_large_dense <- caugi::as_igraph(cg_large_dense)
@@ -367,6 +377,7 @@ for the result. `igraph` does still have a slight edge. \### Session
 info
 
 ``` r
+
 sessionInfo()
 #> R version 4.6.0 (2026-04-24)
 #> Platform: x86_64-pc-linux-gnu

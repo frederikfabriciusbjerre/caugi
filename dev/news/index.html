@@ -55,6 +55,11 @@
 <li>
 <code><a href="../reference/normalize_latent_structure.html">normalize_latent_structure()</a></code> is now implemented in Rust for DAGs for faster latent normalization workflows.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>Fix <code><a href="../reference/m_separated.html">m_separated()</a></code> on ADMGs: moralization now marries every pair in <code>pa(v) ∪ sp(v)</code>, not just <code>pa(v)</code>. The old code missed moral edges from bidirected co-parents and gave false positives (e.g. claimed <code>Z ⊥ Y | X</code> for <code>Z -&gt; X -&gt; Y</code>, <code>X &lt;-&gt; Y</code>).</li>
+<li>Fix <code><a href="../reference/is_valid_adjustment_admg.html">is_valid_adjustment_admg()</a></code> and <code><a href="../reference/all_adjustment_sets_admg.html">all_adjustment_sets_admg()</a></code> to verify the GAC’s m-separation condition in the proper backdoor graph rather than via a per-neighbour decomposition. The old check trivially accepted neighbours of <code>X</code> that were themselves in <code>Z</code>, so it falsely classified <code>{C}</code> as a valid adjustment set in the M-bias ADMG <code>C -&gt; X, C &lt;-&gt; X, C -&gt; Y, C &lt;-&gt; Y, X -&gt; Y</code> (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/277" class="external-link">#277</a>).</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="caugi-110">caugi 1.1.0<a class="anchor" aria-label="anchor" href="#caugi-110"></a></h2><p class="text-muted">CRAN release: 2026-03-20</p>

@@ -22,6 +22,24 @@
   is now implemented in Rust for DAGs for faster latent normalization
   workflows.
 
+### Bug Fixes
+
+- Fix [`m_separated()`](https://caugi.org/dev/reference/m_separated.md)
+  on ADMGs: moralization now marries every pair in `pa(v) ∪ sp(v)`, not
+  just `pa(v)`. The old code missed moral edges from bidirected
+  co-parents and gave false positives (e.g. claimed `Z ⊥ Y | X` for
+  `Z -> X -> Y`, `X <-> Y`).
+- Fix
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  and
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  to verify the GAC’s m-separation condition in the proper backdoor
+  graph rather than via a per-neighbour decomposition. The old check
+  trivially accepted neighbours of `X` that were themselves in `Z`, so
+  it falsely classified `{C}` as a valid adjustment set in the M-bias
+  ADMG `C -> X, C <-> X, C -> Y, C <-> Y, X -> Y`
+  ([\#277](https://github.com/frederikfabriciusbjerre/caugi/issues/277)).
+
 ## caugi 1.1.0
 
 CRAN release: 2026-03-20
