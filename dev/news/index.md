@@ -27,6 +27,14 @@
 - [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md)
   is now implemented in Rust for DAGs for faster latent normalization
   workflows.
+- [`minimal_d_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
+  is renamed to
+  [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
+  and now supports ADMG and AG inputs (previously DAG-only), returning a
+  minimal m-separator. Implemented via the unified linear-time algorithm
+  of van der Zander & Liśkiewicz (UAI 2020). The old name
+  [`minimal_d_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
+  remains as a deprecated alias.
 
 ### Bug Fixes
 
@@ -57,7 +65,7 @@ CRAN release: 2026-03-20
   which normalizes the latent structure of a DAG while preserving the
   marginal model over observed variables.
 - Add
-  [`minimal_d_separator()`](https://caugi.org/dev/reference/minimal_d_separator.md),
+  [`minimal_d_separator()`](https://caugi.org/dev/reference/minimal_separator.md),
   which computes a minimal d-separator between sets of nodes in a DAG,
   with support for mandatory inclusions and restrictions.
 - Add [`posteriors()`](https://caugi.org/dev/reference/posteriors.md)
