@@ -24,7 +24,7 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x55ae2fff5190>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x55a7e3995930>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, A-->C, B-->C, B-->D
@@ -44,7 +44,7 @@ other *properties*. Let’s check the other properties.
 ``` r
 
 cg@session
-#> <pointer: 0x55ae2fff5190>
+#> <pointer: 0x55a7e3995930>
 ```
 
 This is the session pointer to the Rust graph object that `caugi`
@@ -121,7 +121,7 @@ cg_modified <- cg |>
   remove_edges(A %-->% B, B %-->% C + D) |>
   add_edges(B %-->% A, D %-->% C)
 cg_modified
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55ae2ce647c0>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55a7e854e6f0>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->C, B-->A, D-->C
@@ -172,7 +172,7 @@ to do with `caugi`.
 ``` r
 
 cg@session
-#> <pointer: 0x55ae2fff5190>
+#> <pointer: 0x55a7e3995930>
 ```
 
 This is the Rust GraphSession pointer that holds the canonical graph

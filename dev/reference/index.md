@@ -304,6 +304,8 @@
   Compute Graph Layout
 - [`caugi_layout_bipartite()`](https://caugi.org/dev/reference/caugi_layout_bipartite.md)
   : Bipartite Graph Layout
+- [`caugi_layout_circle()`](https://caugi.org/dev/reference/caugi_layout_circle.md)
+  : Circle Layout
 - [`caugi_layout_fruchterman_reingold()`](https://caugi.org/dev/reference/caugi_layout_fruchterman_reingold.md)
   : Fruchterman-Reingold Force-Directed Layout
 - [`caugi_layout_kamada_kawai()`](https://caugi.org/dev/reference/caugi_layout_kamada_kawai.md)

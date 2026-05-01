@@ -39,8 +39,8 @@ Fruchterman-Reingold force-directed layout.
 
 ## Layout Algorithms
 
-The `caugi` package provides four layout algorithms, each optimized for
-different use cases.
+The `caugi` package provides several layout algorithms, each optimized
+for different use cases.
 
 ### Sugiyama (Hierarchical Layout)
 
@@ -266,6 +266,33 @@ sequences, hierarchical structures
 
 **Advantages:** Clear stage separation, flexible tier assignment,
 supports 2+ tiers, multiple input formats
+
+### Circle Layout
+
+The circle layout places nodes evenly along the perimeter of a circle.
+The first node is placed at the top and subsequent nodes proceed
+counter-clockwise. Edge structure is ignored, so the layout is the same
+for any graph with the same number of nodes.
+
+``` r
+
+cycle <- caugi(
+  A %-->% B,
+  B %-->% C,
+  C %-->% D,
+  D %-->% E,
+  E %-->% A
+)
+
+plot(cycle, layout = "circle", main = "Circle")
+```
+
+![](visualization_files/figure-html/circle-layout-1.png)
+
+**Best for:** Small graphs, cycle visualization, deterministic fallback
+when edge-based layouts are not informative
+
+**Limitations:** Produces many edge crossings on larger or denser graphs
 
 ### Comparing Layouts
 

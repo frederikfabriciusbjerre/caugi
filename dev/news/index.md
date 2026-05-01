@@ -5,6 +5,12 @@
 ### New Features
 
 - Add
+  [`caugi_layout_circle()`](https://caugi.org/dev/reference/caugi_layout_circle.md)
+  and a `"circle"` method for
+  [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md)
+  that places nodes evenly along the perimeter of a circle
+  ([\#108](https://github.com/frederikfabriciusbjerre/caugi/issues/108)).
+- Add
   [`list_caugi_edges()`](https://caugi.org/dev/reference/registry.md)
   function to list all available edge types.
 - Add first-class `"MPDAG"` graph class support across constructor,
