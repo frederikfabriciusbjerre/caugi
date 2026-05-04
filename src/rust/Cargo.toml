@@ -11,7 +11,7 @@ crate-type = [ 'staticlib' ]
 name = 'caugi'
 
 [dependencies]
-extendr-api = '0.8.1'
+extendr-api = '0.9.0'
 bitflags = '2.11.0'
 gadjid = { git = "https://github.com/CausalDisco/gadjid", package = 'gadjid', rev = '5b97028d4e943ce8a642d2b7bc1145f5435f619a', optional = true }
 rust-sugiyama = '0.4.0'

@@ -22,7 +22,7 @@ fn rint_to_u32(x: Rint, field: &str) -> u32 {
     if x.is_na() {
         throw_r_error(format!("NA in `{}`", field));
     }
-    let v = x.inner();
+    let v = x.0;
     if v < 0 {
         throw_r_error(format!(
             "`{}` must be >= 0. Note that the input number from R might have been subtracted with 1.",
@@ -35,7 +35,7 @@ fn rint_to_u8(x: Rint, field: &str) -> u8 {
     if x.is_na() {
         throw_r_error(format!("NA in `{}`", field));
     }
-    let v = x.inner();
+    let v = x.0;
     if !(0..=255).contains(&v) {
         throw_r_error(format!("`{}` must be in 0..=255", field));
     }
@@ -108,7 +108,7 @@ fn parse_parent_index0(index: Robj) -> Vec<i32> {
             if x.is_na() {
                 throw_r_error("`index` cannot contain NA values.");
             }
-            out.push(x.inner() - 1);
+            out.push(x.0 - 1);
         }
         return out;
     }
@@ -122,7 +122,7 @@ fn parse_parent_index0(index: Robj) -> Vec<i32> {
             if x.is_na() {
                 throw_r_error("`index` cannot contain NA values.");
             }
-            out.push((x.inner() - 1.0).trunc() as i32);
+            out.push((x.0 - 1.0).trunc() as i32);
         }
         return out;
     }
@@ -143,7 +143,7 @@ fn parse_subgraph_keep_index(index: Robj, n: u32) -> Vec<u32> {
             if x.is_na() {
                 throw_r_error("`index` cannot contain NA values.");
             }
-            let i = x.inner();
+            let i = x.0;
             if i < 1 || i > n_i32 {
                 throw_r_error("`index` out of range (1..n).");
             }
@@ -166,7 +166,7 @@ fn parse_subgraph_keep_index(index: Robj, n: u32) -> Vec<u32> {
             if x.is_na() {
                 throw_r_error("`index` cannot contain NA values.");
             }
-            let i = x.inner().trunc() as i32;
+            let i = x.0.trunc() as i32;
             if i < 1 || i > n_i32 {
                 throw_r_error("`index` out of range (1..n).");
             }
@@ -241,7 +241,7 @@ fn parse_neighbors_mode(mode: Robj) -> String {
     if raw.is_na() {
         throw_r_error("`mode` cannot contain NA values.");
     }
-    let mode_lc = raw.as_str().to_ascii_lowercase();
+    let mode_lc = raw.as_ref().to_ascii_lowercase();
 
     const CHOICES: [&str; 6] = ["all", "in", "out", "undirected", "bidirected", "partial"];
     if CHOICES.iter().any(|&m| m == mode_lc) {
@@ -272,7 +272,7 @@ fn parse_district_index1(index: Robj) -> Vec<i32> {
             if x.is_na() {
                 throw_r_error(err_msg);
             }
-            out.push(x.inner());
+            out.push(x.0);
         }
         return out;
     }
@@ -284,7 +284,7 @@ fn parse_district_index1(index: Robj) -> Vec<i32> {
             if x.is_na() {
                 throw_r_error(err_msg);
             }
-            out.push(x.inner().trunc() as i32);
+            out.push(x.0.trunc() as i32);
         }
         return out;
     }
@@ -487,7 +487,7 @@ fn edge_registry_code_of(reg: ExternalPtr<EdgeRegistry>, glyphs: Strings) -> Rob
     for g in glyphs.iter() {
         let code = reg
             .as_ref()
-            .code_of(g.as_str())
+            .code_of(g.as_ref())
             .unwrap_or_else(|e| throw_r_error(e.to_string()));
         out.push(code as i32);
     }
@@ -785,7 +785,10 @@ fn rs_write_caugi_file(
     tags: Nullable<Strings>,
 ) {
     let node_names_vec: Vec<String> = session.as_ref().names().to_vec();
-    let comment_opt = comment.into_option().map(|s| s.to_string());
+    let comment_opt = match comment {
+        Nullable::NotNull(s) => Some(s.to_string()),
+        Nullable::Null => None,
+    };
     let tags_opt = tags
         .into_option()
         .map(|strs| strs.iter().map(|s| s.to_string()).collect::<Vec<_>>());
@@ -813,7 +816,10 @@ fn rs_serialize_caugi(
     tags: Nullable<Strings>,
 ) -> String {
     let node_names_vec: Vec<String> = session.as_ref().names().to_vec();
-    let comment_opt = comment.into_option().map(|s| s.to_string());
+    let comment_opt = match comment {
+        Nullable::NotNull(s) => Some(s.to_string()),
+        Nullable::Null => None,
+    };
     let tags_opt = tags
         .into_option()
         .map(|strs| strs.iter().map(|s| s.to_string()).collect::<Vec<_>>());
@@ -1799,7 +1805,7 @@ fn subgraph(cg: Robj, nodes: Robj, index: Robj) -> Robj {
             if s.is_na() {
                 throw_r_error("`nodes` cannot contain NA values.");
             }
-            let name = s.as_str();
+            let name = s.as_ref();
             let idx = sref.index_of(name);
             match idx {
                 Some(idx) => {
@@ -1827,7 +1833,7 @@ fn subgraph(cg: Robj, nodes: Robj, index: Robj) -> Robj {
                 if s.is_na() {
                     continue;
                 }
-                let name = s.as_str();
+                let name = s.as_ref();
                 let missing = sref.index_of(name).is_none();
                 if missing && miss_seen.insert(name.to_string()) {
                     miss.push(name.to_string());
