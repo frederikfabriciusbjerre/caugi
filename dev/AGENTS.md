@@ -179,7 +179,7 @@ the user-facing API.
 
 ### Rust Dependencies
 
-- `extendr-api = "0.8.1"` - R bindings
+- `extendr-api = "0.9.0"` - R bindings
 - `bitflags = "2.9.3"` - Bitflag operations
 - `rust-sugiyama = "0.4.0"` - Sugiyama layout algorithm for graph
   visualization
