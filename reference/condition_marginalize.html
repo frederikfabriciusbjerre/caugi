@@ -41,7 +41,7 @@ bidirected, and undirected edges."><meta property="og:image" content="https://ca
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Marginalize and/or condition on variables in an ancestral graph (AG)</h1>
-      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/R/operations.R" class="external-link"><code>R/operations.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/v1.2.0/R/operations.R" class="external-link"><code>R/operations.R</code></a></small>
       <div class="d-none name"><code>condition_marginalize.Rd</code></div>
     </div>
 
@@ -105,12 +105,12 @@ Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">condition_marginalize</span><span class="op">(</span><span class="va">mg</span>, marg_vars <span class="op">=</span> <span class="st">"U"</span><span class="op">)</span> <span class="co"># ADMG</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55e775fb45a0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55c191898520&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: AG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, X, Y</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: A--&gt;X, B--&gt;Y, X&lt;-&gt;Y</span>
 <span class="r-in"><span><span class="fu">condition_marginalize</span><span class="op">(</span><span class="va">mg</span>, cond_vars <span class="op">=</span> <span class="st">"U"</span><span class="op">)</span> <span class="co"># DAG</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x55e77684d270&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x55c192712180&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: AG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, X, Y</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: A--&gt;X, B--&gt;Y</span>
