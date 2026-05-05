@@ -41,3 +41,4 @@
 ^\.pre-commit-config\.yaml$
 ^AGENTS\.md$
 ^CLAUDE\.md$
+^\.claude$
