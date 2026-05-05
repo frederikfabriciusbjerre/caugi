@@ -16,8 +16,11 @@ Deserialize
 Dor
 Erdős
 Exogenize
+FINDMINSEP
+FINDMINSEPINDAG
 Fabricius
 Fruchterman
+GAC's
 GraphML
 GraphSession
 Graphviz
@@ -35,8 +38,10 @@ PAG
 PAGs
 PDAG
 PDAGs
+PMLR
 PRs
 Pre
+RCG
 RL
 Reingold
 Rényi
@@ -69,11 +74,10 @@ extendr
 extensibility
 favicons
 formatter
-frontloading
+frontloaded
 frontloads
 ful
 gTree
-getter
 ggplot
 github
 graphviz
@@ -86,6 +90,8 @@ makeContent
 mathcal
 md
 natively
+neighbour
+neighbours
 parameterizing
 parentless
 performant
