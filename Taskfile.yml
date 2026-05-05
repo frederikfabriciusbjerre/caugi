@@ -1,23 +1,41 @@
 version: "3"
 
 tasks:
+  paper-examples:
+    dir: paper
+    desc: Generate PDF figures for the paper
+    sources:
+      - "paper/examples.R"
+    generates:
+      - "paper/figures/*.pdf"
+    cmds:
+      - Rscript examples.R
+
   paper-build:
     desc: Build JOSS paper locally
+    deps: [paper-examples]
+    dir: paper
+    sources:
+      - "paper/paper.md"
+      - "paper/paper.bib"
+      - "paper/examples.R"
+    generates:
+      - "paper/paper.pdf"
     cmds:
       - |
         docker run --rm \
-          --volume $PWD/paper:/data \
+          --volume $PWD:/data \
           --user $(id -u):$(id -g) \
           --env JOURNAL=joss \
           openjournals/inara
       - echo "Paper built!"
-      - echo "Watching for changes"
 
   paper-preview:
     watch: true
     sources:
       - "paper/paper.md"
       - "paper/paper.bib"
+      - "paper/examples.R"
     cmds:
       - task: paper-build
       - echo "Watching for changes"

@@ -18,7 +18,7 @@
 <article-id pub-id-type="publisher-id">0</article-id>
 <article-id pub-id-type="doi">N/A</article-id>
 <title-group>
-<article-title>caugi: a fast and flexible toolbox for causal graphs in
+<article-title>caugi: fast and flexible causal graphs in
 R</article-title>
 </title-group>
 <contrib-group>
@@ -72,10 +72,10 @@ Copenhagen, Denmark</institution>
 <author-notes>
 <corresp id="cor-1">* E-mail: <email></email></corresp>
 </author-notes>
-<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2017-08-13">
-<day>13</day>
-<month>8</month>
-<year>2017</year>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2026-05-11">
+<day>11</day>
+<month>5</month>
+<year>2026</year>
 </pub-date>
 <volume>¿VOL?</volume>
 <issue>¿ISSUE?</issue>
@@ -105,26 +105,684 @@ a Creative Commons Attribution 4.0 International License (CC BY
 <body>
 <sec id="summary">
   <title>Summary</title>
+  <p><monospace>caugi</monospace> is a fast and flexible toolbox for
+  causal graphs in <monospace>R</monospace>. It provides an intuitive
+  interface for defining, manipulating, and analyzing the graphs that
+  arise in causal inference and discovery, including directed acyclic
+  graphs (DAGs), partially directed acyclic graphs (PDAGs), acyclic
+  directed mixed graphs (ADMGs), and undirected graphs (UGs), each
+  represented as a dedicated class. The graph data structure is
+  implemented in <monospace>Rust</monospace>, using a compressed sparse
+  row (CSR) representation, giving query and traversal operations the
+  performance needed for high-dimensional and iterative workflows.
+  Alongside the core representation, <monospace>caugi</monospace>
+  implements a wide range of causal-graph algorithms, such as separation
+  tests, adjustment-set identification, and structural distance metrics,
+  together with a full-featured system for visualizing graphs.</p>
 </sec>
 <sec id="statement-of-need">
-  <title>Statement of need</title>
+  <title>Statement of Need</title>
+  <p>Graphs are fundamental in causality. It is the object by which
+  researchers conceptualize and communicate their models as well as the
+  practical tool that they use to perform inference and discovery. This
+  makes it crucial that there are software tools that allow researchers
+  to transfer their ideas into code and to perform their analyses
+  through an intuitive as well as efficient interface. The latter is
+  important because causal inference and discovery can be
+  computationally intensive, particularly in high-dimensional settings
+  and machine learning-based approaches where graphs are iteratively
+  updated and evaluated. <monospace>caugi</monospace> is designed to
+  meet these needs by providing a fast and flexible toolbox for causal
+  graphs in <monospace>R</monospace>.</p>
+  <p>The problem with many existing tools is that they</p>
+  <list list-type="order">
+    <list-item>
+      <label>1)</label>
+      <p>are not designed with causal graphs in mind and therefore lack
+      the necessary functionality and efficiency for causal inference
+      and discovery,</p>
+    </list-item>
+    <list-item>
+      <label>2)</label>
+      <p>are not built with performance in mind and therefore struggle
+      with larger graphs, or</p>
+    </list-item>
+    <list-item>
+      <label>3)</label>
+      <p>lack an intuitive interface, for instance requiring users to
+      define graphs through adjacency matrices or edge lists, which can
+      be cumbersome and error-prone.</p>
+    </list-item>
+  </list>
+  <p><monospace>caugi</monospace> addresses these issues with an
+  efficient graph representation, a broad set of algorithms for causal
+  inference and discovery, and an interface built around infix edge
+  operators.</p>
 </sec>
 <sec id="state-of-the-field">
-  <title>State of the field</title>
+  <title>State of the Field</title>
+  <p>Graph packages in high-level langauges suc has
+  <monospace>R</monospace> and <monospace>Python</monospace> span a wide
+  range of scopes, from general-purpose graph libraries to specialised
+  causal-inference toolkits.
+  <xref alt="Table 1" rid="tabU003Apackages-comparison">Table 1</xref>
+  illustrates where <monospace>caugi</monospace> sits in this landscape;
+  a full feature-by-feature comparison, covering supported graph
+  classes, graph queries, causal-inference algorithms, and I/O and
+  performance benchmarks against the most widely used alternatives are
+  reported in the package’s online documentation at
+  <ext-link ext-link-type="uri" xlink:href="https://caugi.org">caugi.org</ext-link>.</p>
+  <table-wrap>
+    <caption>
+      <p>Description of the scope and features of
+      <monospace>caugi</monospace> compared to other graph packages in
+      <monospace>R</monospace>, <monospace>Python</monospace>, and
+      <monospace>Java</monospace>. The table is not exhaustive but
+      serves to illustrate the landscape of graph packages and where
+      <monospace>caugi</monospace> fits within
+      it.<styled-content id="tabU003Apackages-comparison"></styled-content></p>
+    </caption>
+    <table>
+      <colgroup>
+        <col width="15%" />
+        <col width="12%" />
+        <col width="23%" />
+        <col width="49%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th align="left">Package</th>
+          <th align="left">Language</th>
+          <th align="left">Scope</th>
+          <th align="left">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left"><monospace>caugi</monospace></td>
+          <td align="left"><monospace>R</monospace> +
+          <monospace>Rust</monospace></td>
+          <td align="left">Causal graphs</td>
+          <td align="left">Rust-backed CSR storage; typed
+          DAG/PDAG/ADMG/UG classes; infix DSL</td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>igraph</monospace></td>
+          <td align="left"><monospace>R</monospace>/<monospace>Py</monospace>
+          + <monospace>C</monospace></td>
+          <td align="left">General-purpose</td>
+          <td align="left">C-backed graph engine; no causal-typed graph
+          classes</td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>bnlearn</monospace></td>
+          <td align="left"><monospace>R</monospace> +
+          <monospace>C</monospace></td>
+          <td align="left">Bayesian networks</td>
+          <td align="left">Single <monospace>bn</monospace> class for
+          all graph types; full inference/learning stack</td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>pcalg</monospace></td>
+          <td align="left"><monospace>R</monospace> +
+          <monospace>C++</monospace></td>
+          <td align="left">Causal discovery</td>
+          <td align="left">Algorithm-first; causal graphs surfaced as
+          untyped result objects</td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>dagitty</monospace></td>
+          <td align="left"><monospace>R</monospace> +
+          <monospace>JS</monospace></td>
+          <td align="left">Causal graphs</td>
+          <td align="left">DAG/PDAG/MAG/PAG via JS engine; lacks UG and
+          ADMG classes</td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>MixedGraphs</monospace></td>
+          <td align="left"><monospace>R</monospace> +
+          <monospace>C++</monospace></td>
+          <td align="left">Mixed/ancestral graphs</td>
+          <td align="left">Untyped <monospace>mixedgraph</monospace>
+          container built via a string DSL
+          (<monospace>graphCr</monospace>)</td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>NetworkX</monospace></td>
+          <td align="left"><monospace>Python</monospace></td>
+          <td align="left">General-purpose</td>
+          <td align="left">Dict-of-dicts adjacency; no mixed-edge or
+          causal-typed classes</td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>pgmpy</monospace></td>
+          <td align="left"><monospace>Python</monospace></td>
+          <td align="left">Probabilistic graphical models</td>
+          <td align="left">Typed DAG/PDAG/ADMG/MAG inheriting from
+          <monospace>NetworkX</monospace> classes</td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>Tetrad</monospace></td>
+          <td align="left"><monospace>Java</monospace></td>
+          <td align="left">Causal modeling &amp; discovery</td>
+          <td align="left">Universal
+          <monospace>EdgeListGraph</monospace> container; broad
+          algorithm suite</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Canonical citations, source-code locations, and project websites
+  for the packages above are listed in
+  <xref alt="Table 2" rid="tabU003Apackages-citations">Table 2</xref>. A
+  dash indicates that no separate URL of that kind exists for the
+  package.</p>
+  <table-wrap>
+    <caption>
+      <p>Canonical citations, source-code locations, and project
+      websites for the graph packages mentioned in the previous
+      table.<styled-content id="tabU003Apackages-citations"></styled-content></p>
+    </caption>
+    <table>
+      <colgroup>
+        <col width="14%" />
+        <col width="14%" />
+        <col width="31%" />
+        <col width="40%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th align="left">Package</th>
+          <th align="left">Citation</th>
+          <th align="left">Source Code</th>
+          <th align="left">Project Site</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left"><monospace>igraph</monospace></td>
+          <td align="left">Csárdi &amp; Nepusz
+          (<xref alt="2006" rid="ref-csardi2006" ref-type="bibr">2006</xref>);
+          Antonov et al.
+          (<xref alt="2023" rid="ref-antonov2023" ref-type="bibr">2023</xref>)</td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://github.com/igraph/rigraph">github.com/igraph/rigraph</ext-link></td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://r.igraph.org">r.igraph.org</ext-link></td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>bnlearn</monospace></td>
+          <td align="left">Scutari
+          (<xref alt="2010" rid="ref-scutari2010" ref-type="bibr">2010</xref>)</td>
+          <td align="left"></td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://www.bnlearn.com">bnlearn.com</ext-link></td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>pcalg</monospace></td>
+          <td align="left">Kalisch et al.
+          (<xref alt="2012" rid="ref-kalisch2012" ref-type="bibr">2012</xref>)</td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://pcalg.r-forge.r-project.org">pcalg.r-forge.r-project.org</ext-link></td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://CRAN.R-project.org/package=pcalg">CRAN.R-project.org/package=pcalg</ext-link></td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>dagitty</monospace></td>
+          <td align="left">Textor et al.
+          (<xref alt="2016" rid="ref-textor2016" ref-type="bibr">2016</xref>)</td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://github.com/jtextor/dagitty">github.com/jtextor/dagitty</ext-link></td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://www.dagitty.net">dagitty.net</ext-link></td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>MixedGraphs</monospace></td>
+          <td align="left">Evans
+          (<xref alt="2016/2025" rid="ref-evans2025" ref-type="bibr">2016/2025</xref>)</td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://github.com/rje42/MixedGraphs">github.com/rje42/MixedGraphs</ext-link></td>
+          <td align="left"></td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>NetworkX</monospace></td>
+          <td align="left">Hagberg et al.
+          (<xref alt="2008" rid="ref-hagberg2008" ref-type="bibr">2008</xref>)</td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://github.com/networkx/networkx">github.com/networkx/networkx</ext-link></td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://networkx.org">networkx.org</ext-link></td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>pgmpy</monospace></td>
+          <td align="left">Ankan &amp; Textor
+          (<xref alt="2024" rid="ref-ankan2024" ref-type="bibr">2024</xref>)</td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://github.com/pgmpy/pgmpy">github.com/pgmpy/pgmpy</ext-link></td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://pgmpy.org">pgmpy.org</ext-link></td>
+        </tr>
+        <tr>
+          <td align="left"><monospace>Tetrad</monospace></td>
+          <td align="left">Scheines et al.
+          (<xref alt="1998" rid="ref-scheines1998" ref-type="bibr">1998</xref>)</td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://github.com/cmu-phil/tetrad">github.com/cmu-phil/tetrad</ext-link></td>
+          <td align="left"><ext-link ext-link-type="uri" xlink:href="https://www.cmu.edu/dietrich/philosophy/tetrad/">cmu.edu/dietrich/philosophy/tetrad</ext-link></td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+  <p>Three features distinguish <monospace>caugi</monospace> from the
+  packages above:</p>
+  <list list-type="order">
+    <list-item>
+      <label>1)</label>
+      <p>dedicated causal-graph classes (DAG, PDAG, ADMG, UG) with
+      type-level invariants,</p>
+    </list-item>
+    <list-item>
+      <label>2)</label>
+      <p>a <monospace>Rust</monospace> backend that combines speed with
+      memory safety, and</p>
+    </list-item>
+    <list-item>
+      <label>3)</label>
+      <p>an interface based on infix edge operators rather than
+      adjacency matrices, arc lists, or string DSLs.</p>
+    </list-item>
+  </list>
+  <p>None of the packages we surveyed combines all three.</p>
 </sec>
 <sec id="software-design">
-  <title>Software design</title>
+  <title>Software Design</title>
+  <p><monospace>caugi</monospace> is an <monospace>R</monospace> package
+  with a core written in <monospace>Rust</monospace>, exposed to
+  <monospace>R</monospace> via the <monospace>extendr</monospace>
+  framework (<xref alt="Reimert et al., 2024" rid="ref-reimert2024" ref-type="bibr">Reimert
+  et al., 2024</xref>). This combines a familiar
+  <monospace>R</monospace> interface for working with causal graphs with
+  the performance and memory safety of <monospace>Rust</monospace>.</p>
+  <p>The graph implementation is based on a compressed sparse row (CSR)
+  format. Causal-graph packages in <monospace>R</monospace> more
+  commonly use adjacency matrices (as in <monospace>pcalg</monospace>,
+  <monospace>ggm</monospace>, and <monospace>dagitty</monospace>) or arc
+  lists (as in <monospace>bnlearn</monospace>). Both alternatives have
+  their strengths, but the CSR format scales memory proportionally to
+  the number of edges and is particularly well-suited for the operations
+  that dominate causal inference and discovery, such as iterating over
+  the neighbors of a node or traversing the graph.</p>
+  <p>The CSR layout makes queries fast but mutations expensive: any
+  structural change in principle requires rebuilding the index. To avoid
+  penalizing iterative workflows, <monospace>caugi</monospace> adopts a
+  <italic>lazy build</italic> strategy. Mutations are batched on the
+  <monospace>R</monospace> side as a pending edit and the underlying
+  graph is rebuilt only when needed: either when the user explicitly
+  calls <monospace>build()</monospace>, or when a query is issued
+  against the graph. Each rebuild is <inline-formula><alternatives>
+  <tex-math><![CDATA[\mathcal{O}(|V| + |E|)]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>𝒪</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mi>V</mml:mi><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo>+</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mi>E</mml:mi><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
+  so the cost of mutation is spread across a batch of edits. Graphs
+  <italic>appear</italic> mutable from the user’s perspective, while
+  remaining immutable internally and always consistent when queried.</p>
+</sec>
+<sec id="examples">
+  <title>Examples</title>
+  <p>You create a <monospace>caugi</monospace> graph object through the
+  <monospace>caugi()</monospace> function, which uses infix operators to
+  define edges. For instance, the following code creates a simple
+  directed acyclic graph (DAG) with four nodes and four edges, encoding
+  a typical confounding structure in which <monospace>Z</monospace> is a
+  common cause of treatment <monospace>X</monospace> and outcome
+  <monospace>Y</monospace>, with <monospace>M</monospace> mediating part
+  of the effect of <monospace>X</monospace> on
+  <monospace>Y</monospace>:</p>
+  <code language="r script">library(caugi)
+
+cg &lt;- caugi(
+  Z %--&gt;% X + Y,
+  X %--&gt;% M %--&gt;% Y,
+  class = &quot;DAG&quot;
+)
+
+cg
+#&gt; &lt;caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x575d4d1dc720&gt;
+#&gt;   graph_class: DAG
+#&gt;   nodes: Z, X, Y, M
+#&gt;   edges: Z--&gt;X, Z--&gt;Y, X--&gt;M, M--&gt;Y</code>
+  <p>In the example above, <monospace>Z %--&gt;% X</monospace> creates
+  the edge <monospace>--&gt;</monospace> from <monospace>Z</monospace>
+  to <monospace>X</monospace>. The syntax
+  <monospace>Z %--&gt;% X + Y</monospace> is equivalent to
+  <monospace>Z %--&gt;% X</monospace> <italic>and</italic>
+  <monospace>Z %--&gt;% Y</monospace>, and
+  <monospace>X %--&gt;% M %--&gt;% Y</monospace> chains two edges. To
+  visualize the graph, you can simply call <monospace>plot()</monospace>
+  on the graph object, with the result shown in
+  <xref alt="[fig:example-plot]" rid="figU003Aexample-plot">[fig:example-plot]</xref>.</p>
+  <code language="r script">plot(cg)</code>
+  <fig>
+    <caption><p>A simple DAG built with <monospace>caugi</monospace>.
+    <styled-content id="figU003Aexample-plot"></styled-content></p></caption>
+    <graphic mimetype="application" mime-subtype="pdf" xlink:href="example-plot.pdf" />
+  </fig>
+  <p><monospace>caugi</monospace> supports a wide range of queries and
+  algorithms that operate directly on the graph object. For instance, to
+  identify a valid back-door adjustment set for estimating the causal
+  effect of <monospace>X</monospace> on <monospace>Y</monospace>, we can
+  use <monospace>adjustment_set()</monospace>:</p>
+  <code language="r script">adjustment_set(cg, &quot;X&quot;, &quot;Y&quot;, type = &quot;backdoor&quot;)
+#&gt; [1] &quot;Z&quot;</code>
+  <p>The set <monospace>{Z}</monospace> blocks the back-door path
+  <monospace>X &lt;-- Z --&gt; Y</monospace> without conditioning on the
+  mediator <monospace>M</monospace>, which would otherwise block part of
+  the causal effect we wish to estimate.</p>
 </sec>
 <sec id="research-impact-statement">
-  <title>Research impact statement</title>
+  <title>Research Impact Statement</title>
+  <p><monospace>caugi</monospace> provides the underlying graph
+  representation for two downstream <monospace>R</monospace> packages:
+  <monospace>CausalDisco</monospace> (<xref alt="Kristensen et al., 2026" rid="ref-kristensen2026" ref-type="bibr">Kristensen
+  et al., 2026</xref>), a CRAN-released toolbox for causal discovery on
+  observational data, and
+  <monospace>meraconstraints</monospace> (<xref alt="M. Sachs, 2025/2026" rid="ref-sachs2026b" ref-type="bibr">M.
+  Sachs, 2025/2026</xref>), which derives complete equality constraints
+  in hidden-variable causal models and underpins recent methodological
+  work by M. C. Sachs et al.
+  (<xref alt="2026" rid="ref-sachs2026" ref-type="bibr">2026</xref>).<xref ref-type="fn" rid="fn1">1</xref>
+  The package also ships with a versioned public API, a test suite under
+  continuous integration, a JSON serialization schema for
+  interoperability with external tools, and a performance vignette
+  benchmarking <monospace>caugi</monospace> against widely used
+  alternatives in <monospace>R</monospace>,
+  <monospace>Python</monospace>, and <monospace>Java</monospace>. All of
+  these materials are available at
+  <ext-link ext-link-type="uri" xlink:href="https://caugi.org">caugi.org</ext-link>.</p>
 </sec>
 <sec id="ai-usage-disclosure">
-  <title>AI usage disclosure</title>
+  <title>AI Usage Disclosure</title>
+  <p>The codebase was originally written without the use of AI tools.
+  Since then, however, we have used AI tools for a variety of purposes,
+  including</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>reviewing pull requests,</p>
+    </list-item>
+    <list-item>
+      <p>writing algorithms from pseudocode specifications and manual
+      guidance,</p>
+    </list-item>
+    <list-item>
+      <p>writing unit tests,</p>
+    </list-item>
+    <list-item>
+      <p>triaging and fixing bugs, and</p>
+    </list-item>
+    <list-item>
+      <p>refactoring code.</p>
+    </list-item>
+  </list>
 </sec>
 <sec id="acknowledgements">
   <title>Acknowledgements</title>
+  <p>The majority of algorithms in <monospace>caugi</monospace> have
+  been implemented from scratch, but we also rely on some external
+  libraries, including
+  <monospace>gadjid</monospace> (<xref alt="Henckel et al., 2024" rid="ref-henckel2024" ref-type="bibr">Henckel
+  et al., 2024</xref>) for the adjustment identification distance
+  metric.</p>
 </sec>
 </body>
 <back>
+<ref-list>
+  <title></title>
+  <ref id="ref-ankan2024">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Ankan</surname><given-names>Ankur</given-names></name>
+        <name><surname>Textor</surname><given-names>Johannes</given-names></name>
+      </person-group>
+      <article-title>pgmpy: A Python toolkit for Bayesian networks</article-title>
+      <source>Journal Of Machine Learning Research</source>
+      <year iso-8601-date="2024">2024</year>
+      <volume>25</volume>
+      <issue>265</issue>
+      <uri>http://jmlr.org/papers/v25/23-0487.html</uri>
+      <fpage>1</fpage>
+      <lpage>8</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-antonov2023">
+    <element-citation publication-type="webpage">
+      <person-group person-group-type="author">
+        <name><surname>Antonov</surname><given-names>Michael</given-names></name>
+        <name><surname>Csárdi</surname><given-names>Gábor</given-names></name>
+        <name><surname>Horvát</surname><given-names>Szabolcs</given-names></name>
+        <name><surname>Müller</surname><given-names>Kirill</given-names></name>
+        <name><surname>Nepusz</surname><given-names>Tamás</given-names></name>
+        <name><surname>Noom</surname><given-names>Daniel</given-names></name>
+        <name><surname>Salmon</surname><given-names>Maëlle</given-names></name>
+        <name><surname>Traag</surname><given-names>Vincent</given-names></name>
+        <name><surname>Welles</surname><given-names>Brooke Foucault</given-names></name>
+        <name><surname>Zanini</surname><given-names>Fabio</given-names></name>
+      </person-group>
+      <article-title>igraph enables fast and robust network analysis across programming languages</article-title>
+      <year iso-8601-date="2023-11-17">2023</year><month>11</month><day>17</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-05">2026</year><month>05</month><day>05</day></date-in-citation>
+      <uri>http://arxiv.org/abs/2311.10260</uri>
+      <pub-id pub-id-type="doi">10.48550/arXiv.2311.10260</pub-id>
+    </element-citation>
+  </ref>
+  <ref id="ref-csardi2006">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Csárdi</surname><given-names>Gábor</given-names></name>
+        <name><surname>Nepusz</surname><given-names>Tamás</given-names></name>
+      </person-group>
+      <article-title>The igraph software package for complex network research</article-title>
+      <source>InterJournal</source>
+      <year iso-8601-date="2006-11">2006</year><month>11</month>
+      <volume>Complex Systems</volume>
+      <uri>https://igraph.org</uri>
+      <fpage>1695</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-evans2025">
+    <element-citation publication-type="software">
+      <person-group person-group-type="author">
+        <name><surname>Evans</surname><given-names>Robin</given-names></name>
+      </person-group>
+      <article-title>MixedGraphs</article-title>
+      <year iso-8601-date="2025-09-08">2025</year><month>09</month><day>08</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-05">2026</year><month>05</month><day>05</day></date-in-citation>
+      <uri>https://github.com/rje42/MixedGraphs</uri>
+    </element-citation>
+  </ref>
+  <ref id="ref-hagberg2008">
+    <element-citation publication-type="paper-conference">
+      <person-group person-group-type="author">
+        <name><surname>Hagberg</surname><given-names>Aric A.</given-names></name>
+        <name><surname>Schult</surname><given-names>Daniel A.</given-names></name>
+        <name><surname>Swart</surname><given-names>Pieter J.</given-names></name>
+      </person-group>
+      <article-title>Exploring network structure, dynamics, and function using NetworkX</article-title>
+      <source>Proceedings of the 7th Python in Science Conference</source>
+      <person-group person-group-type="editor">
+        <name><surname>Varoquaux</surname><given-names>Gaël</given-names></name>
+        <name><surname>Vaught</surname><given-names>Travis</given-names></name>
+        <name><surname>Millman</surname><given-names>Jarrod</given-names></name>
+      </person-group>
+      <publisher-name>SciPy</publisher-name>
+      <publisher-loc>Online</publisher-loc>
+      <year iso-8601-date="2008-08-19">2008</year><month>08</month><day>19</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-05">2026</year><month>05</month><day>05</day></date-in-citation>
+      <uri>https://proceedings.scipy.org/articles/TCWV9851</uri>
+      <pub-id pub-id-type="doi">10.25080/TCWV9851</pub-id>
+      <fpage>11</fpage>
+      <lpage>15</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-kalisch2012">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Kalisch</surname><given-names>Markus</given-names></name>
+        <name><surname>Mächler</surname><given-names>Martin</given-names></name>
+        <name><surname>Colombo</surname><given-names>Diego</given-names></name>
+        <name><surname>Maathuis</surname><given-names>Marloes H.</given-names></name>
+        <name><surname>Bühlmann</surname><given-names>Peter</given-names></name>
+      </person-group>
+      <article-title>Causal inference using graphical models with the R package pcalg</article-title>
+      <source>Journal of Statistical Software</source>
+      <year iso-8601-date="2012-05-17">2012</year><month>05</month><day>17</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-05">2026</year><month>05</month><day>05</day></date-in-citation>
+      <volume>47</volume>
+      <issn>1548-7660</issn>
+      <uri>https://doi.org/10.18637/jss.v047.i11</uri>
+      <pub-id pub-id-type="doi">10.18637/jss.v047.i11</pub-id>
+      <fpage>1</fpage>
+      <lpage>26</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-scheines1998">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Scheines</surname><given-names>Richard</given-names></name>
+        <name><surname>Spirtes</surname><given-names>Peter</given-names></name>
+        <name><surname>Glymour</surname><given-names>Clark</given-names></name>
+        <name><surname>Meek</surname><given-names>Christopher</given-names></name>
+        <name><surname>Richardson</surname><given-names>Thomas</given-names></name>
+      </person-group>
+      <article-title>The TETRAD project: Constraint based aids to causal model specification</article-title>
+      <source>Multivariate Behavioral Research</source>
+      <publisher-name>Routledge</publisher-name>
+      <year iso-8601-date="1998-01-01">1998</year><month>01</month><day>01</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-11">2026</year><month>05</month><day>11</day></date-in-citation>
+      <volume>33</volume>
+      <issue>1</issue>
+      <issn>0027-3171</issn>
+      <uri>https://doi.org/10.1207/s15327906mbr3301\%5F3</uri>
+      <pub-id pub-id-type="doi">10.1207/s15327906mbr3301_3</pub-id>
+      <fpage>65</fpage>
+      <lpage>117</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-scutari2010">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Scutari</surname><given-names>Marco</given-names></name>
+      </person-group>
+      <article-title>Learning Bayesian networks with the bnlearn R package</article-title>
+      <source>Journal of Statistical Software</source>
+      <year iso-8601-date="2010-07-16">2010</year><month>07</month><day>16</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-05">2026</year><month>05</month><day>05</day></date-in-citation>
+      <volume>35</volume>
+      <issue>3</issue>
+      <issn>1548-7660</issn>
+      <uri>https://doi.org/10.18637/jss.v035.i03</uri>
+      <pub-id pub-id-type="doi">10.18637/jss.v035.i03</pub-id>
+      <fpage>1</fpage>
+      <lpage>22</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-textor2016">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Textor</surname><given-names>Johannes</given-names></name>
+        <name><surname>van der Zander</surname><given-names>Benito</given-names></name>
+        <name><surname>Gilthorpe</surname><given-names>Mark S</given-names></name>
+        <name><surname>Liśkiewicz</surname><given-names>Maciej</given-names></name>
+        <name><surname>Ellison</surname><given-names>George TH</given-names></name>
+      </person-group>
+      <article-title>Robust causal inference using directed acyclic graphs: The R package ‘Dagitty’</article-title>
+      <source>International Journal of Epidemiology</source>
+      <year iso-8601-date="2016-12-01">2016</year><month>12</month><day>01</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-05">2026</year><month>05</month><day>05</day></date-in-citation>
+      <volume>45</volume>
+      <issue>6</issue>
+      <issn>0300-5771</issn>
+      <uri>https://doi.org/10.1093/ije/dyw341</uri>
+      <pub-id pub-id-type="doi">10.1093/ije/dyw341</pub-id>
+      <fpage>1887</fpage>
+      <lpage>1894</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-reimert2024">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Reimert</surname><given-names>Mossa Merhi</given-names></name>
+        <name><surname>Parry</surname><given-names>Josiah D.</given-names></name>
+        <name><surname>Denwood</surname><given-names>Matt</given-names></name>
+        <name><surname>Gussmann</surname><given-names>Maya Katrin</given-names></name>
+        <name><surname>Wilke</surname><given-names>Claus O.</given-names></name>
+        <name><surname>Kosenkov</surname><given-names>Ilia</given-names></name>
+        <name><surname>Milton</surname><given-names>Michael</given-names></name>
+        <name><surname>Thomason</surname><given-names>Amy</given-names></name>
+      </person-group>
+      <article-title>extendr: Frictionless bindings for R and Rust</article-title>
+      <source>Journal of Open Source Software</source>
+      <year iso-8601-date="2024-07-01">2024</year><month>07</month><day>01</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-05">2026</year><month>05</month><day>05</day></date-in-citation>
+      <volume>9</volume>
+      <issue>99</issue>
+      <issn>2475-9066</issn>
+      <uri>https://joss.theoj.org/papers/10.21105/joss.06394</uri>
+      <pub-id pub-id-type="doi">10.21105/joss.06394</pub-id>
+      <fpage>6394</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-kristensen2026">
+    <element-citation publication-type="software">
+      <person-group person-group-type="author">
+        <name><surname>Kristensen</surname><given-names>Bjarke Hautop</given-names></name>
+        <name><surname>Fabricius-Bjerre</surname><given-names>Frederik</given-names></name>
+        <name><surname>Petersen</surname><given-names>Anne Helby</given-names></name>
+        <name><surname>Ekstrøm</surname><given-names>Claus Thorn</given-names></name>
+        <name><surname>Larsen</surname><given-names>Tobias Ellegaard</given-names></name>
+      </person-group>
+      <article-title>causalDisco: Tools for causal discovery on observational data</article-title>
+      <year iso-8601-date="2026-04-13">2026</year><month>04</month><day>13</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-06">2026</year><month>05</month><day>06</day></date-in-citation>
+      <uri>https://cran.r-project.org/web/packages/causalDisco/index.html</uri>
+    </element-citation>
+  </ref>
+  <ref id="ref-sachs2026">
+    <element-citation publication-type="webpage">
+      <person-group person-group-type="author">
+        <name><surname>Sachs</surname><given-names>Michael C.</given-names></name>
+        <name><surname>Gabriel</surname><given-names>Erin E.</given-names></name>
+        <name><surname>Evans</surname><given-names>Robin J.</given-names></name>
+        <name><surname>Sjölander</surname><given-names>Arvid</given-names></name>
+      </person-group>
+      <article-title>Deriving complete constraints in hidden variable models</article-title>
+      <year iso-8601-date="2026-01-16">2026</year><month>01</month><day>16</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-06">2026</year><month>05</month><day>06</day></date-in-citation>
+      <uri>https://arxiv.org/abs/2601.11242v2</uri>
+      <pub-id pub-id-type="doi">10.48550/arXiv.2601.11242</pub-id>
+    </element-citation>
+  </ref>
+  <ref id="ref-sachs2026b">
+    <element-citation publication-type="software">
+      <person-group person-group-type="author">
+        <name><surname>Sachs</surname><given-names>Michael</given-names></name>
+      </person-group>
+      <article-title>meraconstraints</article-title>
+      <year iso-8601-date="2026-01-21">2026</year><month>01</month><day>21</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-06">2026</year><month>05</month><day>06</day></date-in-citation>
+      <uri>https://github.com/sachsmc/meraconstraints</uri>
+    </element-citation>
+  </ref>
+  <ref id="ref-henckel2024">
+    <element-citation publication-type="paper-conference">
+      <person-group person-group-type="author">
+        <name><surname>Henckel</surname><given-names>Leonard</given-names></name>
+        <name><surname>Würtzen</surname><given-names>Theo</given-names></name>
+        <name><surname>Weichwald</surname><given-names>Sebastian</given-names></name>
+      </person-group>
+      <article-title>Adjustment identification distance: A gadjid for causal structure learning</article-title>
+      <source>The 40th Conference on Uncertainty in Artificial Intelligence</source>
+      <publisher-name>OpenReview</publisher-name>
+      <publisher-loc>Amherst, MA, USA</publisher-loc>
+      <year iso-8601-date="2024-07-15">2024</year><month>07</month><day>15</day>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2026-05-11">2026</year><month>05</month><day>11</day></date-in-citation>
+      <uri>https://openreview.net/forum?id=jO5UNNrjJr</uri>
+    </element-citation>
+  </ref>
+</ref-list>
+<fn-group>
+  <fn id="fn1">
+    <label>1</label><p>We note that some authors of this paper are also
+    involved in the development of the packages and paper mentioned
+    above.</p>
+  </fn>
+</fn-group>
 </back>
 </article>
