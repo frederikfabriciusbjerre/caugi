@@ -9,6 +9,7 @@
     pkgs.bashInteractive
     pkgs.cargo-audit
     pkgs.cargo-deny
+    pkgs.html-tidy
     pkgs.cargo-flamegraph
     pkgs.cargo-llvm-cov
     pkgs.poppler
