@@ -46,7 +46,7 @@ Other adjustment:
 [`all_backdoor_sets()`](https://caugi.org/reference/all_backdoor_sets.md),
 [`d_separated()`](https://caugi.org/reference/d_separated.md),
 [`is_valid_adjustment_admg()`](https://caugi.org/reference/is_valid_adjustment_admg.md),
-[`minimal_d_separator()`](https://caugi.org/reference/minimal_d_separator.md)
+[`minimal_separator()`](https://caugi.org/reference/minimal_separator.md)
 
 ## Examples
 

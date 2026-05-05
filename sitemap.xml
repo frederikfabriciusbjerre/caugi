@@ -1,5 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://caugi.org/404.html</loc></url>
+<url><loc>https://caugi.org/AGENTS.html</loc></url>
+<url><loc>https://caugi.org/CLAUDE.html</loc></url>
 <url><loc>https://caugi.org/CONTRIBUTING.html</loc></url>
 <url><loc>https://caugi.org/LICENSE-text.html</loc></url>
 <url><loc>https://caugi.org/LICENSE.html</loc></url>
@@ -11,7 +13,6 @@
 <url><loc>https://caugi.org/articles/serialization.html</loc></url>
 <url><loc>https://caugi.org/articles/visualization.html</loc></url>
 <url><loc>https://caugi.org/authors.html</loc></url>
-<url><loc>https://caugi.org/copilot-instructions.html</loc></url>
 <url><loc>https://caugi.org/index.html</loc></url>
 <url><loc>https://caugi.org/news/index.html</loc></url>
 <url><loc>https://caugi.org/reference/add-caugi_plot-caugi_plot.html</loc></url>
@@ -37,6 +38,7 @@
 <url><loc>https://caugi.org/reference/caugi_graphml.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout_bipartite.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi_layout_circle.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout_fruchterman_reingold.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout_kamada_kawai.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_layout_sugiyama.html</loc></url>
@@ -70,7 +72,6 @@
 <url><loc>https://caugi.org/reference/dot-flatten_edge_chain.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-get_edges.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-get_nodes.html</loc></url>
-<url><loc>https://caugi.org/reference/dot-getter_output.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-glyph_map_get.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-glyph_of.html</loc></url>
 <url><loc>https://caugi.org/reference/dot-is_edge_call.html</loc></url>
@@ -123,7 +124,7 @@
 <url><loc>https://caugi.org/reference/makeContent.caugi_edge_grob.html</loc></url>
 <url><loc>https://caugi.org/reference/markov_blanket.html</loc></url>
 <url><loc>https://caugi.org/reference/meek_closure.html</loc></url>
-<url><loc>https://caugi.org/reference/minimal_d_separator.html</loc></url>
+<url><loc>https://caugi.org/reference/minimal_separator.html</loc></url>
 <url><loc>https://caugi.org/reference/moralize.html</loc></url>
 <url><loc>https://caugi.org/reference/mutate_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/neighbors.html</loc></url>

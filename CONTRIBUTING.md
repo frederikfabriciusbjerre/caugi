@@ -41,6 +41,10 @@ To contribute to `caugi`, you’ll need:
     `pak::pak("frederikfabriciusbjerre/caugi")` which will handle all
     dependencies
 
+Alternatively, you can also use the [devenv](https://devenv.sh)
+configuration provided in the repository for a consistent development
+environment.
+
 ### Installing Rust
 
 If you don’t have Rust installed, visit [rustup.rs](https://rustup.rs/)
@@ -58,12 +62,14 @@ for installation instructions appropriate for your platform.
 2.  **Load the package in R**:
 
     ``` r
+
     devtools::load_all()
     ```
 
 3.  **Build Rust code** (if needed):
 
     ``` r
+
     rextendr::document()
     ```
 
@@ -141,6 +147,7 @@ or build the package.
 Example:
 
 ``` r
+
 #' @title Get parent nodes
 #'
 #' @description 
@@ -197,6 +204,7 @@ pub fn parents_of_ptr(node_ids: Vec<usize>) -> Vec<usize> {
 ### Running Tests
 
 ``` r
+
 # Run all tests
 devtools::test()
 
@@ -215,6 +223,7 @@ devtools::check()
 Example test structure:
 
 ``` r
+
 test_that("parents() returns correct parents", {
   cg <- caugi(A %-->% B, C %-->% B, class = "DAG")
   
@@ -245,6 +254,7 @@ test_that("parents() returns correct parents", {
 1.  **Style your code**:
 
     ``` r
+
     # Style R code
     styler::style_pkg()
     ```
@@ -257,6 +267,7 @@ test_that("parents() returns correct parents", {
 2.  **Check the package**:
 
     ``` r
+
     devtools::check()
     ```
 
@@ -312,6 +323,7 @@ When reporting a bug, please include:
 Example:
 
 ``` r
+
 # Minimal reproducible example
 library(caugi)
 

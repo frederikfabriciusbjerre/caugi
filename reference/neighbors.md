@@ -7,19 +7,9 @@ direction or type. This function works for all graph classes including
 ## Usage
 
 ``` r
-neighbors(
-  cg,
-  nodes = NULL,
-  index = NULL,
-  mode = c("all", "in", "out", "undirected", "bidirected", "partial")
-)
+neighbors(cg, nodes = NULL, index = NULL, mode = "all")
 
-neighbours(
-  cg,
-  nodes = NULL,
-  index = NULL,
-  mode = c("all", "in", "out", "undirected", "bidirected", "partial")
-)
+neighbours(cg, nodes = NULL, index = NULL, mode = "all")
 ```
 
 ## Arguments

@@ -11,7 +11,7 @@ be built automatically before computing the layout."><meta property="og:image" c
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,7 +41,7 @@ be built automatically before computing the layout."><meta property="og:image" c
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Compute Graph Layout</h1>
-      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/v1.1.0/R/layout.R" class="external-link"><code>R/layout.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/R/layout.R" class="external-link"><code>R/layout.R</code></a></small>
       <div class="d-none name"><code>caugi_layout.Rd</code></div>
     </div>
 
@@ -56,7 +56,7 @@ be built automatically before computing the layout.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_layout</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"sugiyama"</span>, <span class="st">"fruchterman-reingold"</span>, <span class="st">"kamada-kawai"</span>, <span class="st">"bipartite"</span>,</span>
-<span>    <span class="st">"tiered"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"tiered"</span>, <span class="st">"circle"</span><span class="op">)</span>,</span>
 <span>  packing_ratio <span class="op">=</span> <span class="fl">1.618034</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -97,6 +97,7 @@ edge types)</p></li>
 types)</p></li>
 <li><p><code>"bipartite"</code>: Bipartite layout (requires <code>partition</code> parameter)</p></li>
 <li><p><code>"tiered"</code>: Multi-tier layout (requires <code>tiers</code> parameter)</p></li>
+<li><p><code>"circle"</code>: Place nodes evenly along a circle</p></li>
 </ul></dd>
 
 
@@ -142,12 +143,18 @@ preserves the global structure and path lengths compared to
 Fruchterman-Reingold. Ideal for publication-quality visualizations where
 accurate distance representation matters. Works with all edge types and
 produces deterministic results.</p>
+<p><strong>Circle</strong></p>
+<p>Places nodes evenly along the perimeter of a circle. The first node is at
+the top and subsequent nodes proceed counter-clockwise. Useful for small
+graphs, cycle visualization, and as a deterministic fallback. Works with
+all edge types and ignores edge structure.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other plotting:
 <code><a href="add-caugi_plot-caugi_plot.html">add-caugi_plot-caugi_plot</a></code>,
 <code><a href="caugi_layout_bipartite.html">caugi_layout_bipartite()</a></code>,
+<code><a href="caugi_layout_circle.html">caugi_layout_circle()</a></code>,
 <code><a href="caugi_layout_fruchterman_reingold.html">caugi_layout_fruchterman_reingold()</a></code>,
 <code><a href="caugi_layout_kamada_kawai.html">caugi_layout_kamada_kawai()</a></code>,
 <code><a href="caugi_layout_sugiyama.html">caugi_layout_sugiyama()</a></code>,
@@ -182,6 +189,9 @@ produces deterministic results.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use stress minimization for publication quality</span></span></span>
 <span class="r-in"><span><span class="va">layout_kk</span> <span class="op">&lt;-</span> <span class="fu">caugi_layout</span><span class="op">(</span><span class="va">cg</span>, method <span class="op">=</span> <span class="st">"kamada-kawai"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Place nodes on a circle</span></span></span>
+<span class="r-in"><span><span class="va">layout_circle</span> <span class="op">&lt;-</span> <span class="fu">caugi_layout</span><span class="op">(</span><span class="va">cg</span>, method <span class="op">=</span> <span class="st">"circle"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Bipartite layout with auto-detected partition</span></span></span>
 <span class="r-in"><span><span class="va">cg_bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">X</span>, <span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span>, <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">X</span>, <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span><span class="op">)</span></span></span>

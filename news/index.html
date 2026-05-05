@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,15 +37,39 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/v1.1.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.1.0" id="caugi-110">caugi 1.1.0<a class="anchor" aria-label="anchor" href="#caugi-110"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.2.0" id="caugi-120">caugi 1.2.0<a class="anchor" aria-label="anchor" href="#caugi-120"></a></h2>
+<div class="section level3">
+<h3 id="new-features-1-2-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-2-0"></a></h3>
+<ul><li>Add <code><a href="../reference/caugi_layout_circle.html">caugi_layout_circle()</a></code> and a <code>"circle"</code> method for <code><a href="../reference/caugi_layout.html">caugi_layout()</a></code> that places nodes evenly along the perimeter of a circle (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/108" class="external-link">#108</a>).</li>
+<li>Add <code><a href="../reference/registry.html">list_caugi_edges()</a></code> function to list all available edge types.</li>
+<li>Add first-class <code>"MPDAG"</code> graph class support across constructor, class mutation, and class resolution. <code>class = "AUTO"</code> now resolves Meek-closed PDAGs to <code>"MPDAG"</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-1-2-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-2-0"></a></h3>
+<ul><li>Improved performance of all queries. Speedups are more significant on larger graphs, but even on small graphs, queries are roughly 5x faster.</li>
+<li>
+<code><a href="../reference/exogenize.html">exogenize()</a></code> is now implemented in Rust for DAGs, which reduces overhead on larger graphs.</li>
+<li>
+<code><a href="../reference/normalize_latent_structure.html">normalize_latent_structure()</a></code> is now implemented in Rust for DAGs for faster latent normalization workflows.</li>
+<li>
+<code><a href="../reference/minimal_separator.html">minimal_d_separator()</a></code> is renamed to <code><a href="../reference/minimal_separator.html">minimal_separator()</a></code> and now supports ADMG and AG inputs (previously DAG-only), returning a minimal m-separator. Implemented via the unified linear-time algorithm of van der Zander &amp; Liśkiewicz (UAI 2020). The old name <code><a href="../reference/minimal_separator.html">minimal_d_separator()</a></code> remains as a deprecated alias.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-1-2-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-2-0"></a></h3>
+<ul><li>Fix <code><a href="../reference/m_separated.html">m_separated()</a></code> on ADMGs: moralization now marries every pair in <code>pa(v) ∪ sp(v)</code>, not just <code>pa(v)</code>. The old code missed moral edges from bidirected co-parents and gave false positives (e.g. claimed <code>Z ⊥ Y | X</code> for <code>Z -&gt; X -&gt; Y</code>, <code>X &lt;-&gt; Y</code>).</li>
+<li>Fix <code><a href="../reference/is_valid_adjustment_admg.html">is_valid_adjustment_admg()</a></code> and <code><a href="../reference/all_adjustment_sets_admg.html">all_adjustment_sets_admg()</a></code> to verify the GAC’s m-separation condition in the proper backdoor graph rather than via a per-neighbour decomposition. The old check trivially accepted neighbours of <code>X</code> that were themselves in <code>Z</code>, so it falsely classified <code>{C}</code> as a valid adjustment set in the M-bias ADMG <code>C -&gt; X, C &lt;-&gt; X, C -&gt; Y, C &lt;-&gt; Y, X -&gt; Y</code> (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/277" class="external-link">#277</a>).</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.0" id="caugi-110">caugi 1.1.0<a class="anchor" aria-label="anchor" href="#caugi-110"></a></h2><p class="text-muted">CRAN release: 2026-03-20</p>
 <div class="section level3">
 <h3 id="new-features-1-1-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-1-0"></a></h3>
 <ul><li>Add <code><a href="../reference/normalize_latent_structure.html">normalize_latent_structure()</a></code>, which normalizes the latent structure of a DAG while preserving the marginal model over observed variables.</li>
-<li>Add <code><a href="../reference/minimal_d_separator.html">minimal_d_separator()</a></code>, which computes a minimal d-separator between sets of nodes in a DAG, with support for mandatory inclusions and restrictions.</li>
+<li>Add <code><a href="../reference/minimal_separator.html">minimal_d_separator()</a></code>, which computes a minimal d-separator between sets of nodes in a DAG, with support for mandatory inclusions and restrictions.</li>
 <li>Add <code><a href="../reference/posteriors.html">posteriors()</a></code> query function, which is the dual of <code><a href="../reference/anteriors.html">anteriors()</a></code>. It returns all nodes reachable by following paths where every edge is either undirected or directed away from the source node. For DAGs, <code><a href="../reference/posteriors.html">posteriors()</a></code> equals <code><a href="../reference/descendants.html">descendants()</a></code>. For PDAGs and AGs, it includes both descendants and nodes reachable via undirected edges.</li>
 <li>You can now specify whether to use an open or closed graph definition for the queries <code><a href="../reference/ancestors.html">ancestors()</a></code>, <code><a href="../reference/anteriors.html">anteriors()</a></code>, <code><a href="../reference/descendants.html">descendants()</a></code>, and <code><a href="../reference/posteriors.html">posteriors()</a></code>. This can be set globally with <code><a href="../reference/caugi_options.html">caugi_options()</a></code> or locally with the <code>open = TRUE/FALSE</code> argument. The default remains <code>open = TRUE</code>.</li>
 <li>Add <code><a href="../reference/is_mpdag.html">is_mpdag()</a></code> query to check whether a PDAG is closed under Meek’s orientation rules (R1-R4), and <code><a href="../reference/meek_closure.html">meek_closure()</a></code> to orient all implied edges until Meek closure.</li>

@@ -38,6 +38,7 @@ configuring spacing and default styles
 Other plotting:
 [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md),
 [`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md),
+[`caugi_layout_circle()`](https://caugi.org/reference/caugi_layout_circle.md),
 [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md),
 [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md),
 [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),

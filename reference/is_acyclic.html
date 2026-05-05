@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Is the <code>caugi</code> acyclic?</h1>
-      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/v1.1.0/R/queries.R" class="external-link"><code>R/queries.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/R/queries.R" class="external-link"><code>R/queries.R</code></a></small>
       <div class="d-none name"><code>is_acyclic.Rd</code></div>
     </div>
 
@@ -70,7 +70,8 @@ it, if possible.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Logically, it should not be possible to have a graph class of "DAG" or "PDAG"
+    <p>Logically, it should not be possible to have a graph class of "DAG", "PDAG",
+or "MPDAG"
 that has cycles, but in case the user modified the graph after creation in
 some unforeseen way that could have introduced cycles, this function allows
 to force a check of acyclicity, if needed.</p>

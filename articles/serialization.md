@@ -1,6 +1,7 @@
 # Saving and Sharing Graphs with the Caugi Format
 
 ``` r
+
 library(caugi)
 ```
 
@@ -17,6 +18,7 @@ research, data sharing, and caching of graph structures.
 First, create a causal graph:
 
 ``` r
+
 cg <- caugi(
   A %-->% B + C,
   B %-->% D,
@@ -28,6 +30,7 @@ cg <- caugi(
 Then, write it to a file in the caugi format:
 
 ``` r
+
 tmp <- tempfile(fileext = ".caugi.json")
 write_caugi(cg, tmp,
   comment = "Example causal graph",
@@ -43,6 +46,7 @@ You can read the graph back from the file, and verify it matches the
 original:
 
 ``` r
+
 cg_loaded <- read_caugi(tmp)
 
 identical(edges(cg), edges(cg_loaded))
@@ -126,6 +130,7 @@ The format supports all caugi edge types using their DSL operators:
 For programmatic use, you can serialize to/from strings:
 
 ``` r
+
 # Serialize to JSON string
 json_str <- caugi_serialize(cg)
 cat(substr(json_str, 1, 200), "...\n")
@@ -151,6 +156,7 @@ cg_from_json <- caugi_deserialize(json_str)
 Add context to your graphs with comments and tags:
 
 ``` r
+
 write_caugi(cg, tmp,
   comment = "Mediation model from Study A",
   tags = c("mediation", "study-a", "validated")
@@ -162,6 +168,7 @@ write_caugi(cg, tmp,
 The format supports all caugi graph classes:
 
 ``` r
+
 # DAG
 dag <- caugi(X %-->% Y, Y %-->% Z, class = "DAG")
 
@@ -208,6 +215,7 @@ Serialization is implemented in Rust for high performance. Large graphs
 serialize and deserialize efficiently:
 
 ``` r
+
 tmp_file <- tempfile(fileext = ".caugi.json")
 large_dag <- generate_graph(n = 1000, m = 500, class = "DAG")
 system.time(write_caugi(large_dag, tmp_file))

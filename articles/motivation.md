@@ -4,6 +4,7 @@ Why another graph package in R? The `caugi` package was designed to
 provide a *fast*, *flexible*, and *causality-first* graph interface.
 
 ``` r
+
 library(caugi)
 ```
 
@@ -22,6 +23,7 @@ PAG-type edges by opaque matrix formats, as seen in for example `pcalg`,
 where
 
 ``` r
+
 nodes <- c("A", "B", "C", "D", "E")
 amat <- matrix(
   c(
@@ -46,6 +48,7 @@ amat
 represents the graph
 
 ``` r
+
 caugi(
   A %-->% B %o->% C %---% E,
   B %o-o% D %---% E,

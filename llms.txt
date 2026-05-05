@@ -16,12 +16,14 @@ causality or if you are learning about causal graphs for the first time,
 You can install the development version of `caugi` from GitHub with:
 
 ``` r
+
 pak::pak("frederikfabriciusbjerre/caugi")
 ```
 
 or directly from CRAN with:
 
 ``` r
+
 install.packages("caugi")
 ```
 
@@ -39,6 +41,7 @@ A `caugi` graph object is the bread and butter of the `caugi` package.
 It is easy to create, query, and modify.
 
 ``` r
+
 library(caugi)
 ```
 
@@ -48,6 +51,7 @@ and `"UG"`. We plan on supporting several other causal graph types in
 future releases, such as `"PAG"`, `"MAG"`, and `"SWIG"`.
 
 ``` r
+
 # a tiny DAG
 cg <- caugi(
   A %-->% B + C,
@@ -79,6 +83,7 @@ if you want to represent a directed edge in the reverse direction, you
 can do so like this:
 
 ``` r
+
 register_caugi_edge(
   glyph = "<--",
   tail_mark = "arrow",
@@ -88,7 +93,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x000001a2318f5e90>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x585b58ab7cf0>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -307,8 +312,9 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   : Is a set a valid adjustment set in an ADMG?
 - [`is_valid_backdoor()`](https://caugi.org/reference/is_valid_backdoor.md)
   : Is a backdoor set valid?
-- [`minimal_d_separator()`](https://caugi.org/reference/minimal_d_separator.md)
-  : Compute a minimal d-separator
+- [`minimal_separator()`](https://caugi.org/reference/minimal_separator.md)
+  [`minimal_d_separator()`](https://caugi.org/reference/minimal_separator.md)
+  : Compute a minimal separator
 
 ## Simulation
 
@@ -334,6 +340,7 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   : Register a new edge type in the global registry.
 
 - [`caugi_registry()`](https://caugi.org/reference/registry.md)
+  [`list_caugi_edges()`](https://caugi.org/reference/registry.md)
   [`reset_caugi_registry()`](https://caugi.org/reference/registry.md)
   [`seal_caugi_registry()`](https://caugi.org/reference/registry.md) :
 
@@ -451,6 +458,8 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   Compute Graph Layout
 - [`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md)
   : Bipartite Graph Layout
+- [`caugi_layout_circle()`](https://caugi.org/reference/caugi_layout_circle.md)
+  : Circle Layout
 - [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md)
   : Fruchterman-Reingold Force-Directed Layout
 - [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md)

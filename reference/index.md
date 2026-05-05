@@ -154,8 +154,9 @@
   : Is a set a valid adjustment set in an ADMG?
 - [`is_valid_backdoor()`](https://caugi.org/reference/is_valid_backdoor.md)
   : Is a backdoor set valid?
-- [`minimal_d_separator()`](https://caugi.org/reference/minimal_d_separator.md)
-  : Compute a minimal d-separator
+- [`minimal_separator()`](https://caugi.org/reference/minimal_separator.md)
+  [`minimal_d_separator()`](https://caugi.org/reference/minimal_separator.md)
+  : Compute a minimal separator
 
 ## Simulation
 
@@ -181,6 +182,7 @@
   : Register a new edge type in the global registry.
 
 - [`caugi_registry()`](https://caugi.org/reference/registry.md)
+  [`list_caugi_edges()`](https://caugi.org/reference/registry.md)
   [`reset_caugi_registry()`](https://caugi.org/reference/registry.md)
   [`seal_caugi_registry()`](https://caugi.org/reference/registry.md) :
 
@@ -298,6 +300,8 @@
   Compute Graph Layout
 - [`caugi_layout_bipartite()`](https://caugi.org/reference/caugi_layout_bipartite.md)
   : Bipartite Graph Layout
+- [`caugi_layout_circle()`](https://caugi.org/reference/caugi_layout_circle.md)
+  : Circle Layout
 - [`caugi_layout_fruchterman_reingold()`](https://caugi.org/reference/caugi_layout_fruchterman_reingold.md)
   : Fruchterman-Reingold Force-Directed Layout
 - [`caugi_layout_kamada_kawai()`](https://caugi.org/reference/caugi_layout_kamada_kawai.md)
