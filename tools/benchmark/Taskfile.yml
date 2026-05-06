@@ -1,0 +1,72 @@
+version: "3"
+
+# Orchestration for cross-language performance benchmarks.
+# All tasks assume execution inside `devenv shell` from /home/jola/projects/caugi/tools/benchmark.
+
+vars:
+  FIX_DIR: fixtures
+  RES_DIR: results
+  DATA_DIR: ../../vignettes/data
+
+tasks:
+  default:
+    desc: "List available tasks"
+    cmds:
+      - task --list
+
+  fixtures:
+    desc: "Generate shared graph fixtures + query specs"
+    cmds:
+      - mkdir -p {{.FIX_DIR}}
+      - Rscript generate_fixtures.R
+    sources:
+      - generate_fixtures.R
+    generates:
+      - "{{.FIX_DIR}}/spec.json"
+      - "{{.FIX_DIR}}/*.edges"
+
+  r:
+    desc: "Run R benchmarks (caugi, igraph, bnlearn, dagitty, ggm)"
+    deps: [fixtures]
+    cmds:
+      - mkdir -p {{.RES_DIR}}
+      - Rscript bench_r.R
+    generates:
+      - "{{.RES_DIR}}/r.csv"
+
+  python:
+    desc: "Run Python benchmarks (pgmpy)"
+    deps: [fixtures]
+    cmds:
+      - mkdir -p {{.RES_DIR}}
+      - uv run python bench_python.py
+    generates:
+      - "{{.RES_DIR}}/python.csv"
+
+  tetrad:
+    desc: "Run Java/Tetrad benchmarks"
+    deps: [fixtures]
+    cmds:
+      - mkdir -p {{.RES_DIR}}
+      - ./gradlew --quiet run -PbenchArgs="{{.FIX_DIR}} {{.RES_DIR}}/tetrad.csv"
+    generates:
+      - "{{.RES_DIR}}/tetrad.csv"
+
+  aggregate:
+    desc: "Merge per-language results into vignettes/data/benchmarks.rds"
+    deps: [r, python, tetrad]
+    cmds:
+      - mkdir -p {{.DATA_DIR}}
+      - Rscript aggregate.R
+    generates:
+      - "{{.DATA_DIR}}/benchmarks.rds"
+      - "{{.DATA_DIR}}/metadata.json"
+
+  all:
+    desc: "Full pipeline: fixtures → all runners → aggregate"
+    deps: [aggregate]
+
+  clean:
+    desc: "Remove generated fixtures, results, and gradle build dirs"
+    cmds:
+      - rm -rf {{.FIX_DIR}} {{.RES_DIR}} build .gradle

@@ -24,8 +24,15 @@
       enable = true;
     };
 
+    java = {
+      enable = true;
+      gradle.enable = true;
+    };
+
     python = {
       enable = true;
+
+      directory = "./tools/benchmark";
 
       package = (
         pkgs.python3.withPackages (
@@ -34,6 +41,16 @@
           ]
         )
       );
+
+      venv.enable = true;
+
+      uv = {
+        enable = true;
+        sync = {
+          enable = true;
+          allGroups = true;
+        };
+      };
     };
 
     r = {
@@ -62,6 +79,7 @@
             pcalg
             processx
             rextendr
+            remotes
             rhub
             rlang
             rmarkdown

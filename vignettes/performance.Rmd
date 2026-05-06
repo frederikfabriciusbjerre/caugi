@@ -1,0 +1,202 @@
+---
+title: "Performance"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Performance}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.width = 7,
+  warning = FALSE,
+  message = FALSE,
+  echo = FALSE
+)
+```
+
+```{r}
+#| label: data
+#| include: false
+
+benchmarks <- readRDS("data/benchmarks.rds")
+metadata <- jsonlite::fromJSON("data/metadata.json", simplifyVector = FALSE)
+benchmarks$median_ms <- benchmarks$median_ns / 1e6
+```
+
+This article compares the performance of `caugi` against R packages
+([`igraph`](https://r.igraph.org/), [`bnlearn`](https://www.bnlearn.com/),
+[`dagitty`](https://dagitty.net/),
+[`ggm`](https://cran.r-project.org/package=ggm)), the Python package
+[`pgmpy`](https://pgmpy.org/), and the Java library
+[Tetrad](https://www.cmu.edu/dietrich/philosophy/tetrad/). We focus on the
+practical trade-offs that arise from different core data structures and design
+choices.
+
+The headline is: `caugi` frontloads computation. That is, `caugi` spends more
+effort when constructing a graph and preparing indexes, so that queries are
+wicked fast. The high performance is also due to the Rust backend.
+
+Benchmarks below are **precomputed**, not run when this article is rendered.
+Last run on `r metadata$generated` on host `r metadata$host$nodename`
+(`r metadata$host$sysname`).
+
+Versions:
+
+- caugi `r metadata$versions$caugi`
+- igraph `r metadata$versions$igraph`
+- bnlearn `r metadata$versions$bnlearn`
+- dagitty `r metadata$versions$dagitty`
+- ggm `r metadata$versions$ggm`
+- pgmpy `r metadata$versions$pgmpy`
+- Tetrad `r metadata$versions$tetrad`.
+
+### Design choices
+
+#### Compressed Sparse Row (CSR) Representation
+
+The core data structure in `caugi` is a compressed sparse row (CSR)
+representation of the graph. CSR representations store, for each vertex, a
+contiguous slice of neighbor IDs with a pointer (offset) array that marks the
+start and end of each slice. This format is memory-efficient for sparse graphs.
+The `caugi` graph object also stores important query information in the object,
+leading to parent, child, and neighbor queries to be done in $\mathcal{O}(1)$
+time. This yields a larger memory footprint, but the trade-off is that queries
+are extremely fast.
+
+#### Mutation and Lazy Building
+
+The `caugi` graph objects are expensive to build. This is the performance
+downside of using `caugi`. For each time we make a modification to a `caugi`
+graph object, we need to rebuild the graph completely since the graph object is
+immutable by design. This has complexity $\mathcal{O}(|V| + |E|)$, where $V$ is
+the vertex set and $E$ is the edge set.
+
+However, the graph object will only be rebuilt when the user either calls
+`build()` directly or queries the graph. Therefore, you do not need to worry
+about wasting compute time by iteratively making changes to a `caugi` graph
+object, as the graph rebuilds lazily when queried. By doing this, `caugi` graphs
+*feel* mutable, but, in reality, they are not.
+
+By doing it this way, we ensure
+
+- that the graph object is always in a consistent state when queried and
+- that queries are as fast as possible,
+
+while keeping the user experience smooth.
+
+### Comparison
+
+The comparison covers six operations across a parameter grid of graph sizes $n$
+and edge densities. All packages run on the same generated DAG fixtures so query
+results are directly comparable.
+
+```{r}
+#| label: helpers
+#| include: false
+
+library(ggplot2)
+
+pkg_levels <- c("caugi", "igraph", "bnlearn", "dagitty", "ggm", "pgmpy", "tetrad")
+benchmarks$package <- factor(benchmarks$package, levels = pkg_levels)
+
+plot_op <- function(op) {
+  d <- benchmarks[benchmarks$operation == op, ]
+  ggplot(d, aes(n, median_ms, color = package)) +
+    geom_line() +
+    geom_point() +
+    scale_x_log10() +
+    scale_y_log10() +
+    facet_wrap(
+      ~p_raw,
+      labeller = as_labeller(c("0.5" = "Sparser (p_raw = 0.5)", "0.9" = "Denser (p_raw = 0.9)"))
+    ) +
+    labs(
+      x = "Number of nodes",
+      y = "Median time (ms)",
+      color = NULL,
+      title = paste("Operation:", op)
+    ) +
+    theme_minimal(base_size = 11) +
+    theme(legend.position = "bottom")
+}
+```
+
+#### Relational Queries
+
+Direct neighbor lookups (`parents`, `children`) are $O(1)$ for `caugi`,
+`igraph`, `bnlearn`, and Tetrad---they all maintain adjacency tables. `dagitty`
+and `ggm` re-derive neighbors from a string DSL or adjacency matrix on each call
+and pay a steep linear-in-edges cost; `pgmpy` is a thin wrapper over NetworkX's
+predecessor/successor lookups.
+
+```{r}
+#| label: plot-parents
+
+plot_op("parents")
+```
+
+```{r}
+#| label: plot-children
+
+plot_op("children")
+```
+
+#### Ancestors and Descendants
+
+These require transitive closure (BFS/DFS over the directed graph). Here
+`caugi`'s CSR pays off---both forward and reverse adjacency are precomputed, so
+traversal is tight pointer-chasing in Rust.
+
+```{r}
+#| label: plot-ancestors
+
+plot_op("ancestors")
+```
+
+```{r}
+#| label: plot-descendants
+
+plot_op("descendants")
+```
+
+#### D-separation
+
+For each fixture we compute a valid backdoor adjustment set with
+`caugi::adjustment_set()` once, and pass that same conditioning set to every
+package's d-separation routine. Tetrad uses the m-separation generalisation
+(equivalent on DAGs).
+
+```{r}
+#| label: plot-dsep
+
+plot_op("d_separated")
+```
+
+#### Subgraph Extraction
+
+Subgraph extraction is where we explicitly test graph **building** performance.
+For `caugi` we time `subgraph(cg, nodes) |> build()` together so the CSR rebuild
+cost is captured. `igraph`, `bnlearn`, `pgmpy`, and Tetrad all return
+adjacency-backed subgraphs without an analogous index rebuild step.
+
+```{r}
+#| label: plot-subgraph
+
+plot_op("subgraph")
+```
+
+### Session Info
+
+```{r}
+#| label: session-info
+
+sessionInfo()
+```

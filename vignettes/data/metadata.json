@@ -1,0 +1,61 @@
+{
+  "generated": "2026-05-06T15:40:23+0200",
+  "host": {
+    "nodename": "terra",
+    "sysname": "Linux",
+    "release": "6.18.24",
+    "machine": "x86_64"
+  },
+  "versions": {
+    "R": "4.5.3",
+    "python": "3.13.12",
+    "java": "21.0.10",
+    "caugi": "1.2.0",
+    "igraph": "2.2.2",
+    "bnlearn": "5.1",
+    "dagitty": "0.3.4",
+    "ggm": "2.5.2",
+    "pgmpy": "1.1.2",
+    "tetrad": "7.6.8"
+  },
+  "fixtures": [
+    {
+      "id": "n100_p05",
+      "n": 100,
+      "p": 0.1,
+      "n_edges": 447
+    },
+    {
+      "id": "n500_p05",
+      "n": 500,
+      "p": 0.027,
+      "n_edges": 3471
+    },
+    {
+      "id": "n1000_p05",
+      "n": 1000,
+      "p": 0.015,
+      "n_edges": 7404
+    },
+    {
+      "id": "n100_p09",
+      "n": 100,
+      "p": 0.18,
+      "n_edges": 828
+    },
+    {
+      "id": "n500_p09",
+      "n": 500,
+      "p": 0.0486,
+      "n_edges": 6198
+    },
+    {
+      "id": "n1000_p09",
+      "n": 1000,
+      "p": 0.027,
+      "n_edges": 13369
+    }
+  ],
+  "n_rows": 216,
+  "source_files": ["python.csv", "r.csv", "tetrad.csv"]
+}

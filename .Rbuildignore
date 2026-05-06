@@ -17,6 +17,7 @@
 ^pkgdown$
 ^README\.Rmd$
 ^tools/aaaaa-coding-helpers\.R$
+^tools/benchmark$
 ^\.vscode$
 ^cran-comments\.md$
 ^revdep$

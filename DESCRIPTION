@@ -50,6 +50,7 @@ Suggests:
     dagitty,
     devtools,
     ggm,
+    ggplot2,
     graph,
     gRbase,
     igraph,
