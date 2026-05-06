@@ -13,7 +13,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/frederikfabriciusbjerre/caugi/blob/v1.2.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/frederikfabriciusbjerre/caugi/blob/main/DESCRIPTION)
 
 Fabricius-Bjerre F, Larsson J, Sachs M, Kristensen B (2026). *caugi:
 Causal Graph Interface*. R package version 1.2.0, <https://caugi.org/>.
