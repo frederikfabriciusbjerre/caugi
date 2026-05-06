@@ -1,0 +1,84 @@
+{
+  "generated": "2026-06-17T10:37:16+0200",
+  "host": {
+    "nodename": "terra",
+    "sysname": "Linux",
+    "release": "6.18.34",
+    "machine": "x86_64"
+  },
+  "versions": {
+    "R": "4.5.3",
+    "python": "3.13.12",
+    "java": "21.0.10",
+    "caugi": "1.2.0.9000",
+    "igraph": "2.2.2",
+    "bnlearn": "5.1",
+    "dagitty": "0.3.4",
+    "ggm": "2.5.2",
+    "pcalg": "2.7.12",
+    "pgmpy": "1.1.2",
+    "tetrad": "7.6.10"
+  },
+  "fixtures": [
+    {
+      "id": "n100_d3",
+      "n": 100,
+      "p": 0.0606,
+      "n_edges": 292
+    },
+    {
+      "id": "n1000_d3",
+      "n": 1000,
+      "p": 0.006,
+      "n_edges": 2945
+    },
+    {
+      "id": "n10000_d3",
+      "n": 10000,
+      "p": 0.0006,
+      "n_edges": 29974
+    },
+    {
+      "id": "n100_d6",
+      "n": 100,
+      "p": 0.1212,
+      "n_edges": 547
+    },
+    {
+      "id": "n1000_d6",
+      "n": 1000,
+      "p": 0.012,
+      "n_edges": 5922
+    },
+    {
+      "id": "n10000_d6",
+      "n": 10000,
+      "p": 0.0012,
+      "n_edges": 59963
+    }
+  ],
+  "skip": [
+    {
+      "package": "dagitty",
+      "operation": "*",
+      "n_min": 10000
+    },
+    {
+      "package": "ggm",
+      "operation": "*",
+      "n_min": 10000
+    },
+    {
+      "package": "pcalg",
+      "operation": "d_separated",
+      "n_min": 10000
+    },
+    {
+      "package": "bnlearn",
+      "operation": "d_separated",
+      "n_min": 10000
+    }
+  ],
+  "n_rows": 256,
+  "source_files": ["python.csv", "r.csv", "tetrad.csv"]
+}
