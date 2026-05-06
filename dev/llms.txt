@@ -93,7 +93,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x000001a2318f5e90>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x585b58ab7cf0>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C

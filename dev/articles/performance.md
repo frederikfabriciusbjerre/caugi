@@ -423,7 +423,7 @@ sessionInfo()
 #> [52] data.table_1.18.2.1 glue_1.8.1          Rcpp_1.1.1-1.1     
 #> [55] systemfonts_1.3.2   tidyselect_1.2.1    xfun_0.57          
 #> [58] tibble_3.3.1        knitr_1.51          farver_2.1.2       
-#> [61] htmltools_0.5.9     igraph_2.3.0        labeling_0.4.3     
-#> [64] rmarkdown_2.31      caugi_1.1.0.9000    compiler_4.6.0     
+#> [61] htmltools_0.5.9     igraph_2.3.1        labeling_0.4.3     
+#> [64] rmarkdown_2.31      caugi_1.2.0.9000    compiler_4.6.0     
 #> [67] S7_0.2.2
 ```

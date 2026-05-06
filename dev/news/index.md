@@ -2,6 +2,10 @@
 
 ## caugi (development version)
 
+## caugi 1.2.0
+
+CRAN release: 2026-05-05
+
 ### New Features
 
 - Add

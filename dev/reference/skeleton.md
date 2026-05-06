@@ -41,7 +41,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 skeleton(cg) # A --- B
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x559e474f30c0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x559bb9e1e7f0>
 #>   graph_class: UG
 #>   nodes: A, B
 #>   edges: A---B
