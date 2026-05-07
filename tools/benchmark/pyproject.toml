@@ -1,0 +1,9 @@
+[project]
+description = "Benchmark python project for caugi."
+name = "caugi-benchmarks"
+version = "0"
+requires-python = ">=3.10"
+dependencies = ["networkx", "pgmpy", "causaldag"]
+
+[tool.uv]
+package = false
