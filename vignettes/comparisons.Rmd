@@ -45,12 +45,12 @@ it implements, and how it interoperates with other tooling.
 
 Two adjacent areas are intentionally out of scope:
 
-- **Causal discovery** (PC, FCI, GES, GFCI, LiNGAM, etc.). `caugi` does not
+- **Causal discovery** (e.g. PC, FCI, GES, GFCI, and LiNGAM). `caugi` does not
   implement discovery algorithms. For that, see `pcalg`, `bnlearn`, `Tetrad`, or
   `pgmpy`.
-- **Statistical inference and parameter learning** (CPT estimation, likelihood,
-  parameter fitting): also out of scope for `caugi`. See `bnlearn`, `gRbase`, or
-  `pgmpy`.
+- **Statistical inference and parameter learning** (e.g. CPT estimation,
+  likelihood, and parameter fitting): also out of scope for `caugi`. See
+  `bnlearn`, `gRbase`, or `pgmpy`.
 
 ## Graph Types Supported
 
