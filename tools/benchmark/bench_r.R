@@ -186,6 +186,17 @@ for (fx in spec$fixtures) {
     results[[length(results) + 1L]] <- mark_to_rows(bm, "d_separated", fx)
   }
 
+  # ---- markov blanket (caugi / bnlearn / dagitty)
+  bm <- bench::mark(
+    caugi = caugi::markov_blanket(cg, v),
+    bnlearn = bnlearn::mb(bn, v),
+    dagitty = dagitty::markovBlanket(dg, v),
+    check = FALSE,
+    min_iterations = 5,
+    time_unit = "s"
+  )
+  results[[length(results) + 1L]] <- mark_to_rows(bm, "markov_blanket", fx)
+
   # ---- subgraph (caugi forces full rebuild via build()) — caugi / igraph / bnlearn
   sub <- unlist(fx$subgraph_nodes)
   bm <- bench::mark(

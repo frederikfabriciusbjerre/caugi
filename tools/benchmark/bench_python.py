@@ -77,6 +77,7 @@ def make_pgmpy_ops(d: DAG, fx: dict) -> dict[str, Callable[[], object]]:
         "children": lambda: d.get_children(v),
         "ancestors": lambda: d.get_ancestors([v]),
         "descendants": lambda: nx.descendants(d, v),
+        "markov_blanket": lambda: d.get_markov_blanket(v),
         # Force materialisation of the subgraph view (pgmpy/NetworkX returns
         # a SubDiGraph view; copying matches caugi's full-rebuild semantics).
         "subgraph": lambda: DAG(d.subgraph(sub).edges()),

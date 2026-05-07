@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-07T13:07:02+0200",
+  "generated": "2026-05-07T13:50:09+0200",
   "host": {
     "nodename": "ucph",
     "sysname": "Linux",
@@ -57,6 +57,6 @@
       "n_edges": 13369
     }
   ],
-  "n_rows": 246,
+  "n_rows": 276,
   "source_files": ["python.csv", "r.csv", "tetrad.csv"]
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Paths;
 
@@ -79,6 +80,9 @@ public final class BenchTetrad {
                         () -> paths.getAncestors(test));
                 runOp(w, "descendants", id, n, p, nEdges,
                         () -> paths.getDescendants(test));
+
+                runOp(w, "markov_blanket", id, n, p, nEdges,
+                        () -> GraphUtils.markovBlanket(test, g));
 
                 runOp(w, "subgraph", id, n, p, nEdges,
                         () -> g.subgraph(subNodes));

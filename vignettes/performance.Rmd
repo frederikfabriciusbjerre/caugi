@@ -96,9 +96,9 @@ while keeping the user experience smooth.
 
 ### Comparison
 
-The comparison covers six operations across a parameter grid of graph sizes $n$
-and edge densities. All packages run on the same generated DAG fixtures so query
-results are directly comparable.
+The comparison covers seven operations across a parameter grid of graph sizes
+$n$ and edge densities. All packages run on the same generated DAG fixtures so
+query results are directly comparable.
 
 ```{r}
 #| label: helpers
@@ -178,6 +178,20 @@ plot_op("ancestors")
 plot_op("descendants")
 ```
 
+#### Markov Blanket
+
+The Markov blanket of a node $v$ is
+`parents(v) ∪ children(v) ∪ parents(children(v))`. `caugi`, `bnlearn`, and
+Tetrad have direct accessors backed by adjacency tables; `dagitty` re-derives it
+from its DSL representation each call; `pgmpy` walks NetworkX edges. `pcalg` and
+`ggm` do not expose a Markov-blanket helper and are omitted.
+
+```{r}
+#| label: plot-markov-blanket
+
+plot_op("markov_blanket")
+```
+
 #### D-separation
 
 For each fixture we compute a valid backdoor adjustment set with
@@ -198,8 +212,8 @@ Subgraph extraction is where we explicitly test graph **building** performance.
 For `caugi` we time `subgraph(cg, nodes) |> build()` together so the CSR rebuild
 cost is captured. `igraph`, `bnlearn`, `pgmpy`, and Tetrad all return
 adjacency-backed subgraphs without an analogous index rebuild step. `pcalg`
-exposes no native subgraph constructor (users typically call
-`graph::subGraph()` on the underlying `graphNEL`), so it is omitted here.
+exposes no native subgraph constructor (users typically call `graph::subGraph()`
+on the underlying `graphNEL`), so it is omitted here.
 
 ```{r}
 #| label: plot-subgraph
