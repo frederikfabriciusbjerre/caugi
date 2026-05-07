@@ -34,7 +34,8 @@ benchmarks$median_ms <- benchmarks$median_ns / 1e6
 This article compares the performance of `caugi` against R packages
 ([`igraph`](https://r.igraph.org/), [`bnlearn`](https://www.bnlearn.com/),
 [`dagitty`](https://dagitty.net/),
-[`ggm`](https://cran.r-project.org/package=ggm)), the Python package
+[`ggm`](https://cran.r-project.org/package=ggm),
+[`pcalg`](https://pcalg.r-forge.r-project.org/)), the Python package
 [`pgmpy`](https://pgmpy.org/), and the Java library
 [Tetrad](https://www.cmu.edu/dietrich/philosophy/tetrad/). We focus on the
 practical trade-offs that arise from different core data structures and design
@@ -55,6 +56,7 @@ Versions:
 - bnlearn `r metadata$versions$bnlearn`
 - dagitty `r metadata$versions$dagitty`
 - ggm `r metadata$versions$ggm`
+- pcalg `r metadata$versions$pcalg`
 - pgmpy `r metadata$versions$pgmpy`
 - Tetrad `r metadata$versions$tetrad`.
 
@@ -104,7 +106,16 @@ results are directly comparable.
 
 library(ggplot2)
 
-pkg_levels <- c("caugi", "igraph", "bnlearn", "dagitty", "ggm", "pgmpy", "tetrad")
+pkg_levels <- c(
+  "caugi",
+  "igraph",
+  "bnlearn",
+  "dagitty",
+  "ggm",
+  "pcalg",
+  "pgmpy",
+  "tetrad"
+)
 benchmarks$package <- factor(benchmarks$package, levels = pkg_levels)
 
 plot_op <- function(op) {
@@ -132,10 +143,10 @@ plot_op <- function(op) {
 #### Relational Queries
 
 Direct neighbor lookups (`parents`, `children`) are $O(1)$ for `caugi`,
-`igraph`, `bnlearn`, and Tetrad---they all maintain adjacency tables. `dagitty`
-and `ggm` re-derive neighbors from a string DSL or adjacency matrix on each call
-and pay a steep linear-in-edges cost; `pgmpy` is a thin wrapper over NetworkX's
-predecessor/successor lookups.
+`igraph`, `bnlearn`, and Tetrad---they all maintain adjacency tables. `dagitty`,
+`ggm`, and `pcalg` re-derive neighbors from a string DSL or adjacency matrix on
+each call and pay a steep linear-in-edges cost; `pgmpy` is a thin wrapper over
+NetworkX's predecessor/successor lookups.
 
 ```{r}
 #| label: plot-parents
@@ -172,7 +183,8 @@ plot_op("descendants")
 For each fixture we compute a valid backdoor adjustment set with
 `caugi::adjustment_set()` once, and pass that same conditioning set to every
 package's d-separation routine. Tetrad uses the m-separation generalisation
-(equivalent on DAGs).
+(equivalent on DAGs). `pcalg::dsep()` follows Lauritzen's moralization-based
+test on a `graphNEL`.
 
 ```{r}
 #| label: plot-dsep
@@ -185,7 +197,9 @@ plot_op("d_separated")
 Subgraph extraction is where we explicitly test graph **building** performance.
 For `caugi` we time `subgraph(cg, nodes) |> build()` together so the CSR rebuild
 cost is captured. `igraph`, `bnlearn`, `pgmpy`, and Tetrad all return
-adjacency-backed subgraphs without an analogous index rebuild step.
+adjacency-backed subgraphs without an analogous index rebuild step. `pcalg`
+exposes no native subgraph constructor (users typically call
+`graph::subGraph()` on the underlying `graphNEL`), so it is omitted here.
 
 ```{r}
 #| label: plot-subgraph

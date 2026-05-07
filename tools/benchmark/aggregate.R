@@ -20,7 +20,10 @@ if (length(csv_files) == 0L) {
   )
 }
 
-parts <- lapply(csv_files, fread)
+# integer64 = "double" prevents per-CSV column-type drift: large integer
+# nanosecond totals from python/tetrad would otherwise be promoted to
+# integer64 and silently truncate r.csv's fractional totals on rbindlist.
+parts <- lapply(csv_files, fread, integer64 = "double")
 benchmarks <- rbindlist(parts, use.names = TRUE, fill = TRUE)
 
 # Enrich with p_raw (the user-set density level) from spec.json so the vignette
@@ -111,6 +114,7 @@ metadata <- list(
     bnlearn = read_pkg("bnlearn"),
     dagitty = read_pkg("dagitty"),
     ggm = read_pkg("ggm"),
+    pcalg = read_pkg("pcalg"),
     pgmpy = get_version(
       "uv",
       c("run", "python", "-c", "import pgmpy; print(pgmpy.__version__)")

@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# R benchmark runner: caugi, igraph, bnlearn, dagitty, ggm.
+# R benchmark runner: caugi, igraph, bnlearn, dagitty, ggm, pcalg.
 #
 # Reads fixtures/spec.json + fixtures/*.edges, runs the standard operations
 # against each package, writes a long-format CSV to results/r.csv.
@@ -13,6 +13,8 @@ suppressPackageStartupMessages({
   library(bnlearn)
   library(dagitty)
   library(ggm)
+  library(pcalg)
+  library(graph)
 })
 
 FIXTURES_DIR <- "fixtures"
@@ -57,7 +59,26 @@ load_fixture <- function(fx) {
   )
   dg <- dagitty::dagitty(dg_str)
 
-  list(cg = cg, ig = ig, bn = bn, dg = dg, am = am, nodes = nodes)
+  # pcalg's searchAM expects the PAG-style 0/1/2/3 amat coding (mark at the
+  # column-end of edge {row, col}): for a -> b, amat[a,b] = 2 (arrowhead at b)
+  # and amat[b,a] = 3 (tail at a).
+  amat_pag <- matrix(0L, nrow(am), ncol(am), dimnames = dimnames(am))
+  amat_pag[am == 1L] <- 2L
+  amat_pag[t(am) == 1L] <- 3L
+
+  # pcalg::dsep operates on a graphNEL.
+  gNEL <- igraph::as_graphnel(ig)
+
+  list(
+    cg = cg,
+    ig = ig,
+    bn = bn,
+    dg = dg,
+    am = am,
+    amat_pag = amat_pag,
+    gNEL = gNEL,
+    nodes = nodes
+  )
 }
 
 # bench::mark returns a tibble; we convert each row into a long-format record.
@@ -89,7 +110,10 @@ for (fx in spec$fixtures) {
   bn <- graphs$bn
   dg <- graphs$dg
   am <- graphs$am
+  amat_pag <- graphs$amat_pag
+  gNEL <- graphs$gNEL
   v <- fx$test_node
+  v_idx <- match(v, graphs$nodes)
 
   # ---- parents
   bm <- bench::mark(
@@ -98,6 +122,7 @@ for (fx in spec$fixtures) {
     bnlearn = bnlearn::parents(bn, v),
     dagitty = dagitty::parents(dg, v),
     ggm = ggm::pa(v, am),
+    pcalg = pcalg::searchAM(amat_pag, v_idx, type = "pa"),
     check = FALSE,
     min_iterations = 5,
     time_unit = "s"
@@ -111,6 +136,7 @@ for (fx in spec$fixtures) {
     bnlearn = bnlearn::children(bn, v),
     dagitty = dagitty::children(dg, v),
     ggm = ggm::ch(v, am),
+    pcalg = pcalg::searchAM(amat_pag, v_idx, type = "ch"),
     check = FALSE,
     min_iterations = 5,
     time_unit = "s"
@@ -123,6 +149,7 @@ for (fx in spec$fixtures) {
     igraph = igraph::subcomponent(ig, v, mode = "in"),
     bnlearn = bnlearn::ancestors(bn, v),
     dagitty = dagitty::ancestors(dg, v),
+    pcalg = pcalg::searchAM(amat_pag, v_idx, type = "an"),
     check = FALSE,
     min_iterations = 5,
     time_unit = "s"
@@ -135,13 +162,14 @@ for (fx in spec$fixtures) {
     igraph = igraph::subcomponent(ig, v, mode = "out"),
     bnlearn = bnlearn::descendants(bn, v),
     dagitty = dagitty::descendants(dg, v),
+    pcalg = pcalg::searchAM(amat_pag, v_idx, type = "de"),
     check = FALSE,
     min_iterations = 5,
     time_unit = "s"
   )
   results[[length(results) + 1L]] <- mark_to_rows(bm, "descendants", fx)
 
-  # ---- d-separation (caugi / bnlearn / dagitty)
+  # ---- d-separation (caugi / bnlearn / dagitty / pcalg)
   if (!is.null(fx$dsep)) {
     x <- fx$dsep$x
     y <- fx$dsep$y
@@ -150,6 +178,7 @@ for (fx in spec$fixtures) {
       caugi = caugi::d_separated(cg, x, y, z),
       bnlearn = bnlearn::dsep(bn, x, y, z),
       dagitty = dagitty::dseparated(dg, x, y, z),
+      pcalg = pcalg::dsep(x, y, z, gNEL),
       check = FALSE,
       min_iterations = 5,
       time_unit = "s"

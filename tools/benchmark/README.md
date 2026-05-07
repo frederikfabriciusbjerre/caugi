@@ -8,9 +8,9 @@ Comparators currently wired up:
 
   | Language | Library                                          |
   | -------- | ------------------------------------------------ |
-  | R        | caugi, igraph, bnlearn, dagitty, ggm             |
+  | R        | caugi, igraph, bnlearn, dagitty, ggm, pcalg      |
   | Python   | pgmpy (networkx, causaldag installed but unused) |
-  | Java     | Tetrad (`io.github.cmu-phil:tetrad-lib:7.6.8`)   |
+  | Java     | Tetrad (`io.github.cmu-phil:tetrad-lib`, version pinned in `build.gradle`) |
 
 Adding a new comparator means appending rows to one of the per-language runners
 --- the fixtures, schema, and aggregator stay the same.
@@ -88,8 +88,8 @@ Re-run `task all` whenever:
 
 - caugi internals affecting query performance change (i.e. anything in
   `src/rust/` that touches the CSR build or query path);
-- a comparator package is upgraded (bnlearn, dagitty, igraph, ggm, pgmpy,
-  Tetrad);
+- a comparator package is upgraded (bnlearn, dagitty, igraph, ggm, pcalg,
+  pgmpy, Tetrad);
 - the benchmark methodology changes (warmup counts, iteration policy, parameter
   grid).
 
