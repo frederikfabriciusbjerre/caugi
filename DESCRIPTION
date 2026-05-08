@@ -59,6 +59,7 @@ Suggests:
     Matrix,
     rmarkdown,
     testthat,
+    tidygraph,
     waldo,
     withr
 VignetteBuilder:
