@@ -6,7 +6,7 @@
 \usage{
 as_caugi(
   x,
-  class = c("DAG", "PDAG", "MPDAG", "ADMG", "PAG", "UNKNOWN"),
+  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -16,9 +16,9 @@ as_caugi(
 \arguments{
 \item{x}{An object to convert to a \code{caugi}.}
 
-\item{class}{"DAG", "PDAG", "MPDAG", "ADMG", "PAG", or "UNKNOWN".
-"PAG" is only supported for integer coded matrices.
-"ADMG" is for Acyclic Directed Mixed Graphs (with \verb{-->} and \verb{<->} edges).}
+\item{class}{Character; one of \code{"DAG"}, \code{"UG"}, \code{"PDAG"}, \code{"MPDAG"},
+\code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"PAG"} is only supported for integer
+coded matrices.}
 
 \item{simple}{logical. If \code{TRUE} (default) the graph will be simple
 (no multiple edges or self-loops).}
@@ -114,10 +114,10 @@ cg <- as_caugi(M, class = "PAG")
 
 }
 \seealso{
-Other conversions: 
-\code{\link{as_adjacency}()},
-\code{\link{as_bnlearn}()},
-\code{\link{as_dagitty}()},
-\code{\link{as_igraph}()}
+Other conversions:
+\code{\link[=as_adjacency]{as_adjacency()}},
+\code{\link[=as_bnlearn]{as_bnlearn()}},
+\code{\link[=as_dagitty]{as_dagitty()}},
+\code{\link[=as_igraph]{as_igraph()}}
 }
 \concept{conversions}

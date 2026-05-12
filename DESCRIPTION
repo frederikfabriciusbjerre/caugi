@@ -57,14 +57,14 @@ Suggests:
     knitr,
     MASS,
     Matrix,
-    rextendr,
     rmarkdown,
     testthat,
+    tidygraph,
     waldo,
     withr
 VignetteBuilder:
     knitr
-Config/rextendr/version: 0.4.2
+Config/rextendr/version: 0.5.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

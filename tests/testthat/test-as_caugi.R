@@ -278,6 +278,17 @@ test_that("igraph without names: vertex order is preserved (issue #XX)", {
   expect_true(all(edges_df$to %in% expected_names))
 })
 
+test_that("tidygraph interface to igraph", {
+  skip_if_not_installed("tidygraph")
+  tg <- tidygraph::create_path(3)
+  adj_matrix <- rbind(tg[1], tg[2], tg[3])
+  cg <- as_caugi(tg, class = "PDAG")
+  expect_equal(
+    unname(as_adjacency(cg)),
+    unname(adj_matrix)
+  )
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────── graphNEL conversion ──────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
