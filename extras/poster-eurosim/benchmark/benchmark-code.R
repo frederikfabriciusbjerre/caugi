@@ -153,7 +153,7 @@ p1
 p2
 
 ggsave(
-  filename = "ancesors_descendants.svg",
+  filename = "../images/ancesors_descendants.svg",
   plot = p1,
   width = 12,
   height = 7,
@@ -161,7 +161,7 @@ ggsave(
 )
 
 ggsave(
-  filename = "dsep.svg",
+  filename = "../images/dsep.svg",
   plot = p2,
   width = 12,
   height = 7,
