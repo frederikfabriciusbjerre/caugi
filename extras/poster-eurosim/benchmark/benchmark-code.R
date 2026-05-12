@@ -26,7 +26,6 @@ algo_colors <- c(
 )
 
 plot_parameterized_benchmark <- function(bm, title = NULL) {
-
   bm_mod <- within(
     bm,
     {
@@ -53,7 +52,7 @@ plot_parameterized_benchmark <- function(bm, title = NULL) {
       plot.title = element_text(size = 22, face = "bold", hjust = 0.5),
 
       axis.title = element_text(size = 18),
-      axis.text  = element_text(size = 14),
+      axis.text = element_text(size = 14),
       legend.text = element_text(size = 14),
 
       legend.position = "top",
