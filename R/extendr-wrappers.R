@@ -116,6 +116,10 @@ rs_to_cpdag <- function(session) .Call(wrap__rs_to_cpdag, session)
 
 rs_meek_closure <- function(session) .Call(wrap__rs_meek_closure, session)
 
+rs_enumerate_dags <- function(session) .Call(wrap__rs_enumerate_dags, session)
+
+rs_count_dags <- function(session) .Call(wrap__rs_count_dags, session)
+
 rs_skeleton <- function(session) .Call(wrap__rs_skeleton, session)
 
 rs_moralize <- function(session) .Call(wrap__rs_moralize, session)

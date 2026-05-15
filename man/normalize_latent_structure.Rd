@@ -51,7 +51,9 @@ Journal of Statistics, 43(3), 625–648. \doi{10.1111/sjos.12194}
 \seealso{
 Other operations: 
 \code{\link{condition_marginalize}()},
+\code{\link{count_dags}()},
 \code{\link{dag_from_pdag}()},
+\code{\link{enumerate_dags}()},
 \code{\link{exogenize}()},
 \code{\link{latent_project}()},
 \code{\link{meek_closure}()},
