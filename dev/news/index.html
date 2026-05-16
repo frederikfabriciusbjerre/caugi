@@ -42,6 +42,10 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="caugi-development-version">caugi (development version)<a class="anchor" aria-label="anchor" href="#caugi-development-version"></a></h2>
+<div class="section level3">
+<h3 id="improvements-development-version">Improvements<a class="anchor" aria-label="anchor" href="#improvements-development-version"></a></h3>
+<ul><li>Meek-closed PDAGs are now reported with <code>@graph_class = "MPDAG"</code> instead of <code>"PDAG"</code>. This affects the result of <code><a href="../reference/meek_closure.html">meek_closure()</a></code> and <code>generate_graph(class = "CPDAG")</code>. Predicates and verbs defined on PDAGs (<code><a href="../reference/is_pdag.html">is_pdag()</a></code>, <code><a href="../reference/mutate_caugi.html">mutate_caugi()</a></code>, etc.) continue to accept MPDAGs unchanged.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.2.0" id="caugi-120">caugi 1.2.0<a class="anchor" aria-label="anchor" href="#caugi-120"></a></h2><p class="text-muted">CRAN release: 2026-05-05</p>

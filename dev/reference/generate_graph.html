@@ -72,7 +72,9 @@ of <code>m</code> or <code>p</code> must be supplied.</p></dd>
 
 
 <dt id="arg-class">class<a class="anchor" aria-label="anchor" href="#arg-class"></a></dt>
-<dd><p>"DAG" or "CPDAG".</p></dd>
+<dd><p>"DAG" or "CPDAG". When <code>"CPDAG"</code>, the result is the Meek
+closure of the sampled DAG and is returned with class <code>"MPDAG"</code>; a true
+CPDAG type is not yet implemented.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
@@ -81,7 +83,8 @@ of <code>m</code> or <code>p</code> must be supplied.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The sampled <code>caugi</code> object.</p>
+    <p>The sampled <code>caugi</code> object. <code>class = "DAG"</code> returns a <code>"DAG"</code>;
+<code>class = "CPDAG"</code> returns an <code>"MPDAG"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -95,7 +98,8 @@ of <code>m</code> or <code>p</code> must be supplied.</p></dd>
 <span class="r-in"><span><span class="va">dag</span> <span class="op">&lt;-</span> <span class="fu">generate_graph</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">5</span>, m <span class="op">=</span> <span class="fl">4</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># generate a random CPDAG with 5 nodes and edge probability 0.3</span></span></span>
-<span class="r-in"><span><span class="va">cpdag</span> <span class="op">&lt;-</span> <span class="fu">generate_graph</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">5</span>, p <span class="op">=</span> <span class="fl">0.3</span>, class <span class="op">=</span> <span class="st">"CPDAG"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># (returned as an MPDAG)</span></span></span>
+<span class="r-in"><span><span class="va">mpdag</span> <span class="op">&lt;-</span> <span class="fu">generate_graph</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">5</span>, p <span class="op">=</span> <span class="fl">0.3</span>, class <span class="op">=</span> <span class="st">"CPDAG"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

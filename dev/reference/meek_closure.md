@@ -17,7 +17,8 @@ meek_closure(cg)
 
 ## Value
 
-A `caugi` object of class `"PDAG"` that is closed under Meek's rules.
+A `caugi` object closed under Meek's rules. Class `"MPDAG"` in general,
+or `"DAG"` if the closure orients every edge.
 
 ## References
 
