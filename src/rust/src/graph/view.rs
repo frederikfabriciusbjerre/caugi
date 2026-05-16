@@ -1,6 +1,7 @@
 use super::admg::Admg;
 use super::ag::Ag;
 use super::dag::Dag;
+use super::mpdag::Mpdag;
 use super::pdag::Pdag;
 use super::ug::Ug;
 use super::CaugiGraph;
@@ -42,6 +43,7 @@ impl NeighborMode {
 pub enum GraphView {
     Dag(Arc<Dag>),
     Pdag(Arc<Pdag>),
+    Mpdag(Arc<Mpdag>),
     Ug(Arc<Ug>),
     Admg(Arc<Admg>),
     Ag(Arc<Ag>),
@@ -54,6 +56,7 @@ impl GraphView {
         match self {
             GraphView::Dag(d) => d.core_ref(),
             GraphView::Pdag(p) => p.core_ref(),
+            GraphView::Mpdag(m) => m.as_pdag().core_ref(),
             GraphView::Ug(u) => u.core_ref(),
             GraphView::Admg(a) => a.core_ref(),
             GraphView::Ag(g) => g.core_ref(),
@@ -66,6 +69,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => g.n(),
             GraphView::Pdag(g) => g.n(),
+            GraphView::Mpdag(g) => g.n(),
             GraphView::Ug(g) => g.n(),
             GraphView::Admg(g) => g.n(),
             GraphView::Ag(g) => g.n(),
@@ -145,6 +149,18 @@ impl GraphView {
             (GraphView::Pdag(g), NeighborMode::In) => Ok(g.parents_of(i).to_vec()),
             (GraphView::Pdag(g), NeighborMode::Out) => Ok(g.children_of(i).to_vec()),
             (GraphView::Pdag(g), NeighborMode::Undirected) => Ok(g.undirected_of(i).to_vec()),
+            (GraphView::Mpdag(m), NeighborMode::All) => Ok(m.as_pdag().neighbors_of(i).to_vec()),
+            (GraphView::Mpdag(m), NeighborMode::In) => Ok(m.as_pdag().parents_of(i).to_vec()),
+            (GraphView::Mpdag(m), NeighborMode::Out) => Ok(m.as_pdag().children_of(i).to_vec()),
+            (GraphView::Mpdag(m), NeighborMode::Undirected) => {
+                Ok(m.as_pdag().undirected_of(i).to_vec())
+            }
+            (GraphView::Mpdag(_), NeighborMode::Bidirected) => {
+                Err("mode 'bidirected' not valid for MPDAG (no bidirected edges)".into())
+            }
+            (GraphView::Mpdag(_), NeighborMode::Partial) => {
+                Err("mode 'partial' not valid for MPDAG (no partial edges)".into())
+            }
             (GraphView::Pdag(_), NeighborMode::Bidirected) => {
                 Err("mode 'bidirected' not valid for PDAG (no bidirected edges)".into())
             }
@@ -260,6 +276,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.ancestors_of(i)),
             GraphView::Pdag(g) => Ok(g.ancestors_of(i)),
+            GraphView::Mpdag(m) => Ok(m.as_pdag().ancestors_of(i)),
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.ancestors_of(i)),
             GraphView::Ug(_) => Err("ancestors_of not defined for UG".into()),
@@ -270,6 +287,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.descendants_of(i)),
             GraphView::Pdag(g) => Ok(g.descendants_of(i)),
+            GraphView::Mpdag(m) => Ok(m.as_pdag().descendants_of(i)),
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.descendants_of(i)),
             GraphView::Ug(_) => Err("descendants_of not defined for UG".into()),
@@ -280,6 +298,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.anteriors_of(i)),
             GraphView::Pdag(g) => Ok(g.anteriors_of(i)),
+            GraphView::Mpdag(m) => Ok(m.as_pdag().anteriors_of(i)),
             GraphView::Admg(_) => Err("anteriors_of not defined for ADMG".into()),
             GraphView::Ag(g) => Ok(g.anteriors_of(i)),
             GraphView::Ug(_) => Err("anteriors_of not defined for UG".into()),
@@ -290,6 +309,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.posteriors_of(i)),
             GraphView::Pdag(g) => Ok(g.posteriors_of(i)),
+            GraphView::Mpdag(m) => Ok(m.as_pdag().posteriors_of(i)),
             GraphView::Admg(_) => Err("posteriors_of not defined for ADMG".into()),
             GraphView::Ag(g) => Ok(g.posteriors_of(i)),
             GraphView::Ug(_) => Err("posteriors_of not defined for UG".into()),
@@ -300,6 +320,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Pdag(g) => Ok(g.markov_blanket_of(i)),
+            GraphView::Mpdag(m) => Ok(m.as_pdag().markov_blanket_of(i)),
             GraphView::Ug(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Admg(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Ag(g) => Ok(g.markov_blanket_of(i)),
@@ -310,6 +331,7 @@ impl GraphView {
         match self {
             GraphView::Dag(g) => Ok(g.exogenous_nodes()),
             GraphView::Pdag(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
+            GraphView::Mpdag(m) => Ok(m.as_pdag().exogenous_nodes(undirected_as_parents)),
             GraphView::Ug(g) => Ok(g.exogenous_nodes()),
             GraphView::Admg(g) => Ok(g.exogenous_nodes()),
             GraphView::Ag(g) => {
@@ -334,6 +356,7 @@ impl GraphView {
             GraphView::Dag(g) => Ok(g.topological_sort()),
             GraphView::Admg(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Pdag(_) => Err("topological_sort is only defined for DAGs".into()),
+            GraphView::Mpdag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ug(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Raw(_) => Err("topological_sort is only defined for DAGs".into()),
@@ -472,6 +495,15 @@ impl GraphView {
                 let p = super::pdag::Pdag::new(std::sync::Arc::new(core2))?;
                 GraphView::Pdag(std::sync::Arc::new(p))
             }
+            GraphView::Mpdag(_) => {
+                let p = super::pdag::Pdag::new(std::sync::Arc::new(core2))?;
+                if p.is_meek_closed() {
+                    let m = super::mpdag::Mpdag::from_closed_unchecked(p);
+                    GraphView::Mpdag(std::sync::Arc::new(m))
+                } else {
+                    GraphView::Pdag(std::sync::Arc::new(p))
+                }
+            }
             GraphView::Ug(_) => {
                 let u = super::ug::Ug::new(std::sync::Arc::new(core2))?;
                 GraphView::Ug(std::sync::Arc::new(u))
@@ -491,17 +523,38 @@ impl GraphView {
 }
 
 impl GraphView {
+    /// Convert to a CPDAG (essential graph of the Markov equivalence class).
+    ///
+    /// Only defined for DAGs. For PDAGs/MPDAGs, a true `to_cpdag` would
+    /// require extending the PDAG to a consistent DAG (Dor-Tarsi) and then
+    /// computing that DAG's CPDAG, which is not yet implemented. Use
+    /// `to_mpdag` instead to apply Meek closure.
     pub fn to_cpdag(&self) -> Result<GraphView, String> {
         match self {
             GraphView::Dag(d) => {
-                let p = d.to_cpdag()?;
-                Ok(GraphView::Pdag(std::sync::Arc::new(p)))
+                let m = d.to_cpdag()?;
+                Ok(GraphView::Mpdag(std::sync::Arc::new(m)))
+            }
+            _ => Err("to_cpdag is only defined for DAGs".into()),
+        }
+    }
+
+    /// Apply Meek closure and return an MPDAG.
+    ///
+    /// Defined for DAGs (delegates to `to_cpdag` since a CPDAG is an MPDAG),
+    /// PDAGs (applies Meek closure), and MPDAGs (identity).
+    pub fn to_mpdag(&self) -> Result<GraphView, String> {
+        match self {
+            GraphView::Dag(d) => {
+                let m = d.to_cpdag()?;
+                Ok(GraphView::Mpdag(std::sync::Arc::new(m)))
             }
             GraphView::Pdag(p) => {
-                let cp = p.to_cpdag()?;
-                Ok(GraphView::Pdag(std::sync::Arc::new(cp)))
+                let m = p.to_mpdag()?;
+                Ok(GraphView::Mpdag(std::sync::Arc::new(m)))
             }
-            _ => Err("to_cpdag is only defined for DAGs and PDAGs".into()),
+            GraphView::Mpdag(m) => Ok(GraphView::Mpdag(std::sync::Arc::clone(m))),
+            _ => Err("to_mpdag is only defined for DAGs, PDAGs, and MPDAGs".into()),
         }
     }
 
@@ -513,6 +566,10 @@ impl GraphView {
             }
             GraphView::Pdag(p) => {
                 let ug = p.skeleton()?;
+                Ok(GraphView::Ug(Arc::new(ug)))
+            }
+            GraphView::Mpdag(m) => {
+                let ug = m.as_pdag().skeleton()?;
                 Ok(GraphView::Ug(Arc::new(ug)))
             }
             _ => Err("skeleton is defined for DAGs and PDAGs only".into()),
@@ -614,6 +671,13 @@ impl GraphView {
             }
             GraphView::Pdag(p) => {
                 use crate::graph::alg::bitset;
+                let mask = bitset::ancestors_mask(seeds, |u| p.parents_of(u), p.n());
+                let keep = bitset::collect_from_mask(&mask);
+                self.induced_subgraph(&keep)
+            }
+            GraphView::Mpdag(m) => {
+                use crate::graph::alg::bitset;
+                let p = m.as_pdag();
                 let mask = bitset::ancestors_mask(seeds, |u| p.parents_of(u), p.n());
                 let keep = bitset::collect_from_mask(&mask);
                 self.induced_subgraph(&keep)
@@ -1111,9 +1175,14 @@ mod tests {
             "all_adjustment_sets_admg is only defined for ADMGs"
         );
 
-        // Pdag -> CPDAG passthrough branch
-        let cp = v_pdag.to_cpdag().unwrap();
-        assert!(matches!(cp, GraphView::Pdag(_)));
+        // Pdag -> MPDAG via meek closure
+        let cp = v_pdag.to_mpdag().unwrap();
+        assert!(matches!(cp, GraphView::Mpdag(_)));
+        // to_cpdag is DAG-only
+        assert_eq!(
+            v_pdag.to_cpdag().unwrap_err(),
+            "to_cpdag is only defined for DAGs"
+        );
 
         // DAG-only transform helpers error branches on non-DAG
         assert_eq!(

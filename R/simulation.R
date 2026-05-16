@@ -8,17 +8,21 @@
 #' of `m` or `p` must be supplied.
 #' @param p Numeric in `[0,1]`. Probability of edge creation. Exactly one of
 #' `m` or `p` must be supplied.
-#' @param class "DAG" or "CPDAG".
+#' @param class "DAG" or "CPDAG". When `"CPDAG"`, the result is the Meek
+#'   closure of the sampled DAG and is returned with class `"MPDAG"`; a true
+#'   CPDAG type is not yet implemented.
 #' @param seed Optional integer; random seed for reproducibility.
 #'
-#' @returns The sampled `caugi` object.
+#' @returns The sampled `caugi` object. `class = "DAG"` returns a `"DAG"`;
+#'   `class = "CPDAG"` returns an `"MPDAG"`.
 #'
 #' @examples
 #' # generate a random DAG with 5 nodes and 4 edges
 #' dag <- generate_graph(n = 5, m = 4, class = "DAG")
 #'
 #' # generate a random CPDAG with 5 nodes and edge probability 0.3
-#' cpdag <- generate_graph(n = 5, p = 0.3, class = "CPDAG")
+#' # (returned as an MPDAG)
+#' mpdag <- generate_graph(n = 5, p = 0.3, class = "CPDAG")
 #'
 #' @family simulation functions
 #' @concept simulation

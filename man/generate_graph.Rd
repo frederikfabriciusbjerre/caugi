@@ -15,12 +15,15 @@ of \code{m} or \code{p} must be supplied.}
 \item{p}{Numeric in \verb{[0,1]}. Probability of edge creation. Exactly one of
 \code{m} or \code{p} must be supplied.}
 
-\item{class}{"DAG" or "CPDAG".}
+\item{class}{"DAG" or "CPDAG". When \code{"CPDAG"}, the result is the Meek
+closure of the sampled DAG and is returned with class \code{"MPDAG"}; a true
+CPDAG type is not yet implemented.}
 
 \item{seed}{Optional integer; random seed for reproducibility.}
 }
 \value{
-The sampled \code{caugi} object.
+The sampled \code{caugi} object. \code{class = "DAG"} returns a \code{"DAG"};
+\code{class = "CPDAG"} returns an \code{"MPDAG"}.
 }
 \description{
 Sample a random DAG or CPDAG using
@@ -31,7 +34,8 @@ Erdős-Rényi for random graph generation.
 dag <- generate_graph(n = 5, m = 4, class = "DAG")
 
 # generate a random CPDAG with 5 nodes and edge probability 0.3
-cpdag <- generate_graph(n = 5, p = 0.3, class = "CPDAG")
+# (returned as an MPDAG)
+mpdag <- generate_graph(n = 5, p = 0.3, class = "CPDAG")
 
 }
 \seealso{

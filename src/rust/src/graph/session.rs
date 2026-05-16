@@ -10,6 +10,7 @@ use super::admg::Admg;
 use super::ag::Ag;
 use super::builder::GraphBuilder;
 use super::dag::Dag;
+use super::mpdag::Mpdag;
 use super::pdag::Pdag;
 use super::ug::Ug;
 use super::view::GraphView;
@@ -489,11 +490,8 @@ impl GraphSession {
             }
             GraphClass::Mpdag => {
                 let pdag = Pdag::new(core).map_err(|e| self.map_error(e))?;
-                if pdag.is_meek_closed() {
-                    Ok(GraphView::Pdag(Arc::new(pdag)))
-                } else {
-                    Err("graph is not MPDAG (not closed under Meek rules)".to_string())
-                }
+                let mpdag = Mpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
+                Ok(GraphView::Mpdag(Arc::new(mpdag)))
             }
             GraphClass::Ug => {
                 let ug = Ug::new(core).map_err(|e| self.map_error(e))?;
@@ -683,7 +681,7 @@ impl GraphSession {
     pub fn is_mpdag(&mut self) -> Result<bool, String> {
         let core = self.core()?;
         match Pdag::new(Arc::new(core.as_ref().clone())) {
-            Ok(p) => Ok(p.is_meek_closed()),
+            Ok(p) => Ok(Mpdag::try_new(p).is_ok()),
             Err(_) => Ok(false),
         }
     }
@@ -712,11 +710,8 @@ impl GraphSession {
             GraphClass::Mpdag => {
                 let pdag =
                     Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
-                if pdag.is_meek_closed() {
-                    Ok(GraphClass::Mpdag)
-                } else {
-                    Err("graph is not MPDAG (not closed under Meek rules)".to_string())
-                }
+                Mpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
+                Ok(GraphClass::Mpdag)
             }
             GraphClass::Ug => {
                 Ug::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
@@ -764,7 +759,7 @@ impl GraphSession {
         let core = self.core()?;
         let pdag = Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
         let closed = pdag.meek_closure().map_err(|e| self.map_error(e))?;
-        Ok(GraphView::Pdag(Arc::new(closed)))
+        Ok(GraphView::Mpdag(Arc::new(closed)))
     }
 
     /// Skeleton of the graph.
@@ -1432,7 +1427,7 @@ mod tests {
         );
 
         let to_cpdag = session.to_cpdag().unwrap();
-        assert!(matches!(to_cpdag, GraphView::Pdag(_)));
+        assert!(matches!(to_cpdag, GraphView::Mpdag(_)));
 
         let skeleton = session.skeleton().unwrap();
         assert!(matches!(skeleton, GraphView::Ug(_)));
@@ -1568,7 +1563,7 @@ mod tests {
         mpdag_edges.push(0, 2, d);
         mpdag_edges.push(1, 2, d);
         mpdag.set_edges(mpdag_edges);
-        assert!(matches!(&*mpdag.view().unwrap(), GraphView::Pdag(_)));
+        assert!(matches!(&*mpdag.view().unwrap(), GraphView::Mpdag(_)));
         assert_eq!(
             mpdag.resolve_class(GraphClass::Mpdag).unwrap(),
             GraphClass::Mpdag
@@ -1938,13 +1933,18 @@ mod tests {
         let exo2 = pdag.exogenous_nodes(true).unwrap();
         assert!(exo2.contains(&0));
 
-        // to_cpdag on PDAG applies Meek closure
-        let cpdag = pdag.to_cpdag().unwrap();
-        match cpdag {
-            GraphView::Pdag(cp) => {
+        // to_cpdag is DAG-only; on a PDAG it errors.
+        assert_eq!(
+            pdag.to_cpdag().unwrap_err(),
+            "to_cpdag is only defined for DAGs"
+        );
+        // meek_closure on a PDAG yields an MPDAG.
+        let mpdag = pdag.meek_closure().unwrap();
+        match mpdag {
+            GraphView::Mpdag(cp) => {
                 assert_eq!(cp.children_of(1), &[2]); // 0->1, 1--2 => 1->2
             }
-            _ => panic!("expected PDAG"),
+            _ => panic!("expected MPDAG"),
         }
 
         // Error paths for PDAG

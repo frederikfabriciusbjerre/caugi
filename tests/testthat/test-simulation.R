@@ -74,9 +74,9 @@ test_that("p branch draws edges via rbinom", {
   expect_identical(nrow(edges(g)), expected_m)
 })
 
-test_that("CPDAG class returns PDAG class and same nodes", {
+test_that("CPDAG class returns MPDAG class and same nodes", {
   g <- generate_graph(6, m = 5, class = "CPDAG")
-  expect_identical(g@graph_class, "PDAG")
+  expect_identical(g@graph_class, "MPDAG")
   expect_identical(nrow(nodes(g)), 6L)
 })
 
@@ -84,7 +84,7 @@ test_that("CPDAG generation returns a valid CPDAG with supported edge types", {
   set.seed(2026)
   g <- generate_graph(10, m = 14L, class = "CPDAG")
 
-  expect_identical(g@graph_class, "PDAG")
+  expect_identical(g@graph_class, "MPDAG")
   expect_true(is_pdag(g))
   expect_true(is_cpdag(g))
   expect_true(is_acyclic(g, force_check = TRUE))

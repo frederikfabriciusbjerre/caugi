@@ -1,5 +1,12 @@
 # caugi (development version)
 
+## Improvements
+
+- Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"` instead of
+  `"PDAG"`. This affects the result of `meek_closure()` and
+  `generate_graph(class = "CPDAG")`. Predicates and verbs defined on PDAGs
+  (`is_pdag()`, `mutate_caugi()`, etc.) continue to accept MPDAGs unchanged.
+
 # caugi 1.2.0
 
 ## New Features

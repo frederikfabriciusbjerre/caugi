@@ -4,6 +4,7 @@
 use super::Pdag;
 use crate::edges::EdgeClass;
 use crate::graph::alg::{csr, meek};
+use crate::graph::mpdag::Mpdag;
 use crate::graph::ug::Ug;
 use crate::graph::CaugiGraph;
 use std::collections::HashSet;
@@ -24,8 +25,13 @@ impl Pdag {
         Ug::new(Arc::new(core))
     }
 
-    /// Apply Meek closure on a PDAG and return the resulting CPDAG.
-    pub fn to_cpdag(&self) -> Result<Pdag, String> {
+    /// Apply Meek closure on a PDAG and return the resulting MPDAG.
+    ///
+    /// This is *not* `Pdag → Cpdag`: closure only orients edges that Meek's
+    /// rules force, so the result may include non-compelled (background-
+    /// knowledge) orientations and need not have chordal chain components.
+    /// For a true CPDAG, start from a `Dag` and call `Dag::to_cpdag`.
+    pub fn to_mpdag(&self) -> Result<Mpdag, String> {
         let n = self.n() as usize;
 
         let mut pa: Vec<HashSet<u32>> = vec![HashSet::new(); n];
@@ -116,12 +122,13 @@ impl Pdag {
             /*simple=*/ true,
             self.core_ref().registry.clone(),
         )?;
-        Pdag::new(Arc::new(core))
+        let pdag = Pdag::new(Arc::new(core))?;
+        Ok(Mpdag::from_closed_unchecked(pdag))
     }
 
     /// Orient all compelled edges implied by Meek rules (R1..R4).
-    pub fn meek_closure(&self) -> Result<Pdag, String> {
-        self.to_cpdag()
+    pub fn meek_closure(&self) -> Result<Mpdag, String> {
+        self.to_mpdag()
     }
 }
 

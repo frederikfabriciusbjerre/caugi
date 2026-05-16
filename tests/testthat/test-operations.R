@@ -820,7 +820,7 @@ test_that("meek_closure is idempotent and preserves node names", {
   c1 <- meek_closure(g)
   c2 <- meek_closure(c1)
 
-  expect_equal(c1@graph_class, "PDAG")
+  expect_equal(c1@graph_class, "MPDAG")
   expect_equal(nodes(c1)$name, nodes(g)$name)
   expect_equal(edges(c1), edges(c2))
 })
@@ -920,9 +920,9 @@ test_that("dag_from_pdag orients each undirected edge exactly once", {
   expect_equal(nrow(ed), 3L)
 })
 
-test_that("pgmpy Meek fixtures: rs_to_cpdag on PDAG applies Meek closure", {
+test_that("pgmpy Meek fixtures: meek_closure on PDAG applies Meek closure", {
   cpdag_from_pdag <- function(pdag) {
-    cp_session <- rs_to_cpdag(pdag@session)
+    cp_session <- rs_meek_closure(pdag@session)
     .session_to_caugi(cp_session, node_names = nodes(pdag)$name)
   }
   edge_set <- function(g) {

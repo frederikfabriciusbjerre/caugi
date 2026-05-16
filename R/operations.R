@@ -71,8 +71,8 @@ skeleton <- function(cg) {
 #'
 #' @param cg A `caugi` object. Must be PDAG-compatible.
 #'
-#' @returns A `caugi` object of class `"PDAG"` that is closed under Meek's
-#'   rules.
+#' @returns A `caugi` object closed under Meek's rules. Class `"MPDAG"` in
+#'   general, or `"DAG"` if the closure orients every edge.
 #'
 #' @references
 #' C. Meek (1995). Causal inference and causal explanation with background

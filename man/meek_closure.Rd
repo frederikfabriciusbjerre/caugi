@@ -10,8 +10,8 @@ meek_closure(cg)
 \item{cg}{A \code{caugi} object. Must be PDAG-compatible.}
 }
 \value{
-A \code{caugi} object of class \code{"PDAG"} that is closed under Meek's
-rules.
+A \code{caugi} object closed under Meek's rules. Class \code{"MPDAG"} in
+general, or \code{"DAG"} if the closure orients every edge.
 }
 \description{
 Applies Meek's orientation rules (R1--R4) repeatedly to a PDAG until no more
