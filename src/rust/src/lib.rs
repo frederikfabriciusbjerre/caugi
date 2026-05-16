@@ -3,8 +3,11 @@
 
 use extendr_api::prelude::*;
 use std::str::FromStr;
+pub mod constraints;
 pub mod edges;
 pub mod graph;
+
+use constraints::parse::parse_formula;
 
 use edges::{EdgeClass, EdgeRegistry, EdgeSpec, Mark};
 use graph::builder::GraphBuilder;
@@ -2127,6 +2130,17 @@ fn rs_all_adjustment_sets_admg(
     extendr_api::prelude::List::from_values(robjs).into_robj()
 }
 
+/// Parse a single constraint formula AST (as built by R/constraints.R)
+/// and return its Rust `Debug` rendering. Used as a smoke test for the
+/// R → Rust round-trip until the evaluator lands.
+#[extendr]
+fn rs_constraints_parse_formula(formula: Robj) -> String {
+    match parse_formula(&formula) {
+        Ok(f) => format!("{:?}", f),
+        Err(e) => throw_r_error(e),
+    }
+}
+
 extendr_module! {
     mod caugi;
     // registry
@@ -2224,4 +2238,7 @@ extendr_module! {
     fn deserialize_caugi;
     fn rs_serialize_graphml;
     fn deserialize_graphml;
+
+    // constraints
+    fn rs_constraints_parse_formula;
 }

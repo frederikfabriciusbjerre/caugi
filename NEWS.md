@@ -1,5 +1,13 @@
 # caugi (development version)
 
+## New Features
+
+- Skeleton for an upcoming constraint system (`caugi_constraints`,
+  experimental, unexported). At this stage only the S7 class and a minimal
+  constructor exist; operators, evaluation, and solver integration land in
+  subsequent commits. See `extras/design/constraints-plan.md` for the full
+  design.
+
 ## Improvements
 
 - Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"` instead of

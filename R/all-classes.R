@@ -90,6 +90,37 @@ S7::method(
   knitr::asis_output(paste0("```{", x@format, "}\n", x@content, "\n```\n"))
 }
 
+#' S7 Class for caugi Constraints (experimental)
+#'
+#' An experimental S7 object representing a set of structural constraints
+#' over a graph. A `caugi_constraints` carries a list of unevaluated
+#' constraint expressions, a parallel list of classified AST nodes, and an
+#' AST schema version. Operator surface, evaluator, and solver
+#' integration are not yet implemented; see the design note in
+#' `extras/design/constraints-plan.md`.
+#'
+#' @param expressions A list of unevaluated constraint expressions.
+#' @param formulas A list of classified AST nodes, one per expression.
+#'   Each node is a nested named list with a `kind` tag (`"atom"`,
+#'   `"not"`, `"and"`, `"or"`, …) and kind-specific fields.
+#' @param schema_version Integer; AST schema version. Currently fixed at `1L`.
+#'
+#' @family constraints
+#' @concept constraints
+#' @keywords internal
+caugi_constraints_class <- S7::new_class(
+  "caugi_constraints",
+  parent = S7::S7_object,
+  properties = list(
+    expressions = S7::class_list,
+    formulas = S7::class_list,
+    schema_version = S7::new_property(
+      S7::class_integer,
+      default = 1L
+    )
+  )
+)
+
 #' S7 Class for caugi Plot
 #'
 #' An S7 object that wraps a grid gTree for displaying caugi graphs.

@@ -57,6 +57,22 @@
     `all.equal.caugi::caugi`,
     envir = asNamespace("base")
   )
+
+  # Register format / print for caugi_constraints. Using S3 here (rather
+  # than S7::method) keeps the caugi namespace from shadowing
+  # base::format, which a mock-based test in test-methods.R depends on.
+  registerS3method(
+    "format",
+    "caugi::caugi_constraints",
+    `format.caugi::caugi_constraints`,
+    envir = asNamespace("base")
+  )
+  registerS3method(
+    "print",
+    "caugi::caugi_constraints",
+    `print.caugi::caugi_constraints`,
+    envir = asNamespace("base")
+  )
 }
 
 # nocov end
