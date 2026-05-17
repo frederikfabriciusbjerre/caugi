@@ -1,0 +1,264 @@
+---
+title: "Constraints on Caugi Graphs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Constraints on Caugi Graphs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(caugi)
+```
+
+## Overview
+
+`caugi_constraints()` lets you express structural constraints on a graph
+as Boolean formulas over caugi's existing query predicates. The same
+object covers background knowledge for causal discovery, sensitivity
+analysis ("would this edge flip still satisfy?"), assumption stress
+tests, and composing expert priors with algorithmic output.
+
+This vignette is a quick tour of the surface. The full design is in
+`extras/design/constraints-plan.md` in the repository.
+
+> The constraint system is **experimental**. The surface is stable
+> enough to build against, but the native solver / encoder (Phase 2 in
+> the design doc) is not yet wired up.
+
+## A worked example
+
+```{r}
+cg <- caugi(
+  A %-->% B + C,
+  B %-->% D,
+  C %-->% D,
+  class = "DAG"
+)
+
+ctr <- caugi_constraints(
+  A %-->% B,                       # this edge must hold
+  !(D %in% ancestors(A)),          # D must not reach A
+  c("A") %<<% c("B", "C") %<<% c("D")   # topological precedence
+)
+
+satisfies(cg, ctr)
+```
+
+When something fails, `violations()` tells you which formula:
+
+```{r}
+bad <- caugi_constraints(
+  A %-->% B,
+  B %-->% A          # this one will fail
+)
+violations(cg, bad)
+```
+
+## Atom vocabulary
+
+Atoms are the leaves of the AST. Every form composes with the boolean
+combinators below.
+
+### Edge atoms
+
+Any registered edge operator: `%-->%`, `%---%`, `%<->%`, `%o->%`,
+`%--o%`, `%o-o%`.
+
+```{r}
+caugi_constraints(A %-->% B, A %---% B)
+```
+
+### Set-membership
+
+R's built-in `%in%` over caugi's query functions. Tier-A queries
+(`parents`, `children`, `neighbors`, `spouses`, `markov_blanket`,
+`districts`) and tier-B queries (`ancestors`, `descendants`,
+`anteriors`, `posteriors`) are recognised.
+
+```{r}
+caugi_constraints(
+  A %in% parents(Y),
+  B %in% ancestors(Y),
+  C %in% markov_blanket(Y)
+)
+```
+
+### Topological precedence
+
+`L %<<% R` desugars to a conjunction of `!(r %in% ancestors(l))` over
+the cartesian product. Chains expand into adjacent-pair desugarings.
+
+```{r}
+caugi_constraints(
+  c("A") %<<% c("B", "C") %<<% c("D")
+)
+```
+
+### Predicates
+
+```{r}
+caugi_constraints(
+  acyclic(),
+  collider(A, B, C),     # B is a collider on the triple (A, B, C)
+  v_structure(A, B, C),  # collider + A, C non-adjacent
+  dsep(X, Y, Z)          # d-separation (evaluator-only)
+)
+```
+
+## Boolean structure
+
+Inside `caugi_constraints(...)`, use `!`, `&` / `&&`, `|` / `||`, plus
+`xor()` and `implies()`.
+
+```{r}
+caugi_constraints(
+  xor(A %-->% B, B %-->% A),
+  implies(A %in% ancestors(Y), !(Y %-->% A))
+)
+```
+
+## Quantifiers
+
+`forall(X, body)` and `exists(Z, body)`. The variable ranges over the
+nodes currently in the graph; multi-variable forms use `c(...)`.
+
+```{r}
+caugi_constraints(
+  forall(X, !(X %in% ancestors(X))),         # no node is its own ancestor
+  exists(Z, Z %-->% B & Z %-->% C)           # some node points at both B and C
+)
+```
+
+## Cardinality
+
+`at_most(k, set)`, `at_least(k, set)`, `exactly(k, set)`. The `set` is
+either a `c(...)` of formulas or a recognised query call.
+
+```{r}
+caugi_constraints(
+  forall(X, at_most(3, parents(X))),         # bounded in-degree
+  at_least(1, c(A %-->% Y, B %-->% Y))       # at least one of these edges
+)
+```
+
+## Composing constraint sets
+
+`caugi_constraints` instances support boolean composition between
+sets. `ctr1 & ctr2` concatenates the formula lists; `ctr1 | ctr2`
+produces a single disjunction.
+
+```{r}
+expert  <- caugi_constraints(A %-->% B)
+algo    <- caugi_constraints(B %-->% D)
+combined <- expert & algo
+satisfies(cg, combined)
+```
+
+You can also attach a constraint set to a graph for later retrieval:
+
+```{r}
+cg2 <- with_constraints(cg, combined)
+satisfies(cg2, constraints(cg2))
+```
+
+## User-defined predicates
+
+`caugi_predicate(fn)` lets you name a reusable constraint pattern.
+Inside `caugi_constraints(...)`, an invocation of a named predicate is
+inlined — its body is substituted with the supplied arguments and
+classified through the normal pipeline. Predicates can call other
+predicates.
+
+```{r}
+no_unmeasured_confounder <- caugi_predicate(function(X, Y) {
+  forall(Z, implies(
+    (Z %in% ancestors(X)) & (Z %in% ancestors(Y)),
+    observed(Z)
+  ))
+})
+
+instrument <- caugi_predicate(function(Z, X, Y) {
+  (Z %in% ancestors(X)) & !(Z %in% ancestors(Y))
+})
+
+ctr <- caugi_constraints(
+  no_unmeasured_confounder("A", "D"),
+  instrument("Z", "A", "D")
+)
+```
+
+The named predicates carry no causal-discovery vocabulary into caugi
+itself — downstream packages (e.g. causalDisco) can ship a library of
+patterns of their own.
+
+## Solver-backed operations
+
+`consistent()` and `enumerate()` go through the native splr backend
+rather than the R-side evaluator. `consistent()` answers whether
+**any** graph of the chosen class satisfies the constraints;
+`enumerate()` returns up to `limit` such graphs.
+
+Solver classes supported: `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`.
+
+```{r}
+# Is there any DAG over {A, B, C} with A --> B and forbidden B --> A?
+consistent(
+  caugi_constraints(A %-->% B, !(B %-->% A)),
+  nodes = c("A", "B", "C"),
+  class = "DAG"
+)
+
+# All DAGs on 3 nodes — the Robinson sequence gives 25.
+length(enumerate(caugi_constraints(), c("A", "B", "C"), class = "DAG", limit = 100))
+
+# All UGs on 3 nodes — 2^C(3,2) = 8.
+length(enumerate(caugi_constraints(), c("A", "B", "C"), class = "UG", limit = 50))
+
+# ADMG with a latent-confounder pattern.
+ctr <- caugi_constraints(
+  A %-->% Y,
+  U %<->% A,
+  U %<->% Y
+)
+consistent(ctr, c("A", "U", "Y"), class = "ADMG")
+```
+
+`enumerate()` is exact: it returns every distinct graph up to the
+requested limit, with each result a `caugi` object that
+`satisfies(cg, ctr)` confirms holds.
+
+Each class has its own edge vocabulary and structural invariants:
+
+- **DAG**: `-->` only; acyclic.
+- **UG**: `---` only.
+- **PDAG**: `-->` and `---`; at most one per pair; acyclic on the
+  directed substructure.
+- **ADMG**: `-->` and `<->`; at most one per pair; acyclic on the
+  directed substructure (bidirected edges don't participate in
+  cycles).
+
+Membership queries route correctly per class — `B %in% spouses(A)`
+is always false in a DAG / UG / PDAG, and routes to the bidirected
+edge variable in ADMG. `parents` and `children` only make sense for
+classes that allow `-->`.
+
+## What's not yet built
+
+- `MPDAG`, `AG`, `MAG`, `PAG` classes in the solver.
+- `observed()`, `connected()`, `markov_blanket()` membership, and
+  `anteriors`/`posteriors` reach as constraints.
+- `entails(ctr, atom)` — checking whether a constraint set forces a
+  particular atom in every model.
+- `dsep()` in constraint position (evaluator-only — encoder rejects).
+- Serialization (`read_constraints` / `write_constraints`).
+
+The surface above is stable; the unimplemented pieces will arrive in
+subsequent caugi releases.

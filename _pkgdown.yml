@@ -28,6 +28,9 @@ reference:
   - title: Adjustment and d-separation
     contents:
       - has_concept("adjustment")
+  - title: Constraints (experimental)
+    contents:
+      - has_concept("constraints")
   - title: Simulation
     contents:
       - has_concept("simulation")

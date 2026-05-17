@@ -84,8 +84,10 @@ Layer responsibilities:
   type), edge-type mutex per pair, transitive-closure auxiliary vars
   `reach(u, v)`, class invariants. Translates `at_most` / `at_least` / `exactly`
   to PB.
-- **Solver**: pumpkin (preferred — native PB and cardinality) or splr (fallback
-  — pure-Rust CDCL, totalizer encoding for PB).
+- **Solver**: splr (pure-Rust CDCL). Picked in the Phase 0 spike; see
+  `extras/design/constraints-spike-s0.md` for the size measurements and
+  decision rationale. Cardinality (`at_most(k, …)` etc.) is encoded as
+  totalizer / sequential counter at Phase 2 encoding time.
 - **Reconstructor**: solver model → assignment over `e(u, v, t)` → `caugi` via
   existing builders.
 
@@ -149,8 +151,8 @@ Decisions that everything downstream depends on. Each is a small spike.
 
 | Spike | Deliverable | Decision criterion |
 | --- | --- | --- |
-| **S0.1** Solver choice | A ~200-line Rust prototype encoding `at_most(k, S)` over 20 boolean vars in both pumpkin and splr; toy benchmark on n=10, 20, 30 node "find a DAG satisfying X" problems | Pick pumpkin unless it can't build cleanly into the existing extendr crate, or its CRAN-friendliness is unclear |
-| **S0.2** Re-vendoring impact | Run `rextendr::vendor_pkgs(overwrite = TRUE)` after adding the candidate solver; record `vendor.tar.xz` size delta | Acceptable if <2 MB increase; otherwise reconsider |
+| **S0.1** Solver choice | A ~200-line Rust prototype encoding `at_most(k, S)` over 20 boolean vars in both pumpkin and splr; toy benchmark on n=10, 20, 30 node "find a DAG satisfying X" problems | Pick pumpkin unless it can't build cleanly into the existing extendr crate, or its CRAN-friendliness is unclear. **Outcome: splr picked — see `constraints-spike-s0.md`.** |
+| **S0.2** Re-vendoring impact | Run `rextendr::vendor_pkgs(overwrite = TRUE)` after adding the candidate solver; record `vendor.tar.xz` size delta | Acceptable if <2 MB increase; otherwise reconsider. **Outcome: splr +0.10 MB ✓; pumpkin +4.88 MB ✗.** |
 | **S0.3** Grounding semantics | One-page doc: `forall(X, …)` over current nodes; tuples ordered/distinct; bound variables shadow node names; predicates are α-renamed on instantiation | Locked-in before any code lands |
 | **S0.4** AST schema version | `schema_version = 1` baked into both R and Rust AST representations | Trivial; do it now to make future serialization painless |
 | **S0.5** Atom tier policy doc | Short note in `R/constraints.R` header: A vs B vs C, what errors when, where it's enforced | Reviewable before Phase 1 |
@@ -234,7 +236,20 @@ causalDisco's first integration.
 - causalDisco can build a `caugi_constraints` object and call `satisfies()` /
   `violations()`.
 
-## 6. Phase 2 — Solver integration (3 weeks)
+## 6. Phase 2 — Solver integration (DAG/UG/PDAG/ADMG landed 2026-05-17)
+
+Status as of branch `feat/constraints`: class-aware encoder, splr
+backend, `consistent()`, `enumerate()` all working for `DAG`, `UG`,
+`PDAG`, `ADMG`. Known counts validated:
+
+- DAGs n=1..4 follow Robinson (1, 3, 25, 543).
+- UGs n=2..4 follow 2^C(n,2) (2, 8, 64).
+- PDAGs / ADMGs n=2..3 follow 4^C(n,2) − (directed cycles): 4, 62.
+
+`MPDAG`, `AG`, `MAG`, `PAG` classes plus `entails()` are deferred to a
+follow-up phase.
+
+
 
 This is the largest phase. By the end, `consistent()`, `enumerate()`,
 `entails()` work.
@@ -259,11 +274,12 @@ This is the largest phase. By the end, `consistent()`, `enumerate()`,
    Reuses the aux vars from acyclicity. Other tier-B queries
    (`descendants`, `anteriors`, `posteriors`) reuse the same closure with
    role swaps.
-5. **Cardinality encoding**:
-   - If solver = pumpkin: emit native PB constraint.
-   - If solver = splr: totalizer encoding for arbitrary k, sequential counter
-     for k=1. Wrap in a `cardinality.rs` module so the call site is
-     solver-agnostic.
+5. **Cardinality encoding** (splr does not provide native PB):
+   - `at_most(1, S)`: sequential counter (linear in |S|).
+   - `at_most(k, S)` for k > 1: totalizer (`O(|S|·log k)` aux vars).
+   - `at_least(k, S)` and `exactly(k, S)` derived from `at_most`.
+   - Wrapped in `cardinality.rs` so call sites stay solver-agnostic
+     should we ever want to swap in a PB-native backend.
 6. **Grounder** (`ground.rs`): walk the AST, instantiate `forall` / `exists` /
    parameterised cardinality. Emit a `GroundFormula` with no quantifiers and no
    `Var` node-refs.

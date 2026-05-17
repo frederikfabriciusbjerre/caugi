@@ -29,7 +29,14 @@ integration are not yet implemented; see the design note in
 }
 \seealso{
 Other constraints: 
-\code{\link{caugi_constraints}()}
+\code{\link{caugi_constraints}()},
+\code{\link{caugi_predicate}()},
+\code{\link{consistent}()},
+\code{\link{constraints}()},
+\code{\link{enumerate}()},
+\code{\link{satisfies}()},
+\code{\link{violations}()},
+\code{\link{with_constraints}()}
 }
 \concept{constraints}
 \keyword{internal}

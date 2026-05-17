@@ -2,11 +2,27 @@
 
 ## New Features
 
-- Skeleton for an upcoming constraint system (`caugi_constraints`,
-  experimental, unexported). At this stage only the S7 class and a minimal
-  constructor exist; operators, evaluation, and solver integration land in
-  subsequent commits. See `extras/design/constraints-plan.md` for the full
-  design.
+- Experimental constraint system (`caugi_constraints`, `satisfies`,
+  `violations`, `with_constraints`, `constraints`, `caugi_predicate`,
+  `consistent`, `enumerate`). Constraints are Boolean formulas over
+  caugi's existing query predicates — edge atoms (`%-->%` etc.),
+  set-membership atoms (`A %in% ancestors(Y)`), topological precedence
+  (`%<<%`), standalone predicates (`acyclic()`, `collider()`,
+  `v_structure()`, `dsep()`), quantifiers (`forall`, `exists`),
+  cardinality (`at_most`, `at_least`, `exactly`), and the usual
+  boolean combinators. User-defined predicates via `caugi_predicate(fn)`
+  let downstream packages ship libraries of named patterns. The R-side
+  evaluator reports `satisfies(cg, ctr)` and `violations(cg, ctr)`
+  against any caugi. The Rust-side solver (powered by splr, behind the
+  `solver-splr` cargo feature, on by default) handles satisfiability
+  via `consistent(ctr, nodes, class)` and enumerates graphs satisfying
+  the constraints via `enumerate(ctr, nodes, class, limit)`. Solver
+  classes supported in v1: `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`. The
+  encoder reproduces the Robinson DAG sequence (1, 3, 25, 543, …) for
+  unconstrained DAG enumeration and known counts for UG / PDAG /
+  ADMG (8 UGs on 3 nodes; 62 PDAGs / ADMGs on 3 nodes). See
+  `extras/design/constraints-plan.md` and the spike report
+  `constraints-spike-s0.md` for the design.
 
 ## Improvements
 

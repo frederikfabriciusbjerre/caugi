@@ -49,32 +49,47 @@
 # Further atoms (adjacency, ancestrality, quantifiers, cardinality,
 # user-defined predicates) follow in later commits.
 
-#' Build a (skeleton) constraint set.
+#' Build a constraint set.
 #'
 #' @description
-#' Experimental, unexported constructor for the upcoming `caugi_constraints`
-#' system. Captures the supplied expressions, classifies each into a tagged
-#' AST node, and wraps both in a `caugi_constraints` S7 object.
+#' Experimental constructor for the `caugi_constraints` system. Captures
+#' the supplied expressions via non-standard evaluation, classifies each
+#' into a tagged AST node, and wraps both in a `caugi_constraints` S7
+#' object.
 #'
-#' This function is not exported and not yet user-facing. See
-#' `extras/design/constraints-plan.md` for the full design.
+#' See `extras/design/constraints-plan.md` for the full design and the
+#' currently recognised surface vocabulary.
 #'
-#' @param ... Unevaluated constraint expressions. Currently accepted:
-#'   edge-operator calls (e.g. `A %-->% B`), and boolean combinations
-#'   thereof with `!`, `&` / `&&`, `|` / `||`. Anything else errors
-#'   immediately.
+#' @param ... Unevaluated constraint expressions. Recognised:
+#'   edge atoms (e.g. `A %-->% B`), set-membership atoms
+#'   (`A %in% ancestors(Y)`), topological precedence (`L %<<% R`),
+#'   standalone predicates (`acyclic()`, `observed(X)`, …), quantifiers
+#'   (`forall(X, …)`, `exists(Z, …)`), cardinality (`at_most(k, set)` …),
+#'   and boolean combinators (`!`, `&` / `&&`, `|` / `||`, `xor(…)`,
+#'   `implies(…)`).
 #'
 #' @returns A `caugi_constraints` S7 object with three properties:
 #'   `expressions` (the captured `language` objects), `formulas` (the
 #'   classified AST nodes, parallel to `expressions`), and
 #'   `schema_version` (currently `1L`).
 #'
+#' @examples
+#' ctr <- caugi_constraints(
+#'   A %-->% B,
+#'   !(D %in% ancestors(A)),
+#'   c("A") %<<% c("B", "C") %<<% c("D")
+#' )
+#'
 #' @family constraints
 #' @concept constraints
-#' @keywords internal
+#' @export
 caugi_constraints <- function(...) {
   exprs <- as.list(substitute(list(...)))[-1L]
-  formulas <- lapply(exprs, .classify_constraint_expr)
+  caller_env <- parent.frame()
+  formulas <- lapply(
+    exprs,
+    function(e) .classify_constraint_expr(e, caller_env)
+  )
   caugi_constraints_class(
     expressions = exprs,
     formulas = formulas,
@@ -108,26 +123,38 @@ caugi_constraints <- function(...) {
 #'
 #' @keywords internal
 #' @noRd
-.classify_constraint_expr <- function(expr) {
+.classify_constraint_expr <- function(expr, env = NULL) {
   if (is.call(expr)) {
     op <- expr[[1L]]
     if (is.name(op)) {
       nm <- as.character(op)
       if (nm == "(") {
-        return(.classify_constraint_expr(expr[[2L]]))
+        return(.classify_constraint_expr(expr[[2L]], env))
+      }
+      if (nm == "{") {
+        if (length(expr) != 2L) {
+          stop(
+            "Constraint blocks `{ ... }` must contain exactly one ",
+            "expression; got ",
+            length(expr) - 1L,
+            ".",
+            call. = FALSE
+          )
+        }
+        return(.classify_constraint_expr(expr[[2L]], env))
       }
       if (nm == "!") {
         return(list(
           kind = "not",
-          body = .classify_constraint_expr(expr[[2L]])
+          body = .classify_constraint_expr(expr[[2L]], env)
         ))
       }
       if (nm == "&" || nm == "&&") {
         return(list(
           kind = "and",
           args = list(
-            .classify_constraint_expr(expr[[2L]]),
-            .classify_constraint_expr(expr[[3L]])
+            .classify_constraint_expr(expr[[2L]], env),
+            .classify_constraint_expr(expr[[3L]], env)
           )
         ))
       }
@@ -135,8 +162,8 @@ caugi_constraints <- function(...) {
         return(list(
           kind = "or",
           args = list(
-            .classify_constraint_expr(expr[[2L]]),
-            .classify_constraint_expr(expr[[3L]])
+            .classify_constraint_expr(expr[[2L]], env),
+            .classify_constraint_expr(expr[[3L]], env)
           )
         ))
       }
@@ -147,16 +174,16 @@ caugi_constraints <- function(...) {
         return(.classify_precedence(expr))
       }
       if (nm == "forall" || nm == "exists") {
-        return(.classify_quantifier(nm, expr))
+        return(.classify_quantifier(nm, expr, env))
       }
       if (nm == "xor") {
-        return(.classify_binary_combinator("xor", expr))
+        return(.classify_binary_combinator("xor", expr, env))
       }
       if (nm == "implies") {
-        return(.classify_implies(expr))
+        return(.classify_implies(expr, env))
       }
       if (nm == "at_most" || nm == "at_least" || nm == "exactly") {
-        return(.classify_cardinality(nm, expr))
+        return(.classify_cardinality(nm, expr, env))
       }
       if (.is_edge_glyph_op(nm)) {
         return(list(
@@ -172,6 +199,10 @@ caugi_constraints <- function(...) {
       predicate <- .classify_predicate_call(nm, expr)
       if (!is.null(predicate)) {
         return(predicate)
+      }
+      user_predicate <- .classify_user_predicate_invocation(nm, expr, env)
+      if (!is.null(user_predicate)) {
+        return(user_predicate)
       }
     }
   }
@@ -346,7 +377,7 @@ caugi_constraints <- function(...) {
 #'
 #' @keywords internal
 #' @noRd
-.classify_binary_combinator <- function(kind, expr) {
+.classify_binary_combinator <- function(kind, expr, env = NULL) {
   args <- as.list(expr)[-1L]
   if (length(args) != 2L) {
     stop(
@@ -361,8 +392,8 @@ caugi_constraints <- function(...) {
   list(
     kind = kind,
     args = list(
-      .classify_constraint_expr(args[[1L]]),
-      .classify_constraint_expr(args[[2L]])
+      .classify_constraint_expr(args[[1L]], env),
+      .classify_constraint_expr(args[[2L]], env)
     )
   )
 }
@@ -371,7 +402,7 @@ caugi_constraints <- function(...) {
 #'
 #' @keywords internal
 #' @noRd
-.classify_implies <- function(expr) {
+.classify_implies <- function(expr, env = NULL) {
   args <- as.list(expr)[-1L]
   if (length(args) != 2L) {
     stop(
@@ -383,8 +414,8 @@ caugi_constraints <- function(...) {
   }
   list(
     kind = "implies",
-    antecedent = .classify_constraint_expr(args[[1L]]),
-    consequent = .classify_constraint_expr(args[[2L]])
+    antecedent = .classify_constraint_expr(args[[1L]], env),
+    consequent = .classify_constraint_expr(args[[2L]], env)
   )
 }
 
@@ -395,7 +426,7 @@ caugi_constraints <- function(...) {
 #'
 #' @keywords internal
 #' @noRd
-.classify_cardinality <- function(card_kind, expr) {
+.classify_cardinality <- function(card_kind, expr, env = NULL) {
   args <- as.list(expr)[-1L]
   if (length(args) != 2L) {
     stop(
@@ -408,7 +439,7 @@ caugi_constraints <- function(...) {
     )
   }
   k <- .cardinality_k(args[[1L]], card_kind)
-  set <- .cardinality_set(args[[2L]])
+  set <- .cardinality_set(args[[2L]], env)
   list(
     kind = "cardinality",
     card_kind = card_kind,
@@ -452,11 +483,11 @@ caugi_constraints <- function(...) {
 #'
 #' @keywords internal
 #' @noRd
-.cardinality_set <- function(expr) {
+.cardinality_set <- function(expr, env = NULL) {
   if (is.call(expr) && is.name(expr[[1L]])) {
     head <- as.character(expr[[1L]])
     if (head == "(") {
-      return(.cardinality_set(expr[[2L]]))
+      return(.cardinality_set(expr[[2L]], env))
     }
     if (head == "c") {
       members <- as.list(expr)[-1L]
@@ -468,7 +499,7 @@ caugi_constraints <- function(...) {
       }
       return(list(
         kind = "formulas",
-        formulas = lapply(members, .classify_constraint_expr)
+        formulas = lapply(members, function(m) .classify_constraint_expr(m, env))
       ))
     }
     whitelist <- .constraint_query_whitelist()
@@ -519,7 +550,7 @@ caugi_constraints <- function(...) {
 #'
 #' @keywords internal
 #' @noRd
-.classify_quantifier <- function(kind, expr) {
+.classify_quantifier <- function(kind, expr, env = NULL) {
   args <- as.list(expr)[-1L]
   if (length(args) != 2L) {
     stop(
@@ -547,7 +578,7 @@ caugi_constraints <- function(...) {
     kind = kind,
     vars = vars,
     scope = list(kind = "all_nodes"),
-    body = .classify_constraint_expr(args[[2L]])
+    body = .classify_constraint_expr(args[[2L]], env)
   )
 }
 
@@ -701,6 +732,134 @@ caugi_constraints <- function(...) {
       )
     }
   )
+}
+
+# ── user-defined predicates ──────────────────────────────────────────────────
+#
+# `caugi_predicate(fn)` wraps a function `fn(X, Y, …)` that defines a
+# reusable constraint pattern. Inside `caugi_constraints(...)`, a call
+# `my_pred("A", "B")` is detected by name lookup in the caller env,
+# substituted with the arg expressions, and re-classified.
+#
+# This means predicate bodies are pure constraint expressions — they
+# can use everything the surface offers: atoms, quantifiers,
+# cardinality, other predicates, …
+
+#' Define a reusable constraint predicate.
+#'
+#' @description
+#' Wraps a function whose body is a constraint expression. The function
+#' is recognised inside `caugi_constraints()` calls: a call to it is
+#' inlined by substituting the parameter symbols with the supplied
+#' argument expressions, then re-classified through the normal pipeline.
+#'
+#' Predicate bodies can use any form the constraint surface accepts.
+#' Predicates can call other predicates (the substitution + re-classify
+#' pass is recursive). Recursive predicates (a predicate that calls
+#' itself, directly or transitively) are not supported and will produce
+#' a stack-overflow-like error.
+#'
+#' @param fn A function. Its formal parameters are the predicate
+#'   parameters; its body is the constraint expression. The function is
+#'   never actually evaluated — the body is captured via
+#'   `body(fn)` and substituted at classify time.
+#'
+#' @returns A function with class `"caugi_predicate"` that errors when
+#'   called directly; useful only inside `caugi_constraints(...)`.
+#'
+#' @examples
+#' no_unmeasured_confounder <- caugi_predicate(function(X, Y) {
+#'   forall(Z, implies(
+#'     (Z %in% ancestors(X)) & (Z %in% ancestors(Y)),
+#'     observed(Z)
+#'   ))
+#' })
+#' ctr <- caugi_constraints(no_unmeasured_confounder("A", "Y"))
+#'
+#' @family constraints
+#' @concept constraints
+#' @export
+caugi_predicate <- function(fn) {
+  if (!is.function(fn)) {
+    stop("`caugi_predicate()` expects a function.", call. = FALSE)
+  }
+  params <- names(formals(fn))
+  if (length(params) == 0L) {
+    stop(
+      "`caugi_predicate()` expects a function with at least one parameter.",
+      call. = FALSE
+    )
+  }
+  predicate_fn <- function(...) {
+    stop(
+      "`caugi_predicate` invocations are only meaningful inside ",
+      "`caugi_constraints()`. See `extras/design/constraints-plan.md`.",
+      call. = FALSE
+    )
+  }
+  attr(predicate_fn, "caugi_predicate_params") <- params
+  attr(predicate_fn, "caugi_predicate_body") <- body(fn)
+  class(predicate_fn) <- c("caugi_predicate", "function")
+  predicate_fn
+}
+
+#' Classify a user-defined predicate invocation.
+#'
+#' Looks up `name` in `env` (the caller of `caugi_constraints`). If it
+#' resolves to a `caugi_predicate`, substitute its body and re-classify.
+#'
+#' @keywords internal
+#' @noRd
+.classify_user_predicate_invocation <- function(name, expr, env) {
+  if (is.null(env)) {
+    return(NULL)
+  }
+  if (!exists(name, envir = env, inherits = TRUE)) {
+    return(NULL)
+  }
+  obj <- get(name, envir = env, inherits = TRUE)
+  if (!inherits(obj, "caugi_predicate")) {
+    return(NULL)
+  }
+  params <- attr(obj, "caugi_predicate_params", exact = TRUE)
+  body_expr <- attr(obj, "caugi_predicate_body", exact = TRUE)
+  call_args <- as.list(expr)[-1L]
+  if (length(call_args) != length(params)) {
+    stop(
+      "Predicate `",
+      name,
+      "()` expects ",
+      length(params),
+      " argument(s), got ",
+      length(call_args),
+      ".",
+      call. = FALSE
+    )
+  }
+  bindings <- stats::setNames(call_args, params)
+  substituted <- .substitute_expr(body_expr, bindings)
+  .classify_constraint_expr(substituted, env)
+}
+
+#' Walk an expression tree, replacing every bare symbol whose name
+#' appears in `bindings` with the corresponding argument expression.
+#'
+#' @keywords internal
+#' @noRd
+.substitute_expr <- function(expr, bindings) {
+  if (is.symbol(expr)) {
+    nm <- as.character(expr)
+    if (nm %in% names(bindings)) {
+      return(bindings[[nm]])
+    }
+    return(expr)
+  }
+  if (is.call(expr)) {
+    head <- expr[[1L]]
+    rest <- lapply(as.list(expr)[-1L], .substitute_expr, bindings = bindings)
+    return(as.call(c(list(head), rest)))
+  }
+  expr
 }
 
 # ── operator stubs (outside-constraint UX) ───────────────────────────────────
@@ -1053,16 +1212,27 @@ exactly <- function(k, set) {
 
 #' Attach a constraint set to a caugi.
 #'
+#' @description
 #' Returns a copy of `cg` with `ctr` recorded as its constraint set,
-#' replacing any previously attached set.
+#' replacing any previously attached set. The constraints are stored as
+#' an attribute on the caugi; soundness checks against the graph's node
+#' set happen at evaluation time (`satisfies()` / `violations()`),
+#' matching caugi's lazy-build model.
 #'
 #' @param cg A `caugi` object.
 #' @param ctr A `caugi_constraints` object.
 #'
 #' @returns The input `cg`, with `ctr` attached.
 #'
-#' @keywords internal
-#' @noRd
+#' @examples
+#' cg <- caugi(A %-->% B, class = "DAG")
+#' ctr <- caugi_constraints(A %-->% B)
+#' cg <- with_constraints(cg, ctr)
+#' constraints(cg)
+#'
+#' @family constraints
+#' @concept constraints
+#' @export
 with_constraints <- function(cg, ctr) {
   is_caugi(cg, throw_error = TRUE)
   if (!S7::S7_inherits(ctr, caugi_constraints_class)) {
@@ -1101,8 +1271,9 @@ with_constraints <- function(cg, ctr) {
 #' @param cg A `caugi` object.
 #' @returns The attached `caugi_constraints`, or `NULL` if none.
 #'
-#' @keywords internal
-#' @noRd
+#' @family constraints
+#' @concept constraints
+#' @export
 constraints <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
   attr(cg, "caugi_constraints", exact = TRUE)

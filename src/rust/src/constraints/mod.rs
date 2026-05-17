@@ -13,7 +13,17 @@
 #![allow(dead_code)]
 
 pub mod ast;
+pub mod cardinality;
+pub mod class;
+pub mod encode;
+pub mod ground;
 pub mod parse;
+#[cfg(feature = "solver-splr")]
+pub mod reconstruct;
+#[cfg(feature = "solver-splr")]
+pub mod solver;
+pub mod spike;
+pub mod varmap;
 
 /// Current AST schema version mirrored on the R side
 /// (`caugi_constraints_class@schema_version`).

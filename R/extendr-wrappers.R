@@ -175,8 +175,16 @@ deserialize_graphml <- function(xml, reg) .Call(wrap__deserialize_graphml, xml, 
 
 #' Parse a single constraint formula AST (as built by R/constraints.R)
 #' and return its Rust `Debug` rendering. Used as a smoke test for the
-#' R → Rust round-trip until the evaluator lands.
+#' R → Rust round-trip.
 rs_constraints_parse_formula <- function(formula) .Call(wrap__rs_constraints_parse_formula, formula)
+
+#' Check satisfiability of a list of constraint formulas against a
+#' node set under the given graph-class invariants.
+rs_constraints_consistent <- function(formulas, nodes, class) .Call(wrap__rs_constraints_consistent, formulas, nodes, class)
+
+#' Enumerate up to `limit` graphs of the given class satisfying the
+#' constraints. Returns a list of edge data frames.
+rs_constraints_enumerate <- function(formulas, nodes, class, limit) .Call(wrap__rs_constraints_enumerate, formulas, nodes, class, limit)
 
 
 # nolint end

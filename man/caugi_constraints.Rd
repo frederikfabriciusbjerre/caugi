@@ -2,15 +2,18 @@
 % Please edit documentation in R/constraints.R
 \name{caugi_constraints}
 \alias{caugi_constraints}
-\title{Build a (skeleton) constraint set.}
+\title{Build a constraint set.}
 \usage{
 caugi_constraints(...)
 }
 \arguments{
-\item{...}{Unevaluated constraint expressions. Currently accepted:
-edge-operator calls (e.g. \code{A \%-->\% B}), and boolean combinations
-thereof with \code{!}, \code{&} / \code{&&}, \code{|} / \code{||}. Anything else errors
-immediately.}
+\item{...}{Unevaluated constraint expressions. Recognised:
+edge atoms (e.g. \code{A \%-->\% B}), set-membership atoms
+(\code{A \%in\% ancestors(Y)}), topological precedence (\code{L \%<<\% R}),
+standalone predicates (\code{acyclic()}, \code{observed(X)}, …), quantifiers
+(\verb{forall(X, …)}, \verb{exists(Z, …)}), cardinality (\code{at_most(k, set)} …),
+and boolean combinators (\code{!}, \code{&} / \code{&&}, \code{|} / \code{||}, \verb{xor(…)},
+\verb{implies(…)}).}
 }
 \value{
 A \code{caugi_constraints} S7 object with three properties:
@@ -19,16 +22,31 @@ classified AST nodes, parallel to \code{expressions}), and
 \code{schema_version} (currently \code{1L}).
 }
 \description{
-Experimental, unexported constructor for the upcoming \code{caugi_constraints}
-system. Captures the supplied expressions, classifies each into a tagged
-AST node, and wraps both in a \code{caugi_constraints} S7 object.
+Experimental constructor for the \code{caugi_constraints} system. Captures
+the supplied expressions via non-standard evaluation, classifies each
+into a tagged AST node, and wraps both in a \code{caugi_constraints} S7
+object.
 
-This function is not exported and not yet user-facing. See
-\code{extras/design/constraints-plan.md} for the full design.
+See \code{extras/design/constraints-plan.md} for the full design and the
+currently recognised surface vocabulary.
+}
+\examples{
+ctr <- caugi_constraints(
+  A \%-->\% B,
+  !(D \%in\% ancestors(A)),
+  c("A") \%<<\% c("B", "C") \%<<\% c("D")
+)
+
 }
 \seealso{
 Other constraints: 
-\code{\link{caugi_constraints_class}()}
+\code{\link{caugi_constraints_class}()},
+\code{\link{caugi_predicate}()},
+\code{\link{consistent}()},
+\code{\link{constraints}()},
+\code{\link{enumerate}()},
+\code{\link{satisfies}()},
+\code{\link{violations}()},
+\code{\link{with_constraints}()}
 }
 \concept{constraints}
-\keyword{internal}

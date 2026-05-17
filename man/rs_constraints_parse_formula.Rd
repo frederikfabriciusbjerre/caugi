@@ -4,12 +4,12 @@
 \alias{rs_constraints_parse_formula}
 \title{Parse a single constraint formula AST (as built by R/constraints.R)
 and return its Rust \code{Debug} rendering. Used as a smoke test for the
-R → Rust round-trip until the evaluator lands.}
+R → Rust round-trip.}
 \usage{
 rs_constraints_parse_formula(formula)
 }
 \description{
 Parse a single constraint formula AST (as built by R/constraints.R)
 and return its Rust \code{Debug} rendering. Used as a smoke test for the
-R → Rust round-trip until the evaluator lands.
+R → Rust round-trip.
 }

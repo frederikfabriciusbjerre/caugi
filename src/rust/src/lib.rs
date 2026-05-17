@@ -2132,13 +2132,79 @@ fn rs_all_adjustment_sets_admg(
 
 /// Parse a single constraint formula AST (as built by R/constraints.R)
 /// and return its Rust `Debug` rendering. Used as a smoke test for the
-/// R → Rust round-trip until the evaluator lands.
+/// R → Rust round-trip.
 #[extendr]
 fn rs_constraints_parse_formula(formula: Robj) -> String {
     match parse_formula(&formula) {
         Ok(f) => format!("{:?}", f),
         Err(e) => throw_r_error(e),
     }
+}
+
+fn parse_formulas_list(formulas: Robj) -> Vec<constraints::ast::Formula> {
+    let list = formulas
+        .as_list()
+        .unwrap_or_else(|| throw_r_error("`formulas` must be a list of constraint AST nodes"));
+    list.iter()
+        .map(|(_, v)| parse_formula(&v).unwrap_or_else(|e| throw_r_error(e)))
+        .collect()
+}
+
+fn ground_and_encode(
+    formulas: Robj,
+    nodes: Strings,
+    class: &str,
+) -> Result<constraints::encode::Encoding, String> {
+    let class = constraints::class::GraphClass::parse(class)?;
+    let parsed = parse_formulas_list(formulas);
+    let node_list: Vec<String> = nodes.iter().map(|s| s.as_ref().to_string()).collect();
+    let grounded: Vec<constraints::ast::Formula> = parsed
+        .into_iter()
+        .map(|f| constraints::ground::ground(&f, &node_list))
+        .collect();
+    constraints::encode::encode(&grounded, node_list, class)
+}
+
+/// Check satisfiability of a list of constraint formulas against a
+/// node set under the given graph-class invariants.
+#[extendr]
+#[cfg(feature = "solver-splr")]
+fn rs_constraints_consistent(formulas: Robj, nodes: Strings, class: &str) -> bool {
+    let enc = ground_and_encode(formulas, nodes, class).unwrap_or_else(|e| throw_r_error(e));
+    constraints::solver::solve(&enc.clauses, enc.var_map.n_vars()).is_some()
+}
+
+/// Enumerate up to `limit` graphs of the given class satisfying the
+/// constraints. Returns a list of edge data frames.
+#[extendr]
+#[cfg(feature = "solver-splr")]
+fn rs_constraints_enumerate(formulas: Robj, nodes: Strings, class: &str, limit: i32) -> Robj {
+    let enc = ground_and_encode(formulas, nodes, class).unwrap_or_else(|e| throw_r_error(e));
+    let limit = if limit < 0 { 0 } else { limit as usize };
+    let models = constraints::solver::enumerate(&enc.clauses, &enc.var_map, limit);
+    let dfs: Vec<Robj> = models
+        .into_iter()
+        .map(|m| {
+            let triples = constraints::reconstruct::edges_from_model(&m, &enc.var_map);
+            let froms: Vec<&str> = triples.iter().map(|(f, _, _)| f.as_str()).collect();
+            let tos: Vec<&str> = triples.iter().map(|(_, t, _)| t.as_str()).collect();
+            let etypes: Vec<&str> = triples.iter().map(|(_, _, e)| *e).collect();
+            data_frame!(from = froms, edge = etypes, to = tos)
+        })
+        .collect();
+    extendr_api::prelude::List::from_values(dfs).into_robj()
+}
+
+#[extendr]
+#[cfg(not(feature = "solver-splr"))]
+fn rs_constraints_consistent(_formulas: Robj, _nodes: Strings, _class: &str) -> bool {
+    throw_r_error("Solver-backed constraints require the `solver-splr` cargo feature.");
+}
+
+#[extendr]
+#[cfg(not(feature = "solver-splr"))]
+fn rs_constraints_enumerate(_formulas: Robj, _nodes: Strings, _class: &str, _limit: i32) -> Robj {
+    throw_r_error("Solver-backed constraints require the `solver-splr` cargo feature.");
 }
 
 extendr_module! {
@@ -2241,4 +2307,6 @@ extendr_module! {
 
     // constraints
     fn rs_constraints_parse_formula;
+    fn rs_constraints_consistent;
+    fn rs_constraints_enumerate;
 }
