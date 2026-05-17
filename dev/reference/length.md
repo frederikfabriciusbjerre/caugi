@@ -15,6 +15,7 @@ An integer representing the number of nodes.
 ## See also
 
 Other caugi methods:
+[`caugi-equality`](https://caugi.org/dev/reference/caugi-equality.md),
 [`print()`](https://caugi.org/dev/reference/print.md)
 
 ## Examples
