@@ -29,6 +29,7 @@ print(cg)
 }
 \seealso{
 Other caugi methods: 
+\code{\link{caugi-equality}},
 \code{\link{length}()}
 }
 \concept{caugi methods}

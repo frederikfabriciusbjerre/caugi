@@ -171,3 +171,50 @@ test_that("compare_proxy and all.equal branches are covered", {
   )))
   expect_type(diff_content, "character")
 })
+
+test_that("== and != compare caugi objects by graph content", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  cg_same <- caugi(A %-->% B, class = "DAG")
+
+  # Reflexive and identical content.
+  expect_true(cg == cg)
+  expect_true(cg == cg_same)
+  expect_false(cg != cg_same)
+
+  # Both operators return a single logical, not a vector.
+  expect_length(cg == cg_same, 1L)
+  expect_type(cg == cg_same, "logical")
+  expect_length(cg != cg_same, 1L)
+  expect_type(cg != cg_same, "logical")
+
+  # Different edge content.
+  expect_false(cg == caugi(A %-->% C, class = "DAG"))
+  expect_true(cg != caugi(A %-->% C, class = "DAG"))
+
+  # Different number of edges.
+  expect_false(cg == caugi(A %-->% B, B %-->% C, class = "DAG"))
+
+  # Different node set (extra isolated node).
+  expect_false(cg == caugi(A %-->% B, C, class = "DAG"))
+
+  # Different graph class.
+  expect_false(cg == caugi(A %-->% B, class = "UNKNOWN"))
+
+  # Different `simple` flag.
+  expect_false(
+    caugi(A %-->% B, class = "DAG") ==
+      caugi(A %-->% B, class = "UNKNOWN", simple = FALSE)
+  )
+
+  # Non-caugi other operand falls back to FALSE / TRUE.
+  expect_false(cg == 5)
+  expect_false(cg == "DAG")
+  expect_false(cg == list())
+  expect_true(cg != 5)
+  expect_true(5 != cg)
+
+  # Edge insertion order does not affect equality.
+  cg_a <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  cg_b <- caugi(B %-->% C, A %-->% B, class = "DAG")
+  expect_true(cg_a == cg_b)
+})
