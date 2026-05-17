@@ -718,6 +718,39 @@ test_that("dag_from_pdag converts a valid PDAG to a DAG", {
   expect_true(all(edges_DAG$edge == "-->"))
 })
 
+test_that("dag_from_pdag handles a sink with multiple undirected neighbors (#298)", {
+  pdag <- caugi(
+    V10 %---% V2 + V7,
+    V2 %-->% V1,
+    V2 %---% V3 + V7,
+    V3 %-->% V5,
+    V3 %---% V7,
+    V4 %-->% V8,
+    V5 %-->% V1,
+    V6 %-->% V8,
+    V6 %---% V9,
+    V7 %-->% V4,
+    V9 %-->% V1 + V4 + V5,
+    class = "PDAG"
+  )
+
+  dag <- dag_from_pdag(pdag)
+
+  expected <- caugi(
+    V2 %-->% V1 + V10,
+    V3 %-->% V2 + V5,
+    V4 %-->% V8,
+    V5 %-->% V1,
+    V6 %-->% V8,
+    V7 %-->% V10 + V2 + V3 + V4,
+    V9 %-->% V1 + V4 + V5 + V6,
+    class = "DAG"
+  )
+
+  expect_equal(dag, expected)
+})
+
+
 test_that("dag_from_pdag errors on non-PDAG input", {
   cg <- caugi(
     A %-->% B,

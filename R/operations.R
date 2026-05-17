@@ -721,7 +721,7 @@ dag_from_pdag <- function(PDAG) {
           output_graph,
           from = undirected_neighbors,
           to = rep(x, length(undirected_neighbors)),
-          edge = "-->"
+          edge = rep("-->", length(undirected_neighbors))
         )
       }
 

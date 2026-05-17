@@ -381,3 +381,39 @@ S7::method(print, caugi) <- function(
     diffs
   }
 }
+
+#' Equality operators for caugi objects
+#'
+#' @description S3 methods for `==` and `!=` that compare two caugi objects by
+#' their graph content (nodes, edges, simple, class) rather than session
+#' identity. Returns `FALSE` (resp. `TRUE`) when the other operand is not a
+#' caugi object.
+#'
+#' @param e1,e2 A `caugi` object (one or both sides).
+#'
+#' @returns A single logical.
+#'
+#' @examples
+#' cg1 <- caugi(A %-->% B, class = "DAG")
+#' cg2 <- caugi(A %-->% B, class = "DAG")
+#' cg1 == cg2 # TRUE
+#' cg1 != caugi(A %-->% C, class = "DAG") # TRUE
+#'
+#' @family caugi methods
+#' @concept methods
+#'
+#' @name caugi-equality
+#' @keywords internal
+#' @export
+`==.caugi::caugi` <- function(e1, e2) {
+  if (!inherits(e1, "caugi::caugi") || !inherits(e2, "caugi::caugi")) {
+    return(FALSE)
+  }
+  isTRUE(`all.equal.caugi::caugi`(e1, e2))
+}
+
+#' @rdname caugi-equality
+#' @export
+`!=.caugi::caugi` <- function(e1, e2) {
+  !(e1 == e2)
+}

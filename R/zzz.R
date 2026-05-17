@@ -57,6 +57,20 @@
     `all.equal.caugi::caugi`,
     envir = asNamespace("base")
   )
+
+  # Register == and != so cg1 == cg2 dispatches to content comparison
+  registerS3method(
+    "==",
+    "caugi::caugi",
+    `==.caugi::caugi`,
+    envir = asNamespace("base")
+  )
+  registerS3method(
+    "!=",
+    "caugi::caugi",
+    `!=.caugi::caugi`,
+    envir = asNamespace("base")
+  )
 }
 
 # nocov end
