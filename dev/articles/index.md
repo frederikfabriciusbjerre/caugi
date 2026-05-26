@@ -3,6 +3,8 @@
 ### All vignettes
 
 - [caugi](https://caugi.org/dev/articles/caugi.md):
+- [Comparisons with Other
+  Packages](https://caugi.org/dev/articles/comparisons.md):
 - [Motivation](https://caugi.org/dev/articles/motivation.md):
 - [How to use caugi in a
   package](https://caugi.org/dev/articles/package_use.md):
