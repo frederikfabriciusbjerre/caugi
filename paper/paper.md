@@ -188,7 +188,7 @@ m_separated(obs, "X", "Y")
 #> [1] FALSE
 ```
 
-but we can find the minimal d-separator in the original DAG:
+but we can find the minimal $d$-separator in the original DAG:
 
 ```r
 minimal_separator(dag, "X", "Y")
