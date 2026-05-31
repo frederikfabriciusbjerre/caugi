@@ -11,6 +11,8 @@
 //! Tier-C atoms (`dsep`, `msep`, discriminating paths) are rejected at
 //! encode time.
 
+use rustc_hash::FxHashMap;
+
 use super::ast::{Atom, AtomTier, CardKind, CardinalitySet, Formula, NodeRef};
 use super::cardinality::{self, AuxAllocator, Lit};
 use super::class::GraphClass;
@@ -160,6 +162,15 @@ struct EncodeCtx<'a> {
     var_map: &'a mut VarMap,
     clauses: &'a mut Vec<Vec<Lit>>,
     reach_ub_added: Option<()>,
+    /// Bidirected-reach aux vars, keyed by unordered `(lo, hi)`. Used
+    /// for `districts` and ADMG `markov_blanket`. Lazily allocated.
+    bireach: Option<FxHashMap<(usize, usize), i32>>,
+    bireach_invariants: bool,
+    /// Mixed-reach (forward-directed + both-way undirected) aux vars
+    /// keyed by ordered `(u, v)`. Used for PDAG `anteriors` /
+    /// `posteriors`. Lazily allocated.
+    mreach: Option<FxHashMap<(usize, usize), i32>>,
+    mreach_invariants: bool,
 }
 
 impl<'a> EncodeCtx<'a> {
@@ -168,6 +179,10 @@ impl<'a> EncodeCtx<'a> {
             var_map,
             clauses,
             reach_ub_added: None,
+            bireach: None,
+            bireach_invariants: false,
+            mreach: None,
+            mreach_invariants: false,
         }
     }
 
@@ -343,10 +358,6 @@ impl<'a> EncodeCtx<'a> {
                 // trivially satisfied.
                 Ok(self.true_lit())
             }
-            Atom::Connected => Err("`connected()` is not yet supported by the encoder.".into()),
-            Atom::Observed { .. } => {
-                Err("`observed()` is not yet supported by the encoder.".into())
-            }
             Atom::Collider { a, mid, c } => {
                 self.encode_collider(a, mid, c, /*shielded=*/ true)
             }
@@ -470,12 +481,10 @@ impl<'a> EncodeCtx<'a> {
                 self.ensure_reach_upper_bound();
                 Ok(self.var_map.reach_var(target, elem))
             }
-            "anteriors" | "posteriors" => Err(format!(
-                "Encoder does not yet support `{}()`; evaluator-only.",
-                query
-            )),
-            "markov_blanket" => Err("Encoder does not yet support `markov_blanket()`.".into()),
-            "districts" => Err("Encoder does not yet support `districts()`.".into()),
+            "anteriors" => self.anteriors_lit(elem, target),
+            "posteriors" => self.posteriors_lit(elem, target),
+            "markov_blanket" => self.markov_blanket_lit(elem, target),
+            "districts" => self.districts_lit(elem, target),
             other => Err(format!("Unknown query `{}` in membership atom.", other)),
         }
     }
@@ -552,5 +561,354 @@ impl<'a> EncodeCtx<'a> {
         let a = self.var_map.fresh_aux();
         self.clauses.push(vec![-a]);
         a
+    }
+
+    // ── Markov blanket, anteriors, posteriors, districts ────────────────────
+    //
+    // Each routes by class.
+
+    fn markov_blanket_lit(&mut self, elem: usize, target: usize) -> Result<Lit, String> {
+        match self.var_map.class() {
+            GraphClass::Dag => self.mb_dag(elem, target),
+            GraphClass::Ug => {
+                // MB(target) = neighbors(target). Symmetric edge var.
+                Ok(self.var_map.edge_var(elem, target, "---"))
+            }
+            GraphClass::Pdag => {
+                // DAG part + undirected neighbour.
+                let dag_part = self.mb_dag(elem, target)?;
+                let undir = self.var_map.edge_var(elem, target, "---");
+                self.disjunction(&[dag_part, undir])
+            }
+            GraphClass::Admg => {
+                // MB(target) = (district(target) \ {target})
+                //              ∪ parents of district members.
+                // i.e. elem ∈ MB(target) iff
+                //      elem is in target's district  OR
+                //      ∃D: D is in target's district AND elem is parent of D.
+                self.ensure_bireach_invariants();
+                let in_district = self.bireach_lit_pair(elem, target);
+                let n = self.var_map.n();
+                let mut lits: Vec<Lit> = vec![in_district];
+                for d in 0..n {
+                    if d == elem {
+                        continue;
+                    }
+                    // bireach(target, d) ∧ edge(elem, d, "-->")
+                    let br = self.bireach_lit_pair(target, d);
+                    let pa = self.var_map.edge_var(elem, d, "-->");
+                    let conj = self.var_map.fresh_aux();
+                    self.clauses.push(vec![-conj, br]);
+                    self.clauses.push(vec![-conj, pa]);
+                    self.clauses.push(vec![-br, -pa, conj]);
+                    lits.push(conj);
+                }
+                self.disjunction(&lits)
+            }
+        }
+    }
+
+    /// MB encoding for DAG-style classes (DAG part of PDAG MB too).
+    /// elem ∈ MB(target) ⇔
+    ///   edge(elem, target, "-->")            (parent)
+    /// ∨ edge(target, elem, "-->")            (child)
+    /// ∨ ∃C ≠ elem, target:
+    ///       edge(target, C, "-->") ∧ edge(elem, C, "-->")   (co-parent)
+    fn mb_dag(&mut self, elem: usize, target: usize) -> Result<Lit, String> {
+        if !self.var_map.has_edge_type("-->") {
+            return Ok(self.false_lit());
+        }
+        let parent_lit = self.var_map.edge_var(elem, target, "-->");
+        let child_lit = self.var_map.edge_var(target, elem, "-->");
+        let n = self.var_map.n();
+        let mut lits: Vec<Lit> = vec![parent_lit, child_lit];
+        for c in 0..n {
+            if c == elem || c == target {
+                continue;
+            }
+            let target_to_c = self.var_map.edge_var(target, c, "-->");
+            let elem_to_c = self.var_map.edge_var(elem, c, "-->");
+            let conj = self.var_map.fresh_aux();
+            self.clauses.push(vec![-conj, target_to_c]);
+            self.clauses.push(vec![-conj, elem_to_c]);
+            self.clauses.push(vec![-target_to_c, -elem_to_c, conj]);
+            lits.push(conj);
+        }
+        self.disjunction(&lits)
+    }
+
+    fn anteriors_lit(&mut self, elem: usize, target: usize) -> Result<Lit, String> {
+        match self.var_map.class() {
+            GraphClass::Dag => {
+                // Anteriors == ancestors on a DAG.
+                self.ensure_reach_upper_bound();
+                Ok(self.var_map.reach_var(elem, target))
+            }
+            GraphClass::Pdag => {
+                // Mixed reach: forward-directed + both-way undirected.
+                self.ensure_mreach_invariants();
+                Ok(self.mreach_lit_pair(elem, target))
+            }
+            other => Err(format!(
+                "`anteriors()` is not defined for class `{}`.",
+                other
+            )),
+        }
+    }
+
+    fn posteriors_lit(&mut self, elem: usize, target: usize) -> Result<Lit, String> {
+        match self.var_map.class() {
+            GraphClass::Dag => {
+                self.ensure_reach_upper_bound();
+                Ok(self.var_map.reach_var(target, elem))
+            }
+            GraphClass::Pdag => {
+                self.ensure_mreach_invariants();
+                Ok(self.mreach_lit_pair(target, elem))
+            }
+            other => Err(format!(
+                "`posteriors()` is not defined for class `{}`.",
+                other
+            )),
+        }
+    }
+
+    fn districts_lit(&mut self, elem: usize, target: usize) -> Result<Lit, String> {
+        match self.var_map.class() {
+            GraphClass::Admg => {
+                // Element is in target's district iff bireach(target, elem).
+                self.ensure_bireach_invariants();
+                Ok(self.bireach_lit_pair(elem, target))
+            }
+            other => Err(format!(
+                "`districts()` is only defined for ADMG (got class `{}`).",
+                other
+            )),
+        }
+    }
+
+    // ── Bidirected reach (ADMG only) ─────────────────────────────────────────
+    //
+    // `bireach(u, v)` is true iff u and v are in the same district —
+    // connected by a path of `<->` edges. Symmetric, so we canonicalise
+    // on the unordered pair `(min, max)`.
+    //
+    // We use a **level-bounded** encoding: `bireach^k(u, v)` is true
+    // iff u, v are connected by a path of at most `k` bidirected
+    // steps. Final answer is `bireach^{n-1}`. This is the textbook
+    // remedy for SAT-encoded reach in graphs with cycles — the naive
+    // transitive-closure upper bound allows "circular satisfaction"
+    // where mutually-supporting reach vars are TRUE without any real
+    // path. Levels force every reach claim to bottom out within
+    // n-1 hops.
+
+    fn bireach_lit_pair(&mut self, u: usize, v: usize) -> Lit {
+        if u == v {
+            return self.true_lit();
+        }
+        let key = if u < v { (u, v) } else { (v, u) };
+        self.bireach
+            .as_ref()
+            .and_then(|m| m.get(&key).copied())
+            .unwrap_or_else(|| {
+                // The caller forgot to ensure invariants; allocate
+                // unconstrained so the clause we're building doesn't
+                // crash, but the result will be unhelpful.
+                self.false_lit()
+            })
+    }
+
+    fn ensure_bireach_invariants(&mut self) {
+        if self.bireach_invariants {
+            return;
+        }
+        self.bireach_invariants = true;
+        if !self.var_map.has_edge_type("<->") {
+            return;
+        }
+        let n = self.var_map.n();
+        if n < 2 {
+            return;
+        }
+        // Allocate level vars: bireach^k for k = 1..n-1, all unordered
+        // pairs. Plus the final-level map exposed via
+        // `bireach_lit_pair`.
+        let mut levels: Vec<FxHashMap<(usize, usize), i32>> = Vec::with_capacity(n);
+        levels.push(FxHashMap::default()); // k = 0 (we never look up)
+        for _ in 1..n {
+            let mut layer = FxHashMap::default();
+            for u in 0..n {
+                for v in (u + 1)..n {
+                    layer.insert((u, v), self.var_map.fresh_aux());
+                }
+            }
+            levels.push(layer);
+        }
+        // Final level is what `bireach_lit_pair` returns.
+        self.bireach = Some(levels[n - 1].clone());
+
+        // Recurrence. For k = 1: bireach^1(u, v) ↔ edge(u, v, "<->").
+        for u in 0..n {
+            for v in (u + 1)..n {
+                let b1 = *levels[1].get(&(u, v)).unwrap();
+                let e = self.var_map.edge_var(u, v, "<->");
+                self.clauses.push(vec![-b1, e]);
+                self.clauses.push(vec![-e, b1]);
+            }
+        }
+        // For k > 1: bireach^k(u, v) ↔ bireach^{k-1}(u, v) ∨
+        //   ⋁_{w ≠ u, w ≠ v} (edge(u, w, "<->") ∧ bireach^{k-1}({w, v}))
+        for k in 2..n {
+            for u in 0..n {
+                for v in (u + 1)..n {
+                    let bk = *levels[k].get(&(u, v)).unwrap();
+                    let bk_prev = *levels[k - 1].get(&(u, v)).unwrap();
+                    // Subsumption: bk_prev → bk.
+                    self.clauses.push(vec![-bk_prev, bk]);
+                    let mut big = vec![-bk, bk_prev];
+                    for w in 0..n {
+                        if w == u || w == v {
+                            continue;
+                        }
+                        let euw = self.var_map.edge_var(u, w, "<->");
+                        // bireach^{k-1}({w, v}) — canonical (min, max).
+                        let wv_key = if w < v { (w, v) } else { (v, w) };
+                        let bwv = *levels[k - 1].get(&wv_key).unwrap();
+                        let p = self.var_map.fresh_aux();
+                        self.clauses.push(vec![-p, euw]);
+                        self.clauses.push(vec![-p, bwv]);
+                        self.clauses.push(vec![-euw, -bwv, p]);
+                        // p → bk
+                        self.clauses.push(vec![-p, bk]);
+                        big.push(p);
+                    }
+                    // bk → bk_prev ∨ ⋁ p_w  (upper bound)
+                    self.clauses.push(big);
+                }
+            }
+        }
+    }
+
+    // ── Mixed reach (PDAG only) ───────────────────────────────────────────────
+    //
+    // `mreach(u, v)` is true iff there's a path u → … → v in the
+    // PDAG's mixed graph: `-->` traversed forward, `---` either way.
+    // Same level encoding as bireach. Asymmetric (directed) so we key
+    // on ordered pairs.
+
+    fn mreach_lit_pair(&mut self, u: usize, v: usize) -> Lit {
+        if u == v {
+            return self.true_lit();
+        }
+        self.mreach
+            .as_ref()
+            .and_then(|m| m.get(&(u, v)).copied())
+            .unwrap_or_else(|| self.false_lit())
+    }
+
+    fn ensure_mreach_invariants(&mut self) {
+        if self.mreach_invariants {
+            return;
+        }
+        self.mreach_invariants = true;
+        let has_dir = self.var_map.has_edge_type("-->");
+        let has_und = self.var_map.has_edge_type("---");
+        if !has_dir && !has_und {
+            return;
+        }
+        let n = self.var_map.n();
+        if n < 2 {
+            return;
+        }
+        // Precompute step(u, w) — "is there a usable forward edge from
+        // u to w in the mixed graph?".
+        let mut step: FxHashMap<(usize, usize), i32> = FxHashMap::default();
+        for u in 0..n {
+            for w in 0..n {
+                if u == w {
+                    continue;
+                }
+                let s = self.mreach_step_lit(u, w, has_dir, has_und);
+                step.insert((u, w), s);
+            }
+        }
+        // Allocate level vars: mreach^k for k = 1..n-1, all ordered
+        // pairs.
+        let mut levels: Vec<FxHashMap<(usize, usize), i32>> = Vec::with_capacity(n);
+        levels.push(FxHashMap::default());
+        for _ in 1..n {
+            let mut layer = FxHashMap::default();
+            for u in 0..n {
+                for v in 0..n {
+                    if u == v {
+                        continue;
+                    }
+                    layer.insert((u, v), self.var_map.fresh_aux());
+                }
+            }
+            levels.push(layer);
+        }
+        self.mreach = Some(levels[n - 1].clone());
+
+        // k = 1: mreach^1(u, v) ↔ step(u, v).
+        for u in 0..n {
+            for v in 0..n {
+                if u == v {
+                    continue;
+                }
+                let m1 = *levels[1].get(&(u, v)).unwrap();
+                let s = *step.get(&(u, v)).unwrap();
+                self.clauses.push(vec![-m1, s]);
+                self.clauses.push(vec![-s, m1]);
+            }
+        }
+        // k > 1: mreach^k(u, v) ↔ mreach^{k-1}(u, v) ∨
+        //   ⋁_{w ≠ u, v} (step(u, w) ∧ mreach^{k-1}(w, v))
+        for k in 2..n {
+            for u in 0..n {
+                for v in 0..n {
+                    if u == v {
+                        continue;
+                    }
+                    let mk = *levels[k].get(&(u, v)).unwrap();
+                    let mk_prev = *levels[k - 1].get(&(u, v)).unwrap();
+                    self.clauses.push(vec![-mk_prev, mk]);
+                    let mut big = vec![-mk, mk_prev];
+                    for w in 0..n {
+                        if w == u || w == v {
+                            continue;
+                        }
+                        let s = *step.get(&(u, w)).unwrap();
+                        let mwv = *levels[k - 1].get(&(w, v)).unwrap();
+                        let p = self.var_map.fresh_aux();
+                        self.clauses.push(vec![-p, s]);
+                        self.clauses.push(vec![-p, mwv]);
+                        self.clauses.push(vec![-s, -mwv, p]);
+                        self.clauses.push(vec![-p, mk]);
+                        big.push(p);
+                    }
+                    self.clauses.push(big);
+                }
+            }
+        }
+    }
+
+    /// Disjunction of edge types that contribute to a forward step
+    /// from `u` to `w` in PDAG mixed reach.
+    fn mreach_step_lit(&mut self, u: usize, w: usize, has_dir: bool, has_und: bool) -> Lit {
+        match (has_dir, has_und) {
+            (true, true) => {
+                let a = self.var_map.edge_var(u, w, "-->");
+                let b = self.var_map.edge_var(u, w, "---");
+                let r = self.var_map.fresh_aux();
+                self.clauses.push(vec![-a, r]);
+                self.clauses.push(vec![-b, r]);
+                self.clauses.push(vec![-r, a, b]);
+                r
+            }
+            (true, false) => self.var_map.edge_var(u, w, "-->"),
+            (false, true) => self.var_map.edge_var(u, w, "---"),
+            _ => self.false_lit(),
+        }
     }
 }

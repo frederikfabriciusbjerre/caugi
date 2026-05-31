@@ -35,15 +35,11 @@ test_that("membership atoms render via %in% query()", {
 test_that("standalone predicates render with their canonical names", {
   out <- format(caugi:::caugi_constraints(
     acyclic(),
-    connected(),
-    observed(X),
     collider(A, B, C),
     v_structure(A, B, C),
     dsep(X, Y, Z)
   ))
   expect_match(out, "acyclic\\(\\)")
-  expect_match(out, "connected\\(\\)")
-  expect_match(out, "observed\\(X\\)")
   expect_match(out, "collider\\(A, B, C\\)")
   expect_match(out, "v_structure\\(A, B, C\\)")
   expect_match(out, "dsep\\(X, Y, Z\\)")

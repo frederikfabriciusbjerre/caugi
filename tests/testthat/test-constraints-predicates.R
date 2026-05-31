@@ -10,20 +10,6 @@ test_that("acyclic() classifies to a tier-B atom", {
   )
 })
 
-test_that("connected() classifies to a tier-B atom", {
-  ctr <- caugi:::caugi_constraints(connected())
-  expect_identical(ctr@formulas[[1]]$atom$kind, "connected")
-  expect_identical(ctr@formulas[[1]]$atom$tier, "B")
-})
-
-test_that("observed(X) classifies to a tier-A atom with the node name", {
-  ctr <- caugi:::caugi_constraints(observed(X))
-  expect_identical(
-    ctr@formulas[[1]]$atom,
-    list(kind = "observed", x = "X", tier = "A")
-  )
-})
-
 test_that("collider(A, B, C) records the triple positionally", {
   ctr <- caugi:::caugi_constraints(collider(A, B, C))
   expect_identical(
@@ -76,7 +62,6 @@ test_that("dsep accepts a named `given =` third argument by position", {
 
 test_that("wrong arity errors with the expected message", {
   expect_error(caugi:::caugi_constraints(acyclic(X)), "expects 0 argument")
-  expect_error(caugi:::caugi_constraints(observed()), "expects 1 argument")
   expect_error(caugi:::caugi_constraints(collider(A, B)), "expects 3 argument")
   expect_error(caugi:::caugi_constraints(dsep(X)), "expects 2 or 3 argument")
   expect_error(
@@ -96,12 +81,12 @@ test_that("unrecognised predicates still error with the design-doc pointer", {
 
 test_that("predicate atoms can be negated, anded, and ored", {
   ctr <- caugi:::caugi_constraints(
-    acyclic() & !connected(),
-    observed(A) | v_structure(A, B, C)
+    acyclic() & !v_structure(A, B, C),
+    collider(A, B, C) | v_structure(A, B, C)
   )
   expect_identical(ctr@formulas[[1]]$kind, "and")
   expect_identical(ctr@formulas[[1]]$args[[2]]$kind, "not")
-  expect_identical(ctr@formulas[[1]]$args[[2]]$body$atom$kind, "connected")
+  expect_identical(ctr@formulas[[1]]$args[[2]]$body$atom$kind, "v_structure")
   expect_identical(ctr@formulas[[2]]$kind, "or")
 })
 
@@ -109,8 +94,6 @@ test_that("predicate atoms can be negated, anded, and ored", {
 
 test_that("predicate stubs error helpfully when called at top level", {
   expect_error(caugi:::acyclic(), "only meaningful inside")
-  expect_error(caugi:::connected(), "only meaningful inside")
-  expect_error(caugi:::observed("A"), "only meaningful inside")
   expect_error(caugi:::collider("A", "B", "C"), "only meaningful inside")
   expect_error(caugi:::v_structure("A", "B", "C"), "only meaningful inside")
   expect_error(caugi:::dsep("A", "B"), "only meaningful inside")

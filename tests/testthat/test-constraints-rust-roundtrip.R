@@ -66,19 +66,15 @@ test_that("membership atoms carry query, args, and tier", {
 test_that("standalone predicates round-trip", {
   out <- .rt(
     acyclic(),
-    connected(),
-    observed(X),
     collider(A, B, C),
     v_structure(A, B, C),
     dsep(X, Y, c(Z1, Z2))
   )
   expect_match(out[1], "Acyclic")
-  expect_match(out[2], "Connected")
-  expect_match(out[3], "Observed")
-  expect_match(out[4], "Collider")
-  expect_match(out[5], "VStructure")
-  expect_match(out[6], "Dsep")
-  expect_match(out[6], '"Z1"')
+  expect_match(out[2], "Collider")
+  expect_match(out[3], "VStructure")
+  expect_match(out[4], "Dsep")
+  expect_match(out[4], '"Z1"')
 })
 
 test_that("quantifiers preserve bound-variable names and scope", {

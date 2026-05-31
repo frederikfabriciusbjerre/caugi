@@ -88,10 +88,6 @@ fn parse_atom(robj: &Robj) -> Result<Atom, String> {
             tier: parse_tier(&field_string(&list, "tier")?)?,
         }),
         "acyclic" => Ok(Atom::Acyclic),
-        "connected" => Ok(Atom::Connected),
-        "observed" => Ok(Atom::Observed {
-            x: field_string(&list, "x")?,
-        }),
         "collider" => Ok(Atom::Collider {
             a: field_string(&list, "a")?,
             mid: field_string(&list, "mid")?,

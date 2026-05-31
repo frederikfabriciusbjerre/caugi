@@ -21,19 +21,14 @@ test_that("predicate invocation inlines its body into the constraint", {
 })
 
 test_that("predicate substitution reaches every leaf in a nested body", {
-  acyclic_anc <- caugi_predicate(function(X, Y) {
-    forall(Z, implies(
-      (Z %in% ancestors(X)) & (Z %in% ancestors(Y)),
-      observed(Z)
-    ))
+  ant_pred <- caugi_predicate(function(X, Y) {
+    forall(Z, (Z %in% ancestors(X)) & (Z %in% ancestors(Y)))
   })
-  ctr <- caugi_constraints(acyclic_anc(A, B))
+  ctr <- caugi_constraints(ant_pred(A, B))
   top <- ctr@formulas[[1]]
   expect_identical(top$kind, "forall")
   # The X reference in `ancestors(X)` should now be `A`.
-  ancestors_arg <- top$body$consequent
-  # body is `implies(...)`; antecedent is the `&` of two memberships.
-  ant_args <- top$body$antecedent$args
+  ant_args <- top$body$args
   expect_identical(ant_args[[1]]$atom$query, "ancestors")
   expect_identical(ant_args[[1]]$atom$args, list("A"))
   expect_identical(ant_args[[2]]$atom$args, list("B"))

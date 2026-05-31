@@ -34,8 +34,7 @@
 #' }
 #' Common to all: `acyclic()`, `collider()`, `v_structure()`,
 #' cardinality, quantifiers, boolean combinators. Tier-C atoms
-#' (`dsep`), `markov_blanket`, `districts`, `observed`, `connected`,
-#' `anteriors`, `posteriors` are evaluator-only.
+#' (`dsep`) are evaluator-only.
 #'
 #' @param ctr A `caugi_constraints` object.
 #' @param nodes Character vector of node names.

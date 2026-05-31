@@ -178,20 +178,17 @@ classified through the normal pipeline. Predicates can call other
 predicates.
 
 ```{r}
-no_unmeasured_confounder <- caugi_predicate(function(X, Y) {
-  forall(Z, implies(
-    (Z %in% ancestors(X)) & (Z %in% ancestors(Y)),
-    observed(Z)
-  ))
-})
-
 instrument <- caugi_predicate(function(Z, X, Y) {
   (Z %in% ancestors(X)) & !(Z %in% ancestors(Y))
 })
 
+ancestor_pair <- caugi_predicate(function(U, V) {
+  (U %in% ancestors(V)) & !(V %in% ancestors(U))
+})
+
 ctr <- caugi_constraints(
-  no_unmeasured_confounder("A", "D"),
-  instrument("Z", "A", "D")
+  instrument("Z", "A", "D"),
+  ancestor_pair("A", "D")
 )
 ```
 
@@ -250,11 +247,19 @@ is always false in a DAG / UG / PDAG, and routes to the bidirected
 edge variable in ADMG. `parents` and `children` only make sense for
 classes that allow `-->`.
 
+`markov_blanket`, `anteriors`, `posteriors`, and `districts` are
+fully supported as **constraint atoms** (not just evaluator-only):
+
+- `markov_blanket(X)`: DAG-style (parents ∪ children ∪ co-parents) in
+  DAG/PDAG; neighbours in UG; `Dis(X) ∪ Pa(Dis(X))` in ADMG.
+- `anteriors(X)` / `posteriors(X)`: directed-only on DAG (= ancestors
+  / descendants); mixed reach (forward `-->` + either-way `---`) on
+  PDAG. Not defined for UG/ADMG.
+- `districts(X)`: ADMG bidirected-connected component.
+
 ## What's not yet built
 
 - `MPDAG`, `AG`, `MAG`, `PAG` classes in the solver.
-- `observed()`, `connected()`, `markov_blanket()` membership, and
-  `anteriors`/`posteriors` reach as constraints.
 - `entails(ctr, atom)` — checking whether a constraint set forces a
   particular atom in every model.
 - `dsep()` in constraint position (evaluator-only — encoder rejects).

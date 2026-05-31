@@ -36,8 +36,7 @@ Supported atom surface depends on the class:
 }
 Common to all: \code{acyclic()}, \code{collider()}, \code{v_structure()},
 cardinality, quantifiers, boolean combinators. Tier-C atoms
-(\code{dsep}), \code{markov_blanket}, \code{districts}, \code{observed}, \code{connected},
-\code{anteriors}, \code{posteriors} are evaluator-only.
+(\code{dsep}) are evaluator-only.
 }
 \examples{
 ctr <- caugi_constraints(A \%-->\% B, !(B \%-->\% A))

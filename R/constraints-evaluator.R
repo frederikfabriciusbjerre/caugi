@@ -21,7 +21,7 @@
 # Not yet implemented (will error with a clear message):
 #   - quantifiers (forall, exists)
 #   - cardinality (at_most, at_least, exactly)
-#   - observed() and connected() atoms
+#   (everything else in the constraint surface is supported)
 
 #' Check whether a graph satisfies a constraint set.
 #'
@@ -291,11 +291,6 @@ violations <- function(cg, ctr) {
       atom
     },
     acyclic = atom,
-    connected = atom,
-    observed = {
-      atom$x <- .substitute_name(atom$x, env)
-      atom
-    },
     collider = ,
     v_structure = {
       atom$a <- .substitute_name(atom$a, env)
@@ -344,8 +339,6 @@ violations <- function(cg, ctr) {
     edge = .evaluate_edge(cg, atom),
     membership = .evaluate_membership(cg, atom),
     acyclic = is_acyclic(cg),
-    connected = .evaluator_unsupported("connected()"),
-    observed = .evaluator_unsupported("observed()"),
     collider = .evaluate_collider(cg, atom),
     v_structure = .evaluate_v_structure(cg, atom),
     dsep = .evaluate_dsep(cg, atom),

@@ -358,6 +358,121 @@ Mostly bookkeeping if Phase 1 was done cleanly.
 - `NEWS.md`: new "Constraints" subsection under New Features.
 - README: one-paragraph mention.
 
+## 8.5 Phase 5 — Constructive constrained sampler (`caugi_sample`)
+
+> Proposed; not yet built. Resolves the practical question "I have BK as a
+> constraint set — give me random DAGs satisfying it" without falling back
+> to rejection sampling or to `enumerate()`'s biased ordering.
+
+`enumerate()` returns the first *N* graphs splr happens to find — strongly
+biased toward sparse / minimum-flip variants. Useful for "is there any?"
+or "list everything", **not** for "sample one randomly". The right shape
+is a direct sampler that compiles common BK constraints into the random
+construction itself.
+
+### User surface
+
+```r
+sample <- caugi_sample(
+  ctr,
+  nodes  = c("A", "B", paste0("V", 3:10)),
+  class  = "DAG",
+  p      = 0.3,      # edge probability for unconstrained pairs
+  n      = 1L,       # number of samples
+  seed   = NULL
+)
+```
+
+Returns a list of `caugi` objects (length `n`).
+
+### Algorithm
+
+```
+1. compile(ctr) → CompiledConstraints {
+       required   : set<(from, to)>          // positive edge atoms
+       forbidden  : set<(from, to)>          // negated edge atoms
+       precedence : partial order on nodes   // %<<% + required A → B
+       degree     : map<node, max in-degree> // at_most(k, parents(X))
+       residual   : list<Formula>            // anything not compilable
+   }
+
+2. Sample a topological permutation π of `nodes` uniformly at random
+   from the linear extensions of `precedence`. Fails fast (no sample
+   possible) if `precedence` is cyclic.
+
+3. For each ordered pair (u, v) with π(u) < π(v):
+       if (u, v) ∈ required    → include
+       elif (u, v) ∈ forbidden → exclude
+       else                     → include with probability p
+   Track per-target in-degree; switch a target to "exclude" mode once
+   its cap is reached. (When `degree` and `required` conflict — required
+   edges already exceed the cap — fail fast.)
+
+4. Build the caugi.
+5. If `residual` is empty: return.
+   Else: validate via satisfies(cg, residual). Reject + retry the sample
+   only on residual failure.
+```
+
+### What compiles vs what falls through to residual
+
+**Compilable today** (the bulk of practical BK):
+
+- Edge atoms at top level (required / forbidden).
+- `%<<%` topological precedence.
+- `at_most(k, parents(X))` and `exactly(k, parents(X))` (degree bounds).
+- Conjunctions of the above.
+
+**Residual (handled via rejection)**:
+
+- Positive ancestor/descendant atoms (`A %in% ancestors(Y)`) — needs path
+  existence, can't be enforced edge-by-edge.
+- Heterogeneous cardinality sets (`at_most(k, c(A %-->% Y, X %---% Y))`).
+- Required colliders / v-structures.
+- Disjunctions (`A %-->% B | C %-->% B`) — would require sampling within
+  each branch, biased by branch weight.
+- `dsep` — see tier-C note (under revision).
+
+Documented expectation: rejection rate is zero or near-zero for typical
+causal-discovery BK, which is dominated by the compilable cases.
+
+### Sampling-distribution semantics
+
+Under no constraints, `caugi_sample` is the standard random-DAG
+distribution caugi's `generate_graph(p = …)` already produces: random
+topological order × Bernoulli(p) per ordered pair. Constraints narrow
+the distribution to the satisfying sub-family, **without re-weighting**
+— so the sampler stays "uniform over satisfying DAGs *under that
+distribution*". Not uniform over the satisfying set in the
+combinatorial sense (that would require a uniform-SAT sampler like
+ApproxMC). Document this clearly.
+
+### Class coverage
+
+- v1: `class = "DAG"` (the dominant use case).
+- v2: extend to `PDAG` (sample directed + undirected per pair) and
+  `ADMG` (sample directed + bidirected). The same compiler layout
+  applies; only the per-pair edge sampler changes.
+- `UG`: trivial — no topological order needed.
+
+### Tests
+
+- Marginal-distribution checks: with no constraints,
+  `mean(satisfies(samples, A %-->% B))` ≈ `p / 2` over many samples.
+- Constraint-satisfaction checks: every sampled DAG passes
+  `satisfies(cg, ctr)` for the full constraint set.
+- Cross-check against `enumerate()`: for small `(ctr, nodes)`, the
+  empirical sample distribution after many draws should be uniform over
+  `enumerate(ctr, nodes)` once weighted by the unconstrained
+  distribution. Property test.
+
+### Implementation cost
+
+- ~200 lines of R (no Rust changes needed — sampler operates over the
+  R-side AST and builds caugis with the existing constructor).
+- One new exported function: `caugi_sample()`.
+- New test file: `tests/testthat/test-constraints-sample.R`.
+
 ## 9. Cross-cutting concerns
 
 ### Testing

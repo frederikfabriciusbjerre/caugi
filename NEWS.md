@@ -17,10 +17,18 @@
   `solver-splr` cargo feature, on by default) handles satisfiability
   via `consistent(ctr, nodes, class)` and enumerates graphs satisfying
   the constraints via `enumerate(ctr, nodes, class, limit)`. Solver
-  classes supported in v1: `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`. The
-  encoder reproduces the Robinson DAG sequence (1, 3, 25, 543, …) for
-  unconstrained DAG enumeration and known counts for UG / PDAG /
-  ADMG (8 UGs on 3 nodes; 62 PDAGs / ADMGs on 3 nodes). See
+  classes supported in v1: `"DAG"`, `"UG"`, `"PDAG"`, `"ADMG"`.
+  Constraint atoms include edge atoms, set-membership atoms over
+  `parents`, `children`, `neighbors`, `spouses`, `ancestors`,
+  `descendants`, `markov_blanket`, `anteriors`, `posteriors`, and
+  `districts` (with class-appropriate semantics — `markov_blanket`
+  decomposes class-by-class, `anteriors`/`posteriors` are mixed reach
+  in PDAG, `districts` is bidirected reach in ADMG), plus
+  `acyclic()`, `collider()`, `v_structure()`, cardinality,
+  quantifiers, and the boolean combinators. The encoder reproduces
+  the Robinson DAG sequence (1, 3, 25, 543, …) for unconstrained DAG
+  enumeration and known counts for UG / PDAG / ADMG (8 UGs on 3
+  nodes; 62 PDAGs / ADMGs on 3 nodes). See
   `extras/design/constraints-plan.md` and the spike report
   `constraints-spike-s0.md` for the design.
 

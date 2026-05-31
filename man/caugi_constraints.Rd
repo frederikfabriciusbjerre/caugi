@@ -10,7 +10,7 @@ caugi_constraints(...)
 \item{...}{Unevaluated constraint expressions. Recognised:
 edge atoms (e.g. \code{A \%-->\% B}), set-membership atoms
 (\code{A \%in\% ancestors(Y)}), topological precedence (\code{L \%<<\% R}),
-standalone predicates (\code{acyclic()}, \code{observed(X)}, …), quantifiers
+standalone predicates (\code{acyclic()}, \code{collider()}, …), quantifiers
 (\verb{forall(X, …)}, \verb{exists(Z, …)}), cardinality (\code{at_most(k, set)} …),
 and boolean combinators (\code{!}, \code{&} / \code{&&}, \code{|} / \code{||}, \verb{xor(…)},
 \verb{implies(…)}).}

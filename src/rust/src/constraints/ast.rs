@@ -54,10 +54,6 @@ pub enum Atom {
     },
     /// Whole-graph acyclicity.
     Acyclic,
-    /// Whole-graph (weak) connectedness.
-    Connected,
-    /// `x` is an observed (non-latent) node.
-    Observed { x: NodeRef },
     /// `mid` is a collider on the triple `(a, mid, c)`.
     Collider {
         a: NodeRef,
@@ -82,11 +78,8 @@ impl Atom {
     /// Tier classification — used to gate encoder eligibility.
     pub fn tier(&self) -> AtomTier {
         match self {
-            Atom::Edge { .. }
-            | Atom::Observed { .. }
-            | Atom::Collider { .. }
-            | Atom::VStructure { .. } => AtomTier::A,
-            Atom::Acyclic | Atom::Connected => AtomTier::B,
+            Atom::Edge { .. } | Atom::Collider { .. } | Atom::VStructure { .. } => AtomTier::A,
+            Atom::Acyclic => AtomTier::B,
             Atom::Membership { tier, .. } => *tier,
             Atom::Dsep { .. } => AtomTier::C,
         }

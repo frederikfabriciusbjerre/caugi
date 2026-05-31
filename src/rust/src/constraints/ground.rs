@@ -125,10 +125,6 @@ fn substitute_atom(atom: &Atom, env: &FxHashMap<String, String>) -> Atom {
             tier: *tier,
         },
         Atom::Acyclic => Atom::Acyclic,
-        Atom::Connected => Atom::Connected,
-        Atom::Observed { x } => Atom::Observed {
-            x: substitute_ref(x, env),
-        },
         Atom::Collider { a, mid, c } => Atom::Collider {
             a: substitute_ref(a, env),
             mid: substitute_ref(mid, env),

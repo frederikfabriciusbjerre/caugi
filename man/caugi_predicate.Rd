@@ -29,13 +29,8 @@ itself, directly or transitively) are not supported and will produce
 a stack-overflow-like error.
 }
 \examples{
-no_unmeasured_confounder <- caugi_predicate(function(X, Y) {
-  forall(Z, implies(
-    (Z \%in\% ancestors(X)) & (Z \%in\% ancestors(Y)),
-    observed(Z)
-  ))
-})
-ctr <- caugi_constraints(no_unmeasured_confounder("A", "Y"))
+has_path <- caugi_predicate(function(X, Y) X \%in\% ancestors(Y))
+ctr <- caugi_constraints(has_path("A", "Y"))
 
 }
 \seealso{

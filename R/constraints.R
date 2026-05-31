@@ -15,8 +15,8 @@
 #     functions: `A %in% parents(Y)`, `A %in% ancestors(Y)`, `B %in% mb(A)`
 #   - topological precedence via `L %<<% R` — sugar that desugars to a
 #     conjunction of `!(r %in% ancestors(l))` over `(l ∈ L, r ∈ R)`
-#   - standalone predicates `acyclic()`, `connected()`, `observed(X)`,
-#     `collider(B, on = c(A, C))`, `v_structure(A, B, C)`, `dsep(...)`
+#   - standalone predicates `acyclic()`, `collider(A, B, C)`,
+#     `v_structure(A, B, C)`, `dsep(...)`
 #   - quantifiers `forall(X, body)`, `exists(Z, body)` with bare symbol or
 #     `c(...)` bound-variable specs
 #   - boolean structure via `!`, `&` / `&&`, `|` / `||`, `xor()` and
@@ -27,13 +27,13 @@
 #
 # Atom tier policy (locked in for the AST):
 #   - tier A : boolean combinations of edge atoms (edge operators,
-#              `observed`, `collider`, `v_structure`, and membership atoms
-#              whose query is tier-A: `parents`, `children`, `neighbors`,
-#              `spouses`, `mb`, `districts`)
+#              `collider`, `v_structure`, and membership atoms whose
+#              query is tier-A: `parents`, `children`, `neighbors`,
+#              `spouses`, `markov_blanket`, `districts`)
 #   - tier B : global structural atoms requiring transitive-closure aux
-#              variables (`acyclic()`, `connected()`, and membership atoms
-#              whose query is tier-B: `ancestors`, `descendants`,
-#              `anteriors`, `posteriors`)
+#              variables (`acyclic()`, and membership atoms whose query
+#              is tier-B: `ancestors`, `descendants`, `anteriors`,
+#              `posteriors`)
 #   - tier C : path-enumeration atoms that don't decompose into a finite
 #              boolean combination of edge atoms (`dsep()`)
 #
@@ -63,7 +63,7 @@
 #' @param ... Unevaluated constraint expressions. Recognised:
 #'   edge atoms (e.g. `A %-->% B`), set-membership atoms
 #'   (`A %in% ancestors(Y)`), topological precedence (`L %<<% R`),
-#'   standalone predicates (`acyclic()`, `observed(X)`, …), quantifiers
+#'   standalone predicates (`acyclic()`, `collider()`, …), quantifiers
 #'   (`forall(X, …)`, `exists(Z, …)`), cardinality (`at_most(k, set)` …),
 #'   and boolean combinators (`!`, `&` / `&&`, `|` / `||`, `xor(…)`,
 #'   `implies(…)`).
@@ -634,8 +634,6 @@ caugi_constraints <- function(...) {
 .constraint_predicate_whitelist <- function() {
   list(
     acyclic = list(arity = 0L, tier = "B"),
-    connected = list(arity = 0L, tier = "B"),
-    observed = list(arity = 1L, tier = "A"),
     collider = list(arity = 3L, tier = "A"),
     v_structure = list(arity = 3L, tier = "A"),
     dsep = list(arity = c(2L, 3L), tier = "C")
@@ -647,7 +645,6 @@ caugi_constraints <- function(...) {
 #' fall through to its own error handling.
 #'
 #' Argument grammar:
-#'   * `observed(X)` — one node name.
 #'   * `collider(A, B, C)` — three node names; `B` is the middle.
 #'   * `v_structure(A, B, C)` — three node names; same convention.
 #'   * `dsep(X, Y)` or `dsep(X, Y, Z)` — each slot may be a single name or
@@ -679,18 +676,6 @@ caugi_constraints <- function(...) {
     acyclic = list(
       kind = "atom",
       atom = list(kind = "acyclic", tier = "B")
-    ),
-    connected = list(
-      kind = "atom",
-      atom = list(kind = "connected", tier = "B")
-    ),
-    observed = list(
-      kind = "atom",
-      atom = list(
-        kind = "observed",
-        x = .constraint_node_name(args[[1L]]),
-        tier = "A"
-      )
     ),
     collider = list(
       kind = "atom",
@@ -768,13 +753,8 @@ caugi_constraints <- function(...) {
 #'   called directly; useful only inside `caugi_constraints(...)`.
 #'
 #' @examples
-#' no_unmeasured_confounder <- caugi_predicate(function(X, Y) {
-#'   forall(Z, implies(
-#'     (Z %in% ancestors(X)) & (Z %in% ancestors(Y)),
-#'     observed(Z)
-#'   ))
-#' })
-#' ctr <- caugi_constraints(no_unmeasured_confounder("A", "Y"))
+#' has_path <- caugi_predicate(function(X, Y) X %in% ancestors(Y))
+#' ctr <- caugi_constraints(has_path("A", "Y"))
 #'
 #' @family constraints
 #' @concept constraints
@@ -884,18 +864,6 @@ caugi_predicate <- function(fn) {
 #' @noRd
 acyclic <- function() {
   .constraint_only_stub("`acyclic()`")
-}
-
-#' @keywords internal
-#' @noRd
-connected <- function() {
-  .constraint_only_stub("`connected()`")
-}
-
-#' @keywords internal
-#' @noRd
-observed <- function(x) {
-  .constraint_only_stub("`observed()`")
 }
 
 #' @keywords internal
@@ -1068,8 +1036,6 @@ exactly <- function(k, set) {
       ")"
     ),
     acyclic = "acyclic()",
-    connected = "connected()",
-    observed = paste0("observed(", atom$x, ")"),
     collider = paste0("collider(", atom$a, ", ", atom$mid, ", ", atom$c, ")"),
     v_structure = paste0(
       "v_structure(",
