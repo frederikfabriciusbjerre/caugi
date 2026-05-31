@@ -119,7 +119,7 @@ is quite performant and expressive, but lacks a proper interface to `R` (as it
 currently stands).
 
 Then there are packages that have a bit more intuitive, causality-native
-interface as `dagitty` [@textor2016] and `MixedGraphs` [@evans2025]. The latter
+interface, such as `dagitty` [@textor2016] and `MixedGraphs` [@evans2025]. The latter
 does not seem to have a very active community, but has been a source of
 inspiration for `caugi`. While `dagitty` seems to have a larger user base, as
 well as a quite expressive format, we have experienced that it had problems with
