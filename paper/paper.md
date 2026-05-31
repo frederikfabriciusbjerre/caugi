@@ -145,7 +145,7 @@ working with causal graphs with the performance and memory safety of `Rust`.
 The graph implementation is based on a compressed sparse row\ (CSR) format.
 The CSR format scales memory proportionally to the number of edges and is 
 particularly well-suited for more sparse graphs, which we often see in 
-causality. This representation makes queries fast(er), but mutations (more) 
+causality. This representation makes queries faster, but mutations more 
 expensive. Any structural change in principle requires rebuilding the index. 
 
 To avoid penalizing iterative workflows, `caugi` adopts a *lazy build* strategy.
