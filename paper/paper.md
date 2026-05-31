@@ -181,7 +181,7 @@ obs
 #>   edges: W-->X, X-->M, M-->Y, X<->Y
 ```
 
-`X` and `Y` are not m-separated, since confounding persists in the ADMG:
+`X` and `Y` are not $m$-separated, since confounding persists in the ADMG:
 
 ```r
 m_separated(obs, "X", "Y")
