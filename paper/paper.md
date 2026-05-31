@@ -114,7 +114,7 @@ differ between graph classes. `bnlearn` has a fast backend for some queries, but
 it is not very memory efficient, and it will run out of memory for larger
 graphs.
 
-An honourable mention is `Tetrad` [@scheines1998], which is written in Java, and
+An honorable mention is `Tetrad` [@scheines1998], which is written in Java, and
 is quite performant and expressive, but lacks a proper interface to `R` (as it
 currently stands).
 
