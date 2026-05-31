@@ -85,7 +85,7 @@ The problem with many existing tools is that they
 
 `caugi` addresses these issues with an intuitive graph representation, a broad
 set of algorithms for causal inference and discovery, and an interface built
-around edge operators. 
+around edge operators.
 
 # State of the Field
 
