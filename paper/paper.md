@@ -51,7 +51,7 @@ The graph data structure is implemented in `Rust`, yielding query and traversal
 operations exceeding the run time of competing packages in `R`, still while giving 
 the user an experience as writing graphs on a whiteboard. Alongside the core
 representation, `caugi` implements a wide range of causal-graph algorithms, such
-as separation tests, structural queries, adjustment-set identification, graph metrics, 
+as separation tests, structural queries, adjustment-set identification, and graph metrics, 
 together with a full-featured system for visualizing graphs.
 
 # Statement of Need
