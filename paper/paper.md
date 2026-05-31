@@ -100,7 +100,7 @@ causal-inference toolkits.
 
 Where packages such as `igraph` [@csardi2006; @antonov2023] and `NetworkX`
 [@hagberg2008] are plenty fast, they are general-purpose graph packages, and
-building the correct abstractions on top have been done in for example `ggm`
+building the correct abstractions on top of them has been done in for example `ggm`
 [@marchetti2025] or `pgmpy` [@ankan2024]. It takes a lot of work to make these
 abstractions correct and might require hacks, such as representing a partially
 directed graph with directed edges going in both directions and alike.
