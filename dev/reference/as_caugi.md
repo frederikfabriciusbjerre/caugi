@@ -60,11 +60,11 @@ integer codes are as follows (as used in `pcalg`):
 
 - 0: no edge
 
-- 1: circle (e.g., `A o-o B` or `A o-- B`)
+- 1: circle (e.g., `A o-o B` or `A --o B`)
 
 - 2: arrowhead (e.g., `A --> B` or `A o-> B`)
 
-- 3: tail (e.g., `A o-- B` or `A --- B`)
+- 3: tail (e.g., `A --o B` or `A --- B`)
 
 ## See also
 

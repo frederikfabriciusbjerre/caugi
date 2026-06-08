@@ -26,6 +26,9 @@
   sink had multiple undirected neighbors
   ([\#298](https://github.com/frederikfabriciusbjerre/caugi/issues/298)).
 
+- Fixed a bug causing a partially undirected (`--o`) edges to be plotted
+  as undirected edges.
+
 ## caugi 1.2.0
 
 CRAN release: 2026-05-05
