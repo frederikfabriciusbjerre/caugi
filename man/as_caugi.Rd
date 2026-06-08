@@ -45,9 +45,9 @@ have that \code{G["A", "B"] == 1} and \code{G["B", "A"] == 0}.
 For PAGs, the integer codes are as follows (as used in \code{pcalg}):
 \itemize{
 \item 0: no edge
-\item 1: circle (e.g., \verb{A o-o B} or \verb{A o-- B})
+\item 1: circle (e.g., \verb{A o-o B} or \verb{A --o B})
 \item 2: arrowhead (e.g., \verb{A --> B} or \verb{A o-> B})
-\item 3: tail (e.g., \verb{A o-- B} or \code{A --- B})
+\item 3: tail (e.g., \verb{A --o B} or \code{A --- B})
 }
 }
 \examples{

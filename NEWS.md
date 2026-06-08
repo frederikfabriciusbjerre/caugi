@@ -18,6 +18,9 @@
 - Fix `dag_from_pdag()` failing with `` `from`, `edge`, `to` must be equal
   length. `` when a sink had multiple undirected neighbors (#298).
 
+- Fixed a bug causing a partially undirected (`--o`) edges to
+be plotted as undirected edges.
+
 # caugi 1.2.0
 
 ## New Features

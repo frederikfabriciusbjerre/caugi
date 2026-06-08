@@ -533,7 +533,7 @@ makeContent.caugi_edge_grob <- function(x) {
       )
     }
 
-    if (x$edge_type == "o-o") {
+    if (x$edge_type == "o-o" || x$edge_type == "--o") {
       grob_list <- grid::gList(
         grob_list,
         grid::circleGrob(
@@ -582,6 +582,7 @@ make_edges <- function(
         "<->" = edge_styles$bidirected,
         "o->" = edge_styles$partial,
         "o-o" = edge_styles$partial,
+        "--o" = edge_styles$partial,
         edge_styles$undirected
       )
 

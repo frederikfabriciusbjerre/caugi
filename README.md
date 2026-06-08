@@ -84,7 +84,7 @@ The available edges in `caugi` are listed below:
 - `%---%` (undirected)
 - `%<->%` (bidirected)
 - `%o->%` (partially directed)
-- `%o--%` (partially undirected)
+- `%--o%` (partially undirected)
 - `%o-o%` (partial)
 
 You can register more types with `register_caugi_edge()`, if you find
