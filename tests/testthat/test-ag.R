@@ -352,6 +352,24 @@ test_that("is_mag correctly identifies complete graph as MAG", {
   expect_true(is_mag(ag_complete))
 })
 
+test_that("is_mag identifies complete graph with mixed edges as MAG (#309)", {
+  # Regression test for #309 (figure 4b). This graph is complete, so it is
+  # trivially a MAG. A buggy `adjacent` that binary-searched the unsorted
+  # concatenation of neighbor buckets failed to detect some adjacencies (e.g.
+  # Z --> Y on a node whose child index sorts before its spouse indices),
+  # making `is_mag` wrongly return FALSE.
+  ag_309 <- caugi(
+    X %<->% Z + Y,
+    Z %<->% W,
+    Z %-->% Y,
+    X %-->% W,
+    Y %<->% W,
+    class = "AG"
+  )
+
+  expect_true(is_mag(ag_309))
+})
+
 # ─────────────────────────────────────────────────────────────────────────────
 # MAG - Mixed Edge Types
 # ─────────────────────────────────────────────────────────────────────────────
