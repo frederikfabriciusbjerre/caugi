@@ -364,7 +364,13 @@ impl Ag {
 
     /// Check if two nodes are adjacent (connected by any edge).
     pub fn adjacent(&self, a: u32, b: u32) -> bool {
-        self.neighbors_of(a).binary_search(&b).is_ok()
+        // `neighbors_of` concatenates four individually-sorted buckets, so the
+        // combined slice is not globally sorted and cannot be binary-searched.
+        // Search each sorted bucket separately instead.
+        self.parents_of(a).binary_search(&b).is_ok()
+            || self.children_of(a).binary_search(&b).is_ok()
+            || self.spouses_of(a).binary_search(&b).is_ok()
+            || self.undirected_of(a).binary_search(&b).is_ok()
     }
 
     /// Check if this ancestral graph is maximal (MAG).
@@ -725,6 +731,33 @@ mod tests {
     }
 
     #[test]
+    fn ag_is_mag_complete_graph_issue_309() {
+        // Regression test for #309: a complete AG is trivially maximal (no
+        // non-adjacent pairs), but a buggy `adjacent` using binary_search over
+        // the unsorted concatenated neighborhood made `is_mag` return false.
+        // Graph (figure 4b): nodes X=0, Z=1, Y=2, W=3.
+        //   X <-> Z, X <-> Y, Z <-> W, Z --> Y, X --> W, Y <-> W
+        let (reg, dir, bid, _und) = setup();
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, bid).unwrap(); // X <-> Z
+        b.add_edge(0, 2, bid).unwrap(); // X <-> Y
+        b.add_edge(1, 3, bid).unwrap(); // Z <-> W
+        b.add_edge(1, 2, dir).unwrap(); // Z --> Y
+        b.add_edge(0, 3, dir).unwrap(); // X --> W
+        b.add_edge(2, 3, bid).unwrap(); // Y <-> W
+
+        let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        // Every pair is adjacent (complete graph).
+        for u in 0..4u32 {
+            for v in (u + 1)..4u32 {
+                assert!(ag.adjacent(u, v), "expected {u} and {v} to be adjacent");
+            }
+        }
+        assert!(ag.is_mag());
+    }
+
+    #[test]
     fn ag_core_ref() {
         let (reg, dir, _bid, _und) = setup();
         let mut b = GraphBuilder::new_with_registry(2, true, &reg);
@@ -880,7 +913,11 @@ mod tests {
                 code /= states;
             }
 
-            let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+            // Not every enumerated candidate is a valid AG (e.g. undirected
+            // constraint violations); skip those that fail construction.
+            let Ok(ag) = Ag::new(Arc::new(b.finalize().unwrap())) else {
+                continue;
+            };
             if !ag.is_mag() {
                 found_non_mag = true;
                 break 'search;

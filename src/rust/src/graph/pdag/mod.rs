@@ -183,7 +183,12 @@ impl Pdag {
 impl Pdag {
     #[inline]
     pub(crate) fn adjacent(&self, a: u32, b: u32) -> bool {
-        self.neighbors_of(a).binary_search(&b).is_ok()
+        // `neighbors_of` concatenates three individually-sorted buckets, so the
+        // combined slice is not globally sorted and cannot be binary-searched.
+        // Search each sorted bucket separately instead.
+        self.parents_of(a).binary_search(&b).is_ok()
+            || self.children_of(a).binary_search(&b).is_ok()
+            || self.undirected_of(a).binary_search(&b).is_ok()
     }
 
     #[inline]
