@@ -36,6 +36,13 @@
   were missed
   ([\#309](https://github.com/frederikfabriciusbjerre/caugi/issues/309)).
 
+- Fixed [`to_dot()`](https://caugi.org/dev/reference/to_dot.md) and
+  [`to_mermaid()`](https://caugi.org/dev/reference/to_mermaid.md) (and
+  [`write_dot()`](https://caugi.org/dev/reference/write_dot.md)/[`write_mermaid()`](https://caugi.org/dev/reference/write_mermaid.md))
+  silently converting partial `--o` and `o-o` edges into plain directed
+  edges, dropping the circle endpoints
+  ([\#307](https://github.com/frederikfabriciusbjerre/caugi/issues/307)).
+
 ## caugi 1.2.0
 
 CRAN release: 2026-05-05

@@ -36,7 +36,11 @@ The function handles different edge types:
 
 - Bidirected edges (`<->`) use `<-->` in Mermaid
 
-- Partial edges (`o->`) use `o-->` in Mermaid (circle end)
+- Partial edges (`o->`) use `o-->` in Mermaid (circle tail)
+
+- Partial edges (`--o`) use `--o` in Mermaid (circle head)
+
+- Partial edges (`o-o`) use `o--o` in Mermaid (circle both ends)
 
 Node names are automatically escaped if they contain special characters.
 

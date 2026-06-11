@@ -87,7 +87,10 @@ and analysis.</p>
     <p>The function handles different edge types:</p><ul><li><p>Directed edges (<code>--&gt;</code>) use <code>-&gt;</code> in DOT</p></li>
 <li><p>Undirected edges (<code>---</code>) use <code>--</code> in DOT (or <code>-&gt;</code> with <code>dir=none</code> in digraphs)</p></li>
 <li><p>Bidirected edges (<code>&lt;-&gt;</code>) use <code>-&gt;</code> with <code>[dir=both]</code> attribute</p></li>
-<li><p>Partial edges (<code>o-&gt;</code>) use <code>-&gt;</code> with <code>[arrowtail=odot, dir=both]</code> attribute</p></li>
+<li><p>Partial edges (<code>o-&gt;</code>) use <code>-&gt;</code> with <code>[dir=both, arrowtail=odot]</code> attribute</p></li>
+<li><p>Partial edges (<code>--o</code>) use <code>-&gt;</code> with <code>[arrowhead=odot]</code> attribute</p></li>
+<li><p>Partial edges (<code>o-o</code>) use <code>-&gt;</code> with
+<code>[dir=both, arrowtail=odot, arrowhead=odot]</code> attribute</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

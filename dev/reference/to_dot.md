@@ -42,8 +42,13 @@ The function handles different edge types:
 
 - Bidirected edges (`<->`) use `->` with `[dir=both]` attribute
 
-- Partial edges (`o->`) use `->` with `[arrowtail=odot, dir=both]`
+- Partial edges (`o->`) use `->` with `[dir=both, arrowtail=odot]`
   attribute
+
+- Partial edges (`--o`) use `->` with `[arrowhead=odot]` attribute
+
+- Partial edges (`o-o`) use `->` with
+  `[dir=both, arrowtail=odot, arrowhead=odot]` attribute
 
 ## See also
 
