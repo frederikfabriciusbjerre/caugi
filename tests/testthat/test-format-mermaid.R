@@ -135,6 +135,14 @@ test_that("write_mermaid accepts direction", {
   unlink(tmp)
 })
 
+test_that("to_mermaid renders o-> as a circle tail with an arrow head", {
+  # Mermaid parses start and end markers independently, so `o-->` is a circle
+  # at the tail (from) and an arrow at the head (to), matching caugi's `o->`.
+  cg <- caugi(A %o->% B, class = "UNKNOWN")
+
+  expect_match(as.character(to_mermaid(cg)), "A o--> B", fixed = TRUE)
+})
+
 test_that("to_mermaid handles o-o edges (#307)", {
   # Circle-circle edges render with a circle at both ends.
   cg <- caugi(
