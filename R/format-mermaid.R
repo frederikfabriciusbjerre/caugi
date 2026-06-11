@@ -46,7 +46,9 @@ caugi_mermaid <- S7::new_class(
 #' * Directed edges (`-->`) use `-->` in Mermaid
 #' * Undirected edges (`---`) use `---` in Mermaid
 #' * Bidirected edges (`<->`) use `<-->` in Mermaid
-#' * Partial edges (`o->`) use `o-->` in Mermaid (circle end)
+#' * Partial edges (`o->`) use `o-->` in Mermaid (circle tail)
+#' * Partial edges (`--o`) use `--o` in Mermaid (circle head)
+#' * Partial edges (`o-o`) use `o--o` in Mermaid (circle both ends)
 #'
 #' Node names are automatically escaped if they contain special characters.
 #'
@@ -109,6 +111,10 @@ to_mermaid <- function(x, direction = "TD") {
         operator <- "<-->"
       } else if (edge_type == "o->") {
         operator <- "o-->"
+      } else if (edge_type == "--o") {
+        operator <- "--o"
+      } else if (edge_type == "o-o") {
+        operator <- "o--o"
       } else {
         # Unknown edge type, default to directed
         operator <- "-->"

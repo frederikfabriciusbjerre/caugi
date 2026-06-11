@@ -27,7 +27,9 @@ The function handles different edge types:
 \item Directed edges (\verb{-->}) use \verb{-->} in Mermaid
 \item Undirected edges (\verb{---}) use \verb{---} in Mermaid
 \item Bidirected edges (\verb{<->}) use \verb{<-->} in Mermaid
-\item Partial edges (\verb{o->}) use \verb{o-->} in Mermaid (circle end)
+\item Partial edges (\verb{o->}) use \verb{o-->} in Mermaid (circle tail)
+\item Partial edges (\code{--o}) use \code{--o} in Mermaid (circle head)
+\item Partial edges (\code{o-o}) use \code{o--o} in Mermaid (circle both ends)
 }
 
 Node names are automatically escaped if they contain special characters.
