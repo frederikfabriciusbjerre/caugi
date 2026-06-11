@@ -21,7 +21,7 @@ Checks if the given \code{caugi} graph is acyclic.
 }
 \details{
 Logically, it should not be possible to have a graph class of "DAG", "PDAG",
-or "MPDAG"
+"MPDAG", or "CPDAG"
 that has cycles, but in case the user modified the graph after creation in
 some unforeseen way that could have introduced cycles, this function allows
 to force a check of acyclicity, if needed.

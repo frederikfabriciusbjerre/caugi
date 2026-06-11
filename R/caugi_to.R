@@ -21,7 +21,7 @@ as_igraph <- function(x, ...) {
 
   if (
     !(x@graph_class %in%
-      c("DAG", "PDAG", "MPDAG", "ADMG", "UG", "AG", "UNKNOWN"))
+      c("DAG", "PDAG", "MPDAG", "CPDAG", "ADMG", "UG", "AG", "UNKNOWN"))
   ) {
     stop(
       "caugi graphs of class '",

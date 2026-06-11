@@ -9,6 +9,7 @@
 use super::admg::Admg;
 use super::ag::Ag;
 use super::builder::GraphBuilder;
+use super::cpdag::Cpdag;
 use super::dag::Dag;
 use super::mpdag::Mpdag;
 use super::pdag::Pdag;
@@ -31,6 +32,9 @@ pub enum GraphClass {
     Pdag,
     /// Maximally Oriented Partially Directed Acyclic Graph (Meek-closed PDAG)
     Mpdag,
+    /// Completed Partially Directed Acyclic Graph (essential graph of a Markov
+    /// equivalence class: chordal chain components, every arrow strongly protected)
+    Cpdag,
     /// Undirected Graph (only `---`)
     Ug,
     /// Acyclic Directed Mixed Graph (`-->`, `<->`)
@@ -49,8 +53,9 @@ impl std::str::FromStr for GraphClass {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "dag" => Ok(GraphClass::Dag),
-            "pdag" | "cpdag" => Ok(GraphClass::Pdag),
+            "pdag" => Ok(GraphClass::Pdag),
             "mpdag" => Ok(GraphClass::Mpdag),
+            "cpdag" => Ok(GraphClass::Cpdag),
             "ug" => Ok(GraphClass::Ug),
             "admg" => Ok(GraphClass::Admg),
             "ag" | "mag" | "pag" => Ok(GraphClass::Ag),
@@ -67,6 +72,7 @@ impl GraphClass {
             GraphClass::Dag => "DAG",
             GraphClass::Pdag => "PDAG",
             GraphClass::Mpdag => "MPDAG",
+            GraphClass::Cpdag => "CPDAG",
             GraphClass::Ug => "UG",
             GraphClass::Admg => "ADMG",
             GraphClass::Ag => "AG",
@@ -493,6 +499,11 @@ impl GraphSession {
                 let mpdag = Mpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
                 Ok(GraphView::Mpdag(Arc::new(mpdag)))
             }
+            GraphClass::Cpdag => {
+                let pdag = Pdag::new(core).map_err(|e| self.map_error(e))?;
+                let cpdag = Cpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
+                Ok(GraphView::Cpdag(Arc::new(cpdag)))
+            }
             GraphClass::Ug => {
                 let ug = Ug::new(core).map_err(|e| self.map_error(e))?;
                 Ok(GraphView::Ug(Arc::new(ug)))
@@ -672,7 +683,7 @@ impl GraphSession {
     pub fn is_cpdag(&mut self) -> Result<bool, String> {
         let core = self.core()?;
         match Pdag::new(Arc::new(core.as_ref().clone())) {
-            Ok(p) => Ok(p.is_cpdag()),
+            Ok(p) => Ok(Cpdag::try_new(p).is_ok()),
             Err(_) => Ok(false),
         }
     }
@@ -712,6 +723,12 @@ impl GraphSession {
                     Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
                 Mpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Mpdag)
+            }
+            GraphClass::Cpdag => {
+                let pdag =
+                    Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                Cpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
+                Ok(GraphClass::Cpdag)
             }
             GraphClass::Ug => {
                 Ug::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
@@ -1250,7 +1267,8 @@ mod tests {
     #[test]
     fn graph_class_from_str_and_as_str() {
         assert_eq!("dag".parse::<GraphClass>().unwrap(), GraphClass::Dag);
-        assert_eq!("CPDAG".parse::<GraphClass>().unwrap(), GraphClass::Pdag);
+        assert_eq!("pdag".parse::<GraphClass>().unwrap(), GraphClass::Pdag);
+        assert_eq!("CPDAG".parse::<GraphClass>().unwrap(), GraphClass::Cpdag);
         assert_eq!("mpdag".parse::<GraphClass>().unwrap(), GraphClass::Mpdag);
         assert_eq!("ug".parse::<GraphClass>().unwrap(), GraphClass::Ug);
         assert_eq!("admg".parse::<GraphClass>().unwrap(), GraphClass::Admg);
@@ -1262,6 +1280,7 @@ mod tests {
         assert_eq!(GraphClass::Dag.as_str(), "DAG");
         assert_eq!(GraphClass::Pdag.as_str(), "PDAG");
         assert_eq!(GraphClass::Mpdag.as_str(), "MPDAG");
+        assert_eq!(GraphClass::Cpdag.as_str(), "CPDAG");
         assert_eq!(GraphClass::Ug.as_str(), "UG");
         assert_eq!(GraphClass::Admg.as_str(), "ADMG");
         assert_eq!(GraphClass::Ag.as_str(), "AG");
@@ -1427,7 +1446,7 @@ mod tests {
         );
 
         let to_cpdag = session.to_cpdag().unwrap();
-        assert!(matches!(to_cpdag, GraphView::Mpdag(_)));
+        assert!(matches!(to_cpdag, GraphView::Cpdag(_)));
 
         let skeleton = session.skeleton().unwrap();
         assert!(matches!(skeleton, GraphView::Ug(_)));

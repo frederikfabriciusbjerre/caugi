@@ -128,7 +128,7 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 #'
 #' @details
 #' Logically, it should not be possible to have a graph class of "DAG", "PDAG",
-#' or "MPDAG"
+#' "MPDAG", or "CPDAG"
 #' that has cycles, but in case the user modified the graph after creation in
 #' some unforeseen way that could have introduced cycles, this function allows
 #' to force a check of acyclicity, if needed.
@@ -162,7 +162,8 @@ is_acyclic <- function(cg, force_check = FALSE) {
   } else if (
     identical(cg@graph_class, "DAG") ||
       identical(cg@graph_class, "PDAG") ||
-      identical(cg@graph_class, "MPDAG")
+      identical(cg@graph_class, "MPDAG") ||
+      identical(cg@graph_class, "CPDAG")
   ) {
     is_it <- TRUE
   } else {
@@ -317,7 +318,7 @@ is_dag <- function(cg, force_check = FALSE) {
 is_pdag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
 
-  if (cg@graph_class %in% c("PDAG", "MPDAG") && !force_check) {
+  if (cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG") && !force_check) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -364,6 +365,11 @@ is_pdag <- function(cg, force_check = FALSE) {
 is_cpdag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
+  # The "CPDAG" class label is only assigned after Rust validates the full
+  # CPDAG invariant at construction, so it is authoritative.
+  if (identical(cg@graph_class, "CPDAG")) {
+    return(TRUE)
+  }
   is_it <- rs_is_cpdag(cg@session)
   is_it
 }
@@ -403,6 +409,11 @@ is_cpdag <- function(cg) {
 is_mpdag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
+  # Every CPDAG is an MPDAG, and both class labels are validated at
+  # construction, so they are authoritative.
+  if (cg@graph_class %in% c("MPDAG", "CPDAG")) {
+    return(TRUE)
+  }
   rs_is_mpdag(cg@session)
 }
 
