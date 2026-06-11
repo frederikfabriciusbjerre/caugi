@@ -25,6 +25,9 @@ be plotted as undirected edges.
   Adjacency was tested by binary-searching the concatenation of separately
   sorted neighbor buckets, which is not globally sorted, so some adjacent
   pairs were missed (#309).
+- Fixed `to_dot()` and `to_mermaid()` (and `write_dot()`/`write_mermaid()`)
+  silently converting partial `--o` and `o-o` edges into plain directed edges,
+  dropping the circle endpoints (#307).
 
 # caugi 1.2.0
 

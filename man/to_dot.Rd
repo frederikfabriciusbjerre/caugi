@@ -30,7 +30,10 @@ The function handles different edge types:
 \item Directed edges (\verb{-->}) use \verb{->} in DOT
 \item Undirected edges (\verb{---}) use \verb{--} in DOT (or \verb{->} with \code{dir=none} in digraphs)
 \item Bidirected edges (\verb{<->}) use \verb{->} with \verb{[dir=both]} attribute
-\item Partial edges (\verb{o->}) use \verb{->} with \verb{[arrowtail=odot, dir=both]} attribute
+\item Partial edges (\verb{o->}) use \verb{->} with \verb{[dir=both, arrowtail=odot]} attribute
+\item Partial edges (\code{--o}) use \verb{->} with \verb{[arrowhead=odot]} attribute
+\item Partial edges (\code{o-o}) use \verb{->} with
+\verb{[dir=both, arrowtail=odot, arrowhead=odot]} attribute
 }
 }
 \examples{
