@@ -32,6 +32,17 @@ test_that("to_dot handles different edge types", {
   expect_match(as.character(dot), 'D -> E \\[dir="both", arrowtail="odot"\\]')
 })
 
+test_that("to_dot renders o-> as a circle tail with an arrow head", {
+  # `dir="both"` shows both endpoints; arrowtail="odot" is the circle at the
+  # tail (from), the default arrowhead is the arrow at the head (to).
+  cg <- caugi(A %o->% B, class = "UNKNOWN")
+
+  expect_match(
+    as.character(to_dot(cg)),
+    'A -> B \\[dir="both", arrowtail="odot"\\]'
+  )
+})
+
 test_that("to_dot handles partial circle edges (#307)", {
   cg <- caugi(
     A %--o% B,

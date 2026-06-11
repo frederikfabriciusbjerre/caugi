@@ -102,7 +102,10 @@ to_mermaid <- function(x, direction = "TD") {
       to <- escape_mermaid_id(edges_df$to[i])
       edge_type <- edges_df$edge[i]
 
-      # Determine edge operator
+      # Determine edge operator. Mermaid allows asymmetric endpoint markers:
+      # the start marker (`o`/`x`/`<`) and end marker (`o`/`x`/`>`) are parsed
+      # independently, so `o-->` is a circle tail with an arrow head -- matching
+      # caugi's `o->`. See destructStartLink()/destructEndLink() in Mermaid.
       if (edge_type == "-->") {
         operator <- "-->"
       } else if (edge_type == "---") {
