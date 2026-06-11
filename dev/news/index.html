@@ -55,6 +55,7 @@
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li><p>Fix <code><a href="../reference/dag_from_pdag.html">dag_from_pdag()</a></code> failing with <code>`from`, `edge`, `to` must be equal length.</code> when a sink had multiple undirected neighbors (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/298" class="external-link">#298</a>).</p></li>
 <li><p>Fixed a bug causing a partially undirected (<code>--o</code>) edges to be plotted as undirected edges.</p></li>
+<li><p>Fixed <code><a href="../reference/is_mag.html">is_mag()</a></code> returning incorrect results for some ancestral graphs. Adjacency was tested by binary-searching the concatenation of separately sorted neighbor buckets, which is not globally sorted, so some adjacent pairs were missed (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/309" class="external-link">#309</a>).</p></li>
 </ul></div>
 </div>
     <div class="section level2">

@@ -29,6 +29,13 @@
 - Fixed a bug causing a partially undirected (`--o`) edges to be plotted
   as undirected edges.
 
+- Fixed [`is_mag()`](https://caugi.org/dev/reference/is_mag.md)
+  returning incorrect results for some ancestral graphs. Adjacency was
+  tested by binary-searching the concatenation of separately sorted
+  neighbor buckets, which is not globally sorted, so some adjacent pairs
+  were missed
+  ([\#309](https://github.com/frederikfabriciusbjerre/caugi/issues/309)).
+
 ## caugi 1.2.0
 
 CRAN release: 2026-05-05
