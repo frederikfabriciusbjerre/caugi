@@ -65,6 +65,13 @@ test_that("adjustment_set(type = 'backdoor') returns a valid backdoor set", {
   expect_false("D" %in% Z) # descendant of X should not appear
 })
 
+test_that("adjustment_set(type = 'backdoor') blocks paths via non-An(Y) parents (#308)", {
+  cg <- caugi(C %-->% B %-->% X, C %-->% Y, class = "DAG")
+  Z <- adjustment_set(cg, "X", "Y", type = "backdoor")
+  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = Z))
+  expect_setequal(Z, "B") # parent of X, not an ancestor of Y, but blocks the path
+})
+
 test_that("adjustment_set(type = 'optimal') is valid and minimal here", {
   Z <- adjustment_set(adjustment_set_cg, "X", "Y", type = "optimal")
   expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = Z))

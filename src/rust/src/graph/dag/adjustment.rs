@@ -30,18 +30,21 @@ impl Dag {
         bitset::collect_from_mask(&keep)
     }
 
-    /// Backdoor adjustment candidate set for `Xs → Ys`:
-    /// `Z = ( (⋃ Pa(X)) ∩ An(Y) ) \ (De(X) ∪ X ∪ Y )`.
+    /// Backdoor adjustment set for `Xs → Ys`: `Z = (⋃ Pa(X)) \ (De(X) ∪ X ∪ Y)`.
+    ///
+    /// The parents of the treatments block every backdoor path (Pearl), so this
+    /// is always a valid backdoor adjustment set. Note that `Z` must not be
+    /// intersected with `An(Y)`: a parent of `X` can lie on a backdoor path to
+    /// `Y` without being an ancestor of `Y` (e.g. `X ← B ← C → Y`, where `B` is
+    /// a parent of `X` but not an ancestor of `Y`), and dropping it would leave
+    /// that path open.
     pub fn adjustment_set_backdoor(&self, xs: &[u32], ys: &[u32]) -> Vec<u32> {
         let n = self.n();
-        let an_mask = self.ancestors_mask(ys);
 
         let mut keep = vec![false; n as usize];
         for &x in xs {
             for &p in self.parents_of(x) {
-                if an_mask[p as usize] {
-                    keep[p as usize] = true;
-                }
+                keep[p as usize] = true;
             }
         }
 
@@ -347,6 +350,28 @@ mod tests {
 
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
         assert_eq!(g.adjustment_set_backdoor(&[1], &[2]), vec![0, 3]);
+    }
+
+    #[test]
+    fn dag_adjustment_backdoor_parent_not_ancestor_of_y() {
+        // Regression for #308: `C -> B -> X`, `C -> Y`.
+        // The backdoor path `X <- B <- C -> Y` must be blocked. `B` is a parent
+        // of `X` but not an ancestor of `Y`, so a spurious `∩ An(Y)` filter
+        // wrongly dropped it and returned the (invalid) empty set.
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+
+        // C=0, B=1, X=2, Y=3
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, d).unwrap(); // C -> B
+        b.add_edge(1, 2, d).unwrap(); // B -> X
+        b.add_edge(0, 3, d).unwrap(); // C -> Y
+
+        let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        let z = g.adjustment_set_backdoor(&[2], &[3]);
+        assert_eq!(z, vec![1]); // {B}
+        assert!(g.is_valid_backdoor_set(2, 3, &z));
     }
 
     #[test]
