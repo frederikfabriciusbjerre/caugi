@@ -235,6 +235,7 @@ mutate_caugi <- function(cg, class) {
     "DAG" = is_dag(cg),
     "PDAG" = is_pdag(cg),
     "MPDAG" = is_mpdag(cg),
+    "CPDAG" = is_cpdag(cg),
     "UG" = is_ug(cg),
     "ADMG" = is_admg(cg),
     "AG" = is_ag(cg),
@@ -676,8 +677,8 @@ are_connected <- function(cg, u, v) {
 #'
 #' @export
 dag_from_pdag <- function(PDAG) {
-  if (!(PDAG@graph_class %in% c("PDAG", "MPDAG"))) {
-    stop("Input must be a caugi PDAG/MPDAG graph")
+  if (!(PDAG@graph_class %in% c("PDAG", "MPDAG", "CPDAG"))) {
+    stop("Input must be a caugi PDAG/MPDAG/CPDAG graph")
   }
 
   output_graph <- PDAG

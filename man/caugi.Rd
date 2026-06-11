@@ -13,7 +13,7 @@ caugi(
   edges_df = NULL,
   simple = TRUE,
   build = NULL,
-  class = c("AUTO", "DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "UNKNOWN"),
+  class = c("AUTO", "DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "UNKNOWN"),
   state = NULL,
   .session = NULL
 )
@@ -51,9 +51,9 @@ self-loops.}
 Can use \code{\link[=build]{build()}} to force lazy compilation if desired.}
 
 \item{class}{Character; one of \code{"AUTO"}, \code{"DAG"}, \code{"UG"}, \code{"PDAG"}, \code{"MPDAG"},
-\code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"AUTO"} will automatically pick the
-appropriate class based on the first match in the order of \code{"DAG"}, \code{"UG"},
-\code{"MPDAG"}, \code{"PDAG"}, \code{"ADMG"}, and \code{"AG"}.
+\code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"AUTO"} will automatically pick
+the appropriate class based on the first match in the order of \code{"DAG"},
+\code{"UG"}, \code{"MPDAG"}, \code{"PDAG"}, \code{"ADMG"}, and \code{"AG"}.
 It will default to \code{"UNKNOWN"} if no match is found.}
 
 \item{state}{DEPRECATED. Replaced by \code{.session}.}

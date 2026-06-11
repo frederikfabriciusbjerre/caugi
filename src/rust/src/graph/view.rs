@@ -1,5 +1,6 @@
 use super::admg::Admg;
 use super::ag::Ag;
+use super::cpdag::Cpdag;
 use super::dag::Dag;
 use super::mpdag::Mpdag;
 use super::pdag::Pdag;
@@ -44,6 +45,7 @@ pub enum GraphView {
     Dag(Arc<Dag>),
     Pdag(Arc<Pdag>),
     Mpdag(Arc<Mpdag>),
+    Cpdag(Arc<Cpdag>),
     Ug(Arc<Ug>),
     Admg(Arc<Admg>),
     Ag(Arc<Ag>),
@@ -57,6 +59,7 @@ impl GraphView {
             GraphView::Dag(d) => d.core_ref(),
             GraphView::Pdag(p) => p.core_ref(),
             GraphView::Mpdag(m) => m.as_pdag().core_ref(),
+            GraphView::Cpdag(c) => c.as_pdag().core_ref(),
             GraphView::Ug(u) => u.core_ref(),
             GraphView::Admg(a) => a.core_ref(),
             GraphView::Ag(g) => g.core_ref(),
@@ -70,6 +73,7 @@ impl GraphView {
             GraphView::Dag(g) => g.n(),
             GraphView::Pdag(g) => g.n(),
             GraphView::Mpdag(g) => g.n(),
+            GraphView::Cpdag(g) => g.n(),
             GraphView::Ug(g) => g.n(),
             GraphView::Admg(g) => g.n(),
             GraphView::Ag(g) => g.n(),
@@ -160,6 +164,18 @@ impl GraphView {
             }
             (GraphView::Mpdag(_), NeighborMode::Partial) => {
                 Err("mode 'partial' not valid for MPDAG (no partial edges)".into())
+            }
+            (GraphView::Cpdag(c), NeighborMode::All) => Ok(c.as_pdag().neighbors_of(i).to_vec()),
+            (GraphView::Cpdag(c), NeighborMode::In) => Ok(c.as_pdag().parents_of(i).to_vec()),
+            (GraphView::Cpdag(c), NeighborMode::Out) => Ok(c.as_pdag().children_of(i).to_vec()),
+            (GraphView::Cpdag(c), NeighborMode::Undirected) => {
+                Ok(c.as_pdag().undirected_of(i).to_vec())
+            }
+            (GraphView::Cpdag(_), NeighborMode::Bidirected) => {
+                Err("mode 'bidirected' not valid for CPDAG (no bidirected edges)".into())
+            }
+            (GraphView::Cpdag(_), NeighborMode::Partial) => {
+                Err("mode 'partial' not valid for CPDAG (no partial edges)".into())
             }
             (GraphView::Pdag(_), NeighborMode::Bidirected) => {
                 Err("mode 'bidirected' not valid for PDAG (no bidirected edges)".into())
@@ -277,6 +293,7 @@ impl GraphView {
             GraphView::Dag(g) => Ok(g.ancestors_of(i)),
             GraphView::Pdag(g) => Ok(g.ancestors_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().ancestors_of(i)),
+            GraphView::Cpdag(c) => Ok(c.as_pdag().ancestors_of(i)),
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.ancestors_of(i)),
             GraphView::Ug(_) => Err("ancestors_of not defined for UG".into()),
@@ -288,6 +305,7 @@ impl GraphView {
             GraphView::Dag(g) => Ok(g.descendants_of(i)),
             GraphView::Pdag(g) => Ok(g.descendants_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().descendants_of(i)),
+            GraphView::Cpdag(c) => Ok(c.as_pdag().descendants_of(i)),
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.descendants_of(i)),
             GraphView::Ug(_) => Err("descendants_of not defined for UG".into()),
@@ -299,6 +317,7 @@ impl GraphView {
             GraphView::Dag(g) => Ok(g.anteriors_of(i)),
             GraphView::Pdag(g) => Ok(g.anteriors_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().anteriors_of(i)),
+            GraphView::Cpdag(c) => Ok(c.as_pdag().anteriors_of(i)),
             GraphView::Admg(_) => Err("anteriors_of not defined for ADMG".into()),
             GraphView::Ag(g) => Ok(g.anteriors_of(i)),
             GraphView::Ug(_) => Err("anteriors_of not defined for UG".into()),
@@ -310,6 +329,7 @@ impl GraphView {
             GraphView::Dag(g) => Ok(g.posteriors_of(i)),
             GraphView::Pdag(g) => Ok(g.posteriors_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().posteriors_of(i)),
+            GraphView::Cpdag(c) => Ok(c.as_pdag().posteriors_of(i)),
             GraphView::Admg(_) => Err("posteriors_of not defined for ADMG".into()),
             GraphView::Ag(g) => Ok(g.posteriors_of(i)),
             GraphView::Ug(_) => Err("posteriors_of not defined for UG".into()),
@@ -321,6 +341,7 @@ impl GraphView {
             GraphView::Dag(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Pdag(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().markov_blanket_of(i)),
+            GraphView::Cpdag(c) => Ok(c.as_pdag().markov_blanket_of(i)),
             GraphView::Ug(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Admg(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Ag(g) => Ok(g.markov_blanket_of(i)),
@@ -332,6 +353,7 @@ impl GraphView {
             GraphView::Dag(g) => Ok(g.exogenous_nodes()),
             GraphView::Pdag(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().exogenous_nodes(undirected_as_parents)),
+            GraphView::Cpdag(c) => Ok(c.as_pdag().exogenous_nodes(undirected_as_parents)),
             GraphView::Ug(g) => Ok(g.exogenous_nodes()),
             GraphView::Admg(g) => Ok(g.exogenous_nodes()),
             GraphView::Ag(g) => {
@@ -357,6 +379,7 @@ impl GraphView {
             GraphView::Admg(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Pdag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Mpdag(_) => Err("topological_sort is only defined for DAGs".into()),
+            GraphView::Cpdag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ug(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Raw(_) => Err("topological_sort is only defined for DAGs".into()),
@@ -504,6 +527,22 @@ impl GraphView {
                     GraphView::Pdag(std::sync::Arc::new(p))
                 }
             }
+            GraphView::Cpdag(_) => {
+                // Deleting nodes can break the CPDAG invariant (e.g. chordality
+                // or strong protection). Downgrade to the strongest class the
+                // residual graph still satisfies: CPDAG, else MPDAG, else PDAG.
+                let p = super::pdag::Pdag::new(std::sync::Arc::new(core2))?;
+                if p.is_cpdag() {
+                    let m = super::mpdag::Mpdag::from_closed_unchecked(p);
+                    let c = super::cpdag::Cpdag::from_valid_unchecked(m);
+                    GraphView::Cpdag(std::sync::Arc::new(c))
+                } else if p.is_meek_closed() {
+                    let m = super::mpdag::Mpdag::from_closed_unchecked(p);
+                    GraphView::Mpdag(std::sync::Arc::new(m))
+                } else {
+                    GraphView::Pdag(std::sync::Arc::new(p))
+                }
+            }
             GraphView::Ug(_) => {
                 let u = super::ug::Ug::new(std::sync::Arc::new(core2))?;
                 GraphView::Ug(std::sync::Arc::new(u))
@@ -525,16 +564,17 @@ impl GraphView {
 impl GraphView {
     /// Convert to a CPDAG (essential graph of the Markov equivalence class).
     ///
-    /// Only defined for DAGs. For PDAGs/MPDAGs, a true `to_cpdag` would
-    /// require extending the PDAG to a consistent DAG (Dor-Tarsi) and then
-    /// computing that DAG's CPDAG, which is not yet implemented. Use
-    /// `to_mpdag` instead to apply Meek closure.
+    /// Only defined for DAGs and CPDAGs (the latter is a fixed point). For
+    /// PDAGs/MPDAGs, a true `to_cpdag` would require extending the PDAG to a
+    /// consistent DAG (Dor-Tarsi) and then computing that DAG's CPDAG, which is
+    /// not yet implemented. Use `to_mpdag` instead to apply Meek closure.
     pub fn to_cpdag(&self) -> Result<GraphView, String> {
         match self {
             GraphView::Dag(d) => {
-                let m = d.to_cpdag()?;
-                Ok(GraphView::Mpdag(std::sync::Arc::new(m)))
+                let c = d.to_cpdag()?;
+                Ok(GraphView::Cpdag(std::sync::Arc::new(c)))
             }
+            GraphView::Cpdag(c) => Ok(GraphView::Cpdag(std::sync::Arc::clone(c))),
             _ => Err("to_cpdag is only defined for DAGs".into()),
         }
     }
@@ -542,18 +582,20 @@ impl GraphView {
     /// Apply Meek closure and return an MPDAG.
     ///
     /// Defined for DAGs (delegates to `to_cpdag` since a CPDAG is an MPDAG),
-    /// PDAGs (applies Meek closure), and MPDAGs (identity).
+    /// PDAGs (applies Meek closure), MPDAGs (identity), and CPDAGs (downgrade,
+    /// since every CPDAG is an MPDAG).
     pub fn to_mpdag(&self) -> Result<GraphView, String> {
         match self {
             GraphView::Dag(d) => {
-                let m = d.to_cpdag()?;
-                Ok(GraphView::Mpdag(std::sync::Arc::new(m)))
+                let c = d.to_cpdag()?;
+                Ok(GraphView::Mpdag(std::sync::Arc::new(c.into_mpdag())))
             }
             GraphView::Pdag(p) => {
                 let m = p.to_mpdag()?;
                 Ok(GraphView::Mpdag(std::sync::Arc::new(m)))
             }
             GraphView::Mpdag(m) => Ok(GraphView::Mpdag(std::sync::Arc::clone(m))),
+            GraphView::Cpdag(c) => Ok(GraphView::Mpdag(std::sync::Arc::new(c.as_mpdag().clone()))),
             _ => Err("to_mpdag is only defined for DAGs, PDAGs, and MPDAGs".into()),
         }
     }
@@ -570,6 +612,10 @@ impl GraphView {
             }
             GraphView::Mpdag(m) => {
                 let ug = m.as_pdag().skeleton()?;
+                Ok(GraphView::Ug(Arc::new(ug)))
+            }
+            GraphView::Cpdag(c) => {
+                let ug = c.as_pdag().skeleton()?;
                 Ok(GraphView::Ug(Arc::new(ug)))
             }
             _ => Err("skeleton is defined for DAGs and PDAGs only".into()),
@@ -678,6 +724,13 @@ impl GraphView {
             GraphView::Mpdag(m) => {
                 use crate::graph::alg::bitset;
                 let p = m.as_pdag();
+                let mask = bitset::ancestors_mask(seeds, |u| p.parents_of(u), p.n());
+                let keep = bitset::collect_from_mask(&mask);
+                self.induced_subgraph(&keep)
+            }
+            GraphView::Cpdag(c) => {
+                use crate::graph::alg::bitset;
+                let p = c.as_pdag();
                 let mask = bitset::ancestors_mask(seeds, |u| p.parents_of(u), p.n());
                 let keep = bitset::collect_from_mask(&mask);
                 self.induced_subgraph(&keep)

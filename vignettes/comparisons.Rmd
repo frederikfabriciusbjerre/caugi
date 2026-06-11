@@ -54,7 +54,7 @@ Two adjacent areas are intentionally out of scope:
 
   | Package     | DAG                 | CPDAG             | MPDAG            | MAG            | PAG            | ADMG                 | SWIG | UG              | Mixed/general      |
   | :---------- | :------------------ | :---------------- | :--------------- | :------------- | :------------- | :------------------- | :--- | :-------------- | :----------------- |
-  | **caugi**   | ●                   | ◐[^caugi-cpdag]   | ●                | ◐[^caugi-mag]  | ○              | ●                    | ○    | ●               | ●                  |
+  | **caugi**   | ●                   | ●[^caugi-cpdag]   | ●                | ◐[^caugi-mag]  | ○              | ●                    | ○    | ●               | ●                  |
   | igraph      | ◐[^igraph-dag]      | ○[^igraph-cpdag]  | ○                | ○              | ○              | ○                    | ○    | ◐[^igraph-ug]   | ◐[^igraph-mixed]   |
   | graph       | ◐[^graph-dag]       | ○                 | ○                | ○              | ○              | ○                    | ○    | ◐[^graph-ug]    | ◐[^graph-mixed]    |
   | gRbase      | ◐[^grbase-dag]      | ○                 | ○                | ○              | ○              | ○                    | ○    | ◐[^grbase-ug]   | ○                  |
@@ -72,10 +72,12 @@ Two adjacent areas are intentionally out of scope:
     without a dedicated class or invariant enforcement; `○` indicates
     unsupported graph types.
 
-[^caugi-cpdag]: `caugi` exposes a general `PDAG` class that can represent any
-    CPDAG, and `is_cpdag()` validates the structure post-hoc, but there is no
-    dedicated CPDAG class and CPDAG invariants are not enforced at construction
-    (e.g. that the graph is the completion of a Markov equivalence class).
+[^caugi-cpdag]: `caugi` has a dedicated `CPDAG` class whose invariants (chordal
+    chain components, an acyclic component DAG, Meek closure, and strong arrow
+    protection) are validated at construction via `class = "CPDAG"` (in `caugi()`,
+    `as_caugi()`, and `mutate_caugi()`). `generate_graph(class = "CPDAG")`
+    returns a graph typed `"CPDAG"`, and `is_cpdag()` also validates the
+    structure post-hoc for graphs of other classes.
 
 [^caugi-mag]: `caugi` accepts `class = "AG"` (ancestral graph) in the
     constructor and exports `is_mag()` to validate maximality post-hoc, but

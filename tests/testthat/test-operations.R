@@ -757,7 +757,10 @@ test_that("dag_from_pdag errors on non-PDAG input", {
     B %-->% C,
     class = "DAG"
   )
-  expect_error(dag_from_pdag(cg), "Input must be a caugi PDAG/MPDAG graph")
+  expect_error(
+    dag_from_pdag(cg),
+    "Input must be a caugi PDAG/MPDAG/CPDAG graph"
+  )
 })
 
 test_that("dag_from_pdag errors if PDAG cannot be extended to a DAG", {

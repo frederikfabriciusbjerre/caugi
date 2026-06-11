@@ -14,7 +14,9 @@ use graph::metrics::aid;
 use graph::metrics::{hd, shd_with_perm};
 
 use graph::view::GraphView;
-use graph::{admg::Admg, ag::Ag, dag::Dag, mpdag::Mpdag, pdag::Pdag, ug::Ug, CaugiGraph};
+use graph::{
+    admg::Admg, ag::Ag, cpdag::Cpdag, dag::Dag, mpdag::Mpdag, pdag::Pdag, ug::Ug, CaugiGraph,
+};
 use std::sync::Arc;
 
 // ---------- helpers ----------
@@ -360,6 +362,7 @@ fn graph_class_from_view(view: &GraphView) -> GraphClass {
         GraphView::Dag(_) => GraphClass::Dag,
         GraphView::Pdag(_) => GraphClass::Pdag,
         GraphView::Mpdag(_) => GraphClass::Mpdag,
+        GraphView::Cpdag(_) => GraphClass::Cpdag,
         GraphView::Ug(_) => GraphClass::Ug,
         GraphView::Admg(_) => GraphClass::Admg,
         GraphView::Ag(_) => GraphClass::Ag,
@@ -372,6 +375,7 @@ fn graph_class_label_from_view(view: &GraphView) -> &'static str {
         GraphView::Dag(_) => "DAG",
         GraphView::Pdag(_) => "PDAG",
         GraphView::Mpdag(_) => "MPDAG",
+        GraphView::Cpdag(_) => "CPDAG",
         GraphView::Ug(_) => "UG",
         GraphView::Admg(_) => "ADMG",
         GraphView::Ag(_) => "AG",
@@ -560,10 +564,15 @@ fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<Grap
             let pdag = Pdag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
             ExternalPtr::new(GraphView::Pdag(Arc::new(pdag)))
         }
-        "CPDAG" | "MPDAG" => {
+        "MPDAG" => {
             let pdag = Pdag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
             let mpdag = Mpdag::try_new(pdag).unwrap_or_else(|e| throw_r_error(e));
             ExternalPtr::new(GraphView::Mpdag(Arc::new(mpdag)))
+        }
+        "CPDAG" => {
+            let pdag = Pdag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
+            let cpdag = Cpdag::try_new(pdag).unwrap_or_else(|e| throw_r_error(e));
+            ExternalPtr::new(GraphView::Cpdag(Arc::new(cpdag)))
         }
         "UG" => {
             let ug = Ug::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));

@@ -15,8 +15,8 @@
 #'
 #' @param x An object to convert to a `caugi`.
 #' @param class Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
-#'  `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for integer
-#'  coded matrices.
+#'  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
+#'  integer coded matrices.
 #' @param simple logical. If `TRUE` (default) the graph will be simple
 #' (no multiple edges or self-loops).
 #' @param collapse logical. If `TRUE` collapse mutual directed edges to
@@ -98,7 +98,17 @@ as_caugi <- S7::new_generic(
   dispatch_args = "x",
   fun = function(
     x,
-    class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+    class = c(
+      "DAG",
+      "UG",
+      "PDAG",
+      "MPDAG",
+      "CPDAG",
+      "ADMG",
+      "AG",
+      "PAG",
+      "UNKNOWN"
+    ),
     simple = TRUE,
     collapse = FALSE,
     collapse_to = "---",
@@ -113,7 +123,17 @@ S7::method(
   S7::new_S3_class("igraph")
 ) <- function(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c(
+    "DAG",
+    "UG",
+    "PDAG",
+    "MPDAG",
+    "CPDAG",
+    "ADMG",
+    "AG",
+    "PAG",
+    "UNKNOWN"
+  ),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -198,7 +218,17 @@ register_graphnel_s4_class <- function() {
     methods::getClassDef("graphNEL", package = "graph")
   ) <- function(
     x,
-    class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+    class = c(
+      "DAG",
+      "UG",
+      "PDAG",
+      "MPDAG",
+      "CPDAG",
+      "ADMG",
+      "AG",
+      "PAG",
+      "UNKNOWN"
+    ),
     simple = TRUE,
     collapse = FALSE,
     collapse_to = "---",
@@ -274,7 +304,17 @@ S7::method(
   S7::new_S3_class("integer")
 ) <- function(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c(
+    "DAG",
+    "UG",
+    "PDAG",
+    "MPDAG",
+    "CPDAG",
+    "ADMG",
+    "AG",
+    "PAG",
+    "UNKNOWN"
+  ),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -464,7 +504,17 @@ S7::method(
   S7::new_S3_class("double")
 ) <- function(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c(
+    "DAG",
+    "UG",
+    "PDAG",
+    "MPDAG",
+    "CPDAG",
+    "ADMG",
+    "AG",
+    "PAG",
+    "UNKNOWN"
+  ),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -497,7 +547,17 @@ S7::method(
   S7::new_S3_class("logical")
 ) <- function(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c(
+    "DAG",
+    "UG",
+    "PDAG",
+    "MPDAG",
+    "CPDAG",
+    "ADMG",
+    "AG",
+    "PAG",
+    "UNKNOWN"
+  ),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -527,7 +587,17 @@ register_matrix_s4_class <- function() {
     methods::getClassDef("Matrix", package = "Matrix")
   ) <- function(
     x,
-    class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+    class = c(
+      "DAG",
+      "UG",
+      "PDAG",
+      "MPDAG",
+      "CPDAG",
+      "ADMG",
+      "AG",
+      "PAG",
+      "UNKNOWN"
+    ),
     simple = TRUE,
     collapse = FALSE,
     collapse_to = "---",
@@ -551,7 +621,17 @@ S7::method(
   S7::new_S3_class("tidygraph")
 ) <- function(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c(
+    "DAG",
+    "UG",
+    "PDAG",
+    "MPDAG",
+    "CPDAG",
+    "ADMG",
+    "AG",
+    "PAG",
+    "UNKNOWN"
+  ),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -576,7 +656,17 @@ S7::method(
   S7::new_S3_class("dagitty")
 ) <- function(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c(
+    "DAG",
+    "UG",
+    "PDAG",
+    "MPDAG",
+    "CPDAG",
+    "ADMG",
+    "AG",
+    "PAG",
+    "UNKNOWN"
+  ),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -684,7 +774,17 @@ S7::method(
   S7::new_S3_class("bn")
 ) <- function(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c(
+    "DAG",
+    "UG",
+    "PDAG",
+    "MPDAG",
+    "CPDAG",
+    "ADMG",
+    "AG",
+    "PAG",
+    "UNKNOWN"
+  ),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
