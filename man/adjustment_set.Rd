@@ -33,7 +33,12 @@ Computes an adjustment set for \code{X -> Y} in a DAG.
 Types supported:
 \itemize{
 \item \code{"parents"}: \eqn{\bigcup \mathrm{Pa}(X)} minus \eqn{X \cup Y}
-\item \code{"backdoor"}: Pearl backdoor formula
+\item \code{"backdoor"}: an inclusion-minimal valid backdoor adjustment set, found in
+linear time as a minimal d-separator of \code{X} and \code{Y} in the proper backdoor
+graph (van der Zander, Liśkiewicz & Textor, 2019). Unlike \code{"parents"} (which
+always conditions on every parent of \code{X}), this drops nodes that are not
+needed to block a backdoor path. Note that minimal is not the same as
+statistically optimal; use \code{"optimal"} for the efficient O-set.
 \item \code{"optimal"}: O-set (only for single \code{x} and single \code{y})
 }
 }
@@ -52,7 +57,7 @@ cg <- caugi(
 )
 
 adjustment_set(cg, "X", "Y", type = "parents") # C, A
-adjustment_set(cg, "X", "Y", type = "backdoor") # C, A
+adjustment_set(cg, "X", "Y", type = "backdoor") # A
 adjustment_set(cg, "X", "Y", type = "optimal") # K
 
 }

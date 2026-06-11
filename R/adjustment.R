@@ -70,7 +70,12 @@ d_separated <- function(
 #' @details
 #' Types supported:
 #' - `"parents"`: \eqn{\bigcup \mathrm{Pa}(X)} minus \eqn{X \cup Y}
-#' - `"backdoor"`: Pearl backdoor formula
+#' - `"backdoor"`: an inclusion-minimal valid backdoor adjustment set, found in
+#'   linear time as a minimal d-separator of `X` and `Y` in the proper backdoor
+#'   graph (van der Zander, Liśkiewicz & Textor, 2019). Unlike `"parents"` (which
+#'   always conditions on every parent of `X`), this drops nodes that are not
+#'   needed to block a backdoor path. Note that minimal is not the same as
+#'   statistically optimal; use `"optimal"` for the efficient O-set.
 #' - `"optimal"`: O-set (only for single `x` and single `y`)
 #'
 #' @param cg A `caugi` object.
@@ -96,7 +101,7 @@ d_separated <- function(
 #' )
 #'
 #' adjustment_set(cg, "X", "Y", type = "parents") # C, A
-#' adjustment_set(cg, "X", "Y", type = "backdoor") # C, A
+#' adjustment_set(cg, "X", "Y", type = "backdoor") # A
 #' adjustment_set(cg, "X", "Y", type = "optimal") # K
 #'
 #' @family adjustment

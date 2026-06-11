@@ -69,7 +69,20 @@ test_that("adjustment_set(type = 'backdoor') blocks paths via non-An(Y) parents 
   cg <- caugi(C %-->% B %-->% X, C %-->% Y, class = "DAG")
   Z <- adjustment_set(cg, "X", "Y", type = "backdoor")
   expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = Z))
-  expect_setequal(Z, "B") # parent of X, not an ancestor of Y, but blocks the path
+  # B is a parent of X, not an ancestor of Y, yet it blocks X <- B <- C -> Y.
+  # The minimal set is a single node, either {B} or {C}.
+  expect_length(Z, 1L)
+  expect_true(setequal(Z, "B") || setequal(Z, "C"))
+})
+
+test_that("adjustment_set(type = 'backdoor') returns a minimal (not parent) set", {
+  # With no backdoor path the minimal set is empty, while `parents` still
+  # conditions on every parent of X.
+  cg <- caugi(A %-->% X, X %-->% Y, B %-->% X, class = "DAG")
+  Z <- adjustment_set(cg, "X", "Y", type = "backdoor")
+  expect_length(Z, 0L)
+  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = NULL))
+  expect_setequal(adjustment_set(cg, "X", "Y", type = "parents"), c("A", "B"))
 })
 
 test_that("adjustment_set(type = 'optimal') is valid and minimal here", {

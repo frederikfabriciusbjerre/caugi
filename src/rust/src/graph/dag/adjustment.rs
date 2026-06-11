@@ -30,44 +30,65 @@ impl Dag {
         bitset::collect_from_mask(&keep)
     }
 
-    /// Backdoor adjustment set for `Xs → Ys`: `Z = (⋃ Pa(X)) \ (De(X) ∪ X ∪ Y)`.
+    /// Forbidden set for adjustment: `forb(Xs,Ys) = De(cn(Xs,Ys) \ Ys) ∪ Xs`,
+    /// where `cn(Xs,Ys) = (De(Xs) ∪ Xs) ∩ (An(Ys) ∪ Ys)` are the nodes on proper
+    /// causal paths from `Xs` to `Ys`. Conditioning on a forbidden node either
+    /// blocks the causal effect (a node on the path) or opens a spurious path
+    /// (a descendant of such a node), so no valid adjustment set may intersect
+    /// it.
+    fn forbidden_set(&self, xs: &[u32], ys: &[u32]) -> Vec<bool> {
+        let de_x = self.descendants_mask(xs);
+        let an_y = self.ancestors_mask(ys);
+
+        // cn(Xs,Ys) \ Ys.
+        let mut cn_minus_y: Vec<u32> = Vec::new();
+        for v in 0..self.n() {
+            let vi = v as usize;
+            if de_x[vi] && an_y[vi] && !ys.contains(&v) {
+                cn_minus_y.push(v);
+            }
+        }
+
+        let mut forbidden = self.descendants_mask(&cn_minus_y);
+        for &x in xs {
+            forbidden[x as usize] = true;
+        }
+        forbidden
+    }
+
+    /// Minimal backdoor adjustment set for `Xs → Ys`.
     ///
-    /// The parents of the treatments block every backdoor path (Pearl), so this
-    /// is always a valid backdoor adjustment set. Note that `Z` must not be
-    /// intersected with `An(Y)`: a parent of `X` can lie on a backdoor path to
-    /// `Y` without being an ancestor of `Y` (e.g. `X ← B ← C → Y`, where `B` is
-    /// a parent of `X` but not an ancestor of `Y`), and dropping it would leave
-    /// that path open.
+    /// Returns an inclusion-minimal valid adjustment set, computed in linear
+    /// time as a minimal d-separator of `Xs` and `Ys` in the proper backdoor
+    /// graph, restricted to the adjustable nodes `V \ (forb(Xs,Ys) ∪ Ys)` (the
+    /// forbidden set already contains `Xs`). This is the construction of van der
+    /// Zander, Liśkiewicz & Textor (2019).
+    ///
+    /// Adjusting for the parents of `Xs` always blocks every backdoor path
+    /// (Pearl) and parents are never forbidden, so a separator within the
+    /// restriction always exists; the result is therefore both valid and
+    /// strictly no larger than `Pa(Xs)`.
+    ///
+    /// Note: minimal here is inclusion-minimal, not minimum-cardinality, and is
+    /// distinct from statistically optimal — see
+    /// [`adjustment_set_optimal`](Self::adjustment_set_optimal) for the O-set.
     pub fn adjustment_set_backdoor(&self, xs: &[u32], ys: &[u32]) -> Vec<u32> {
-        let n = self.n();
+        let forb = self.forbidden_set(xs, ys);
+        let restrict: Vec<u32> = (0..self.n())
+            .filter(|v| !forb[*v as usize] && !ys.contains(v))
+            .collect();
 
-        let mut keep = vec![false; n as usize];
-        for &x in xs {
-            for &p in self.parents_of(x) {
-                keep[p as usize] = true;
-            }
+        // The proper backdoor graph removes the first edge of every proper
+        // causal path, so a d-separator there blocks exactly the backdoor paths.
+        match self
+            .proper_backdoor_graph(xs, ys)
+            .and_then(|pbd| pbd.minimal_d_separator(xs, ys, &[], &restrict))
+        {
+            Ok(Some(z)) => z,
+            // A valid set always exists on a DAG (Pa(Xs) works); this is purely
+            // defensive against an empty/degenerate graph.
+            _ => self.adjustment_set_parents(xs, ys),
         }
-
-        let mut dropm = vec![false; n as usize];
-        for &x in xs {
-            let de_mask = bitset::descendants_mask(&[x], |u| self.children_of(u), self.n());
-            for i in 0..n as usize {
-                if de_mask[i] {
-                    dropm[i] = true;
-                }
-            }
-            dropm[x as usize] = true;
-        }
-        for &y in ys {
-            dropm[y as usize] = true;
-        }
-
-        for i in 0..keep.len() {
-            if dropm[i] {
-                keep[i] = false;
-            }
-        }
-        bitset::collect_from_mask(&keep)
     }
 
     /// Optimal O-set for single exposure-outcome pair `x → y`.
@@ -338,7 +359,11 @@ mod tests {
     }
 
     #[test]
-    fn dag_adjustment_backdoor_intersection_hits_equal_branch() {
+    fn dag_adjustment_backdoor_minimal_is_empty_without_backdoor_paths() {
+        // 0 -> 1 -> 2, 3 -> 1. For X=1, Y=2 there is no backdoor path (both
+        // parents of 1 only reach 2 through the causal edge 1 -> 2), so the
+        // minimal adjustment set is empty. The non-minimal parent set {0, 3}
+        // is also valid but unnecessarily large.
         let mut reg = EdgeRegistry::new();
         reg.register_builtins().unwrap();
         let d = reg.code_of("-->").unwrap();
@@ -349,7 +374,9 @@ mod tests {
         b.add_edge(3, 1, d).unwrap();
 
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        assert_eq!(g.adjustment_set_backdoor(&[1], &[2]), vec![0, 3]);
+        let z = g.adjustment_set_backdoor(&[1], &[2]);
+        assert!(z.is_empty());
+        assert!(g.is_valid_backdoor_set(1, 2, &z));
     }
 
     #[test]
