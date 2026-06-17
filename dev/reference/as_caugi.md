@@ -8,7 +8,7 @@ Convert an object to a `caugi`. The object can be a `graphNEL`,
 ``` r
 as_caugi(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c("DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -24,9 +24,9 @@ as_caugi(
 
 - class:
 
-  Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`, `"ADMG"`,
-  `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for integer coded
-  matrices.
+  Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`, `"CPDAG"`,
+  `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
+  integer coded matrices.
 
 - simple:
 

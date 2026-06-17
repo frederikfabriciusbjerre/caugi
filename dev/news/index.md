@@ -7,14 +7,28 @@
 - Add `==` and `!=` methods for `caugi` objects so `cg1 == cg2` returns
   a single logical comparing graph content (class, nodes, edges,
   `simple`) rather than session identity.
+- Add first-class `"CPDAG"` graph class support across the constructor
+  ([`caugi()`](https://caugi.org/dev/reference/caugi.md)), coercion
+  ([`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md)), and
+  class mutation
+  ([`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md)).
+  Construction validates the full CPDAG invariant (chordal chain
+  components, an acyclic component DAG, Meek closure, and strong arrow
+  protection). `generate_graph(class = "CPDAG")` now returns a graph
+  with `@graph_class = "CPDAG"` instead of `"MPDAG"`, the precise label
+  for the essential graph of a Markov equivalence class. Predicates
+  defined on PDAGs and MPDAGs
+  ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+  [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md), etc.)
+  continue to accept CPDAGs unchanged.
 
 ### Improvements
 
 - Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"`
   instead of `"PDAG"`. This affects the result of
-  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
-  and `generate_graph(class = "CPDAG")`. Predicates and verbs defined on
-  PDAGs ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md).
+  Predicates and verbs defined on PDAGs
+  ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
   [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
   etc.) continue to accept MPDAGs unchanged.
 

@@ -43,7 +43,7 @@ Two adjacent areas are intentionally out of scope:
 
 | Package     | DAG    | CPDAG  | MPDAG  | MAG    | PAG    | ADMG   | SWIG | UG     | Mixed/general |
 |:------------|:-------|:-------|:-------|:-------|:-------|:-------|:-----|:-------|:--------------|
-| **caugi**   | ●      | ◐[^2]  | ●      | ◐[^3]  | ○      | ●      | ○    | ●      | ●             |
+| **caugi**   | ●      | ●[^2]  | ●      | ◐[^3]  | ○      | ●      | ○    | ●      | ●             |
 | igraph      | ◐[^4]  | ○[^5]  | ○      | ○      | ○      | ○      | ○    | ◐[^6]  | ◐[^7]         |
 | graph       | ◐[^8]  | ○      | ○      | ○      | ○      | ○      | ○    | ◐[^9]  | ◐[^10]        |
 | gRbase      | ◐[^11] | ○      | ○      | ○      | ○      | ○      | ○    | ◐[^12] | ○             |
@@ -152,13 +152,16 @@ request with the relevant information.
     formal R package. The authors instead recommend using the Python
     bindings from R instead.
 
-[^2]: `caugi` exposes a general `PDAG` class that can represent any
-    CPDAG, and
-    [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md)
-    validates the structure post-hoc, but there is no dedicated CPDAG
-    class and CPDAG invariants are not enforced at construction
-    (e.g. that the graph is the completion of a Markov equivalence
-    class).
+[^2]: `caugi` has a dedicated `CPDAG` class whose invariants (chordal
+    chain components, an acyclic component DAG, Meek closure, and strong
+    arrow protection) are validated at construction via
+    `class = "CPDAG"` (in
+    [`caugi()`](https://caugi.org/dev/reference/caugi.md),
+    [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md), and
+    [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md)).
+    `generate_graph(class = "CPDAG")` returns a graph typed `"CPDAG"`,
+    and [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md) also
+    validates the structure post-hoc for graphs of other classes.
 
 [^3]: `caugi` accepts `class = "AG"` (ancestral graph) in the
     constructor and exports

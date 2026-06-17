@@ -226,11 +226,14 @@ types.</caption>
 <tr class="odd">
 <td align="left"><strong>caugi</strong></td>
 <td align="left">●</td>
-<td align="left">◐<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;code&gt;caugi&lt;/code&gt; exposes a general &lt;code&gt;PDAG&lt;/code&gt;
-class that can represent any CPDAG, and &lt;code&gt;&lt;a href="../reference/is_cpdag.html"&gt;is_cpdag()&lt;/a&gt;&lt;/code&gt;
-validates the structure post-hoc, but there is no dedicated CPDAG class
-and CPDAG invariants are not enforced at construction (e.g. that the
-graph is the completion of a Markov equivalence class).&lt;/p&gt;'><sup>2</sup></a>
+<td align="left">●<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;code&gt;caugi&lt;/code&gt; has a dedicated &lt;code&gt;CPDAG&lt;/code&gt;
+class whose invariants (chordal chain components, an acyclic component
+DAG, Meek closure, and strong arrow protection) are validated at
+construction via &lt;code&gt;class = "CPDAG"&lt;/code&gt; (in &lt;code&gt;&lt;a href="../reference/caugi.html"&gt;caugi()&lt;/a&gt;&lt;/code&gt;,
+&lt;code&gt;&lt;a href="../reference/as_caugi.html"&gt;as_caugi()&lt;/a&gt;&lt;/code&gt;, and &lt;code&gt;&lt;a href="../reference/mutate_caugi.html"&gt;mutate_caugi()&lt;/a&gt;&lt;/code&gt;).
+&lt;code&gt;generate_graph(class = "CPDAG")&lt;/code&gt; returns a graph typed
+&lt;code&gt;"CPDAG"&lt;/code&gt;, and &lt;code&gt;&lt;a href="../reference/is_cpdag.html"&gt;is_cpdag()&lt;/a&gt;&lt;/code&gt; also validates the
+structure post-hoc for graphs of other classes.&lt;/p&gt;'><sup>2</sup></a>
 </td>
 <td align="left">●</td>
 <td align="left">◐<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;code&gt;caugi&lt;/code&gt; accepts &lt;code&gt;class = "AG"&lt;/code&gt;

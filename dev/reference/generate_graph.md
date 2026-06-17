@@ -27,9 +27,9 @@ generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"), seed = NULL)
 
 - class:
 
-  "DAG" or "CPDAG". When `"CPDAG"`, the result is the Meek closure of
-  the sampled DAG and is returned with class `"MPDAG"`; a true CPDAG
-  type is not yet implemented.
+  "DAG" or "CPDAG". When `"CPDAG"`, the result is the CPDAG (essential
+  graph) of the sampled DAG's Markov equivalence class, returned with
+  class `"CPDAG"`.
 
 - seed:
 
@@ -38,7 +38,7 @@ generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"), seed = NULL)
 ## Value
 
 The sampled `caugi` object. `class = "DAG"` returns a `"DAG"`;
-`class = "CPDAG"` returns an `"MPDAG"`.
+`class = "CPDAG"` returns a `"CPDAG"`.
 
 ## See also
 
@@ -52,6 +52,5 @@ Other simulation functions:
 dag <- generate_graph(n = 5, m = 4, class = "DAG")
 
 # generate a random CPDAG with 5 nodes and edge probability 0.3
-# (returned as an MPDAG)
-mpdag <- generate_graph(n = 5, p = 0.3, class = "CPDAG")
+cpdag <- generate_graph(n = 5, p = 0.3, class = "CPDAG")
 ```
