@@ -48,7 +48,7 @@ ancestral graphs (AG) to name some. `caugi` can represent many classes of causal
 graphs, and the list is expanding. 
 
 The graph data structure is implemented in `Rust`, yielding query and traversal
-operations exceeding the run time of competing packages in `R`, still while giving 
+operations competitive with other graph packages in `R` [@caugiperformance], still while giving 
 the user an experience as writing graphs on a whiteboard. Alongside the core
 representation, `caugi` implements a wide range of causal-graph algorithms, such
 as separation tests, structural queries, adjustment-set identification, and graph metrics, 
@@ -61,7 +61,9 @@ and places it in the context of related work. This should clearly state what
 problems the software is designed to solve, who the target audience is, and its
 relation to other work.-->
 
-Graphs are fundamental in causality. It is the object by which researchers
+Graphs are a convenient, economical, and expressive way of conveying assumptions
+and performing inferences and other derivations that are highly relevant in the
+field of causality. It is one of the objects by which many researchers
 conceptualize and communicate their models as well as the practical tool that
 they use to perform inference and discovery. This makes it crucial that there
 are software tools that allow researchers to transfer their ideas into code and
@@ -74,7 +76,9 @@ for causal graphs in `R`.
 The problem with many existing tools is that they
 
 1) are not designed with causal graphs in mind and therefore lack the necessary
-   functionality for causal inference and discovery,
+   functionality for causal inference and discovery, such as support for the
+   range of edge types (directed, bidirected, undirected) and graph classes that
+   the field relies on,
 
 2) are not built with performance in mind and therefore struggle with larger
    graphs, or
@@ -84,8 +88,9 @@ The problem with many existing tools is that they
    error-prone.
 
 `caugi` addresses these issues with an intuitive graph representation, a broad
-set of algorithms for causal inference and discovery, and an interface built
-around edge operators.
+set of algorithms for causal inference and discovery, and an interface that
+allows users to draw graphs with nodes as `R` symbols and edges as infix
+operators.
 
 # State of the Field
 
@@ -95,39 +100,41 @@ vs. contribute” justification explaining your unique scholarly contribution an
 why existing alternatives are insufficient. -->
 
 Graph packages in high-level languages such as `R` and `Python` span a wide
-range of scopes, from general-purpose graph libraries to specialised
-causal-inference toolkits. 
+range of scopes, from general-purpose graph libraries to specialized
+causal inference toolkits. 
 
 Where packages such as `igraph` [@csardi2006; @antonov2023] and `NetworkX`
-[@hagberg2008] are plenty fast, they are general-purpose graph packages, and
+[@hagberg2008] are fast, they are general-purpose graph packages, and
 building the correct abstractions on top of them has been done in for example `ggm`
 [@marchetti2025] or `pgmpy` [@ankan2024]. It takes a lot of work to make these
 abstractions correct and might require hacks, such as representing a partially
-directed graph with directed edges going in both directions and alike.
+directed graph with directed edges going in both directions.
 
 Then, you have packages such as `pcalg` [@kalisch2012] or `bnlearn`
 [@scutari2010]. These packages have in common that they both are built around
 their own graph representations, but the purpose of the packages are not the
-graph structures themselves, but rather algorithms regarding causal graphs.
+graph structures themselves, but rather the discovery algorithms to learn causal graphs.
 `pcalg` represents their graphs with matrices, but how they are represented
-differ between graph classes. `bnlearn` has a fast backend for some queries, but
-it is not very memory efficient, and it will run out of memory for larger
-graphs.
+differ between graph classes. `bnlearn` pairs a fast `C` backend with a rich
+learning and inference stack, but constructs its graphs through dense,
+node-by-node adjacency structures whose memory grows with the square of the
+number of nodes, which will cause problems for larger graphs. 
 
-An honorable mention is `Tetrad` [@scheines1998], which is written in Java, and
-is quite performant and expressive, but lacks a proper interface to `R` (as it
-currently stands).
+`Tetrad` [@scheines1998], written in Java, is a standalone software suite for
+causal discovery that is quite performant and expressive, but lacks a proper
+interface to `R` (as it currently stands).
 
-Then there are packages that have a bit more intuitive, causality-native
-interface, such as `dagitty` [@textor2016] and `MixedGraphs` [@evans2025]. The latter
-does not seem to have a very active community, but has been a source of
-inspiration for `caugi`. While `dagitty` seems to have a larger user base, as
-well as a quite expressive format, we have experienced that it had problems with
-instability and memory regarding especially larger graphs. We have seen memory
-issues for `bnlearn` as well.
+Closer to `caugi` in spirit are packages with a causality-native interface.
+`dagitty` [@textor2016] offers an expressive syntax and a large user base, but
+performs its computations through a JavaScript engine called from `R`, which
+imposes a serialization boundary between the two languages and limits
+performance on larger graphs [@caugiperformance]. We also owe an honorable
+mention to `MixedGraphs` [@evans2025], whose treatment of mixed graphs was a
+source of inspiration for `caugi`.
 
 So, we found that `caugi` fills a gap in the market, combining performance
-comparable with `igraph` and `NetworkX` with the causality-native interface of
+comparable with `igraph` and `NetworkX` [@caugiperformance] with the
+causality-native interface of
 `dagitty` and `MixedGraphs`, such that it is easy to build causal discovery or
 inference algorithms as seen in `pcalg` and `bnlearn`.
 
@@ -155,7 +162,9 @@ and always consistent when queried.
 
 # Examples
 
-We first define a DAG:
+We first define a DAG to represent our assumptions about cause and effect
+relations among the nodes, where it is assumed that the parents of that node are
+sufficient for determining the probability of that node:
 
 ```r
 library(caugi)
@@ -168,9 +177,10 @@ dag <- caugi(
 )
 ```
 
-Projecting out the unobserved confounder `U` yields an
-ADMG on `W`, `M`, `X`, and `Y`; the bidirected edge between `X` and `Y` records
-confounding left behind by the latent:
+If the node `U` represents an unobserved (latent) confounder, the latent
+projection operation yields an ADMG on `W`, `M`, `X`, and `Y` from which we can
+read off dependencies among the observed variables; the bidirected edge between
+`X` and `Y` records confounding left behind by the latent:
 
 ```r
 obs <- latent_project(dag, latents = "U")
@@ -181,14 +191,16 @@ obs
 #>   edges: W-->X, X-->M, M-->Y, X<->Y
 ```
 
-`X` and `Y` are not $m$-separated, since confounding persists in the ADMG:
+`X` and `Y` are not $m$-separated, since confounding persists in the ADMG,
+meaning they are dependent in the distribution after marginalizing over `U`:
 
 ```r
 m_separated(obs, "X", "Y")
 #> [1] FALSE
 ```
 
-but we can find the minimal $d$-separator in the original DAG:
+but we can find the minimal $d$-separator in the original DAG, i.e., the set of
+variables that conditional on which `X` and `Y` are independent:
 
 ```r
 minimal_separator(dag, "X", "Y")
