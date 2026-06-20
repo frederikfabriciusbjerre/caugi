@@ -285,6 +285,66 @@ test_that("building MPDAG validates Meek closure", {
   )
 })
 
+test_that("building CPDAG validates the full CPDAG invariant", {
+  # A --- B --- C is a chordal, v-structure-free chain: a valid CPDAG.
+  cg <- caugi(
+    A %---% B,
+    B %---% C,
+    class = "CPDAG"
+  )
+  expect_s7_class(cg, caugi)
+  expect_identical(cg@graph_class, "CPDAG")
+
+  # A chordless undirected 4-cycle is Meek-closed but not chordal, so it is
+  # an MPDAG but not a CPDAG.
+  expect_error(
+    caugi(
+      A %---% B,
+      B %---% C,
+      C %---% D,
+      D %---% A,
+      class = "CPDAG"
+    )
+  )
+
+  # A --> B --- C is not even Meek-closed (R1 would orient B --> C).
+  expect_error(
+    caugi(
+      A %-->% B,
+      B %---% C,
+      class = "CPDAG"
+    )
+  )
+})
+
+test_that("CPDAG-labeled graph satisfies PDAG/MPDAG/CPDAG/acyclic predicates", {
+  cg <- caugi(
+    A %---% B,
+    B %---% C,
+    class = "CPDAG"
+  )
+  expect_true(is_pdag(cg))
+  expect_true(is_mpdag(cg))
+  expect_true(is_cpdag(cg))
+  expect_true(is_acyclic(cg))
+})
+
+test_that("mutate_caugi can target CPDAG when valid and errors otherwise", {
+  cg_pdag <- caugi(A %---% B, B %---% C, class = "PDAG")
+  cg_cpdag <- mutate_caugi(cg_pdag, class = "CPDAG")
+  expect_identical(cg_cpdag@graph_class, "CPDAG")
+
+  # A chordless 4-cycle PDAG is not a CPDAG; mutation must fail.
+  cg_cycle <- caugi(
+    A %---% B,
+    B %---% C,
+    C %---% D,
+    D %---% A,
+    class = "PDAG"
+  )
+  expect_error(mutate_caugi(cg_cycle, class = "CPDAG"))
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────────────── AUTO tests ──────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────

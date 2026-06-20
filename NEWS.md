@@ -5,6 +5,14 @@
 - Add `==` and `!=` methods for `caugi` objects so `cg1 == cg2` returns a single
   logical comparing graph content (class, nodes, edges, `simple`) rather than
   session identity.
+- Add first-class `"CPDAG"` graph class support across the constructor
+  (`caugi()`), coercion (`as_caugi()`), and class mutation (`mutate_caugi()`).
+  Construction validates the full CPDAG invariant (chordal chain components, an
+  acyclic component DAG, Meek closure, and strong arrow protection).
+  `generate_graph(class = "CPDAG")` now returns a graph with
+  `@graph_class = "CPDAG"` instead of `"MPDAG"`, the precise label for the
+  essential graph of a Markov equivalence class. Predicates defined on PDAGs and
+  MPDAGs (`is_pdag()`, `is_mpdag()`, etc.) continue to accept CPDAGs unchanged.
 
 ## Improvements
 
@@ -31,6 +39,9 @@
   Adjacency was tested by binary-searching the concatenation of separately
   sorted neighbor buckets, which is not globally sorted, so some adjacent
   pairs were missed (#309).
+- Fixed `to_dot()` and `to_mermaid()` (and `write_dot()`/`write_mermaid()`)
+  silently converting partial `--o` and `o-o` edges into plain directed edges,
+  dropping the circle endpoints (#307).
 
 # caugi 1.2.0
 

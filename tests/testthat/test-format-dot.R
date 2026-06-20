@@ -32,6 +32,38 @@ test_that("to_dot handles different edge types", {
   expect_match(as.character(dot), 'D -> E \\[dir="both", arrowtail="odot"\\]')
 })
 
+test_that("to_dot renders o-> as a circle tail with an arrow head", {
+  # `dir="both"` shows both endpoints; arrowtail="odot" is the circle at the
+  # tail (from), the default arrowhead is the arrow at the head (to).
+  cg <- caugi(A %o->% B, class = "UNKNOWN")
+
+  expect_match(
+    as.character(to_dot(cg)),
+    'A -> B \\[dir="both", arrowtail="odot"\\]'
+  )
+})
+
+test_that("to_dot handles partial circle edges (#307)", {
+  cg <- caugi(
+    A %--o% B,
+    C %o-o% D,
+    class = "UNKNOWN"
+  )
+
+  dot <- to_dot(cg)
+  dot_str <- as.character(dot)
+
+  # Circle endpoints require a digraph to be drawn.
+  expect_match(dot_str, "^digraph ")
+  expect_match(dot_str, 'A -> B \\[arrowhead="odot"\\]')
+  expect_match(
+    dot_str,
+    'C -> D \\[dir="both", arrowtail="odot", arrowhead="odot"\\]'
+  )
+  # Must not be silently converted to a plain directed edge.
+  expect_no_match(dot_str, "A -> B;", fixed = TRUE)
+})
+
 test_that("to_dot escapes special characters", {
   cg <- caugi(
     "Node 1" %-->% "Node-2",

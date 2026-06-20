@@ -135,9 +135,16 @@ test_that("write_mermaid accepts direction", {
   unlink(tmp)
 })
 
-test_that("to_mermaid handles unsupported edge types", {
-  # o-o edges are not explicitly supported by mermaid format
-  # Should default to directed edge
+test_that("to_mermaid renders o-> as a circle tail with an arrow head", {
+  # Mermaid parses start and end markers independently, so `o-->` is a circle
+  # at the tail (from) and an arrow at the head (to), matching caugi's `o->`.
+  cg <- caugi(A %o->% B, class = "UNKNOWN")
+
+  expect_match(as.character(to_mermaid(cg)), "A o--> B", fixed = TRUE)
+})
+
+test_that("to_mermaid handles o-o edges (#307)", {
+  # Circle-circle edges render with a circle at both ends.
   cg <- caugi(
     A %o-o% B,
     class = "UNKNOWN"
@@ -146,13 +153,11 @@ test_that("to_mermaid handles unsupported edge types", {
   mmd <- to_mermaid(cg)
   mmd_str <- as.character(mmd)
 
-  # Should use default directed arrow for unsupported edge type
-  expect_match(mmd_str, "A --> B", fixed = TRUE)
+  expect_match(mmd_str, "A o--o B", fixed = TRUE)
 })
 
-test_that("to_mermaid handles --o edge type", {
-  # --o edges are not explicitly supported
-  # Should default to directed edge
+test_that("to_mermaid handles --o edges (#307)", {
+  # Circle-head edges render with a circle at the head, not a plain arrow.
   cg <- caugi(
     A %--o% B,
     class = "UNKNOWN"
@@ -161,6 +166,6 @@ test_that("to_mermaid handles --o edge type", {
   mmd <- to_mermaid(cg)
   mmd_str <- as.character(mmd)
 
-  # Should use default directed arrow for unsupported edge type
-  expect_match(mmd_str, "A --> B", fixed = TRUE)
+  expect_match(mmd_str, "A --o B", fixed = TRUE)
+  expect_no_match(mmd_str, "A --> B", fixed = TRUE)
 })

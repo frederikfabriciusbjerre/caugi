@@ -39,9 +39,9 @@
 #' the function will throw an error if the input contains parallel edges or
 #' self-loops.
 #' @param class Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
-#' `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick the
-#' appropriate class based on the first match in the order of `"DAG"`, `"UG"`,
-#' `"MPDAG"`, `"PDAG"`, `"ADMG"`, and `"AG"`.
+#' `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick
+#' the appropriate class based on the first match in the order of `"DAG"`,
+#' `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, and `"AG"`.
 #' It will default to `"UNKNOWN"` if no match is found.
 #' @param .session For internal use. Build a graph by supplying a
 #' pre-constructed session pointer from Rust.
@@ -244,7 +244,17 @@ caugi <- S7::new_class(
     edges_df = NULL,
     simple = TRUE,
     build = NULL, # deprecated
-    class = c("AUTO", "DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "UNKNOWN"),
+    class = c(
+      "AUTO",
+      "DAG",
+      "UG",
+      "PDAG",
+      "MPDAG",
+      "CPDAG",
+      "ADMG",
+      "AG",
+      "UNKNOWN"
+    ),
     state = NULL, # deprecated
     .session = NULL
   ) {

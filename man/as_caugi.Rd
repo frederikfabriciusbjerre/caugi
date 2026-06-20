@@ -6,7 +6,7 @@
 \usage{
 as_caugi(
   x,
-  class = c("DAG", "UG", "PDAG", "MPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
+  class = c("DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -17,8 +17,8 @@ as_caugi(
 \item{x}{An object to convert to a \code{caugi}.}
 
 \item{class}{Character; one of \code{"DAG"}, \code{"UG"}, \code{"PDAG"}, \code{"MPDAG"},
-\code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"PAG"} is only supported for integer
-coded matrices.}
+\code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"PAG"} is only supported for
+integer coded matrices.}
 
 \item{simple}{logical. If \code{TRUE} (default) the graph will be simple
 (no multiple edges or self-loops).}
