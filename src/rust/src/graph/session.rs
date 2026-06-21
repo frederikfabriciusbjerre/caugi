@@ -23,6 +23,38 @@ use rustc_hash::FxHashSet;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+/// Generate `GraphSession` query methods that build the view on demand and
+/// forward to the identically-named `GraphView` method, remapping any node
+/// indices in the error back to names.
+///
+/// Invoke it with a table of mini-signatures, one per line:
+///
+/// ```ignore
+/// forward_to_view! {
+///     parents_of(node: u32) -> Vec<u32>;
+///     d_separated(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
+/// }
+/// ```
+///
+/// Each line becomes a method whose body is
+/// `self.view()?.<name>(args).map_err(map_error)`.
+macro_rules! forward_to_view {
+    // Match a list of `name(arg: Type, ...) -> Ret;` entries.
+    (
+        $(
+            $name:ident ( $( $arg:ident : $arg_ty:ty ),* ) -> $ret:ty ;
+        )*
+    ) => {
+        // Emit one forwarding method per entry above.
+        $(
+            pub fn $name(&mut self, $( $arg : $arg_ty ),*) -> Result<$ret, String> {
+                let view = self.view()?;
+                view.$name( $( $arg ),* ).map_err(|e| self.map_error(e))
+            }
+        )*
+    };
+}
+
 /// The target graph class for typed view construction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GraphClass {
@@ -127,6 +159,39 @@ impl EdgeBuffer {
     }
 }
 
+/// A lazily-built, invalidatable cache slot.
+///
+/// `None` is the single source of truth for "needs (re)building" — there is no
+/// separate validity flag to drift out of sync with the stored value.
+struct Memo<T>(Option<T>);
+
+impl<T> Memo<T> {
+    /// An empty slot that will build on first access.
+    fn empty() -> Self {
+        Self(None)
+    }
+
+    /// Whether a built value is currently cached.
+    fn is_present(&self) -> bool {
+        self.0.is_some()
+    }
+
+    /// The cached value, if present.
+    fn get(&self) -> Option<&T> {
+        self.0.as_ref()
+    }
+
+    /// Store a freshly built value.
+    fn set(&mut self, value: T) {
+        self.0 = Some(value);
+    }
+
+    /// Drop the cached value, forcing a rebuild on next access.
+    fn clear(&mut self) {
+        self.0 = None;
+    }
+}
+
 /// Canonical graph session containing mutable state and computed values.
 ///
 /// # Design
@@ -154,20 +219,15 @@ pub struct GraphSession {
     /// Maps node names to their 0-based indices for fast lookup.
     name_to_index: HashMap<String, u32>,
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // VALIDITY FLAGS
-    // ═══════════════════════════════════════════════════════════════════════════
-    core_valid: bool,
-    view_valid: bool,
     /// When true, edges are known to be valid (e.g., subset of an already-valid
     /// graph) and `build_core` can skip per-edge validation.
     edges_trusted: bool,
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // DECLARATIONS (computed values)
+    // DECLARATIONS (lazily-built caches; `None` ⇒ needs rebuilding)
     // ═══════════════════════════════════════════════════════════════════════════
-    core: Option<Arc<CaugiGraph>>,
-    view: Option<Arc<GraphView>>,
+    core: Memo<Arc<CaugiGraph>>,
+    view: Memo<Arc<GraphView>>,
 }
 
 impl GraphSession {
@@ -196,12 +256,10 @@ impl GraphSession {
             names,
             name_to_index,
 
-            core_valid: false,
-            view_valid: false,
             edges_trusted: false,
 
-            core: None,
-            view: None,
+            core: Memo::empty(),
+            view: Memo::empty(),
         }
     }
 
@@ -224,12 +282,10 @@ impl GraphSession {
             names,
             name_to_index,
 
-            core_valid: false,
-            view_valid: false,
             edges_trusted: false,
 
-            core: None,
-            view: None,
+            core: Memo::empty(),
+            view: Memo::empty(),
         }
     }
 
@@ -252,11 +308,9 @@ impl GraphSession {
             edges,
             names,
             name_to_index,
-            core_valid: false,
-            view_valid: false,
             edges_trusted: true,
-            core: None,
-            view: None,
+            core: Memo::empty(),
+            view: Memo::empty(),
         }
     }
 
@@ -291,11 +345,9 @@ impl GraphSession {
             edges,
             names,
             name_to_index,
-            core_valid: true,
-            view_valid: false,
             edges_trusted: true,
-            core: Some(Arc::new(core)),
-            view: None,
+            core: Memo(Some(Arc::new(core))),
+            view: Memo::empty(),
         }
     }
 
@@ -314,11 +366,9 @@ impl GraphSession {
             name_to_index: self.name_to_index.clone(),
 
             // Invalidate all declarations in the clone
-            core_valid: false,
-            view_valid: false,
             edges_trusted: self.edges_trusted,
-            core: None,
-            view: None,
+            core: Memo::empty(),
+            view: Memo::empty(),
         }
     }
 
@@ -327,15 +377,9 @@ impl GraphSession {
     // ═══════════════════════════════════════════════════════════════════════════
 
     fn invalidate_core(&mut self) {
-        self.core_valid = false;
         self.edges_trusted = false;
-        self.core = None;
-        self.invalidate_view();
-    }
-
-    fn invalidate_view(&mut self) {
-        self.view_valid = false;
-        self.view = None;
+        self.core.clear();
+        self.view.clear(); // core feeds view, so clearing core clears view too
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -419,7 +463,7 @@ impl GraphSession {
     pub fn set_class(&mut self, class: GraphClass) {
         if self.graph_class != class {
             self.graph_class = class;
-            self.invalidate_view(); // Only view, not core
+            self.view.clear(); // class change affects only the view, not the core
         }
     }
 
@@ -526,30 +570,24 @@ impl GraphSession {
 
     /// Get the compiled CSR core, building if necessary.
     pub fn core(&mut self) -> Result<Arc<CaugiGraph>, String> {
-        if !self.core_valid {
-            let built = self.build_core()?;
-            self.core = Some(Arc::new(built));
-            self.core_valid = true;
+        if !self.core.is_present() {
+            let built = Arc::new(self.build_core()?);
+            self.core.set(built);
         }
         Ok(Arc::clone(
-            self.core
-                .as_ref()
-                .expect("core must be Some when core_valid is true"),
+            self.core.get().expect("core is present after build"),
         ))
     }
 
     /// Get the typed view, building if necessary.
     pub fn view(&mut self) -> Result<Arc<GraphView>, String> {
-        if !self.view_valid {
+        if !self.view.is_present() {
             let core = self.core()?;
-            let built = self.build_view(core)?;
-            self.view = Some(Arc::new(built));
-            self.view_valid = true;
+            let built = Arc::new(self.build_view(core)?);
+            self.view.set(built);
         }
         Ok(Arc::clone(
-            self.view
-                .as_ref()
-                .expect("view must be Some when view_valid is true"),
+            self.view.get().expect("view is present after build"),
         ))
     }
 
@@ -557,90 +595,36 @@ impl GraphSession {
     // QUERY API
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Get topological sort.
-    pub fn topological_sort(&mut self) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.topological_sort().map_err(|e| self.map_error(e))
-    }
-
-    /// Get parents of a node.
-    pub fn parents_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.parents_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get children of a node.
-    pub fn children_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.children_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get undirected neighbors of a node.
-    pub fn undirected_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.undirected_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get neighbors of a node by mode.
-    pub fn neighbors_of(&mut self, node: u32, mode: NeighborMode) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.neighbors_of(node, mode).map_err(|e| self.map_error(e))
-    }
-
-    /// Get ancestors of a node.
-    pub fn ancestors_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.ancestors_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get descendants of a node.
-    pub fn descendants_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.descendants_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get anteriors of a node.
-    pub fn anteriors_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.anteriors_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get posteriors of a node.
-    pub fn posteriors_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.posteriors_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get Markov blanket of a node.
-    pub fn markov_blanket_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.markov_blanket_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get districts (ADMG only).
-    pub fn districts(&mut self) -> Result<Vec<Vec<u32>>, String> {
-        let view = self.view()?;
-        view.districts().map_err(|e| self.map_error(e))
-    }
-
-    /// Get district of a node (ADMG/AG only).
-    pub fn district_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.district_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get spouses of a node (ADMG/AG bidirected neighbors).
-    pub fn spouses_of(&mut self, node: u32) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.spouses_of(node).map_err(|e| self.map_error(e))
-    }
-
-    /// Get exogenous nodes.
-    /// The `undirected_as_parents` flag determines whether undirected edges count as parent edges.
-    pub fn exogenous_nodes(&mut self, undirected_as_parents: bool) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.exogenous_nodes(undirected_as_parents)
-            .map_err(|e| self.map_error(e))
+    // Queries that build the view on demand and forward to the identically
+    // named `GraphView` method. See the `forward_to_view!` macro above.
+    forward_to_view! {
+        topological_sort() -> Vec<u32>;
+        parents_of(node: u32) -> Vec<u32>;
+        children_of(node: u32) -> Vec<u32>;
+        undirected_of(node: u32) -> Vec<u32>;
+        neighbors_of(node: u32, mode: NeighborMode) -> Vec<u32>;
+        ancestors_of(node: u32) -> Vec<u32>;
+        descendants_of(node: u32) -> Vec<u32>;
+        anteriors_of(node: u32) -> Vec<u32>;
+        posteriors_of(node: u32) -> Vec<u32>;
+        markov_blanket_of(node: u32) -> Vec<u32>;
+        districts() -> Vec<Vec<u32>>;
+        district_of(node: u32) -> Vec<u32>;
+        spouses_of(node: u32) -> Vec<u32>;
+        exogenous_nodes(undirected_as_parents: bool) -> Vec<u32>;
+        to_cpdag() -> GraphView;
+        skeleton() -> GraphView;
+        moralize() -> GraphView;
+        latent_project(latents: &[u32]) -> GraphView;
+        exogenize(nodes: &[u32]) -> GraphView;
+        normalize_latent_structure(latents: &[u32]) -> (GraphView, Vec<u32>);
+        d_separated(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
+        minimal_separator(xs: &[u32], ys: &[u32], include: &[u32], restrict: &[u32]) -> Option<Vec<u32>>;
+        m_separated(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
+        adjustment_set_parents(xs: &[u32], ys: &[u32]) -> Vec<u32>;
+        adjustment_set_backdoor(xs: &[u32], ys: &[u32]) -> Vec<u32>;
+        is_valid_adjustment_set_admg(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
+        all_adjustment_sets_admg(xs: &[u32], ys: &[u32], minimal: bool, max_size: u32) -> Vec<Vec<u32>>;
     }
 
     /// Check whether the directed part is acyclic.
@@ -651,59 +635,42 @@ impl GraphSession {
 
     /// Check if the graph is compatible with DAG.
     pub fn is_dag_type(&mut self) -> Result<bool, String> {
-        let core = self.core()?;
-        Ok(Dag::new(Arc::new(core.as_ref().clone())).is_ok())
+        Ok(Dag::new(self.core()?).is_ok())
     }
 
     /// Check if the graph is compatible with PDAG.
     pub fn is_pdag_type(&mut self) -> Result<bool, String> {
-        let core = self.core()?;
-        Ok(Pdag::new(Arc::new(core.as_ref().clone())).is_ok())
+        Ok(Pdag::new(self.core()?).is_ok())
     }
 
     /// Check if the graph is compatible with UG.
     pub fn is_ug_type(&mut self) -> Result<bool, String> {
-        let core = self.core()?;
-        Ok(Ug::new(Arc::new(core.as_ref().clone())).is_ok())
+        Ok(Ug::new(self.core()?).is_ok())
     }
 
     /// Check if the graph is compatible with ADMG.
     pub fn is_admg_type(&mut self) -> Result<bool, String> {
-        let core = self.core()?;
-        Ok(Admg::new(Arc::new(core.as_ref().clone())).is_ok())
+        Ok(Admg::new(self.core()?).is_ok())
     }
 
     /// Check if the graph is compatible with AG.
     pub fn is_ag_type(&mut self) -> Result<bool, String> {
-        let core = self.core()?;
-        Ok(Ag::new(Arc::new(core.as_ref().clone())).is_ok())
+        Ok(Ag::new(self.core()?).is_ok())
     }
 
     /// Check if the graph is a CPDAG (PDAG-only).
     pub fn is_cpdag(&mut self) -> Result<bool, String> {
-        let core = self.core()?;
-        match Pdag::new(Arc::new(core.as_ref().clone())) {
-            Ok(p) => Ok(Cpdag::try_new(p).is_ok()),
-            Err(_) => Ok(false),
-        }
+        Ok(Pdag::new(self.core()?).map_or(false, |p| Cpdag::try_new(p).is_ok()))
     }
 
     /// Check if the graph is an MPDAG (PDAG + Meek closure).
     pub fn is_mpdag(&mut self) -> Result<bool, String> {
-        let core = self.core()?;
-        match Pdag::new(Arc::new(core.as_ref().clone())) {
-            Ok(p) => Ok(Mpdag::try_new(p).is_ok()),
-            Err(_) => Ok(false),
-        }
+        Ok(Pdag::new(self.core()?).map_or(false, |p| Mpdag::try_new(p).is_ok()))
     }
 
     /// Check if the graph is a MAG (AG only).
     pub fn is_mag(&mut self) -> Result<bool, String> {
-        let core = self.core()?;
-        match Ag::new(Arc::new(core.as_ref().clone())) {
-            Ok(ag) => Ok(ag.is_mag()),
-            Err(_) => Ok(false),
-        }
+        Ok(Ag::new(self.core()?).map_or(false, |ag| ag.is_mag()))
     }
 
     /// Resolve a graph class given the current edges/core.
@@ -711,52 +678,52 @@ impl GraphSession {
         let core = self.core()?;
         match class {
             GraphClass::Dag => {
-                Dag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                Dag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Dag)
             }
             GraphClass::Pdag => {
-                Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Pdag)
             }
             GraphClass::Mpdag => {
                 let pdag =
-                    Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                    Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Mpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Mpdag)
             }
             GraphClass::Cpdag => {
                 let pdag =
-                    Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                    Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Cpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Cpdag)
             }
             GraphClass::Ug => {
-                Ug::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                Ug::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Ug)
             }
             GraphClass::Admg => {
-                Admg::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                Admg::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Admg)
             }
             GraphClass::Ag => {
-                Ag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+                Ag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Ag)
             }
             GraphClass::Unknown => Ok(GraphClass::Unknown),
             GraphClass::Auto => {
-                if Dag::new(Arc::new(core.as_ref().clone())).is_ok() {
+                if Dag::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Dag)
-                } else if Ug::new(Arc::new(core.as_ref().clone())).is_ok() {
+                } else if Ug::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Ug)
-                } else if let Ok(pdag) = Pdag::new(Arc::new(core.as_ref().clone())) {
+                } else if let Ok(pdag) = Pdag::new(Arc::clone(&core)) {
                     if pdag.is_meek_closed() {
                         Ok(GraphClass::Mpdag)
                     } else {
                         Ok(GraphClass::Pdag)
                     }
-                } else if Admg::new(Arc::new(core.as_ref().clone())).is_ok() {
+                } else if Admg::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Admg)
-                } else if Ag::new(Arc::new(core.as_ref().clone())).is_ok() {
+                } else if Ag::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Ag)
                 } else {
                     Ok(GraphClass::Unknown)
@@ -765,91 +732,11 @@ impl GraphSession {
         }
     }
 
-    /// Convert DAG to CPDAG (DAG only).
-    pub fn to_cpdag(&mut self) -> Result<GraphView, String> {
-        let view = self.view()?;
-        view.to_cpdag().map_err(|e| self.map_error(e))
-    }
-
     /// Apply Meek closure to a PDAG.
     pub fn meek_closure(&mut self) -> Result<GraphView, String> {
-        let core = self.core()?;
-        let pdag = Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+        let pdag = Pdag::new(self.core()?).map_err(|e| self.map_error(e))?;
         let closed = pdag.meek_closure().map_err(|e| self.map_error(e))?;
         Ok(GraphView::Mpdag(Arc::new(closed)))
-    }
-
-    /// Skeleton of the graph.
-    pub fn skeleton(&mut self) -> Result<GraphView, String> {
-        let view = self.view()?;
-        view.skeleton().map_err(|e| self.map_error(e))
-    }
-
-    /// Moralized version of the graph (DAG only).
-    pub fn moralize(&mut self) -> Result<GraphView, String> {
-        let view = self.view()?;
-        view.moralize().map_err(|e| self.map_error(e))
-    }
-
-    /// Latent projection (DAG only).
-    pub fn latent_project(&mut self, latents: &[u32]) -> Result<GraphView, String> {
-        let view = self.view()?;
-        view.latent_project(latents).map_err(|e| self.map_error(e))
-    }
-
-    /// Exogenize a set of nodes (DAG only).
-    pub fn exogenize(&mut self, nodes: &[u32]) -> Result<GraphView, String> {
-        let view = self.view()?;
-        view.exogenize(nodes).map_err(|e| self.map_error(e))
-    }
-
-    /// Normalize latent structure (DAG only).
-    pub fn normalize_latent_structure(
-        &mut self,
-        latents: &[u32],
-    ) -> Result<(GraphView, Vec<u32>), String> {
-        let view = self.view()?;
-        view.normalize_latent_structure(latents)
-            .map_err(|e| self.map_error(e))
-    }
-
-    /// D-separation query (DAG only).
-    pub fn d_separated(&mut self, xs: &[u32], ys: &[u32], z: &[u32]) -> Result<bool, String> {
-        let view = self.view()?;
-        view.d_separated(xs, ys, z).map_err(|e| self.map_error(e))
-    }
-
-    /// Minimal separator computation (DAG / ADMG / AG).
-    pub fn minimal_separator(
-        &mut self,
-        xs: &[u32],
-        ys: &[u32],
-        include: &[u32],
-        restrict: &[u32],
-    ) -> Result<Option<Vec<u32>>, String> {
-        let view = self.view()?;
-        view.minimal_separator(xs, ys, include, restrict)
-            .map_err(|e| self.map_error(e))
-    }
-
-    /// M-separation query (ADMG/AG/DAG).
-    pub fn m_separated(&mut self, xs: &[u32], ys: &[u32], z: &[u32]) -> Result<bool, String> {
-        let view = self.view()?;
-        view.m_separated(xs, ys, z).map_err(|e| self.map_error(e))
-    }
-
-    /// Adjustment set: parents.
-    pub fn adjustment_set_parents(&mut self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.adjustment_set_parents(xs, ys)
-            .map_err(|e| self.map_error(e))
-    }
-
-    /// Adjustment set: backdoor.
-    pub fn adjustment_set_backdoor(&mut self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
-        let view = self.view()?;
-        view.adjustment_set_backdoor(xs, ys)
-            .map_err(|e| self.map_error(e))
     }
 
     /// Adjustment set: optimal.
@@ -890,31 +777,6 @@ impl GraphSession {
         }
         let view = self.view()?;
         view.all_backdoor_sets(xs[0], ys[0], minimal, max_size)
-            .map_err(|e| self.map_error(e))
-    }
-
-    /// Validate adjustment set for ADMG/AG.
-    pub fn is_valid_adjustment_set_admg(
-        &mut self,
-        xs: &[u32],
-        ys: &[u32],
-        z: &[u32],
-    ) -> Result<bool, String> {
-        let view = self.view()?;
-        view.is_valid_adjustment_set_admg(xs, ys, z)
-            .map_err(|e| self.map_error(e))
-    }
-
-    /// Enumerate all adjustment sets for ADMG/AG.
-    pub fn all_adjustment_sets_admg(
-        &mut self,
-        xs: &[u32],
-        ys: &[u32],
-        minimal: bool,
-        max_size: u32,
-    ) -> Result<Vec<Vec<u32>>, String> {
-        let view = self.view()?;
-        view.all_adjustment_sets_admg(xs, ys, minimal, max_size)
             .map_err(|e| self.map_error(e))
     }
 
@@ -1101,14 +963,17 @@ impl GraphSession {
         &self.edges
     }
 
-    /// Check if the core is currently valid.
-    pub fn is_core_valid(&self) -> bool {
-        self.core_valid
+    /// The compiled CSR core **iff already built** — never triggers a build.
+    ///
+    /// Lets a caller reuse an already-paid-for core (e.g. the subgraph
+    /// fast-path) without forcing one into existence.
+    pub fn built_core(&self) -> Option<&Arc<CaugiGraph>> {
+        self.core.get()
     }
 
-    /// Check if the view is currently valid.
-    pub fn is_view_valid(&self) -> bool {
-        self.view_valid
+    /// The typed view **iff already built** — never triggers a build.
+    pub fn built_view(&self) -> Option<&Arc<GraphView>> {
+        self.view.get()
     }
 }
 
@@ -1131,8 +996,8 @@ mod tests {
         let session = make_session();
         assert_eq!(session.n(), 3);
         assert_eq!(session.class(), GraphClass::Dag);
-        assert!(!session.is_core_valid());
-        assert!(!session.is_view_valid());
+        assert!(!session.built_core().is_some());
+        assert!(!session.built_view().is_some());
     }
 
     #[test]
@@ -1140,16 +1005,16 @@ mod tests {
         let mut session = make_session();
 
         // Initially invalid
-        assert!(!session.is_core_valid());
+        assert!(!session.built_core().is_some());
 
         // Access core triggers build
         let core = session.core().unwrap();
-        assert!(session.is_core_valid());
+        assert!(session.built_core().is_some());
         assert_eq!(core.n(), 3);
 
         // Access view triggers view build
         let view = session.view().unwrap();
-        assert!(session.is_view_valid());
+        assert!(session.built_view().is_some());
         assert_eq!(view.n(), 3);
     }
 
@@ -1160,32 +1025,32 @@ mod tests {
         // Build
         session.core().unwrap();
         session.view().unwrap();
-        assert!(session.is_core_valid());
-        assert!(session.is_view_valid());
+        assert!(session.built_core().is_some());
+        assert!(session.built_view().is_some());
 
         // Mutate edges -> invalidates core and view
         session.set_edges(EdgeBuffer::new());
-        assert!(!session.is_core_valid());
-        assert!(!session.is_view_valid());
+        assert!(!session.built_core().is_some());
+        assert!(!session.built_view().is_some());
 
         // Rebuild
         session.view().unwrap();
-        assert!(session.is_view_valid());
+        assert!(session.built_view().is_some());
 
         // Change class -> only invalidates view
         session.set_class(GraphClass::Unknown);
-        assert!(session.is_core_valid()); // Core still valid!
-        assert!(!session.is_view_valid());
+        assert!(session.built_core().is_some()); // Core still valid!
+        assert!(!session.built_view().is_some());
     }
 
     #[test]
     fn session_names_no_invalidation() {
         let mut session = make_session();
         session.view().unwrap();
-        assert!(session.is_view_valid());
+        assert!(session.built_view().is_some());
 
         session.set_names(vec!["A".into(), "B".into(), "C".into()]);
-        assert!(session.is_view_valid()); // Still valid!
+        assert!(session.built_view().is_some()); // Still valid!
         assert_eq!(session.names(), &["A", "B", "C"]);
     }
 
@@ -1193,11 +1058,11 @@ mod tests {
     fn session_clone_for_cow() {
         let mut session = make_session();
         session.view().unwrap();
-        assert!(session.is_view_valid());
+        assert!(session.built_view().is_some());
 
         let cloned = session.clone_for_cow();
-        assert!(!cloned.is_core_valid());
-        assert!(!cloned.is_view_valid());
+        assert!(!cloned.built_core().is_some());
+        assert!(!cloned.built_view().is_some());
         assert_eq!(cloned.n(), session.n());
     }
 
@@ -1316,27 +1181,27 @@ mod tests {
         session.set_edges(edges);
         session.core().unwrap();
         session.view().unwrap();
-        assert!(session.is_core_valid());
-        assert!(session.is_view_valid());
+        assert!(session.built_core().is_some());
+        assert!(session.built_view().is_some());
 
         session.set_n(3);
-        assert!(session.is_core_valid());
-        assert!(session.is_view_valid());
+        assert!(session.built_core().is_some());
+        assert!(session.built_view().is_some());
 
         session.set_n(4);
         assert_eq!(session.n(), 4);
-        assert!(!session.is_core_valid());
-        assert!(!session.is_view_valid());
+        assert!(!session.built_core().is_some());
+        assert!(!session.built_view().is_some());
 
         session.core().unwrap();
         session.view().unwrap();
         session.set_simple(true);
-        assert!(session.is_core_valid());
-        assert!(session.is_view_valid());
+        assert!(session.built_core().is_some());
+        assert!(session.built_view().is_some());
 
         session.set_simple(false);
-        assert!(!session.is_core_valid());
-        assert!(!session.is_view_valid());
+        assert!(!session.built_core().is_some());
+        assert!(!session.built_view().is_some());
         assert!(!session.simple());
 
         session.set_edges_from_vecs(vec![0], vec![1], vec![d]);
@@ -1347,7 +1212,7 @@ mod tests {
         let snap = snapshot_from_registry(&reg);
         session.set_registry(Arc::clone(&snap));
         assert_eq!(session.registry().version, snap.version);
-        assert!(!session.is_core_valid());
+        assert!(!session.built_core().is_some());
 
         let mut new_edges = EdgeBuffer::new();
         new_edges.push(0, 2, d);
@@ -1366,8 +1231,8 @@ mod tests {
         assert_eq!(session.edge_buffer().from, vec![0]);
         assert_eq!(session.edge_buffer().to, vec![2]);
         assert_eq!(session.edge_buffer().etype, vec![d]);
-        assert!(!session.is_core_valid());
-        assert!(!session.is_view_valid());
+        assert!(!session.built_core().is_some());
+        assert!(!session.built_view().is_some());
     }
 
     #[test]

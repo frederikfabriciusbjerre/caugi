@@ -1201,8 +1201,8 @@ fn rs_edges_df(session: ExternalPtr<GraphSession>) -> Robj {
 #[extendr]
 fn rs_is_valid(session: ExternalPtr<GraphSession>) -> Robj {
     list!(
-        core_valid = session.as_ref().is_core_valid(),
-        view_valid = session.as_ref().is_view_valid()
+        core_valid = session.as_ref().built_core().is_some(),
+        view_valid = session.as_ref().built_view().is_some()
     )
     .into_robj()
 }
@@ -1717,10 +1717,11 @@ fn induced_subgraph_session_from_keep(
         names.push(s.names()[old_i as usize].clone());
     }
 
-    // Fast path: if CSR core is already built, use CSR-induced subgraph.
-    // This only touches the adjacency of kept nodes instead of scanning all edges.
-    if s.is_core_valid() {
-        let core = s.core().unwrap_or_else(|e| throw_r_error(e));
+    // Fast path: if the CSR core is already built, reuse it via a CSR-induced
+    // subgraph — only touches the adjacency of kept nodes instead of scanning
+    // all edges. `built_core` never forces a build, so the slow path below
+    // stays build-free when the core isn't cached yet.
+    if let Some(core) = s.built_core() {
         let (sub_core, _new_to_old, _old_to_new) = core
             .induced_subgraph(keep_u)
             .unwrap_or_else(|e| throw_r_error(e));
