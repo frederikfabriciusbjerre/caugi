@@ -17,17 +17,23 @@
 ## Improvements
 
 - Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"` instead of
-  `"PDAG"`. This affects the result of `meek_closure()`. Predicates and verbs
-  defined on PDAGs (`is_pdag()`, `mutate_caugi()`, etc.) continue to accept
-  MPDAGs unchanged.
+  `"PDAG"`. This affects the result of `meek_closure()` and
+  `generate_graph(class = "CPDAG")`. Predicates and verbs defined on PDAGs
+  (`is_pdag()`, `mutate_caugi()`, etc.) continue to accept MPDAGs unchanged.
+- `adjustment_set(type = "backdoor")` now returns an inclusion-minimal backdoor
+  adjustment set, computed in linear time as a minimal d-separator in the proper
+  backdoor graph, rather than the full set of parents of the exposure.
 
 ## Bug Fixes
 
 - Fix `dag_from_pdag()` failing with `` `from`, `edge`, `to` must be equal
   length. `` when a sink had multiple undirected neighbors (#298).
-
 - Fixed a bug causing a partially undirected (`--o`) edges to
-be plotted as undirected edges.
+  be plotted as undirected edges.
+- Fix `adjustment_set(type = "backdoor")` returning an invalid (often empty)
+  set when a parent of the exposure lies on a backdoor path but is not an
+  ancestor of the outcome (#308). The result is now always a valid backdoor
+  adjustment set.
 
 - Fixed `is_mag()` returning incorrect results for some ancestral graphs.
   Adjacency was tested by binary-searching the concatenation of separately
