@@ -50,12 +50,15 @@
 </ul></div>
 <div class="section level3">
 <h3 id="improvements-development-version">Improvements<a class="anchor" aria-label="anchor" href="#improvements-development-version"></a></h3>
-<ul><li>Meek-closed PDAGs are now reported with <code>@graph_class = "MPDAG"</code> instead of <code>"PDAG"</code>. This affects the result of <code><a href="../reference/meek_closure.html">meek_closure()</a></code>. Predicates and verbs defined on PDAGs (<code><a href="../reference/is_pdag.html">is_pdag()</a></code>, <code><a href="../reference/mutate_caugi.html">mutate_caugi()</a></code>, etc.) continue to accept MPDAGs unchanged.</li>
+<ul><li>Meek-closed PDAGs are now reported with <code>@graph_class = "MPDAG"</code> instead of <code>"PDAG"</code>. This affects the result of <code><a href="../reference/meek_closure.html">meek_closure()</a></code> and <code>generate_graph(class = "CPDAG")</code>. Predicates and verbs defined on PDAGs (<code><a href="../reference/is_pdag.html">is_pdag()</a></code>, <code><a href="../reference/mutate_caugi.html">mutate_caugi()</a></code>, etc.) continue to accept MPDAGs unchanged.</li>
+<li>
+<code>adjustment_set(type = "backdoor")</code> now returns an inclusion-minimal backdoor adjustment set, computed in linear time as a minimal d-separator in the proper backdoor graph, rather than the full set of parents of the exposure.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li><p>Fix <code><a href="../reference/dag_from_pdag.html">dag_from_pdag()</a></code> failing with <code>`from`, `edge`, `to` must be equal length.</code> when a sink had multiple undirected neighbors (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/298" class="external-link">#298</a>).</p></li>
 <li><p>Fixed a bug causing a partially undirected (<code>--o</code>) edges to be plotted as undirected edges.</p></li>
+<li><p>Fix <code>adjustment_set(type = "backdoor")</code> returning an invalid (often empty) set when a parent of the exposure lies on a backdoor path but is not an ancestor of the outcome (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/308" class="external-link">#308</a>). The result is now always a valid backdoor adjustment set.</p></li>
 <li><p>Fixed <code><a href="../reference/is_mag.html">is_mag()</a></code> returning incorrect results for some ancestral graphs. Adjacency was tested by binary-searching the concatenation of separately sorted neighbor buckets, which is not globally sorted, so some adjacent pairs were missed (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/309" class="external-link">#309</a>).</p></li>
 <li><p>Fixed <code><a href="../reference/to_dot.html">to_dot()</a></code> and <code><a href="../reference/to_mermaid.html">to_mermaid()</a></code> (and <code><a href="../reference/write_dot.html">write_dot()</a></code>/<code><a href="../reference/write_mermaid.html">write_mermaid()</a></code>) silently converting partial <code>--o</code> and <code>o-o</code> edges into plain directed edges, dropping the circle endpoints (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/307" class="external-link">#307</a>).</p></li>
 </ul></div>

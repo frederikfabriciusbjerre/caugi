@@ -26,11 +26,15 @@
 
 - Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"`
   instead of `"PDAG"`. This affects the result of
-  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md).
-  Predicates and verbs defined on PDAGs
-  ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
+  and `generate_graph(class = "CPDAG")`. Predicates and verbs defined on
+  PDAGs ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
   [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
   etc.) continue to accept MPDAGs unchanged.
+- `adjustment_set(type = "backdoor")` now returns an inclusion-minimal
+  backdoor adjustment set, computed in linear time as a minimal
+  d-separator in the proper backdoor graph, rather than the full set of
+  parents of the exposure.
 
 ### Bug Fixes
 
@@ -42,6 +46,12 @@
 
 - Fixed a bug causing a partially undirected (`--o`) edges to be plotted
   as undirected edges.
+
+- Fix `adjustment_set(type = "backdoor")` returning an invalid (often
+  empty) set when a parent of the exposure lies on a backdoor path but
+  is not an ancestor of the outcome
+  ([\#308](https://github.com/frederikfabriciusbjerre/caugi/issues/308)).
+  The result is now always a valid backdoor adjustment set.
 
 - Fixed [`is_mag()`](https://caugi.org/dev/reference/is_mag.md)
   returning incorrect results for some ancestral graphs. Adjacency was

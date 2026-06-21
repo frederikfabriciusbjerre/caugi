@@ -86,7 +86,12 @@ The <code>optimal</code> option computes the O-set.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Types supported:</p><ul><li><p><code>"parents"</code>: \(\bigcup \mathrm{Pa}(X)\) minus \(X \cup Y\)</p></li>
-<li><p><code>"backdoor"</code>: Pearl backdoor formula</p></li>
+<li><p><code>"backdoor"</code>: an inclusion-minimal valid backdoor adjustment set, found in
+linear time as a minimal d-separator of <code>X</code> and <code>Y</code> in the proper backdoor
+graph (van der Zander, Liśkiewicz &amp; Textor, 2019). Unlike <code>"parents"</code> (which
+always conditions on every parent of <code>X</code>), this drops nodes that are not
+needed to block a backdoor path. Note that minimal is not the same as
+statistically optimal; use <code>"optimal"</code> for the efficient O-set.</p></li>
 <li><p><code>"optimal"</code>: O-set (only for single <code>x</code> and single <code>y</code>)</p></li>
 </ul></div>
     <div class="section level2">
@@ -117,8 +122,8 @@ The <code>optimal</code> option computes the O-set.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">adjustment_set</span><span class="op">(</span><span class="va">cg</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, type <span class="op">=</span> <span class="st">"parents"</span><span class="op">)</span> <span class="co"># C, A</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "C" "A"</span>
-<span class="r-in"><span><span class="fu">adjustment_set</span><span class="op">(</span><span class="va">cg</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, type <span class="op">=</span> <span class="st">"backdoor"</span><span class="op">)</span> <span class="co"># C, A</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "C" "A"</span>
+<span class="r-in"><span><span class="fu">adjustment_set</span><span class="op">(</span><span class="va">cg</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, type <span class="op">=</span> <span class="st">"backdoor"</span><span class="op">)</span> <span class="co"># A</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "A"</span>
 <span class="r-in"><span><span class="fu">adjustment_set</span><span class="op">(</span><span class="va">cg</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, type <span class="op">=</span> <span class="st">"optimal"</span><span class="op">)</span> <span class="co"># K</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "K"</span>
 <span class="r-in"><span></span></span>
