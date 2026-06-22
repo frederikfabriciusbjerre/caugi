@@ -4,7 +4,8 @@ publish = false
 version = '1.1.0'
 edition = '2021'
 rust-version = '1.80'
-license = 'MIT'
+# Crate is MIT except src/graph/aid.rs, which is MPL-2.0 (derived from gadjid).
+license = 'MIT AND MPL-2.0'
 
 [lib]
 crate-type = [ 'staticlib' ]
@@ -13,16 +14,11 @@ name = 'caugi'
 [dependencies]
 extendr-api = '0.9.0'
 bitflags = '2.11.0'
-gadjid = { git = "https://github.com/CausalDisco/gadjid", package = 'gadjid', rev = '5b97028d4e943ce8a642d2b7bc1145f5435f619a', optional = true }
 rust-sugiyama = '0.4.0'
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 quick-xml = { version = "0.39", features = ["serialize"] }
 rustc-hash = "2.1"
-
-[features]
-default = ['gadjid']
-gadjid = ['dep:gadjid']
 
 [profile.release]
 lto = true

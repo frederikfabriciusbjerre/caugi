@@ -11,6 +11,7 @@ use std::{
 
 pub mod admg;
 pub mod ag;
+pub mod aid;
 pub mod alg;
 pub mod builder;
 pub mod cpdag;
