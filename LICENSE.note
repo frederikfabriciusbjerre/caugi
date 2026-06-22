@@ -1,0 +1,76 @@
+caugi -- licensing notes
+=========================
+
+The caugi R package is released under the MIT License (see the `LICENSE` and
+`LICENSE.md` files), with the single exception described in section 1 below.
+
+This file summarises the licensing of bundled third-party material, as expected
+by CRAN for packages that vendor Rust sources
+(https://cran.r-project.org/web/packages/using_rust.html). Copyright holders of
+the bundled material are also recorded in the `Authors@R` field of `DESCRIPTION`
+via the `cph`/`ctb` roles.
+
+
+1. Adjustment Identification Distance -- MPL-2.0
+------------------------------------------------
+
+Two files are derived from the `gadjid` crate
+(https://github.com/CausalDisco/gadjid) by Leonard Henckel, Theo Würtzen and
+Sebastian Weichwald (Henckel, Würtzen & Weichwald, "Adjustment Identification
+Distance: A gadjid for Causal Structure Learning", UAI 2024,
+doi:10.48550/arXiv.2402.08616):
+
+    src/rust/src/graph/aid.rs   -- the AID implementation, adapted from gadjid
+    tests/testthat/test-aid.R   -- AID test fixtures and expected values copied
+                                   from gadjid's tests
+
+As derivatives of that source, these two files are licensed under the Mozilla
+Public License, Version 2.0 (MPL-2.0, https://mozilla.org/MPL/2.0/), as recorded
+in their SPDX headers. MPL-2.0 is a file-level (weak) copyleft licence that is
+compatible with the MIT licence used by the remainder of caugi; the
+corresponding source is distributed within this package. No other files in caugi
+are under the MPL.
+
+
+2. Bundled (vendored) Rust crates
+----------------------------------
+
+To permit offline compilation, the package vendors its Rust dependencies under
+`src/rust/vendor/` and in the xz archive `src/rust/vendor.tar.xz`. Each crate
+retains its own licence file(s) within its vendored directory. All are under
+permissive licences:
+
+    crate              license
+    -----              -------
+    bitflags           MIT OR Apache-2.0
+    equivalent         Apache-2.0 OR MIT
+    extendr-api        MIT
+    extendr-ffi        MIT
+    extendr-macros     MIT
+    fixedbitset        MIT OR Apache-2.0
+    foldhash           Zlib
+    hashbrown          MIT OR Apache-2.0
+    indexmap           Apache-2.0 OR MIT
+    itoa               MIT OR Apache-2.0
+    lazy_static        MIT OR Apache-2.0
+    log                MIT OR Apache-2.0
+    memchr             Unlicense OR MIT
+    once_cell          MIT OR Apache-2.0
+    paste              MIT OR Apache-2.0
+    petgraph           MIT OR Apache-2.0
+    proc-macro2        MIT OR Apache-2.0
+    quick-xml          MIT
+    quote              MIT OR Apache-2.0
+    readonly           MIT OR Apache-2.0
+    rust-sugiyama      MIT
+    rustc-hash         Apache-2.0 OR MIT
+    serde              MIT OR Apache-2.0
+    serde_core         MIT OR Apache-2.0
+    serde_derive       MIT OR Apache-2.0
+    serde_json         MIT OR Apache-2.0
+    syn                MIT OR Apache-2.0
+    unicode-ident      (MIT OR Apache-2.0) AND Unicode-3.0
+    zmij               MIT
+
+For crates offered under a disjunction ("A OR B"), caugi relies on either
+option; the full licence texts are included in each crate's vendored directory.

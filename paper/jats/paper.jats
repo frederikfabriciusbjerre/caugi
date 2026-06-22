@@ -331,12 +331,7 @@ obs
 </sec>
 <sec id="acknowledgements">
   <title>Acknowledgements</title>
-  <p>The majority of algorithms in <monospace>caugi</monospace> have
-  been implemented from scratch, but we also rely on some external
-  libraries, including
-  <monospace>gadjid</monospace> (<xref alt="Henckel et al., 2024" rid="ref-henckel2024" ref-type="bibr">Henckel
-  et al., 2024</xref>) for the adjustment identification distance
-  metric.</p>
+  <p>The majority of algorithms in <monospace>caugi</monospace> have been implemented from scratch, though the package builds on several external libraries. In particular, the adjustment identification distance follows <xref alt="Henckel et al., 2024" rid="ref-henckel2024" ref-type="bibr">Henckel et al. (2024)</xref>: its implementation is adapted from their <monospace>gadjid</monospace> library and is therefore distributed under the MPL-2.0 license, while the remainder of <monospace>caugi</monospace> is under the MIT license.</p>
 </sec>
 </body>
 <back>
