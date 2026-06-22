@@ -13,15 +13,13 @@
 // The novel part kept here is the walk-status reachability verifier
 // (`reach_descendants` and `reach_validity`, Appendix D of the paper);
 // adjustment sets and ancestor searches reuse caugi's own graph machinery.
-// The verifier runs on `Pdag` (a DAG is a PDAG with no undirected edges, and
-// `Cpdag` derefs to `Pdag`), so no bespoke graph type is needed.
-
-use std::sync::Arc;
+// The verifier reads neighbours straight off the `Dag`/`Cpdag` inputs — a DAG
+// just has no undirected edges — so no bespoke graph type or conversion is needed.
 
 use rustc_hash::FxHashSet;
 
 use crate::graph::alg::{adjustment::optimal_adjustment_set, traversal};
-use crate::graph::{cpdag::Cpdag, dag::Dag, pdag::Pdag};
+use crate::graph::{cpdag::Cpdag, dag::Dag};
 
 type NodeSet = FxHashSet<u32>;
 
@@ -35,10 +33,39 @@ enum Edge {
     Undirected,
 }
 
-/// Input for the AID functions. Only a DAG or a CPDAG is accepted.
+/// Input for the AID functions. Only a DAG or a CPDAG is accepted. The verifier
+/// reads neighbours through the accessors below, so it treats both uniformly.
 pub enum AidInput<'a> {
     Dag(&'a Dag),
     Cpdag(&'a Cpdag),
+}
+
+impl AidInput<'_> {
+    fn n(&self) -> u32 {
+        match self {
+            AidInput::Dag(d) => d.n(),
+            AidInput::Cpdag(c) => c.n(),
+        }
+    }
+    fn parents_of(&self, v: u32) -> &[u32] {
+        match self {
+            AidInput::Dag(d) => d.parents_of(v),
+            AidInput::Cpdag(c) => c.parents_of(v),
+        }
+    }
+    fn children_of(&self, v: u32) -> &[u32] {
+        match self {
+            AidInput::Dag(d) => d.children_of(v),
+            AidInput::Cpdag(c) => c.children_of(v),
+        }
+    }
+    /// A DAG has no `---` edges, so there is nothing to check for it.
+    fn undirected_of(&self, v: u32) -> &[u32] {
+        match self {
+            AidInput::Dag(_) => &[],
+            AidInput::Cpdag(c) => c.undirected_of(v),
+        }
+    }
 }
 
 /// Which AID variant to compute.
@@ -49,16 +76,10 @@ pub enum AidType {
     Parent,
 }
 
-/// View a DAG as a PDAG over the same edges (no undirected edges). Used so the
-/// verifier can treat DAG and CPDAG inputs uniformly as `&Pdag`.
-fn dag_as_pdag(d: &Dag) -> Result<Pdag, String> {
-    Pdag::new(Arc::new(d.core_ref().clone()))
-}
-
 // ── Adjustment sets taken from the guess graph ───────────────────────────────
 
 /// Ancestor adjustment set `An(t) \ {t}` (reuses caugi's traversal).
-fn ancestor_set(g: &Pdag, t: u32) -> NodeSet {
+fn ancestor_set(g: &AidInput, t: u32) -> NodeSet {
     traversal::ancestors_of(g.n(), t, |u| g.parents_of(u))
         .into_iter()
         .collect()
@@ -67,7 +88,7 @@ fn ancestor_set(g: &Pdag, t: u32) -> NodeSet {
 // ── Walk-status reachability (the AID verifier core) ─────────────────────────
 
 /// Possible children of `v` (along `-->` or `---`), skipping treatment `t`.
-fn next_steps(g: &Pdag, t: u32, v: u32) -> Vec<(Edge, u32)> {
+fn next_steps(g: &AidInput, t: u32, v: u32) -> Vec<(Edge, u32)> {
     let mut next = Vec::new();
     for &u in g.undirected_of(v) {
         if u != t {
@@ -86,7 +107,7 @@ fn next_steps(g: &Pdag, t: u32, v: u32) -> Vec<(Edge, u32)> {
 /// `(edge, neighbour, blocked)`; `blocked` toggles at a (non-)collider that is
 /// (not) in the adjustment set `z`.
 fn next_steps_conditioned(
-    g: &Pdag,
+    g: &AidInput,
     t: u32,
     arrived_by: Edge,
     v: u32,
@@ -118,7 +139,7 @@ fn next_steps_conditioned(
 
 /// Possible descendants `PD` (incl. `t`) and the not-amenable set `NAM` of
 /// nodes `y` for which `G` is not amenable relative to `(t, y)`.
-fn reach_descendants(g: &Pdag, t: u32) -> (NodeSet, NodeSet) {
+fn reach_descendants(g: &AidInput, t: u32) -> (NodeSet, NodeSet) {
     #[derive(PartialEq, Eq, Hash, Clone, Copy)]
     enum Walk {
         D,
@@ -168,7 +189,7 @@ fn reach_descendants(g: &Pdag, t: u32) -> (NodeSet, NodeSet) {
 /// Possible descendants `PD`, not-amenable `NAM`, and not-validly-adjusted
 /// `NVA` (nodes `y` for which `z` is not a valid adjustment set for `(t, y)`).
 /// `NAM ⊆ NVA`. This is the core verifier (Appendix D of the paper).
-fn reach_validity(g: &Pdag, t: u32, z: &NodeSet) -> (NodeSet, NodeSet, NodeSet) {
+fn reach_validity(g: &AidInput, t: u32, z: &NodeSet) -> (NodeSet, NodeSet, NodeSet) {
     #[derive(PartialEq, Eq, Hash, Clone, Copy)]
     enum Walk {
         PdOpenAm,
@@ -249,8 +270,8 @@ fn reach_validity(g: &Pdag, t: u32, z: &NodeSet) -> (NodeSet, NodeSet, NodeSet) 
 
 #[inline]
 fn normalize(mistakes: usize, n: u32) -> (f64, usize) {
-    let comparisons = (n as usize) * (n as usize) - (n as usize);
-    (mistakes as f64 / comparisons as f64, mistakes)
+    let n = n as usize;
+    (mistakes as f64 / (n * (n - 1)) as f64, mistakes)
 }
 
 /// Relabel a guess-space node set into the true graph's node space.
@@ -294,7 +315,7 @@ fn count_mistakes(
 
 /// Guess-side sets are computed in the guess's node space and relabelled into
 /// the truth's space via `inv`; `perm[i]` is the guess-index of true-index `i`.
-fn ancestor_aid(truth: &Pdag, guess: &Pdag, perm: &[u32], inv: &[usize]) -> (f64, usize) {
+fn ancestor_aid(truth: &AidInput, guess: &AidInput, perm: &[u32], inv: &[usize]) -> (f64, usize) {
     // ponytail: sequential, not rayon — caugi has no rayon dep and these graphs
     // are small; parallelize per-treatment if AID ever shows up in a profile.
     let n = truth.n();
@@ -317,7 +338,7 @@ fn ancestor_aid(truth: &Pdag, guess: &Pdag, perm: &[u32], inv: &[usize]) -> (f64
     normalize(mistakes, n)
 }
 
-fn parent_aid(truth: &Pdag, guess: &Pdag, perm: &[u32], inv: &[usize]) -> (f64, usize) {
+fn parent_aid(truth: &AidInput, guess: &AidInput, perm: &[u32], inv: &[usize]) -> (f64, usize) {
     let n = truth.n();
     let mut mistakes = 0;
     for t in 0..n {
@@ -332,7 +353,7 @@ fn parent_aid(truth: &Pdag, guess: &Pdag, perm: &[u32], inv: &[usize]) -> (f64, 
     normalize(mistakes, n)
 }
 
-fn oset_aid(truth: &Pdag, guess: &Pdag, perm: &[u32], inv: &[usize]) -> (f64, usize) {
+fn oset_aid(truth: &AidInput, guess: &AidInput, perm: &[u32], inv: &[usize]) -> (f64, usize) {
     let n = truth.n();
     let mut mistakes = 0;
     for t in 0..n {
@@ -375,38 +396,18 @@ fn oset_aid(truth: &Pdag, guess: &Pdag, perm: &[u32], inv: &[usize]) -> (f64, us
     normalize(mistakes, n)
 }
 
-// ── Public aligned entry points (called from lib.rs) ─────────────────────────
+// ── Public entry point (called from lib.rs) ──────────────────────────────────
 
-type AidFn = fn(&Pdag, &Pdag, &[u32], &[usize]) -> (f64, usize);
-
-/// `inv_guess_to_true[j] = i`: guess-index `j` maps to true-position `i`.
-fn aid_align(
-    f: AidFn,
+/// Compute the chosen AID variant. `inv_guess_to_true[j] = i` maps guess-index
+/// `j` to true-position `i` (aligning the guess onto the truth's node order).
+pub fn aid(
+    kind: AidType,
     true_g: AidInput<'_>,
     guess_g: AidInput<'_>,
     inv_guess_to_true: &[usize],
 ) -> Result<(f64, usize), String> {
-    // Both inputs become `&Pdag`: a CPDAG borrows its inner PDAG; a DAG is
-    // viewed as a PDAG over the same edges (owned here so the borrow lives).
-    let truth_owned;
-    let truth: &Pdag = match &true_g {
-        AidInput::Cpdag(c) => c.as_pdag(),
-        AidInput::Dag(d) => {
-            truth_owned = dag_as_pdag(d)?;
-            &truth_owned
-        }
-    };
-    let guess_owned;
-    let guess: &Pdag = match &guess_g {
-        AidInput::Cpdag(c) => c.as_pdag(),
-        AidInput::Dag(d) => {
-            guess_owned = dag_as_pdag(d)?;
-            &guess_owned
-        }
-    };
-
-    let n = truth.n() as usize;
-    if guess.n() as usize != n {
+    let n = true_g.n() as usize;
+    if guess_g.n() as usize != n {
         return Err("both graphs must contain the same number of nodes".into());
     }
     if n < 2 {
@@ -420,23 +421,11 @@ fn aid_align(
     for (g, &i) in inv_guess_to_true.iter().enumerate() {
         perm[i] = g as u32;
     }
-    Ok(f(truth, guess, &perm, inv_guess_to_true))
-}
-
-/// Compute the chosen AID variant. `inv_guess_to_true[j] = i` maps guess-index
-/// `j` to true-position `i`.
-pub fn aid(
-    kind: AidType,
-    true_g: AidInput<'_>,
-    guess_g: AidInput<'_>,
-    inv_guess_to_true: &[usize],
-) -> Result<(f64, usize), String> {
-    let f: AidFn = match kind {
-        AidType::Ancestor => ancestor_aid,
-        AidType::Oset => oset_aid,
-        AidType::Parent => parent_aid,
-    };
-    aid_align(f, true_g, guess_g, inv_guess_to_true)
+    Ok(match kind {
+        AidType::Ancestor => ancestor_aid(&true_g, &guess_g, &perm, inv_guess_to_true),
+        AidType::Oset => oset_aid(&true_g, &guess_g, &perm, inv_guess_to_true),
+        AidType::Parent => parent_aid(&true_g, &guess_g, &perm, inv_guess_to_true),
+    })
 }
 
 #[cfg(test)]
@@ -444,6 +433,8 @@ mod tests {
     use super::*;
     use crate::edges::EdgeRegistry;
     use crate::graph::builder::GraphBuilder;
+    use crate::graph::pdag::Pdag;
+    use std::sync::Arc;
 
     fn dag(n: u32, edges: &[(u32, u32)]) -> Dag {
         let mut reg = EdgeRegistry::new();
