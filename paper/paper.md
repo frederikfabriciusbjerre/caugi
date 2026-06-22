@@ -44,12 +44,12 @@ graphs that arise in causal inference and discovery. `caugi` is a causality-firs
 meaning that it is not built around generic graphs, but rather around different
 classes of causal graphs, including directed acyclic graphs (DAGs), partially 
 directed acyclic graphs (PDAGs), acyclic directed mixed graphs (ADMGs), and 
-ancestral graphs (AG) to name some. `caugi` can represent many classes of causal
+ancestral graphs (AG). `caugi` can represent many classes of causal
 graphs, and the list is expanding. 
 
 The graph data structure is implemented in `Rust`, yielding query and traversal
-operations competitive with other graph packages in `R` [@caugiperformance], still while giving 
-the user an experience as writing graphs on a whiteboard. Alongside the core
+operations competitive in performance with other graph packages in `R` [@caugiperformance], while still giving 
+the user an experience that resembles writing graphs on a whiteboard. Alongside the core
 representation, `caugi` implements a wide range of causal-graph algorithms, such
 as separation tests, structural queries, adjustment-set identification, and graph metrics, 
 together with a full-featured system for visualizing graphs.
@@ -103,16 +103,16 @@ Graph packages in high-level languages such as `R` and `Python` span a wide
 range of scopes, from general-purpose graph libraries to specialized
 causal inference toolkits. 
 
-Where packages such as `igraph` [@csardi2006; @antonov2023] and `NetworkX`
-[@hagberg2008] are fast, they are general-purpose graph packages, and
-building the correct abstractions on top of them has been done in for example `ggm`
-[@marchetti2025] or `pgmpy` [@ankan2024]. It takes a lot of work to make these
-abstractions correct and might require hacks, such as representing a partially
-directed graph with directed edges going in both directions.
+Although packages such as `igraph` [@csardi2006; @antonov2023] and `NetworkX`
+[@hagberg2008] are fast, they are also general-purpose graph packages, which
+makes them harder to use for causality-specific problems. Building the correct
+abstractions on top of them has been done in, for example, `ggm`
+[@marchetti2025] or `pgmpy` [@ankan2024], but it takes considerable work to make
+these abstractions correct and might require workarounds such as representing a
+partially directed graph with directed edges going in both directions.
 
-Then, you have packages such as `pcalg` [@kalisch2012] or `bnlearn`
-[@scutari2010]. These packages have in common that they both are built around
-their own graph representations, but the purpose of the packages are not the
+There is also a group of packages that include `pcalg` [@kalisch2012] and `bnlearn`
+[@scutari2010], which feature their own graph representations, but whose purposes are not the
 graph structures themselves, but rather the discovery algorithms to learn causal graphs.
 `pcalg` represents their graphs with matrices, but how they are represented
 differ between graph classes. `bnlearn` pairs a fast `C` backend with a rich
@@ -129,10 +129,10 @@ Closer to `caugi` in spirit are packages with a causality-native interface.
 performs its computations through a JavaScript engine called from `R`, which
 imposes a serialization boundary between the two languages and limits
 performance on larger graphs [@caugiperformance]. We also owe an honorable
-mention to `MixedGraphs` [@evans2025], whose treatment of mixed graphs was a
-source of inspiration for `caugi`.
+mention to `MixedGraphs` [@evans2025], which, while not available on CRAN,
+offers a treatment of mixed graphs that was a source of inspiration for `caugi`.
 
-So, we found that `caugi` fills a gap in the market, combining performance
+Taken together, we believe that `caugi` fills a gap in the ecosystem, combining performance
 comparable with `igraph` and `NetworkX` [@caugiperformance] with the
 causality-native interface of
 `dagitty` and `MixedGraphs`, such that it is easy to build causal discovery or
@@ -153,7 +153,7 @@ The graph implementation is based on a compressed sparse row\ (CSR) format.
 The CSR format scales memory proportionally to the number of edges and is 
 particularly well-suited for more sparse graphs, which we often see in 
 causality. This representation makes queries faster, but mutations more 
-expensive. Any structural change in principle requires rebuilding the index. 
+expensive. Any structural change in principle requires rebuilding the CSR index. 
 
 To avoid penalizing iterative workflows, `caugi` adopts a *lazy build* strategy.
 Mutations are batched and the graph is only rebuilt when the user queries the graph.
@@ -200,14 +200,14 @@ m_separated(obs, "X", "Y")
 ```
 
 but we can find the minimal $d$-separator in the original DAG, i.e., the set of
-variables that conditional on which `X` and `Y` are independent:
+variables conditional on which `X` and `Y` are independent:
 
 ```r
 minimal_separator(dag, "X", "Y")
 #> [1] "U" "M"
 ```
 
-We can easily plot side by side using the native plotting functions:
+We can easily visualize the graphs side-by-side using the native plotting functions:
 
 ```r
 plot(dag, main = "DAG") + plot(obs, main = "ADMG")
