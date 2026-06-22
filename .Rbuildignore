@@ -28,9 +28,9 @@
 ^target$
 ^[.]?air[.]toml$
 ^paper$
+^figures$
 ^Taskfile\.yml$
 ^extras$
-^paper$
 ^\.task$
 ^\.direnv$
 ^\.devenv$

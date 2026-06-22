@@ -38,17 +38,21 @@ bibliography: paper.bib
 <!-- A description of the high-level functionality and purpose of the software
 for a diverse, non-specialist audience. -->
 
-`caugi` is a fast and flexible toolbox for causal graphs in `R`. It provides an
-intuitive interface for defining, manipulating, and analyzing the graphs that
-arise in causal inference and discovery, including directed acyclic graphs
-(DAGs), partially directed acyclic graphs (PDAGs), acyclic directed mixed graphs
-(ADMGs), and undirected graphs (UGs), each represented as a dedicated class. The
-graph data structure is implemented in `Rust`, using a compressed sparse
-row\ (CSR) representation, giving query and traversal operations the performance
-needed for high-dimensional and iterative workflows. Alongside the core
+`caugi` (Causal Graph Interface) is a fast and flexible toolbox for causal graphs in `R`. 
+It provides an intuitive interface for defining, manipulating, and analyzing the 
+graphs that arise in causal inference and discovery. `caugi` is a causality-first package,
+meaning that it is not built around generic graphs, but rather around different
+classes of causal graphs, including directed acyclic graphs (DAGs), partially 
+directed acyclic graphs (PDAGs), acyclic directed mixed graphs (ADMGs), and 
+ancestral graphs (AG). `caugi` can represent many classes of causal
+graphs, and the list is expanding. 
+
+The graph data structure is implemented in `Rust`, yielding query and traversal
+operations competitive in performance with other graph packages in `R` [@caugiperformance], while still giving 
+the user an experience that resembles writing graphs on a whiteboard. Alongside the core
 representation, `caugi` implements a wide range of causal-graph algorithms, such
-as separation tests, adjustment-set identification, and structural distance
-metrics, together with a full-featured system for visualizing graphs.
+as separation tests, structural queries, adjustment-set identification, and graph metrics, 
+together with a full-featured system for visualizing graphs.
 
 # Statement of Need
 
@@ -57,21 +61,24 @@ and places it in the context of related work. This should clearly state what
 problems the software is designed to solve, who the target audience is, and its
 relation to other work.-->
 
-Graphs are fundamental in causality. It is the object by which researchers
+Graphs are a convenient, economical, and expressive way of conveying assumptions
+and performing inferences and other derivations that are highly relevant in the
+field of causality. It is one of the objects by which many researchers
 conceptualize and communicate their models as well as the practical tool that
 they use to perform inference and discovery. This makes it crucial that there
 are software tools that allow researchers to transfer their ideas into code and
 to perform their analyses through an intuitive as well as efficient interface.
 The latter is important because causal inference and discovery can be
-computationally intensive, particularly in high-dimensional settings and machine
-learning-based approaches where graphs are iteratively updated and evaluated.
+computationally intensive, particularly in high-dimensional settings.
 `caugi` is designed to meet these needs by providing a fast and flexible toolbox
 for causal graphs in `R`.
 
 The problem with many existing tools is that they
 
 1) are not designed with causal graphs in mind and therefore lack the necessary
-   functionality and efficiency for causal inference and discovery,
+   functionality for causal inference and discovery, such as support for the
+   range of edge types (directed, bidirected, undirected) and graph classes that
+   the field relies on,
 
 2) are not built with performance in mind and therefore struggle with larger
    graphs, or
@@ -80,9 +87,10 @@ The problem with many existing tools is that they
    through adjacency matrices or edge lists, which can be cumbersome and
    error-prone.
 
-`caugi` addresses these issues with an efficient graph representation, a broad
-set of algorithms for causal inference and discovery, and an interface built
-around infix edge operators.
+`caugi` addresses these issues with an intuitive graph representation, a broad
+set of algorithms for causal inference and discovery, and an interface that
+allows users to draw graphs with nodes as `R` symbols and edges as infix
+operators.
 
 # State of the Field
 
@@ -91,85 +99,44 @@ packages in the research area. If related tools exist, provide a clear “build
 vs. contribute” justification explaining your unique scholarly contribution and
 why existing alternatives are insufficient. -->
 
-Graph packages in high-level langauges such as `R` and `Python` span a wide
-range of scopes, from general-purpose graph libraries to specialised
-causal-inference toolkits. \autoref{tab:packages-comparison} illustrates where
-`caugi` sits in this landscape; a full feature-by-feature comparison, covering
-supported graph classes, graph queries, causal-inference algorithms, and I/O and
-performance benchmarks against the most widely used alternatives are reported in
-the package's online documentation at [caugi.org](https://caugi.org).
+Graph packages in high-level languages such as `R` and `Python` span a wide
+range of scopes, from general-purpose graph libraries to specialized
+causal inference toolkits. 
 
-  ----------------------------------------------------------------------------------------------------------------------------------------------
-  Package               Language         Scope                            Notes
-  --------------------- ---------------- -------------------------------- ----------------------------------------------------------------------
-  `caugi`               `R` + `Rust`     Causal graphs                    Rust-backed CSR storage; typed DAG/PDAG/ADMG/UG classes;
-                                                                          infix DSL
+Although packages such as `igraph` [@csardi2006; @antonov2023] and `NetworkX`
+[@hagberg2008] are fast, they are also general-purpose graph packages, which
+makes them harder to use for causality-specific problems. Building the correct
+abstractions on top of them has been done in, for example, `ggm`
+[@marchetti2025] or `pgmpy` [@ankan2024], but it takes considerable work to make
+these abstractions correct and might require workarounds such as representing a
+partially directed graph with directed edges going in both directions.
 
-  `igraph`              `R`/`Py` + `C`   General-purpose                  C-backed graph engine; no causal-typed graph classes
+There is also a group of packages that include `pcalg` [@kalisch2012] and `bnlearn`
+[@scutari2010], which feature their own graph representations, but whose purposes are not the
+graph structures themselves, but rather the discovery algorithms to learn causal graphs.
+`pcalg` represents their graphs with matrices, but how they are represented
+differ between graph classes. `bnlearn` pairs a fast `C` backend with a rich
+learning and inference stack, but constructs its graphs through dense,
+node-by-node adjacency structures whose memory grows with the square of the
+number of nodes, which will cause problems for larger graphs. 
 
-  `bnlearn`             `R` + `C`        Bayesian networks                Single `bn` class for all graph types; full
-                                                                          inference/learning stack
+`Tetrad` [@scheines1998], written in Java, is a standalone software suite for
+causal discovery that is quite performant and expressive, but lacks a proper
+interface to `R` (as it currently stands).
 
-  `pcalg`               `R` + `C++`      Causal discovery                 Algorithm-first; causal graphs surfaced as untyped
-                                                                          result objects
+Closer to `caugi` in spirit are packages with a causality-native interface.
+`dagitty` [@textor2016] offers an expressive syntax and a large user base, but
+performs its computations through a JavaScript engine called from `R`, which
+imposes a serialization boundary between the two languages and limits
+performance on larger graphs [@caugiperformance]. We also owe an honorable
+mention to `MixedGraphs` [@evans2025], which, while not available on CRAN,
+offers a treatment of mixed graphs that was a source of inspiration for `caugi`.
 
-  `dagitty`             `R` + `JS`       Causal graphs                    DAG/PDAG/MAG/PAG via JS engine; lacks UG and ADMG classes
-
-  `MixedGraphs`         `R` + `C++`      Mixed/ancestral graphs           Untyped `mixedgraph` container built via a string DSL
-                                                                          (`graphCr`)
-
-  `NetworkX`            `Python`         General-purpose                  Dict-of-dicts adjacency; no mixed-edge or causal-typed
-                                                                          classes
-
-  `pgmpy`               `Python`         Probabilistic graphical models   Typed DAG/PDAG/ADMG/MAG inheriting from `NetworkX` classes
-
-  `Tetrad`              `Java`           Causal modeling & discovery      Universal `EdgeListGraph` container; broad algorithm suite
-  ----------------------------------------------------------------------------------------------------------------------------------------------
-
-  : Description of the scope and features of `caugi` compared to other graph
-    packages in `R`, `Python`, and `Java`. The table is not exhaustive but
-    serves to illustrate the landscape of graph packages and where `caugi` fits
-    within it.\label{tab:packages-comparison}
-
-Canonical citations, source-code locations, and project websites for the
-packages above are listed in \autoref{tab:packages-citations}. An empty space
-indicates that no separate URL of that kind exists for the package.
-
-  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Package                          Citation                        Source Code                                                            Project Site
-  -------------------------------- ------------------------------- ---------------------------------------------------------------------- ------------------------------------------------------------------------------------------
-  `igraph`                         @csardi2006; @antonov2023       [github.com/igraph/rigraph](https://github.com/igraph/rigraph)         [r.igraph.org](https://r.igraph.org)
-
-  `bnlearn`                        @scutari2010                                                                                           [bnlearn.com](https://www.bnlearn.com)
-
-  `pcalg`                          @kalisch2012                    [pcalg.r-forge.r-project.org](https://pcalg.r-forge.r-project.org)     [CRAN.R-project.org/package=pcalg](https://CRAN.R-project.org/package=pcalg)
-
-  `dagitty`                        @textor2016                     [github.com/jtextor/dagitty](https://github.com/jtextor/dagitty)       [dagitty.net](https://www.dagitty.net)
-
-  `MixedGraphs`                    @evans2025                      [github.com/rje42/MixedGraphs](https://github.com/rje42/MixedGraphs)
-
-  `NetworkX`                       @hagberg2008                    [github.com/networkx/networkx](https://github.com/networkx/networkx)   [networkx.org](https://networkx.org)
-
-  `pgmpy`                          @ankan2024                      [github.com/pgmpy/pgmpy](https://github.com/pgmpy/pgmpy)               [pgmpy.org](https://pgmpy.org)
-
-  `Tetrad`                         @scheines1998                   [github.com/cmu-phil/tetrad](https://github.com/cmu-phil/tetrad)       [cmu.edu/dietrich/philosophy/tetrad](https://www.cmu.edu/dietrich/philosophy/tetrad/)
-  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  : Canonical citations, source-code locations, and project websites for the
-    graph packages mentioned in the previous
-    table.\label{tab:packages-citations}
-
-Three features distinguish `caugi` from the packages above:
-
-1) dedicated causal-graph classes (DAG, PDAG, ADMG, UG) with type-level
-   invariants,
-
-2) a `Rust` backend that combines speed with memory safety, and
-
-3) an interface based on infix edge operators rather than adjacency matrices,
-   arc lists, or string DSLs.
-
-None of the packages we surveyed combines all three.
+Taken together, we believe that `caugi` fills a gap in the ecosystem, combining performance
+comparable with `igraph` and `NetworkX` [@caugiperformance] with the
+causality-native interface of
+`dagitty` and `MixedGraphs`, such that it is easy to build causal discovery or
+inference algorithms as seen in `pcalg` and `bnlearn`.
 
 # Software Design
 
@@ -183,70 +150,71 @@ description. -->
 working with causal graphs with the performance and memory safety of `Rust`.
 
 The graph implementation is based on a compressed sparse row\ (CSR) format.
-Causal-graph packages in `R` more commonly use adjacency matrices (as in
-`pcalg`, `ggm`, and `dagitty`) or arc lists (as in `bnlearn`). Both alternatives
-have their strengths, but the CSR format scales memory proportionally to the
-number of edges and is particularly well-suited for the operations that dominate
-causal inference and discovery, such as iterating over the neighbors of a node
-or traversing the graph.
+The CSR format scales memory proportionally to the number of edges and is 
+particularly well-suited for more sparse graphs, which we often see in 
+causality. This representation makes queries faster, but mutations more 
+expensive. Any structural change in principle requires rebuilding the CSR index. 
 
-The CSR layout makes queries fast but mutations expensive: any structural change
-in principle requires rebuilding the index. To avoid penalizing iterative
-workflows, `caugi` adopts a *lazy build* strategy. Mutations are batched on the
-`R` side as a pending edit and the underlying graph is rebuilt only when needed:
-either when the user explicitly calls `build()`, or when a query is issued
-against the graph. Each rebuild is $\mathcal{O}(|V| + |E|)$, so the cost of
-mutation is spread across a batch of edits. Graphs *appear* mutable from the
-user's perspective, while remaining immutable internally and always consistent
-when queried.
+To avoid penalizing iterative workflows, `caugi` adopts a *lazy build* strategy.
+Mutations are batched and the graph is only rebuilt when the user queries the graph.
+Graphs *appear* mutable from the user's perspective, while remaining immutable internally 
+and always consistent when queried.
 
 # Examples
 
-You create a `caugi` graph object through the `caugi()` function, which uses
-infix operators to define edges. For instance, the following code creates a
-simple directed acyclic graph\ (DAG) with four nodes and four edges, encoding a
-confounding structure in which `A` is a common cause of treatment `B` and
-outcome `C`, with `D` as a descendant of the treatment:
+We first define a DAG to represent our assumptions about cause and effect
+relations among the nodes, where it is assumed that the parents of that node are
+sufficient for determining the probability of that node:
 
 ```r
 library(caugi)
 
-cg <- caugi(
-  A %-->% B %-->% C + D,
-  A %-->% C,
+dag <- caugi(
+  U %-->% X + Y,
+  W %-->% X,
+  X %-->% M %-->% Y,
   class = "DAG"
 )
-
-cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x62d5bd0f4500>
-#>   graph_class: DAG
-#>   nodes: A, B, C, D
-#>   edges: A-->B, A-->C, B-->C, B-->D
 ```
 
-In the example above, `A %-->% B` creates the edge `-->` from `A` to `B`. The
-syntax `B %-->% C + D` is equivalent to `B %-->% C` *and* `B %-->% D`, and
-`A %-->% B %-->% C` chains two edges. To visualize the graph, you can simply
-call `plot()` on the graph object, with the result shown in
-\autoref{fig:example-plot}.
+If the node `U` represents an unobserved (latent) confounder, the latent
+projection operation yields an ADMG on `W`, `M`, `X`, and `Y` from which we can
+read off dependencies among the observed variables; the bidirected edge between
+`X` and `Y` records confounding left behind by the latent:
 
 ```r
-plot(cg)
+obs <- latent_project(dag, latents = "U")
+obs
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x9271562a0>
+#>   graph_class: ADMG
+#>   nodes: W, X, M, Y
+#>   edges: W-->X, X-->M, M-->Y, X<->Y
 ```
 
-![A simple DAG built with `caugi`. \label{fig:example-plot}](figures/example-plot.pdf)
-
-`caugi` supports a wide range of queries and algorithms that operate directly on
-the graph object. For instance, to identify a valid back-door adjustment set for
-estimating the causal effect of `B` on `C`, we can use `adjustment_set()`:
+`X` and `Y` are not $m$-separated, since confounding persists in the ADMG,
+meaning they are dependent in the distribution after marginalizing over `U`:
 
 ```r
-adjustment_set(cg, "B", "C", type = "backdoor")
-#> [1] "A"
+m_separated(obs, "X", "Y")
+#> [1] FALSE
 ```
 
-The set `{A}` blocks the back-door path `B <-- A --> C`, yielding a valid
-adjustment set for the causal effect of `B` on `C`.
+but we can find the minimal $d$-separator in the original DAG, i.e., the set of
+variables conditional on which `X` and `Y` are independent:
+
+```r
+minimal_separator(dag, "X", "Y")
+#> [1] "U" "M"
+```
+
+We can easily visualize the graphs side-by-side using the native plotting functions:
+
+```r
+plot(dag, main = "DAG") + plot(obs, main = "ADMG")
+```
+
+![Structural DAG and observed ADMG after projecting out `U`.
+\label{fig:example-plot}](figures/example-plot.pdf)
 
 # Research Impact Statement
 
