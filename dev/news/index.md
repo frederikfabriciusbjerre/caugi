@@ -34,7 +34,27 @@
 - `adjustment_set(type = "backdoor")` now returns an inclusion-minimal
   backdoor adjustment set, computed in linear time as a minimal
   d-separator in the proper backdoor graph, rather than the full set of
-  parents of the exposure.
+  parents of the exposure. `"PDAG"`. This affects the result of
+  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md).
+  Predicates and verbs defined on PDAGs
+  ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+  [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
+  etc.) continue to accept MPDAGs unchanged. `"PDAG"`. This affects the
+  result of
+  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
+  and `generate_graph(class = "CPDAG")`. Predicates and verbs defined on
+  PDAGs ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+  [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
+  etc.) continue to accept MPDAGs unchanged.
+- The performance vignette is now a true vignette (rather than a
+  pkgdown-only article) and is rebuilt manually from a cross-language
+  harness under `tools/benchmark/`. The harness compares `caugi` to
+  `igraph`, `bnlearn`, `dagitty`, `ggm`, `pcalg`, `pgmpy`, and Tetrad on
+  a `n ∈ {100, 1000, 10000}` grid. The d-separation benchmark now uses a
+  minimal d-separator computed via
+  [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
+  (previously used a backdoor adjustment set, which is not in general a
+  d-separating set).
 
 ### Bug Fixes
 
