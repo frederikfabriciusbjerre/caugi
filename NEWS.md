@@ -16,6 +16,17 @@
 
 ## Improvements
 
+- `aid()` is now implemented natively in caugi's Rust backend, removing the
+  external `gadjid` dependency (and its pinned git revision and vendored
+  sources). Results are unchanged. The AID implementation
+  (`src/rust/src/graph/aid.rs`) is a derivative of `gadjid` and is licensed
+  MPL-2.0; the rest of the crate remains MIT. `aid()` now takes inputs of class
+  `"DAG"` or `"CPDAG"` (previously `"DAG"` or `"PDAG"`), reusing the
+  first-class `"CPDAG"` graph class.
+- Licensing of bundled code is now declared for CRAN: a top-level `LICENSE.note`
+  documents the MPL-2.0 component (the AID files derived from `gadjid`) and the
+  licenses of the vendored Rust crates, and their copyright holders are recorded
+  via `cph`/`ctb` roles in `Authors@R`.
 - Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"` instead of
   `"PDAG"`. This affects the result of `meek_closure()` and
   `generate_graph(class = "CPDAG")`. Predicates and verbs defined on PDAGs

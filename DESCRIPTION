@@ -27,6 +27,29 @@ Authors@R: c(
         family = "Kristensen",
         role = "aut",
         email = "bjarke.hautop@gmail.com"
+    ),
+    person(
+      given = "Leonard",
+      family = "Henckel",
+      role = c("ctb", "cph"),
+      comment = "author of the 'gadjid' crate, from which src/rust/src/graph/aid.rs is derived (MPL-2.0); see LICENSE.note"
+    ),
+    person(
+      given = "Theo",
+      family = "W\u00fcrtzen",
+      role = c("ctb", "cph"),
+      comment = "author of the 'gadjid' crate; see LICENSE.note"
+    ),
+    person(
+      given = "Sebastian",
+      family = "Weichwald",
+      role = c("ctb", "cph"),
+      comment = "author of the 'gadjid' crate; see LICENSE.note"
+    ),
+    person(
+      given = "Authors of the bundled Rust crates",
+      role = c("ctb", "cph"),
+      comment = "vendored under src/rust/vendor; see LICENSE.note"
     )
   )
 Description: Create, query, and modify causal graphs. 'caugi' (Causal Graph
