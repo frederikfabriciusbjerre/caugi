@@ -49,6 +49,10 @@
   adjustment set.
 
 - Fixed `is_mag()` returning incorrect results for some ancestral graphs.
+- Stripped non-build files (`tests/`, `examples/`, trybuild fixtures) from the
+  vendored Rust dependencies so no vendored path exceeds 100 characters. This
+  silences pak's "very long paths" warning and avoids installation failures on
+  Windows without long-path support (#319).
   Adjacency was tested by binary-searching the concatenation of separately
   sorted neighbor buckets, which is not globally sorted, so some adjacent
   pairs were missed (#309).
