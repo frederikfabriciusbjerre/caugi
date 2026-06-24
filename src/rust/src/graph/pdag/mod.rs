@@ -2,6 +2,7 @@
 //! Pdag wrapper with O(1) slice queries via packed neighborhoods.
 
 mod cpdag;
+mod enumerate;
 mod transforms;
 
 use super::error::PdagError;

@@ -4,10 +4,12 @@
 \alias{dag_from_pdag}
 \title{Extend a PDAG to a DAG using the Dor-Tarsi Algorithm}
 \usage{
-dag_from_pdag(PDAG)
+dag_from_pdag(cg, PDAG)
 }
 \arguments{
-\item{PDAG}{A \code{caugi} object of class \code{"PDAG"}.}
+\item{cg}{A \code{caugi} object of class \code{"PDAG"}, \code{"MPDAG"}, or \code{"CPDAG"}.}
+
+\item{PDAG}{Deprecated alias for \code{cg}. Use \code{cg} instead.}
 }
 \value{
 A \code{caugi} object of class \code{"DAG"} representing a DAG extension
@@ -22,13 +24,13 @@ The procedure implements the Dor-Tarsi algorithm.
 If the PDAG cannot be consistently extended to a DAG, the function will raise an error.
 }
 \examples{
-PDAG <- caugi(
+pdag <- caugi(
   A \%---\% B,
   B \%---\% C,
   class = "PDAG"
 )
-DAG <- dag_from_pdag(PDAG)
-edges(DAG)
+dag <- dag_from_pdag(pdag)
+edges(dag)
 
 }
 \references{
@@ -38,6 +40,8 @@ extension of a partially directed acyclic graph".
 \seealso{
 Other operations: 
 \code{\link{condition_marginalize}()},
+\code{\link{count_dags}()},
+\code{\link{enumerate_dags}()},
 \code{\link{exogenize}()},
 \code{\link{latent_project}()},
 \code{\link{meek_closure}()},

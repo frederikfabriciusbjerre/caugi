@@ -1602,6 +1602,29 @@ fn rs_meek_closure(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphS
 }
 
 #[extendr]
+fn rs_enumerate_dags(mut session: ExternalPtr<GraphSession>) -> Robj {
+    let views = session
+        .as_mut()
+        .enumerate_dags()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    let robjs: Vec<Robj> = views
+        .into_iter()
+        .map(|v| Robj::from(ExternalPtr::new(session_from_view(v, names.clone()))))
+        .collect();
+    extendr_api::prelude::List::from_values(robjs).into_robj()
+}
+
+#[extendr]
+fn rs_count_dags(mut session: ExternalPtr<GraphSession>) -> f64 {
+    session
+        .as_mut()
+        .count_dags()
+        .map(|c| c as f64)
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
 fn rs_skeleton(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
     let view = session
         .as_mut()
@@ -2194,6 +2217,8 @@ extendr_module! {
     fn rs_is_mpdag;
     fn rs_to_cpdag;
     fn rs_meek_closure;
+    fn rs_enumerate_dags;
+    fn rs_count_dags;
     fn rs_skeleton;
     fn rs_moralize;
     fn rs_latent_project;

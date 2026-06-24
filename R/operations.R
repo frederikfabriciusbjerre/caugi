@@ -654,7 +654,8 @@ are_connected <- function(cg, u, v) {
 #'
 #' If the PDAG cannot be consistently extended to a DAG, the function will raise an error.
 #'
-#' @param PDAG A `caugi` object of class `"PDAG"`.
+#' @param cg A `caugi` object of class `"PDAG"`, `"MPDAG"`, or `"CPDAG"`.
+#' @param PDAG Deprecated alias for `cg`. Use `cg` instead.
 #'
 #' @returns A `caugi` object of class `"DAG"` representing a DAG extension
 #' of the input PDAG.
@@ -663,26 +664,36 @@ are_connected <- function(cg, u, v) {
 #' @concept operations
 #'
 #' @examples
-#' PDAG <- caugi(
+#' pdag <- caugi(
 #'   A %---% B,
 #'   B %---% C,
 #'   class = "PDAG"
 #' )
-#' DAG <- dag_from_pdag(PDAG)
-#' edges(DAG)
+#' dag <- dag_from_pdag(pdag)
+#' edges(dag)
 #'
 #' @references
 #' Dor, D., & Tarsi, M. (1992). "A simple algorithm to construct a consistent
 #' extension of a partially directed acyclic graph".
 #'
 #' @export
-dag_from_pdag <- function(PDAG) {
-  if (!(PDAG@graph_class %in% c("PDAG", "MPDAG", "CPDAG"))) {
+dag_from_pdag <- function(cg, PDAG) {
+  if (!missing(PDAG)) {
+    warning(
+      "The `PDAG` argument of `dag_from_pdag()` is deprecated; ",
+      "use `cg` instead.",
+      call. = FALSE
+    )
+    if (missing(cg)) {
+      cg <- PDAG
+    }
+  }
+  if (!(cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG"))) {
     stop("Input must be a caugi PDAG/MPDAG/CPDAG graph")
   }
 
-  output_graph <- PDAG
-  temp_graph <- PDAG
+  output_graph <- cg
+  temp_graph <- cg
 
   nodes_left <- nodes(temp_graph)$name
 
@@ -736,4 +747,93 @@ dag_from_pdag <- function(PDAG) {
   }
 
   mutate_caugi(output_graph, "DAG")
+}
+
+#' @title Enumerate all DAGs in a Markov equivalence class
+#'
+#' @description
+#' Given a PDAG, enumerate every Directed Acyclic Graph (DAG) in its
+#' Markov equivalence class -- i.e. every acyclic orientation of the undirected
+#' edges that introduces no new v-structures.
+#'
+#' @details
+#' Implements the recursive listing algorithm of Chickering (2002). The input
+#' is normalized via [meek_closure()] so any background-knowledge orientations
+#' are preserved and propagated before enumeration. The number of returned
+#' DAGs can grow super-exponentially in the size of the chain components;
+#' use [count_dags()] first to size the problem.
+#'
+#' @param cg A `caugi` object of class `"PDAG"` or `"MPDAG"`.
+#'
+#' @returns A list of `caugi` objects of class `"DAG"`, one per DAG in the MEC.
+#'
+#' @examples
+#' pdag <- caugi(
+#'   A %---% B,
+#'   B %---% C,
+#'   class = "PDAG"
+#' )
+#' dags <- enumerate_dags(pdag)
+#' length(dags) # 3
+#'
+#' @references
+#' Chickering, D. M. (2002). "Learning Equivalence Classes of Bayesian-Network
+#' Structures". \emph{Journal of Machine Learning Research}, 2:445--498.
+#'
+#' @family operations
+#' @concept operations
+#'
+#' @export
+enumerate_dags <- function(cg) {
+  is_caugi(cg, throw_error = TRUE)
+
+  if (!is_pdag(cg, force_check = TRUE)) {
+    stop("enumerate_dags() can only be applied to PDAGs.", call. = FALSE)
+  }
+
+  sessions <- rs_enumerate_dags(cg@session)
+  # Rust returns a Dag view, so the session's graph_class is already "DAG";
+  # no mutate_caugi roundtrip needed.
+  lapply(sessions, function(s) {
+    .session_to_caugi(s, node_names = cg@nodes$name)
+  })
+}
+
+#' @title Count DAGs in a Markov equivalence class
+#'
+#' @description
+#' Returns the number of DAGs in the Markov equivalence class of a PDAG
+#' without materializing each one. Useful for sizing an enumeration before
+#' calling [enumerate_dags()].
+#'
+#' @param cg A `caugi` object of class `"PDAG"` or `"MPDAG"`.
+#'
+#' @returns A single numeric value, the cardinality of the MEC. Counts above
+#'   `2^53` lose integer precision; in practice no realistic PDAG yields a
+#'   MEC anywhere near that size.
+#'
+#' @examples
+#' pdag <- caugi(
+#'   A %---% B,
+#'   B %---% C,
+#'   class = "PDAG"
+#' )
+#' count_dags(pdag) # 3
+#'
+#' @references
+#' Chickering, D. M. (2002). "Learning Equivalence Classes of Bayesian-Network
+#' Structures". \emph{Journal of Machine Learning Research}, 2:445--498.
+#'
+#' @family operations
+#' @concept operations
+#'
+#' @export
+count_dags <- function(cg) {
+  is_caugi(cg, throw_error = TRUE)
+
+  if (!is_pdag(cg, force_check = TRUE)) {
+    stop("count_dags() can only be applied to PDAGs.", call. = FALSE)
+  }
+
+  rs_count_dags(cg@session)
 }
