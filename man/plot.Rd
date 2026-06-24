@@ -38,7 +38,9 @@ Supports:
 \itemize{
 \item Appearance (passed to \code{gpar()}): \code{col}, \code{lwd}, \code{lty}, \code{alpha}, \code{fill}.
 \item Geometry: \code{arrow_size} (arrow length in mm, default 3), \code{circle_size}
-(radius of endpoint circles for partial edges in mm, default 1.5)
+(radius of endpoint circles for partial edges in mm, default 1.5),
+\code{route} (logical, default \code{TRUE}; when \code{TRUE}, edges automatically bend
+around non-incident nodes they would otherwise pass through)
 \item Local overrides via \code{by_edge}: a named list with:
 \itemize{
 \item Node-wide styles: applied to all edges touching a node, e.g.

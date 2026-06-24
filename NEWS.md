@@ -2,6 +2,12 @@
 
 ## New Features
 
+- `plot()` now automatically bends edges around non-incident nodes that they
+  would otherwise pass straight through, so edges between collinear nodes (e.g.
+  within a tier) and edges crossing unrelated nodes stay visible. This is
+  controlled by `edge_style$route` (default `TRUE`); disable it with
+  `edge_style = list(route = FALSE)`, or per edge type/edge via the usual
+  `edge_style` overrides.
 - Add `==` and `!=` methods for `caugi` objects so `cg1 == cg2` returns a single
   logical comparing graph content (class, nodes, edges, `simple`) rather than
   session identity.
