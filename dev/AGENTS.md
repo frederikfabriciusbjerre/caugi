@@ -105,7 +105,12 @@ the user-facing API.
     offline-build cache by running
     `rextendr::vendor_pkgs(overwrite = TRUE)` from the package root.
     This refreshes `src/rust/vendor.tar.xz` and
-    `src/rust/vendor-config.toml`; commit both alongside the
+    `src/rust/vendor-config.toml`. Then run
+    `Rscript tools/prune-vendor.R` to strip non-build files (`tests/`,
+    `examples/`, trybuild fixtures) from the vendored crates, which
+    keeps vendored paths short enough to avoid pak’s “very long paths”
+    warning on Windows (see issue \#319). Commit the pruned
+    `src/rust/vendor.tar.xz` and `vendor-config.toml` alongside the
     `Cargo.toml`/`Cargo.lock` change.
 
 ### Testing Requirements
