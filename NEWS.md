@@ -16,6 +16,9 @@
 
 ## Improvements
 
+* `caugi_layout_tiered()` gains a `jitter` argument (default `0`). When set to
+  a positive value, nodes within the same tier are offset by alternating
+  +`jitter` / −`jitter` in the perpendicular direction.
 - Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"` instead of
   `"PDAG"`. This affects the result of `meek_closure()` and
   `generate_graph(class = "CPDAG")`. Predicates and verbs defined on PDAGs

@@ -689,3 +689,87 @@ test_that("tiered layout validation branches are covered", {
     "Nodes without tier assignments: C"
   )
 })
+
+test_that("jitter offsets nodes in perpendicular direction for rows", {
+  cg <- caugi(A %---% B + C, B %---% C)
+  tiers <- list(c("A", "B", "C"))
+
+  layout_no_jitter <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout_jitter <- caugi_layout_tiered(
+    cg,
+    tiers,
+    orientation = "rows",
+    jitter = 0.1
+  )
+
+  expect_equal(length(unique(layout_no_jitter$y)), 1)
+
+  expect_gt(length(unique(layout_jitter$y)), 1)
+
+  base_y <- unique(layout_no_jitter$y)
+  expect_equal(min(layout_jitter$y), base_y - 0.1)
+  expect_equal(max(layout_jitter$y), base_y + 0.1)
+
+  expect_equal(layout_jitter$x, layout_no_jitter$x)
+})
+
+test_that("jitter offsets nodes in perpendicular direction for columns", {
+  cg <- caugi(A %---% B + C, B %---% C)
+  tiers <- list(c("A", "B", "C"))
+
+  layout_no_jitter <- caugi_layout_tiered(cg, tiers, orientation = "columns")
+  layout_jitter <- caugi_layout_tiered(
+    cg,
+    tiers,
+    orientation = "columns",
+    jitter = 0.1
+  )
+
+  expect_equal(length(unique(layout_no_jitter$x)), 1)
+
+  expect_gt(length(unique(layout_jitter$x)), 1)
+
+  base_x <- unique(layout_no_jitter$x)
+  expect_equal(min(layout_jitter$x), base_x - 0.1)
+  expect_equal(max(layout_jitter$x), base_x + 0.1)
+
+  expect_equal(layout_jitter$y, layout_no_jitter$y)
+})
+
+test_that("jitter skips single-node tiers", {
+  cg <- caugi(A %-->% B, B %-->% C)
+  tiers <- list("A", c("B", "C"))
+
+  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows", jitter = 0.1)
+
+  expect_equal(layout$y[layout$name == "A"], 1)
+
+  y_bc <- layout$y[layout$name %in% c("B", "C")]
+  expect_true(all(y_bc != 0))
+})
+
+test_that("jitter validates input", {
+  cg <- caugi(A %-->% B)
+  tiers <- list("A", "B")
+
+  expect_error(
+    caugi_layout_tiered(cg, tiers, jitter = -0.1),
+    "jitter must be a single non-negative number"
+  )
+
+  expect_error(
+    caugi_layout_tiered(cg, tiers, jitter = "big"),
+    "jitter must be a single non-negative number"
+  )
+})
+
+test_that("plot works with jittered tiered layout", {
+  cg <- caugi(A %---% B + C, B %---% C)
+  tiers <- list(c("A", "B", "C"))
+
+  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows", jitter = 0.07)
+
+  expect_no_error({
+    p <- plot(cg, layout = layout, tier_style = list(boxes = TRUE))
+  })
+})
