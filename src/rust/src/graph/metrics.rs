@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 //! Class-agnostic Structural Hamming Distance over CaugiGraph.
 
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::{
     edges::{EdgeClass, Mark},
@@ -138,33 +138,49 @@ pub fn shd_with_perm(truth: &CaugiGraph, guess: &CaugiGraph, perm: &[u32]) -> (f
     ((distance as f64) / (num_pairs as f64), distance)
 }
 
-/// Compute skeleton Hamming Distance (ignores edge types and directions).
+/// Compute skeleton Hamming Distance (ignores edge types and directions)
+/// between two graphs with identical node ordering.
 pub fn hd(truth: &CaugiGraph, guess: &CaugiGraph) -> (f64, usize) {
+    hd_with_perm(truth, guess, &(0..truth.n()).collect::<Vec<_>>())
+}
+
+/// Compute skeleton Hamming Distance with a node permutation mapping.
+/// `perm[i]` gives the index in `guess` that corresponds to node `i` in `truth`.
+pub fn hd_with_perm(truth: &CaugiGraph, guess: &CaugiGraph, perm: &[u32]) -> (f64, usize) {
     assert_eq!(truth.n(), guess.n(), "graph size mismatch");
+    assert_eq!(perm.len() as u32, truth.n(), "perm length mismatch");
     let n = truth.n() as usize;
     if n <= 1 {
         return (0.0, 0);
     }
 
     let mut distance = 0usize;
+    // Reuse the set across iterations to avoid repeated allocations.
+    let mut guess_nbrs: FxHashSet<u32> = FxHashSet::default();
+
     for u in 0..n {
         let row_t = truth.row_range(u as u32);
-        let row_g = guess.row_range(u as u32);
+        let row_end = row_t.end;
+        let u_in_guess = perm[u];
+
+        // Collect guess's neighbors for this row. perm[v] values are not sorted,
+        // so we cannot use the sorted cursor traversal on the guess side.
+        guess_nbrs.clear();
+        for idx in guess.row_range(u_in_guess) {
+            guess_nbrs.insert(guess.col_index[idx]);
+        }
 
         let mut cursor_t = row_t.start;
-        let mut cursor_g = row_g.start;
-
         for v in (u + 1)..n {
-            let (has_edge_t, new_cursor_t) = has_edge_to(truth, v as u32, cursor_t, row_t.end);
-            let (has_edge_g, new_cursor_g) = has_edge_to(guess, v as u32, cursor_g, row_g.end);
+            let (has_edge_t, new_cursor_t) = has_edge_to(truth, v as u32, cursor_t, row_end);
+            cursor_t = new_cursor_t;
+
+            let has_edge_g = guess_nbrs.contains(&perm[v]);
 
             // XOR: count as difference if exactly one graph has the edge
             if has_edge_t ^ has_edge_g {
                 distance += 1;
             }
-
-            cursor_t = new_cursor_t;
-            cursor_g = new_cursor_g;
         }
     }
 
@@ -490,6 +506,32 @@ mod tests {
         bg.add_edge(0, 2, dir).unwrap();
         let cg = bg.finalize().unwrap();
         assert_eq!(hd(&ct, &cg), (1.0 / 3.0, 1));
+    }
+
+    #[test]
+    fn hd_with_perm_different_node_order_same_skeleton() {
+        // Regression for issue #323: hd must not depend on node ordering.
+        // truth: A=0, B=1, C=2 with edges A-->B, B-->C
+        // guess: B=0, A=1, C=2 with edges B---A, B-->C (same skeleton)
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let dir = reg.code_of("-->").unwrap();
+        let und = reg.code_of("---").unwrap();
+
+        let mut bt = GraphBuilder::new_with_registry(3, true, &reg);
+        bt.add_edge(0, 1, dir).unwrap(); // A --> B
+        bt.add_edge(1, 2, dir).unwrap(); // B --> C
+        let t = bt.finalize().unwrap();
+
+        let mut bg = GraphBuilder::new_with_registry(3, true, &reg);
+        bg.add_edge(0, 1, und).unwrap(); // B --- A
+        bg.add_edge(0, 2, dir).unwrap(); // B --> C
+        let g = bg.finalize().unwrap();
+
+        // perm[i] = index in guess for truth's node i.
+        // truth A=0 -> guess A=1; truth B=1 -> guess B=0; truth C=2 -> guess C=2.
+        let perm = [1u32, 0, 2];
+        assert_eq!(hd_with_perm(&t, &g, &perm), (0.0, 0));
     }
 
     #[test]

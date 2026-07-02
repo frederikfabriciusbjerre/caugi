@@ -11,7 +11,7 @@ use graph::builder::GraphBuilder;
 
 #[cfg(feature = "gadjid")]
 use graph::metrics::aid;
-use graph::metrics::{hd, shd_with_perm};
+use graph::metrics::{hd_with_perm, shd_with_perm};
 
 use graph::view::GraphView;
 use graph::{
@@ -647,7 +647,13 @@ fn rs_shd(mut s1: ExternalPtr<GraphSession>, mut s2: ExternalPtr<GraphSession>) 
 fn rs_hd(mut s1: ExternalPtr<GraphSession>, mut s2: ExternalPtr<GraphSession>) -> Robj {
     let core1 = s1.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
     let core2 = s2.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
-    let (norm, count) = hd(core1.as_ref(), core2.as_ref());
+    if core1.n() != core2.n() {
+        throw_r_error("graph size mismatch");
+    }
+    let names1 = s1.as_ref().names();
+    let names2 = s2.as_ref().names();
+    let perm = build_perm_from_string_slices(names1, names2).unwrap_or_else(|e| throw_r_error(e));
+    let (norm, count) = hd_with_perm(core1.as_ref(), core2.as_ref(), &perm);
     list!(normalized = norm, count = count as i32).into_robj()
 }
 
