@@ -485,7 +485,8 @@ ones according to the precedence rules above.</p>
 <li>
 <strong>Geometry</strong>: <code>arrow_size</code> (arrow length in
 mm), <code>circle_size</code> (radius of endpoint circles for partial
-edges in mm)</li>
+edges in mm), <code>route</code> (logical, automatic edge routing; see
+below)</li>
 <li>
 <strong>Per-type options</strong>: <code>directed</code>,
 <code>undirected</code>, <code>bidirected</code>,
@@ -493,13 +494,46 @@ edges in mm)</li>
 </li>
 </ul>
 <div class="section level4">
+<h4 id="automatic-edge-routing">Automatic Edge Routing<a class="anchor" aria-label="anchor" href="#automatic-edge-routing"></a>
+</h4>
+<p>When an edge would pass straight through a node it does not connect
+to, the edge is hard to distinguish from edges that actually touch that
+node. This happens most often with collinear nodes—for example three
+nodes in the same tier, where the edge between the outer two runs right
+through the middle one—but also whenever a long edge happens to cross an
+unrelated node.</p>
+<p>By default (<code>route = TRUE</code>), <code><a href="../reference/plot.html">plot()</a></code> detects
+these cases from the node positions and sizes and gently bends the
+offending edge around the node, leaving all node positions
+untouched:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg_clique</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%---%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>, <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%---%</a></span> <span class="va">C</span><span class="op">)</span></span>
+<span><span class="va">tiers_clique</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">layout_clique</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_layout_tiered.html">caugi_layout_tiered</a></span><span class="op">(</span></span>
+<span>  <span class="va">cg_clique</span>,</span>
+<span>  <span class="va">tiers_clique</span>,</span>
+<span>  orientation <span class="op">=</span> <span class="st">"rows"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># A --- C bends around B (default); set route = FALSE to draw straight edges</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">cg_clique</span>, layout <span class="op">=</span> <span class="va">layout_clique</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualization_files/figure-html/edge-routing-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
+<p>Because routing is a draw-time operation, it works the same whether
+you let <code><a href="../reference/plot.html">plot()</a></code> compute the layout or pass a pre-computed
+one. Disable it globally, by edge type, or per edge through the usual
+<code>edge_style</code> overrides:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">cg_clique</span>, layout <span class="op">=</span> <span class="va">layout_clique</span>, edge_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>route <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualization_files/figure-html/edge-routing-off-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level4">
 <h4 id="partial-edges">Partial Edges<a class="anchor" aria-label="anchor" href="#partial-edges"></a>
 </h4>
 <p>Partial edges (<code>o-&gt;</code> and <code>o-o</code>) are rendered
 with circles at their endpoints to indicate uncertainty about edge
 orientation. These edges appear in PAGs (Partial Ancestral Graphs). You
 can customize the circle size:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
 <span>  <span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%o-&gt;%</a></span> <span class="va">B</span>,</span>
 <span>  <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>,</span>
@@ -525,7 +559,7 @@ can customize the circle size:</p>
 </h3>
 <p>Customize node labels with the <code>label_style</code>
 parameter:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">cg</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"Customized Labels"</span>,</span>
@@ -553,13 +587,13 @@ parameter:</p>
 </h3>
 <p>By default, tiered layouts are plotted with boxes around each tier
 and labels indicating the tier names (if provided).</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">cg_tiered</span>, tiers <span class="op">=</span> <span class="va">tiers</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/tiered-boxes-basic-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>But you can customize the appearance of tier boxes using the
 <code>tier_style</code> parameter. Here, for instance, we specify
 different fill colors for each tier using a vector.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">cg_tiered</span>,</span>
 <span>  tiers <span class="op">=</span> <span class="va">tiers</span>,</span>
@@ -574,7 +608,7 @@ different fill colors for each tier using a vector.</p>
 <p>For more granular control, you can specify styles for individual
 tiers. Here, we customize the “exposures” and “outcome” tiers
 specifically:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">cg_tiered</span>,</span>
 <span>  tiers <span class="op">=</span> <span class="va">tiers</span>,</span>
@@ -600,7 +634,7 @@ specifically:</p>
 <p><img src="visualization_files/figure-html/tiered-boxes-by-tier-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>Labels for the tiers can also be customized. Here, for example, we
 change the font size and color of the tier labels:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">cg_tiered</span>,</span>
 <span>  tiers <span class="op">=</span> <span class="va">tiers</span>, <span class="co"># Named list: exposures, mediators, outcome</span></span>
@@ -616,7 +650,7 @@ change the font size and color of the tier labels:</p>
 <p><img src="visualization_files/figure-html/tiered-boxes-labels-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>You can also provide custom labels for each tier instead of using the
 names from the tiers object</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">cg_tiered</span>,</span>
 <span>  tiers <span class="op">=</span> <span class="va">tiers</span>,</span>
@@ -628,7 +662,7 @@ names from the tiers object</p>
 <p><img src="visualization_files/figure-html/tiered-boxes-custom-labels-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;"></p>
 <p>If you don’t want any boxes or labels around the tiers, you can
 disable them:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">cg_tiered</span>,</span>
 <span>  tiers <span class="op">=</span> <span class="va">tiers</span>,</span>
@@ -647,7 +681,7 @@ disable them:</p>
 </h3>
 <p>First, let’s create a PDAG with both directed and undirected
 edges:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pdag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
 <span>  <span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>,</span>
 <span>  <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%---%</a></span> <span class="va">C</span>, <span class="co"># Undirected edge</span></span>
@@ -668,7 +702,7 @@ edges:</p>
 <h3 id="acyclic-directed-mixed-graphs-admgs">Acyclic Directed Mixed Graphs (ADMGs)<a class="anchor" aria-label="anchor" href="#acyclic-directed-mixed-graphs-admgs"></a>
 </h3>
 <p>Here’s an example of an ADMG with directed and bidirected edges:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">complex_admg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
 <span>  <span class="va">X</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">M1</span> <span class="op">+</span> <span class="va">M2</span>,</span>
 <span>  <span class="va">M1</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span>,</span>
@@ -693,7 +727,7 @@ edges:</p>
 </h3>
 <p>We also support undirected graphs. Here’s a Markov random field
 example:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">markov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
 <span>  <span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%---%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>,</span>
 <span>  <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%---%</a></span> <span class="va">D</span>,</span>
@@ -726,7 +760,7 @@ package.</p>
 </h3>
 <p>Use <code>+</code> or <code>|</code> for horizontal arrangement and
 <code>/</code> for vertical stacking:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create two different graphs</span></span>
 <span><span class="va">g1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
 <span>  <span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>,</span>
@@ -749,12 +783,12 @@ package.</p>
 <span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/composition-basic-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>The <code>|</code> operator is an alias for <code>+</code>:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Equivalent to p1 + p2</span></span>
 <span><span class="va">p1</span> <span class="op">|</span> <span class="va">p2</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/composition-pipe-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>For vertical stacking, use the <code>/</code> operator:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">/</span> <span class="va">p2</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/composition-vertical-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
@@ -762,7 +796,7 @@ package.</p>
 <h3 id="nested-compositions">Nested Compositions<a class="anchor" aria-label="anchor" href="#nested-compositions"></a>
 </h3>
 <p>Compositions can be nested to create complex multi-plot layouts:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>
 <span>  <span class="va">M1</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">M2</span>,</span>
 <span>  <span class="va">M2</span> <span class="op"><a href="../reference/edge_operators.html">%--&gt;%</a></span> <span class="va">M3</span>,</span>
@@ -776,7 +810,7 @@ package.</p>
 <p><img src="visualization_files/figure-html/composition-nested-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>You can mix operators freely. Here’s an example combining horizontal
 and vertical arrangements:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">p3</span> <span class="op">+</span> <span class="va">p1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/composition-mixed-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 </div>
@@ -785,14 +819,14 @@ and vertical arrangements:</p>
 </h3>
 <p>The spacing between composed plots is controlled globally via
 <code><a href="../reference/caugi_options.html">caugi_options()</a></code>:</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/caugi_options.html">caugi_options</a></span><span class="op">(</span>plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>spacing <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"lines"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/composition-spacing-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>To reset the default, you can call
 <code><a href="../reference/caugi_default_options.html">caugi_default_options()</a></code>:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/caugi_options.html">caugi_options</a></span><span class="op">(</span><span class="fu"><a href="../reference/caugi_default_options.html">caugi_default_options</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -805,7 +839,7 @@ basis.</p>
 <div class="section level3">
 <h3 id="setting-default-styles">Setting Default Styles<a class="anchor" aria-label="anchor" href="#setting-default-styles"></a>
 </h3>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Configure global defaults</span></span>
 <span><span class="fu"><a href="../reference/caugi_options.html">caugi_options</a></span><span class="op">(</span>plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  node_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"lightblue"</span>, padding <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
@@ -821,7 +855,7 @@ basis.</p>
 <h3 id="per-plot-overrides">Per-Plot Overrides<a class="anchor" aria-label="anchor" href="#per-plot-overrides"></a>
 </h3>
 <p>Global options serve as defaults that can be overridden:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Set global node color</span></span>
 <span><span class="fu"><a href="../reference/caugi_options.html">caugi_options</a></span><span class="op">(</span>plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  node_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"lightblue"</span><span class="op">)</span></span>
@@ -833,7 +867,7 @@ basis.</p>
 <span>  node_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"pink"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/override-options-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Reset to defauls</span></span>
 <span><span class="fu"><a href="../reference/caugi_options.html">caugi_options</a></span><span class="op">(</span><span class="fu"><a href="../reference/caugi_default_options.html">caugi_default_options</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -852,7 +886,8 @@ controlling space between composed plots</li>
 </li>
 <li>
 <strong><code>edge_style</code></strong>: List with
-<code>arrow_size</code> and <code>fill</code>
+<code>arrow_size</code>, <code>circle_size</code>, <code>fill</code>,
+and <code>route</code>
 </li>
 <li>
 <strong><code>label_style</code></strong>: List of text parameters
@@ -862,7 +897,7 @@ controlling space between composed plots</li>
 <code>col</code>, <code>fontface</code>, and <code>fontsize</code>
 </li>
 </ul>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View all current options</span></span>
 <span><span class="fu"><a href="../reference/caugi_options.html">caugi_options</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $use_open_graph_definition</span></span>
@@ -892,6 +927,9 @@ controlling space between composed plots</li>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $plot$edge_style$fill</span></span>
 <span><span class="co">#&gt; [1] "black"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $plot$edge_style$route</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $plot$label_style</span></span>
@@ -959,6 +997,9 @@ controlling space between composed plots</li>
 <span><span class="co">#&gt; $edge_style$fill</span></span>
 <span><span class="co">#&gt; [1] "black"</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $edge_style$route</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $label_style</span></span>
 <span><span class="co">#&gt; list()</span></span>
@@ -1008,7 +1049,7 @@ controlling space between composed plots</li>
 </h3>
 <p>You can compute layouts separately and reuse them. First, compute the
 layout coordinates:</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_layout.html">caugi_layout</a></span><span class="op">(</span><span class="va">dag</span>, method <span class="op">=</span> <span class="st">"sugiyama"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The layout can be used for analysis or custom plotting</span></span>
@@ -1032,7 +1073,7 @@ layout coordinates:</p>
 access to the underlying grid <code>grob</code> object in the
 <code>@grob</code> slot of the plot output. This allows for further
 customization using grid functions.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create a plot</span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">cg</span><span class="op">)</span></span>
 <span></span>

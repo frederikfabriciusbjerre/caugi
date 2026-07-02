@@ -89,6 +89,8 @@ results.</p>
 <li><p><code>edge_style</code>: List of default edge appearance parameters:</p><ul><li><p><code>arrow_size</code>: Arrow size in mm (default: <code>3</code>)</p></li>
 <li><p><code>circle_size</code>: Radius of endpoint circles for partial edges in mm (default: <code>1.5</code>)</p></li>
 <li><p><code>fill</code>: Arrow/line color (default: <code>"black"</code>)</p></li>
+<li><p><code>route</code>: Whether edges automatically bend around non-incident nodes they
+would otherwise cross (default: <code>TRUE</code>)</p></li>
 </ul></li>
 <li><p><code>label_style</code>: List of label text parameters (see <code><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">grid::gpar()</a></code>)</p></li>
 <li><p><code>title_style</code>: List of title text parameters:</p><ul><li><p><code>col</code>: Text color (default: <code>"black"</code>)</p></li>
@@ -135,6 +137,9 @@ available graphical parameters</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $plot$edge_style$fill</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "black"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $plot$edge_style$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $plot$label_style</span>
@@ -207,6 +212,9 @@ available graphical parameters</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $edge_style$fill</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "black"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $edge_style$route</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $label_style</span>

@@ -494,9 +494,52 @@ Available edge style parameters:
   [`gpar()`](https://rdrr.io/r/grid/gpar.html))**: `col`, `lwd`, `lty`,
   `alpha`, `fill`
 - **Geometry**: `arrow_size` (arrow length in mm), `circle_size` (radius
-  of endpoint circles for partial edges in mm)
+  of endpoint circles for partial edges in mm), `route` (logical,
+  automatic edge routing; see below)
 - **Per-type options**: `directed`, `undirected`, `bidirected`,
   `partial`
+
+#### Automatic Edge Routing
+
+When an edge would pass straight through a node it does not connect to,
+the edge is hard to distinguish from edges that actually touch that
+node. This happens most often with collinear nodes—for example three
+nodes in the same tier, where the edge between the outer two runs right
+through the middle one—but also whenever a long edge happens to cross an
+unrelated node.
+
+By default (`route = TRUE`),
+[`plot()`](https://caugi.org/dev/reference/plot.md) detects these cases
+from the node positions and sizes and gently bends the offending edge
+around the node, leaving all node positions untouched:
+
+``` r
+
+cg_clique <- caugi(A %---% B + C, B %---% C)
+tiers_clique <- list(c("A", "B", "C"))
+layout_clique <- caugi_layout_tiered(
+  cg_clique,
+  tiers_clique,
+  orientation = "rows"
+)
+
+# A --- C bends around B (default); set route = FALSE to draw straight edges
+plot(cg_clique, layout = layout_clique)
+```
+
+![](visualization_files/figure-html/edge-routing-1.png)
+
+Because routing is a draw-time operation, it works the same whether you
+let [`plot()`](https://caugi.org/dev/reference/plot.md) compute the
+layout or pass a pre-computed one. Disable it globally, by edge type, or
+per edge through the usual `edge_style` overrides:
+
+``` r
+
+plot(cg_clique, layout = layout_clique, edge_style = list(route = FALSE))
+```
+
+![](visualization_files/figure-html/edge-routing-off-1.png)
 
 #### Partial Edges
 
@@ -918,7 +961,8 @@ The following options can be configured under `plot`:
 - **`spacing`**: A [`grid::unit()`](https://rdrr.io/r/grid/unit.html)
   controlling space between composed plots
 - **`node_style`**: List with `fill`, `padding`, and `size`
-- **`edge_style`**: List with `arrow_size` and `fill`
+- **`edge_style`**: List with `arrow_size`, `circle_size`, `fill`, and
+  `route`
 - **`label_style`**: List of text parameters (see
   [`grid::gpar()`](https://rdrr.io/r/grid/gpar.html))
 - **`title_style`**: List with `col`, `fontface`, and `fontsize`
@@ -954,6 +998,9 @@ caugi_options()
 #> 
 #> $plot$edge_style$fill
 #> [1] "black"
+#> 
+#> $plot$edge_style$route
+#> [1] TRUE
 #> 
 #> 
 #> $plot$label_style
@@ -1020,6 +1067,9 @@ caugi_options("plot")
 #> 
 #> $edge_style$fill
 #> [1] "black"
+#> 
+#> $edge_style$route
+#> [1] TRUE
 #> 
 #> 
 #> $label_style

@@ -59,7 +59,9 @@ viewports for proper coordinate handling.
 
   - Geometry: `arrow_size` (arrow length in mm, default 3),
     `circle_size` (radius of endpoint circles for partial edges in mm,
-    default 1.5)
+    default 1.5), `route` (logical, default `TRUE`; when `TRUE`, edges
+    automatically bend around non-incident nodes they would otherwise
+    pass through)
 
   - Local overrides via `by_edge`: a named list with:
 
