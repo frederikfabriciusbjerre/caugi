@@ -17,7 +17,7 @@ gadjid = { git = "https://github.com/CausalDisco/gadjid", package = 'gadjid', re
 rust-sugiyama = '0.4.0'
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-quick-xml = { version = "0.39", features = ["serialize"] }
+quick-xml = { version = "0.40", features = ["serialize"] }
 rustc-hash = "2.1"
 
 [features]
