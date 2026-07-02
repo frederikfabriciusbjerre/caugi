@@ -324,6 +324,10 @@ caugi_layout_bipartite <- function(
 #'     subsequent tiers to the right, last tier at right (x=1).
 #'   * `"rows"`: Horizontal tiers. First tier at top (y=1),
 #'     subsequent tiers below, last tier at bottom (y=0).
+#' @param jitter Non-negative numeric. When greater than zero, nodes within
+#'   the same tier are offset in the perpendicular direction (y for `"rows"`,
+#'   x for `"columns"`) using an alternating +jitter / -jitter pattern.
+#'   Default is  `0` (no jitter).
 #'
 #' @returns A `data.frame` with columns `name`, `x`, `y`, and `tier` containing
 #'   node names, their coordinates, and tier assignments (0-indexed). The
@@ -362,6 +366,17 @@ caugi_layout_bipartite <- function(
 #' # The layout includes tier information, so plot() works without passing tiers
 #' plot(cg, layout = layout)
 #'
+#' # Jitter nodes within tiers to make within-tier edges visible
+#' cg_clique <- caugi(A %---% B + C, B %---% C)
+#' tiers_clique <- list(c("A", "B", "C"))
+#' layout_jitter <- caugi_layout_tiered(
+#'   cg_clique,
+#'   tiers_clique,
+#'   orientation = "rows",
+#'   jitter = 0.07
+#' )
+#' plot(cg_clique, layout = layout_jitter)
+#'
 #' @family plotting
 #' @concept plotting
 #'
@@ -369,11 +384,16 @@ caugi_layout_bipartite <- function(
 caugi_layout_tiered <- function(
   x,
   tiers,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  jitter = 0
 ) {
   is_caugi(x, throw_error = TRUE)
 
   orientation <- match.arg(orientation)
+
+  if (!is.numeric(jitter) || length(jitter) != 1 || jitter < 0) {
+    stop("jitter must be a single non-negative number", call. = FALSE)
+  }
 
   node_names <- nodes(x)[["name"]]
   n_nodes <- length(node_names)
@@ -519,8 +539,29 @@ caugi_layout_tiered <- function(
     stringsAsFactors = FALSE
   )
 
-  # Store orientation as attribute for plot() to use
+  if (jitter > 0) {
+    for (t in unique_tiers) {
+      tier_idx <- which(tier_assignments == t)
+      n_in_tier <- length(tier_idx)
+      if (n_in_tier < 2) {
+        next
+      }
+      if (orientation == "rows") {
+        ordered_idx <- tier_idx[order(result$x[tier_idx])]
+        offsets <- jitter * ifelse(seq_len(n_in_tier) %% 2 == 1, 1, -1)
+        result$y[ordered_idx] <- result$y[ordered_idx] + offsets
+      } else {
+        ordered_idx <- tier_idx[order(result$y[tier_idx])]
+        offsets <- jitter * ifelse(seq_len(n_in_tier) %% 2 == 1, 1, -1)
+        result$x[ordered_idx] <- result$x[ordered_idx] + offsets
+      }
+    }
+  }
+
+  # Store orientation and the intended [0,1] coordinate scale as attributes.
   attr(result, "orientation") <- orientation
+  attr(result, "x_scale") <- c(0, 1)
+  attr(result, "y_scale") <- c(0, 1)
 
   result
 }

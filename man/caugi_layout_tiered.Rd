@@ -4,7 +4,7 @@
 \alias{caugi_layout_tiered}
 \title{Tiered Graph Layout}
 \usage{
-caugi_layout_tiered(x, tiers, orientation = c("columns", "rows"))
+caugi_layout_tiered(x, tiers, orientation = c("columns", "rows"), jitter = 0)
 }
 \arguments{
 \item{x}{A \code{caugi} object.}
@@ -31,6 +31,11 @@ subsequent tiers to the right, last tier at right (x=1).
 \item \code{"rows"}: Horizontal tiers. First tier at top (y=1),
 subsequent tiers below, last tier at bottom (y=0).
 }}
+
+\item{jitter}{Non-negative numeric. When greater than zero, nodes within
+the same tier are offset in the perpendicular direction (y for \code{"rows"},
+x for \code{"columns"}) using an alternating +jitter / -jitter pattern.
+Default is  \code{0} (no jitter).}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, \code{y}, and \code{tier} containing
@@ -75,6 +80,17 @@ layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
 
 # The layout includes tier information, so plot() works without passing tiers
 plot(cg, layout = layout)
+
+# Jitter nodes within tiers to make within-tier edges visible
+cg_clique <- caugi(A \%---\% B + C, B \%---\% C)
+tiers_clique <- list(c("A", "B", "C"))
+layout_jitter <- caugi_layout_tiered(
+  cg_clique,
+  tiers_clique,
+  orientation = "rows",
+  jitter = 0.07
+)
+plot(cg_clique, layout = layout_jitter)
 
 }
 \seealso{

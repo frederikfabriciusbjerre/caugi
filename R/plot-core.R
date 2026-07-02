@@ -164,14 +164,26 @@ S7::method(plot, caugi) <- function(
 
   dots <- list(...)
 
+  # These are set to non-NULL by layout functions that use a fixed coordinate
+  # space (e.g. tiered layout), so the plot doesn't stretch the viewport to
+  # the actual data range.
+  layout_x_scale <- NULL
+  layout_y_scale <- NULL
+
   # Compute layout coordinates
   if (is.character(layout)) {
     # String method name - pass through to caugi_layout
     coords <- caugi_layout(x, method = layout, ...)
+    layout_x_scale <- attr(coords, "x_scale")
+    layout_y_scale <- attr(coords, "y_scale")
   } else if (is.function(layout)) {
     # Layout function - call directly with ...
     coords <- layout(x, ...)
+    layout_x_scale <- attr(coords, "x_scale")
+    layout_y_scale <- attr(coords, "y_scale")
   } else if (is.data.frame(layout)) {
+    layout_x_scale <- attr(layout, "x_scale")
+    layout_y_scale <- attr(layout, "y_scale")
     # Pre-computed layout - validate thoroughly
     required_cols <- c("name", "x", "y")
     missing_cols <- setdiff(required_cols, names(layout))
@@ -283,14 +295,21 @@ S7::method(plot, caugi) <- function(
   vp_width <- grid::unit(1, "npc")
   vp_height <- grid::unit(1, "npc")
 
-  x_range <- range(coords$x)
-  y_range <- range(coords$y)
-
-  if (x_range[1] == x_range[2]) {
-    x_range <- x_range + c(-1, 1)
+  if (!is.null(layout_x_scale)) {
+    x_range <- layout_x_scale
+  } else {
+    x_range <- range(coords$x)
+    if (x_range[1] == x_range[2]) {
+      x_range <- x_range + c(-1, 1)
+    }
   }
-  if (y_range[1] == y_range[2]) {
-    y_range <- y_range + c(-1, 1)
+  if (!is.null(layout_y_scale)) {
+    y_range <- layout_y_scale
+  } else {
+    y_range <- range(coords$y)
+    if (y_range[1] == y_range[2]) {
+      y_range <- y_range + c(-1, 1)
+    }
   }
 
   # Nodes
