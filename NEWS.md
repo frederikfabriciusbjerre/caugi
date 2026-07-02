@@ -45,6 +45,9 @@
 
 ## Bug Fixes
 
+- Fix `hd()` returning results that depended on the order in which nodes were
+  declared. The Hamming distance now aligns nodes by name before comparing, so
+  logically identical graphs always give the same distance (#323).
 - Fix `dag_from_pdag()` failing with `` `from`, `edge`, `to` must be equal
   length. `` when a sink had multiple undirected neighbors (#298).
 - Fixed a bug causing a partially undirected (`--o`) edges to
