@@ -65,6 +65,12 @@
 
 ### Bug Fixes
 
+- Fix [`hd()`](https://caugi.org/dev/reference/hd.md) returning results
+  that depended on the order in which nodes were declared. The Hamming
+  distance now aligns nodes by name before comparing, so logically
+  identical graphs always give the same distance
+  ([\#323](https://github.com/frederikfabriciusbjerre/caugi/issues/323)).
+
 - Fix
   [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
   failing with `` `from`, `edge`, `to` must be equal length. `` when a

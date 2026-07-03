@@ -59,7 +59,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li><p>Fix <code><a href="../reference/dag_from_pdag.html">dag_from_pdag()</a></code> failing with <code>`from`, `edge`, `to` must be equal length.</code> when a sink had multiple undirected neighbors (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/298" class="external-link">#298</a>).</p></li>
+<ul><li><p>Fix <code><a href="../reference/hd.html">hd()</a></code> returning results that depended on the order in which nodes were declared. The Hamming distance now aligns nodes by name before comparing, so logically identical graphs always give the same distance (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/323" class="external-link">#323</a>).</p></li>
+<li><p>Fix <code><a href="../reference/dag_from_pdag.html">dag_from_pdag()</a></code> failing with <code>`from`, `edge`, `to` must be equal length.</code> when a sink had multiple undirected neighbors (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/298" class="external-link">#298</a>).</p></li>
 <li><p>Fixed a bug causing a partially undirected (<code>--o</code>) edges to be plotted as undirected edges.</p></li>
 <li><p>Fix <code>adjustment_set(type = "backdoor")</code> returning an invalid (often empty) set when a parent of the exposure lies on a backdoor path but is not an ancestor of the outcome (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/308" class="external-link">#308</a>). The result is now always a valid backdoor adjustment set.</p></li>
 <li><p>Fixed <code><a href="../reference/is_mag.html">is_mag()</a></code> returning incorrect results for some ancestral graphs.</p></li>
