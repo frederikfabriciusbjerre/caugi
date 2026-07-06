@@ -316,8 +316,9 @@ fn count_mistakes(
 /// Guess-side sets are computed in the guess's node space and relabelled into
 /// the truth's space via `inv`; `perm[i]` is the guess-index of true-index `i`.
 fn ancestor_aid(truth: &AidInput, guess: &AidInput, perm: &[u32], inv: &[usize]) -> (f64, usize) {
-    // ponytail: sequential, not rayon — caugi has no rayon dep and these graphs
-    // are small; parallelize per-treatment if AID ever shows up in a profile.
+    // Sequential: caugi has no parallelism dependency and these graphs are
+    // small; the per-treatment loop could be parallelized if AID ever shows up
+    // in a profile.
     let n = truth.n();
     let mut mistakes = 0;
     for t in 0..n {
