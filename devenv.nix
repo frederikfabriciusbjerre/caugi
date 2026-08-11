@@ -86,6 +86,7 @@
             S7
             spelling
             testthat
+            tidygraph
             tidyverse
             urlchecker
             usethis
