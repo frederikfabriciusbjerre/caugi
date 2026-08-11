@@ -34,14 +34,6 @@
 
       directory = "./tools/benchmark";
 
-      package = (
-        pkgs.python3.withPackages (
-          ps: with ps; [
-            pymupdf4llm
-          ]
-        )
-      );
-
       venv.enable = true;
 
       uv = {
