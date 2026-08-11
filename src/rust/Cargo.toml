@@ -12,13 +12,13 @@ name = 'caugi'
 
 [dependencies]
 extendr-api = '0.9.0'
-bitflags = '2.11.0'
+bitflags = '2.13.1'
 gadjid = { git = "https://github.com/CausalDisco/gadjid", package = 'gadjid', rev = '5b97028d4e943ce8a642d2b7bc1145f5435f619a', optional = true }
 rust-sugiyama = '0.4.0'
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-quick-xml = { version = "0.39", features = ["serialize"] }
-rustc-hash = "2.1"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+quick-xml = { version = "0.41.0", features = ["serialize"] }
+rustc-hash = "2.1.3"
 
 [features]
 default = ['gadjid']
