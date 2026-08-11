@@ -95,8 +95,6 @@
           ];
         }
       );
-
-      lsp.enable = true;
     };
   };
 }
