@@ -54,12 +54,8 @@ tasks:
 
   vendor:
     desc: Re-vendor Rust deps and prune them (run after Cargo.lock changes)
-    sources:
-      - "src/rust/Cargo.toml"
-      - "src/rust/Cargo.lock"
-    generates:
-      - "src/rust/vendor.tar.xz"
-      - "src/rust/vendor-config.toml"
     cmds:
-      - Rscript -e 'rextendr::vendor_pkgs(overwrite = TRUE)'
+      - rm -rf src/.cargo src/vendor
+      - cargo update --manifest-path src/rust/Cargo.toml
+      - Rscript -e 'rextendr::vendor_pkgs()'
       - task: prune-vendor
