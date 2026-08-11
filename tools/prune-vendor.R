@@ -41,6 +41,13 @@ if (!file.exists(tarball)) {
     call. = FALSE
   )
 }
+if (file.size(tarball) == 0) {
+  stop(
+    tarball,
+    " is empty.\nRe-create it with rextendr::vendor_pkgs() before pruning.",
+    call. = FALSE
+  )
+}
 if (!requireNamespace("jsonlite", quietly = TRUE)) {
   stop("The 'jsonlite' package is required.", call. = FALSE)
 }
@@ -81,7 +88,9 @@ work <- tempfile("prune-vendor-")
 dir.create(work)
 on.exit(unlink(work, recursive = TRUE), add = TRUE)
 
-stopifnot(system2("tar", c("xJf", shQuote(tarball), "-C", shQuote(work))) == 0L)
+if (system2("tar", c("xJf", shQuote(tarball), "-C", shQuote(work))) != 0L) {
+  stop("Could not unpack ", tarball, call. = FALSE)
+}
 vendor_root <- file.path(work, "vendor")
 if (!dir.exists(vendor_root)) {
   stop("Tarball does not contain a top-level vendor/ directory.", call. = FALSE)
@@ -94,6 +103,21 @@ rel <- file.path("vendor", list.files(vendor_root, recursive = TRUE))
 longest <- rel[which.max(nchar(rel))]
 
 # Repack deterministically so re-vendoring produces tidy diffs.
+#
+# `tar -cJf` truncates its output file before it starts writing, so packing
+# straight into `tarball` would leave a 0-byte tarball behind if tar failed
+# part-way. Since that empty file still satisfies the `-f` test in
+# `src/Makevars`, it survives to CI and breaks every build there with
+# "This does not look like a tar archive" (see PR #333). Pack into a sibling
+# temp file, verify it, and only then move it into place.
+staged <- file.path(dirname(tarball), "vendor.tar.xz.tmp")
+
+# `on.exit()` does not fire at top level under Rscript, so clean up explicitly.
+.abort <- function(...) {
+  unlink(staged)
+  stop(..., " ", tarball, " left untouched.", call. = FALSE)
+}
+
 status <- system2(
   "tar",
   c(
@@ -105,11 +129,29 @@ status <- system2(
     "-C",
     shQuote(work),
     "-cJf",
-    shQuote(tarball),
+    shQuote(staged),
     "vendor"
   )
 )
-stopifnot(status == 0L)
+if (status != 0L) {
+  .abort("Repacking the vendored crates failed;")
+}
+if (!file.exists(staged) || file.size(staged) == 0) {
+  .abort("Repacking produced an empty tarball;")
+}
+# Confirm the archive actually reads back before replacing the original.
+readable <- system2(
+  "tar",
+  c("-tJf", shQuote(staged)),
+  stdout = FALSE,
+  stderr = FALSE
+)
+if (readable != 0L) {
+  .abort("Repacked tarball is unreadable;")
+}
+if (!file.rename(staged, tarball)) {
+  .abort("Could not move the repacked tarball into")
+}
 
 cat(sprintf(
   "Pruned %d files across %d crates.\n",
