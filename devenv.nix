@@ -34,14 +34,6 @@
 
       directory = "./tools/benchmark";
 
-      package = (
-        pkgs.python3.withPackages (
-          ps: with ps; [
-            pymupdf4llm
-          ]
-        )
-      );
-
       venv.enable = true;
 
       uv = {
@@ -86,6 +78,7 @@
             S7
             spelling
             testthat
+            tidygraph
             tidyverse
             urlchecker
             usethis
@@ -94,8 +87,6 @@
           ];
         }
       );
-
-      lsp.enable = true;
     };
   };
 }

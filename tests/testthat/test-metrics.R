@@ -196,3 +196,14 @@ test_that("HD: same graphs but written in different ways work with hd", {
   expect_equal(hd(cg1, cg2), 0)
   reset_caugi_registry()
 })
+
+test_that("HD: does not depend on node declaration order (#323)", {
+  dag <- caugi(A %-->% B, B %-->% C)
+  pdag <- caugi(A %---% B, B %-->% C)
+  pdag2 <- caugi(B %---% A, B %-->% C)
+
+  # Same skeleton, so HD must be 0 regardless of how the edge is written.
+  expect_equal(hd(dag, pdag), 0)
+  expect_equal(hd(dag, pdag2), 0)
+  expect_equal(hd(dag, pdag), hd(dag, pdag2))
+})

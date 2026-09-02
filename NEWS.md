@@ -5,6 +5,12 @@
 - Add `enumerate_dags()` to enumerate every DAG in the Markov equivalence
   class of a PDAG, and `count_dags()` to return the MEC size without
   materializing every DAG (#297).
+- `plot()` now automatically bends edges around non-incident nodes that they
+  would otherwise pass straight through, so edges between collinear nodes (e.g.
+  within a tier) and edges crossing unrelated nodes stay visible. This is
+  controlled by `edge_style$route` (default `TRUE`); disable it with
+  `edge_style = list(route = FALSE)`, or per edge type/edge via the usual
+  `edge_style` overrides.
 - Add `==` and `!=` methods for `caugi` objects so `cg1 == cg2` returns a single
   logical comparing graph content (class, nodes, edges, `simple`) rather than
   session identity.
@@ -42,6 +48,9 @@
 
 ## Bug Fixes
 
+- Fix `hd()` returning results that depended on the order in which nodes were
+  declared. The Hamming distance now aligns nodes by name before comparing, so
+  logically identical graphs always give the same distance (#323).
 - Fix `dag_from_pdag()` failing with `` `from`, `edge`, `to` must be equal
   length. `` when a sink had multiple undirected neighbors (#298).
 - Fixed a bug causing a partially undirected (`--o`) edges to
@@ -52,6 +61,10 @@
   adjustment set.
 
 - Fixed `is_mag()` returning incorrect results for some ancestral graphs.
+- Stripped non-build files (`tests/`, `examples/`, trybuild fixtures) from the
+  vendored Rust dependencies so no vendored path exceeds 100 characters. This
+  silences pak's "very long paths" warning and avoids installation failures on
+  Windows without long-path support (#319).
   Adjacency was tested by binary-searching the concatenation of separately
   sorted neighbor buckets, which is not globally sorted, so some adjacent
   pairs were missed (#309).

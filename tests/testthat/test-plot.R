@@ -914,3 +914,58 @@ test_that("plot layout validation branch is covered", {
     "and 2 more"
   )
 })
+
+test_that("plot routes edges around collinear nodes by default", {
+  cg <- caugi(A %---% B + C, B %---% C)
+  layout <- caugi_layout_tiered(
+    cg,
+    list(c("A", "B", "C")),
+    orientation = "rows"
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  # Routing on by default
+  expect_s7_class(plot(cg, layout = layout), caugi_plot)
+  # Routing can be disabled globally
+  expect_s7_class(
+    plot(cg, layout = layout, edge_style = list(route = FALSE)),
+    caugi_plot
+  )
+})
+
+test_that("plot routing works for partial edge types", {
+  cg <- caugi(A %o-o% B + C, B %o-o% C, class = "UNKNOWN")
+  layout <- caugi_layout_tiered(
+    cg,
+    list(c("A", "B", "C")),
+    orientation = "rows"
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(plot(cg, layout = layout), caugi_plot)
+})
+
+test_that("plot routing can be disabled per edge type", {
+  cg <- caugi(A %-->% B + C, B %-->% C, class = "DAG")
+  layout <- caugi_layout_tiered(
+    cg,
+    list(c("A", "B", "C")),
+    orientation = "rows"
+  )
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(
+    plot(
+      cg,
+      layout = layout,
+      edge_style = list(directed = list(route = FALSE))
+    ),
+    caugi_plot
+  )
+})
