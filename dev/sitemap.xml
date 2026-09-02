@@ -52,6 +52,7 @@
 <url><loc>https://caugi.org/dev/reference/children.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/compare_proxy.caugi-colon-colon-caugi.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/condition_marginalize.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/count_dags.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/d_separated.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dag_from_pdag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/descendants.html</loc></url>
@@ -93,6 +94,7 @@
 <url><loc>https://caugi.org/dev/reference/edge_operators.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/edge_types.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/edges.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/enumerate_dags.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/exogenize.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/exogenous.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/export-classes.html</loc></url>

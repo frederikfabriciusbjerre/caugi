@@ -4,6 +4,12 @@
 
 ### New Features
 
+- Add
+  [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md)
+  to enumerate every DAG in the Markov equivalence class of a PDAG, and
+  [`count_dags()`](https://caugi.org/dev/reference/count_dags.md) to
+  return the MEC size without materializing every DAG
+  ([\#297](https://github.com/frederikfabriciusbjerre/caugi/issues/297)).
 - [`plot()`](https://caugi.org/dev/reference/plot.md) now automatically
   bends edges around non-incident nodes that they would otherwise pass
   straight through, so edges between collinear nodes (e.g. within a
@@ -117,6 +123,14 @@
   silently converting partial `--o` and `o-o` edges into plain directed
   edges, dropping the circle endpoints
   ([\#307](https://github.com/frederikfabriciusbjerre/caugi/issues/307)).
+
+### Deprecations
+
+- The first argument of
+  [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
+  is now named `cg`, matching the convention used by the rest of the
+  package. The previous name `PDAG` continues to work as an alias but
+  emits a deprecation warning.
 
 ## caugi 1.2.0
 

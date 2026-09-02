@@ -33,7 +33,9 @@ unchanged.
 
 Other operations:
 [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md),
+[`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
+[`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
 [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md),

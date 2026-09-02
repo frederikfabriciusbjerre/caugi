@@ -88,8 +88,9 @@ node has on average $`\approx 3`$ (or $`\approx 6`$) parents and
 $`\approx 3`$ (or $`\approx 6`$) children, with edge counts that grow
 linearly with $`n`$. The slowest packages (`dagitty`, `ggm`, plus
 [`bnlearn::dsep`](https://rdrr.io/pkg/bnlearn/man/dsep.html) and
-`pcalg::dsep`) are skipped at $`n = 10\,000`$ via the `skip` table in
-`spec.json`; the affected lines simply end at $`n = 1\,000`$.
+[`pcalg::dsep`](https://rdrr.io/pkg/pcalg/man/dsep.html)) are skipped at
+$`n = 10\,000`$ via the `skip` table in `spec.json`; the affected lines
+simply end at $`n = 1\,000`$.
 
 ### Relational Queries
 
@@ -255,8 +256,9 @@ is, a smallest set of nodes whose conditioning blocks every path between
 `X` and `Y` in the DAG. The same triple `(X, Y, Z)` is then passed to
 every package’s d-separation routine, so every package answers “is
 `X ⫫ Y | Z`?” on identical inputs. Tetrad uses the m-separation
-generalisation (equivalent on DAGs). `pcalg::dsep()` follows Lauritzen’s
-moralization-based test on a `graphNEL`.
+generalisation (equivalent on DAGs).
+[`pcalg::dsep()`](https://rdrr.io/pkg/pcalg/man/dsep.html) follows
+Lauritzen’s moralization-based test on a `graphNEL`.
 
 ``` r
 

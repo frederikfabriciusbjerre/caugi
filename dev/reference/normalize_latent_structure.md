@@ -40,7 +40,9 @@ Scandinavian Journal of Statistics, 43(3), 625–648.
 
 Other operations:
 [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md),
+[`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
+[`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
 [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md),
@@ -58,7 +60,7 @@ dag <- caugi(
 )
 
 normalize_latent_structure(dag, latents = "U")
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x5653c98ab990>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x55b95b95ae60>
 #>   graph_class: DAG
 #>   nodes: A, U, X, Y
 #>   edges: A-->X, A-->Y, U-->X, U-->Y
@@ -71,7 +73,7 @@ dag2 <- caugi(
   class = "DAG"
 )
 normalize_latent_structure(dag2, c("U", "U2"))
-#> <caugi object; 5 nodes, 6 edges; simple: TRUE; session=0x5653cfba0420>
+#> <caugi object; 5 nodes, 6 edges; simple: TRUE; session=0x55b95a535960>
 #>   graph_class: DAG
 #>   nodes: A, U, X, Y, Z
 #>   edges: A-->X, A-->Y, A-->Z, U-->X, U-->Y, U-->Z

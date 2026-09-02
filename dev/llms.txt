@@ -386,8 +386,14 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 - [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md)
   : Marginalize and/or condition on variables in an ancestral graph (AG)
 
+- [`count_dags()`](https://caugi.org/dev/reference/count_dags.md) :
+  Count DAGs in a Markov equivalence class
+
 - [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
   : Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
+
+- [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md)
+  : Enumerate all DAGs in a Markov equivalence class
 
 - [`exogenize()`](https://caugi.org/dev/reference/exogenize.md) :
   Exogenize a graph
