@@ -97,36 +97,13 @@ impl Dag {
     /// - Let `Cn = (De(x) ∩ An(y)) ∪ {y if y ∈ De(x)}`.
     /// - Return `Pa(Cn) \ (Cn ∪ {x})`.
     pub fn adjustment_set_optimal(&self, x: u32, y: u32) -> Vec<u32> {
-        let n = self.n() as usize;
-
-        let mut de_mask = self.descendants_mask(&[x]);
-        de_mask[x as usize] = false;
-
-        let an_mask = self.ancestors_mask(&[y]);
-
-        let mut cn_mask = vec![false; n];
-        for i in 0..n {
-            if de_mask[i] && an_mask[i] {
-                cn_mask[i] = true;
-            }
-        }
-        if de_mask[y as usize] {
-            cn_mask[y as usize] = true;
-        }
-
-        let mut pacn_mask = vec![false; n];
-        for v in bitset::collect_from_mask(&cn_mask) {
-            for &p in self.parents_of(v) {
-                pacn_mask[p as usize] = true;
-            }
-        }
-        pacn_mask[x as usize] = false;
-        for i in 0..n {
-            if cn_mask[i] {
-                pacn_mask[i] = false;
-            }
-        }
-        bitset::collect_from_mask(&pacn_mask)
+        crate::graph::alg::adjustment::optimal_adjustment_set(
+            self.n(),
+            x,
+            y,
+            |u| self.parents_of(u),
+            |u| self.children_of(u),
+        )
     }
 
     /// d-separation test via ancestral reduction + moralization + BFS.

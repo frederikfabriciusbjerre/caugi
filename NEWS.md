@@ -2,6 +2,15 @@
 
 ## New Features
 
+- Add `enumerate_dags()` to enumerate every DAG in the Markov equivalence
+  class of a PDAG, and `count_dags()` to return the MEC size without
+  materializing every DAG (#297).
+- `plot()` now automatically bends edges around non-incident nodes that they
+  would otherwise pass straight through, so edges between collinear nodes (e.g.
+  within a tier) and edges crossing unrelated nodes stay visible. This is
+  controlled by `edge_style$route` (default `TRUE`); disable it with
+  `edge_style = list(route = FALSE)`, or per edge type/edge via the usual
+  `edge_style` overrides.
 - Add `==` and `!=` methods for `caugi` objects so `cg1 == cg2` returns a single
   logical comparing graph content (class, nodes, edges, `simple`) rather than
   session identity.
@@ -16,6 +25,17 @@
 
 ## Improvements
 
+- `aid()` is now implemented natively in caugi's Rust backend, removing the
+  external `gadjid` dependency (and its pinned git revision and vendored
+  sources). Results are unchanged. The AID implementation
+  (`src/rust/src/graph/aid.rs`) is a derivative of `gadjid` and is licensed
+  MPL-2.0; the rest of the crate remains MIT. `aid()` now takes inputs of class
+  `"DAG"` or `"CPDAG"` (previously `"DAG"` or `"PDAG"`), reusing the
+  first-class `"CPDAG"` graph class.
+- Licensing of bundled code is now declared for CRAN: a top-level `LICENSE.note`
+  documents the MPL-2.0 component (the AID files derived from `gadjid`) and the
+  licenses of the vendored Rust crates, and their copyright holders are recorded
+  via `cph`/`ctb` roles in `Authors@R`.
 - Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"` instead of
   `"PDAG"`. This affects the result of `meek_closure()` and
   `generate_graph(class = "CPDAG")`. Predicates and verbs defined on PDAGs
@@ -23,9 +43,25 @@
 - `adjustment_set(type = "backdoor")` now returns an inclusion-minimal backdoor
   adjustment set, computed in linear time as a minimal d-separator in the proper
   backdoor graph, rather than the full set of parents of the exposure.
+  `"PDAG"`. This affects the result of `meek_closure()`. Predicates and verbs
+  defined on PDAGs (`is_pdag()`, `mutate_caugi()`, etc.) continue to accept
+  MPDAGs unchanged.
+  `"PDAG"`. This affects the result of `meek_closure()` and
+  `generate_graph(class = "CPDAG")`. Predicates and verbs defined on PDAGs
+  (`is_pdag()`, `mutate_caugi()`, etc.) continue to accept MPDAGs unchanged.
+- The performance vignette is now a true vignette (rather than a pkgdown-only
+  article) and is rebuilt manually from a cross-language harness under
+  `tools/benchmark/`. The harness compares `caugi` to `igraph`, `bnlearn`,
+  `dagitty`, `ggm`, `pcalg`, `pgmpy`, and Tetrad on a `n ∈ {100, 1000, 10000}`
+  grid. The d-separation benchmark now uses a minimal d-separator computed via
+  `minimal_separator()` (previously used a backdoor adjustment set, which is
+  not in general a d-separating set).
 
 ## Bug Fixes
 
+- Fix `hd()` returning results that depended on the order in which nodes were
+  declared. The Hamming distance now aligns nodes by name before comparing, so
+  logically identical graphs always give the same distance (#323).
 - Fix `dag_from_pdag()` failing with `` `from`, `edge`, `to` must be equal
   length. `` when a sink had multiple undirected neighbors (#298).
 - Fixed a bug causing a partially undirected (`--o`) edges to
@@ -36,12 +72,22 @@
   adjustment set.
 
 - Fixed `is_mag()` returning incorrect results for some ancestral graphs.
+- Stripped non-build files (`tests/`, `examples/`, trybuild fixtures) from the
+  vendored Rust dependencies so no vendored path exceeds 100 characters. This
+  silences pak's "very long paths" warning and avoids installation failures on
+  Windows without long-path support (#319).
   Adjacency was tested by binary-searching the concatenation of separately
   sorted neighbor buckets, which is not globally sorted, so some adjacent
   pairs were missed (#309).
 - Fixed `to_dot()` and `to_mermaid()` (and `write_dot()`/`write_mermaid()`)
   silently converting partial `--o` and `o-o` edges into plain directed edges,
   dropping the circle endpoints (#307).
+
+## Deprecations
+
+- The first argument of `dag_from_pdag()` is now named `cg`, matching the
+  convention used by the rest of the package. The previous name `PDAG`
+  continues to work as an alias but emits a deprecation warning.
 
 # caugi 1.2.0
 

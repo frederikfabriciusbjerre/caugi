@@ -737,6 +737,22 @@ impl GraphSession {
         Ok(GraphView::Mpdag(Arc::new(closed)))
     }
 
+    /// Enumerate every DAG in the Markov equivalence class of a PDAG.
+    pub fn enumerate_dags(&mut self) -> Result<Vec<GraphView>, String> {
+        let pdag = Pdag::new(self.core()?).map_err(|e| self.map_error(e))?;
+        let dags = pdag.enumerate_mec().map_err(|e| self.map_error(e))?;
+        Ok(dags
+            .into_iter()
+            .map(|d| GraphView::Dag(Arc::new(d)))
+            .collect())
+    }
+
+    /// Count DAGs in the Markov equivalence class of a PDAG.
+    pub fn count_dags(&mut self) -> Result<u64, String> {
+        let pdag = Pdag::new(self.core()?).map_err(|e| self.map_error(e))?;
+        pdag.count_mec().map_err(|e| self.map_error(e))
+    }
+
     /// Adjustment set: optimal.
     pub fn adjustment_set_optimal(&mut self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
         if xs.len() != 1 || ys.len() != 1 {

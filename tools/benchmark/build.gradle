@@ -1,0 +1,33 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.github.cmu-phil:tetrad-lib:7.6.10'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+    // Tetrad's pom omits some runtime deps; add explicitly.
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+    implementation 'org.apache.commons:commons-collections4:4.5.0'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+application {
+    mainClass = 'org.caugi.bench.BenchTetrad'
+}
+
+tasks.named('run') {
+    standardInput = System.in
+    if (project.hasProperty('benchArgs')) {
+        args(project.getProperty('benchArgs').split('\\s+'))
+    }
+}

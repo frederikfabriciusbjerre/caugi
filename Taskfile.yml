@@ -43,3 +43,23 @@ tasks:
   paper-wordcount:
     cmds:
       - pandoc paper/paper.md -t plain | wc -w
+
+  prune-vendor:
+    desc: Strip non-build files from vendored Rust crates (keeps paths short)
+    sources:
+      - "src/rust/vendor.tar.xz"
+      - "tools/prune-vendor.R"
+    cmds:
+      - Rscript tools/prune-vendor.R
+
+  vendor:
+    desc: Re-vendor Rust deps and prune them (run after Cargo.lock changes)
+    sources:
+      - "src/rust/Cargo.toml"
+      - "src/rust/Cargo.lock"
+    generates:
+      - "src/rust/vendor.tar.xz"
+      - "src/rust/vendor-config.toml"
+    cmds:
+      - Rscript -e 'rextendr::vendor_pkgs(overwrite = TRUE)'
+      - task: prune-vendor

@@ -6,20 +6,17 @@ library(caugi)
 out_dir <- file.path("figures")
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-cg <- caugi(
-  A %-->% B %-->% C + D,
-  A %-->% C,
+dag <- caugi(
+  U %-->% X + Y,
+  W %-->% X,
+  X %-->% M %-->% Y,
   class = "DAG"
 )
 
-cg
+obs <- latent_project(dag, latents = "U")
 
-# Figure 1
+fig <- plot(dag, main = "DAG") + plot(obs, main = "ADMG")
 
-pdf(file.path(out_dir, "example-plot.pdf"), width = 2, height = 2)
-plot(cg)
+pdf(file.path(out_dir, "example-plot.pdf"), width = 5, height = 2.5)
+plot(fig)
 dev.off()
-
-# Example 2
-
-adjustment_set(cg, "B", "C", type = "backdoor")
