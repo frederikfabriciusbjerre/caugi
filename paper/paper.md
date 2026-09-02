@@ -253,8 +253,10 @@ however, we have used AI tools for a variety of purposes, including
 
 # Acknowledgements
 
-The majority of algorithms in `caugi` have been implemented from scratch, but we
-also rely on some external libraries, including `gadjid`\ [@henckel2024] for the
-adjustment identification distance metric.
+The majority of algorithms in `caugi` have been implemented from scratch, though
+the package builds on several external libraries. In particular, the adjustment
+identification distance follows @henckel2024: its implementation is adapted from
+their `gadjid` library and is therefore distributed under the MPL-2.0 license,
+while the remainder of `caugi` is under the MIT license.
 
 # References

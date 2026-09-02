@@ -140,7 +140,11 @@ caugi/
 - `serde_json = "1.0"` - JSON serialization
 - `quick-xml = "0.39"` - XML serialization
 - `rustc-hash = "2.1"` - Fast hash functions
-- `gadjid` (optional, default enabled) - For adjustment identification distance
+
+Note: the Adjustment Identification Distance (AID) is implemented natively in
+`src/rust/src/graph/aid.rs`. That file is a derivative of the `gadjid` crate and
+is therefore licensed **MPL-2.0** (the rest of the crate is MIT); see the SPDX
+header in that file.
 
 ### System Requirements
 

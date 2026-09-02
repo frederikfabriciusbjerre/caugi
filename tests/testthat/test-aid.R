@@ -35,7 +35,7 @@ cg_from_rc_pd <- function(A) {
     }
   }
 
-  caugi(from = from, edge = edge, to = to, nodes = nm, class = "PDAG")
+  caugi(from = from, edge = edge, to = to, nodes = nm, class = "CPDAG")
 }
 
 cg_from_rc_dag <- function(A) {

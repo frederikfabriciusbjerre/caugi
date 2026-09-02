@@ -2,6 +2,7 @@
 //! Graph algorithms.
 
 pub mod acyclic;
+pub mod adjustment;
 pub mod bitset;
 pub mod csr;
 pub mod meek;
