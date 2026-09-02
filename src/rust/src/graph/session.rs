@@ -686,14 +686,12 @@ impl GraphSession {
                 Ok(GraphClass::Pdag)
             }
             GraphClass::Mpdag => {
-                let pdag =
-                    Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
+                let pdag = Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Mpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Mpdag)
             }
             GraphClass::Cpdag => {
-                let pdag =
-                    Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
+                let pdag = Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Cpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Cpdag)
             }
@@ -996,8 +994,8 @@ mod tests {
         let session = make_session();
         assert_eq!(session.n(), 3);
         assert_eq!(session.class(), GraphClass::Dag);
-        assert!(!session.built_core().is_some());
-        assert!(!session.built_view().is_some());
+        assert!(session.built_core().is_none());
+        assert!(session.built_view().is_none());
     }
 
     #[test]
@@ -1005,7 +1003,7 @@ mod tests {
         let mut session = make_session();
 
         // Initially invalid
-        assert!(!session.built_core().is_some());
+        assert!(session.built_core().is_none());
 
         // Access core triggers build
         let core = session.core().unwrap();
@@ -1030,8 +1028,8 @@ mod tests {
 
         // Mutate edges -> invalidates core and view
         session.set_edges(EdgeBuffer::new());
-        assert!(!session.built_core().is_some());
-        assert!(!session.built_view().is_some());
+        assert!(session.built_core().is_none());
+        assert!(session.built_view().is_none());
 
         // Rebuild
         session.view().unwrap();
@@ -1040,7 +1038,7 @@ mod tests {
         // Change class -> only invalidates view
         session.set_class(GraphClass::Unknown);
         assert!(session.built_core().is_some()); // Core still valid!
-        assert!(!session.built_view().is_some());
+        assert!(session.built_view().is_none());
     }
 
     #[test]
@@ -1061,8 +1059,8 @@ mod tests {
         assert!(session.built_view().is_some());
 
         let cloned = session.clone_for_cow();
-        assert!(!cloned.built_core().is_some());
-        assert!(!cloned.built_view().is_some());
+        assert!(cloned.built_core().is_none());
+        assert!(cloned.built_view().is_none());
         assert_eq!(cloned.n(), session.n());
     }
 
@@ -1190,8 +1188,8 @@ mod tests {
 
         session.set_n(4);
         assert_eq!(session.n(), 4);
-        assert!(!session.built_core().is_some());
-        assert!(!session.built_view().is_some());
+        assert!(session.built_core().is_none());
+        assert!(session.built_view().is_none());
 
         session.core().unwrap();
         session.view().unwrap();
@@ -1200,8 +1198,8 @@ mod tests {
         assert!(session.built_view().is_some());
 
         session.set_simple(false);
-        assert!(!session.built_core().is_some());
-        assert!(!session.built_view().is_some());
+        assert!(session.built_core().is_none());
+        assert!(session.built_view().is_none());
         assert!(!session.simple());
 
         session.set_edges_from_vecs(vec![0], vec![1], vec![d]);
@@ -1212,7 +1210,7 @@ mod tests {
         let snap = snapshot_from_registry(&reg);
         session.set_registry(Arc::clone(&snap));
         assert_eq!(session.registry().version, snap.version);
-        assert!(!session.built_core().is_some());
+        assert!(session.built_core().is_none());
 
         let mut new_edges = EdgeBuffer::new();
         new_edges.push(0, 2, d);
@@ -1231,8 +1229,8 @@ mod tests {
         assert_eq!(session.edge_buffer().from, vec![0]);
         assert_eq!(session.edge_buffer().to, vec![2]);
         assert_eq!(session.edge_buffer().etype, vec![d]);
-        assert!(!session.built_core().is_some());
-        assert!(!session.built_view().is_some());
+        assert!(session.built_core().is_none());
+        assert!(session.built_view().is_none());
     }
 
     #[test]
