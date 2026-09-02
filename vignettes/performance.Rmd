@@ -1,0 +1,747 @@
+---
+title: "Performance"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Performance}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r}
+#| label: setup
+#| include: false
+#| purl: false
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.width = 7,
+  fig.height = 4,
+  warning = FALSE,
+  message = FALSE,
+  echo = FALSE
+)
+```
+
+```{r}
+#| label: bench-setup
+#| include: false
+#| eval: false
+
+suppressPackageStartupMessages({
+  library(caugi)
+  library(bench)
+  library(data.table)
+  library(jsonlite)
+  library(igraph)
+  library(bnlearn)
+  library(dagitty)
+  library(ggm)
+  library(pcalg)
+  library(graph)
+})
+
+FIXTURES_DIR <- "fixtures"
+RESULTS_DIR <- "results"
+dir.create(RESULTS_DIR, showWarnings = FALSE, recursive = TRUE)
+
+spec <- jsonlite::fromJSON(
+  file.path(FIXTURES_DIR, "spec.json"),
+  simplifyVector = FALSE
+)
+.skip_table <- if (is.null(spec$skip)) list() else spec$skip
+```
+
+```{r}
+#| label: bench-load-fixture
+#| include: false
+#| eval: false
+
+load_fixture <- function(fx) {
+  edges_path <- file.path(FIXTURES_DIR, fx$edges_file)
+  edges <- data.table::fread(
+    edges_path,
+    col.names = c("from", "to"),
+    colClasses = "character"
+  )
+  nodes <- paste0("V", seq_len(fx$n))
+
+  cg <- caugi::add_edges(
+    caugi::caugi(class = "DAG", nodes = nodes),
+    from = edges$from,
+    edge = rep("-->", nrow(edges)),
+    to = edges$to
+  )
+  cg <- caugi::build(cg)
+
+  ig <- igraph::graph_from_data_frame(
+    as.data.frame(edges),
+    directed = TRUE,
+    vertices = data.frame(name = nodes)
+  )
+
+  am <- as.matrix(igraph::as_adjacency_matrix(ig))
+  storage.mode(am) <- "integer"
+
+  bn <- bnlearn::empty.graph(nodes)
+  bnlearn::amat(bn) <- am
+
+  dg_str <- paste0(
+    "dag {\n",
+    paste(sprintf("%s -> %s", edges$from, edges$to), collapse = "\n"),
+    "\n}"
+  )
+  dg <- dagitty::dagitty(dg_str)
+
+  # pcalg's searchAM expects the PAG-style 0/1/2/3 amat coding (mark at the
+  # column-end of edge {row, col}): for a -> b, amat[a,b] = 2 (arrowhead at b)
+  # and amat[b,a] = 3 (tail at a).
+  amat_pag <- matrix(0L, nrow(am), ncol(am), dimnames = dimnames(am))
+  amat_pag[am == 1L] <- 2L
+  amat_pag[t(am) == 1L] <- 3L
+
+  # pcalg::dsep operates on a graphNEL.
+  gNEL <- igraph::as_graphnel(ig)
+
+  list(
+    cg = cg,
+    ig = ig,
+    bn = bn,
+    dg = dg,
+    am = am,
+    amat_pag = amat_pag,
+    gNEL = gNEL,
+    nodes = nodes
+  )
+}
+```
+
+```{r}
+#| label: bench-helpers
+#| include: false
+#| eval: false
+
+# bench::mark returns a tibble; we convert each row into a long-format record.
+mark_to_rows <- function(bm, operation, fx) {
+  pkg <- as.character(bm$expression)
+  data.table::data.table(
+    language = rep("R", length(pkg)),
+    package = pkg,
+    operation = rep(operation, length(pkg)),
+    fixture_id = rep(fx$id, length(pkg)),
+    n = rep(fx$n, length(pkg)),
+    p = rep(fx$p, length(pkg)),
+    n_edges = rep(fx$n_edges, length(pkg)),
+    median_ns = as.numeric(bm$median) * 1e9,
+    min_ns = as.numeric(bm$min) * 1e9,
+    total_time_ns = as.numeric(bm$total_time) * 1e9,
+    n_iter = as.integer(bm$n_itr),
+    mem_alloc_bytes = as.numeric(bm$mem_alloc)
+  )
+}
+
+# A skip rule matches when its package + operation match (with "*" as
+# wildcard) and the fixture's n / id fall within optional bounds.
+pkg_skip <- function(pkg, op, fx, skip_table = .skip_table) {
+  if (length(skip_table) == 0L) {
+    return(FALSE)
+  }
+  for (rule in skip_table) {
+    pkg_match <- identical(rule$package, pkg) || identical(rule$package, "*")
+    op_match <- identical(rule$operation, op) || identical(rule$operation, "*")
+    n_min_ok <- is.null(rule$n_min) || fx$n >= rule$n_min
+    n_max_ok <- is.null(rule$n_max) || fx$n <= rule$n_max
+    id_ok <- is.null(rule$fixture_id) || identical(rule$fixture_id, fx$id)
+    if (pkg_match && op_match && n_min_ok && n_max_ok && id_ok) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
+
+# Filter the per-package expression list against the skip table, then call
+# bench::mark on the survivors and serialise the result.
+run_bench <- function(calls, operation, fx) {
+  keep <- !vapply(
+    names(calls),
+    pkg_skip,
+    logical(1),
+    op = operation,
+    fx = fx
+  )
+  if (!any(keep)) {
+    return(NULL)
+  }
+  args <- c(
+    calls[keep],
+    list(check = FALSE, min_iterations = 5L, time_unit = "s")
+  )
+  bm <- eval(as.call(c(quote(bench::mark), args)))
+  mark_to_rows(bm, operation, fx)
+}
+```
+
+```{r}
+#| label: data
+#| include: false
+#| purl: false
+
+benchmarks <- readRDS("data/benchmarks.rds")
+metadata <- jsonlite::fromJSON("data/metadata.json", simplifyVector = FALSE)
+benchmarks$median_ms <- benchmarks$median_ns / 1e6
+```
+
+This vignette compares the performance of `caugi` against R packages
+([`igraph`](https://r.igraph.org/), [`bnlearn`](https://www.bnlearn.com/),
+[`dagitty`](https://dagitty.net/),
+[`ggm`](https://cran.r-project.org/package=ggm),
+[`pcalg`](https://pcalg.r-forge.r-project.org/)), the Python package
+[`pgmpy`](https://pgmpy.org/), and the Java library
+[Tetrad](https://www.cmu.edu/dietrich/philosophy/tetrad/). We focus on the
+practical trade-offs that arise from different core data structures and design
+choices.
+
+The headline is: `caugi` frontloads computation. That is, `caugi` spends more
+effort when constructing a graph and preparing indexes, so that queries are
+wicked fast. The high performance is also due to the Rust backend.
+
+A note on Tetrad: it is included as a reference point—the de facto gold
+standard implementation in causal discovery—but the comparison is not strictly
+apples-to-apples, since Tetrad runs on the JVM (compiled Java) while the R
+packages and `caugi` run with R-level dispatch overhead on every call.
+
+Benchmarks below are **precomputed**, with the last run on
+`r metadata$generated` on host `r metadata$host$nodename`
+(`r metadata$host$sysname`).
+
+Versions:
+
+- caugi `r metadata$versions$caugi`
+- igraph `r metadata$versions$igraph`
+- bnlearn `r metadata$versions$bnlearn`
+- dagitty `r metadata$versions$dagitty`
+- ggm `r metadata$versions$ggm`
+- pcalg `r metadata$versions$pcalg`
+- pgmpy `r metadata$versions$pgmpy`
+- Tetrad `r metadata$versions$tetrad`.
+
+## Design Choices
+
+### Compressed Sparse Row (CSR) Representation
+
+The core data structure in `caugi` is a compressed sparse row (CSR)
+representation of the graph. CSR representations store, for each vertex, a
+contiguous slice of neighbor IDs with a pointer (offset) array that marks the
+start and end of each slice. This format is memory-efficient for sparse graphs.
+The `caugi` graph object also stores important query information directly,
+allowing parent, child, and neighbor queries to be done in $\mathcal{O}(1)$
+time. This yields a larger memory footprint, but the trade-off is that queries
+are extremely fast.
+
+### Mutation and Lazy Building
+
+The `caugi` graph objects are expensive to build. This is the performance
+downside of using `caugi`. Each time we make a modification to a `caugi`
+graph object, we need to rebuild the graph completely since the graph object is
+immutable by design. This has complexity $\mathcal{O}(|V| + |E|)$, where $V$ is
+the vertex set and $E$ is the edge set.
+
+However, the graph object will only be rebuilt when the user either calls
+`build()` directly or queries the graph. Therefore, you do not need to worry
+about wasting compute time by iteratively making changes to a `caugi` graph
+object, as the graph rebuilds lazily when queried. By doing this, `caugi` graphs
+*feel* mutable, but, in reality, they are not.
+
+By doing it this way, we ensure
+
+- that the graph object is always in a consistent state when queried and
+- that queries are as fast as possible,
+
+while keeping the user experience smooth.
+
+## Comparison
+
+The comparison covers seven operations across a parameter grid of graph sizes
+$n$ and edge densities. All packages run on the same generated DAG fixtures so
+query results are directly comparable.
+
+The grid covers $n \in \{100, 1\,000, 10\,000\}$ at two density levels,
+parametrized by the **average in-degree** $d$ (equivalently the average
+out-degree, or total edges divided by number of nodes). We sample DAGs with
+per-edge probability $p = 2d / (n - 1)$, which makes the expected in-degree
+exactly $d$ regardless of $n$. The grid uses $d = 3$ for the sparser cells and
+$d = 6$ for the denser ones, so a node has on average $\approx 3$ (or
+$\approx 6$) parents and $\approx 3$ (or $\approx 6$) children, with edge counts
+that grow linearly with $n$. The slowest packages (`dagitty`, `ggm`, plus
+`bnlearn::dsep` and `pcalg::dsep`) are skipped at $n = 10\,000$ via the `skip`
+table in `spec.json`; the affected lines simply end at $n = 1\,000$.
+
+```{r}
+#| label: helpers
+#| include: false
+#| purl: false
+
+library(ggplot2)
+
+pkg_levels <- c(
+  "caugi",
+  "igraph",
+  "bnlearn",
+  "dagitty",
+  "ggm",
+  "pcalg",
+  "pgmpy",
+  "tetrad"
+)
+benchmarks$package <- factor(benchmarks$package, levels = pkg_levels)
+
+# Stable package → colour mapping. Used in every plot so a package keeps the
+# same colour even when it is missing from a panel (e.g. dagitty at n=10000).
+# ColorBrewer Set1 + near-black for Tetrad.
+pkg_colors <- c(
+  caugi = "#E41A1C",
+  igraph = "#377EB8",
+  bnlearn = "#4DAF4A",
+  dagitty = "#984EA3",
+  ggm = "#FF7F00",
+  pcalg = "#A65628",
+  pgmpy = "#F781BF",
+  tetrad = "#1B1B1B"
+)
+
+plot_op <- function(op) {
+  d <- benchmarks[benchmarks$operation == op, ]
+  op_manual <- switch(op, d_separated = "d-separation", op)
+  op_title <- tools::toTitleCase(gsub("_", " ", op_manual))
+
+  ggplot(d, aes(n, median_ms, color = package)) +
+    geom_line() +
+    geom_point() +
+    scale_x_log10() +
+    scale_y_log10() +
+    scale_color_manual(values = pkg_colors, drop = FALSE) +
+    facet_wrap(
+      ~avg_degree,
+      labeller = as_labeller(c(
+        "3" = "Sparser (avg degree 3)",
+        "6" = "Denser (avg degree 6)"
+      ))
+    ) +
+    labs(
+      x = "Number of nodes",
+      y = "Median time (ms)",
+      color = NULL,
+      title = op_title
+    ) +
+    theme_minimal(base_size = 11) +
+    theme(legend.position = "bottom")
+}
+```
+
+### Relational Queries
+
+Direct neighbor lookups (`parents`, `children`) are $O(1)$ for `caugi`,
+`igraph`, `bnlearn`, and Tetrad---they all maintain adjacency tables. `pgmpy` is
+a thin wrapper over NetworkX's predecessor/successor lookups. `pcalg` and `ggm`
+scan a row or column of the adjacency matrix on each call ($O(n)$), with `ggm`
+paying noticeably more R-level overhead. `dagitty` is the outlier: it re-derives
+neighbors from its string DSL representation each call and pays a
+linear-in-edges cost.
+
+```{r}
+#| label: bench-parents
+#| eval: false
+#| echo: true
+
+bench_parents <- function(graphs, fx) {
+  v <- fx$test_node
+  v_idx <- match(v, graphs$nodes)
+
+  calls <- list(
+    caugi = bquote(caugi::parents(graphs$cg, .(v))),
+    igraph = bquote(igraph::neighbors(graphs$ig, .(v), mode = "in")),
+    bnlearn = bquote(bnlearn::parents(graphs$bn, .(v))),
+    dagitty = bquote(dagitty::parents(graphs$dg, .(v))),
+    ggm = bquote(ggm::pa(.(v), graphs$am)),
+    pcalg = bquote(pcalg::searchAM(graphs$amat_pag, .(v_idx), type = "pa"))
+  )
+
+  run_bench(calls, "parents", fx)
+}
+```
+
+```{r}
+#| label: plot-parents
+#| purl: false
+
+plot_op("parents")
+```
+
+```{r}
+#| label: bench-children
+#| eval: false
+#| echo: true
+
+bench_children <- function(graphs, fx) {
+  v <- fx$test_node
+  v_idx <- match(v, graphs$nodes)
+
+  calls <- list(
+    caugi = bquote(caugi::children(graphs$cg, .(v))),
+    igraph = bquote(igraph::neighbors(graphs$ig, .(v), mode = "out")),
+    bnlearn = bquote(bnlearn::children(graphs$bn, .(v))),
+    dagitty = bquote(dagitty::children(graphs$dg, .(v))),
+    ggm = bquote(ggm::ch(.(v), graphs$am)),
+    pcalg = bquote(pcalg::searchAM(graphs$amat_pag, .(v_idx), type = "ch"))
+  )
+
+  run_bench(calls, "children", fx)
+}
+```
+
+```{r}
+#| label: plot-children
+#| purl: false
+
+plot_op("children")
+```
+
+As you can see from the plots, Tetrad is fastest (sub-microsecond), with `pgmpy`
+and `caugi` close behind; all three stay flat as $n$ grows, as do `igraph` and
+`bnlearn`. The cost of `pcalg`'s $O(n)$ row scan, hidden at small $n$, becomes
+visible by $n = 10000$, where it climbs to a few tenths of a millisecond. `ggm`
+and `dagitty` pay the most for re-deriving neighbors on every call: by
+$n = 1000$ they are already one to two orders of magnitude slower than the rest,
+and both are skipped at $n = 10000$ (their lines simply stop). For the
+front-runners the absolute times are tiny and the gaps between them mostly
+reflect dispatch overhead differences between Python, R, and Java rather than
+anything that matters in practice.
+
+### Ancestors and Descendants
+
+These require transitive closure (BFS/DFS over the directed graph). Here
+`caugi`'s CSR pays off---both forward and reverse adjacency are precomputed, so
+traversal is tight pointer-chasing in Rust.
+
+```{r}
+#| label: bench-ancestors
+#| eval: false
+#| echo: true
+
+bench_ancestors <- function(graphs, fx) {
+  v <- fx$test_node
+  v_idx <- match(v, graphs$nodes)
+
+  calls <- list(
+    caugi = bquote(caugi::ancestors(graphs$cg, .(v))),
+    igraph = bquote(igraph::subcomponent(graphs$ig, .(v), mode = "in")),
+    bnlearn = bquote(bnlearn::ancestors(graphs$bn, .(v))),
+    dagitty = bquote(dagitty::ancestors(graphs$dg, .(v))),
+    pcalg = bquote(pcalg::searchAM(graphs$amat_pag, .(v_idx), type = "an"))
+  )
+
+  run_bench(calls, "ancestors", fx)
+}
+```
+
+```{r}
+#| label: plot-ancestors
+#| purl: false
+
+plot_op("ancestors")
+```
+
+```{r}
+#| label: bench-descendants
+#| eval: false
+#| echo: true
+
+bench_descendants <- function(graphs, fx) {
+  v <- fx$test_node
+  v_idx <- match(v, graphs$nodes)
+
+  calls <- list(
+    caugi = bquote(caugi::descendants(graphs$cg, .(v))),
+    igraph = bquote(igraph::subcomponent(graphs$ig, .(v), mode = "out")),
+    bnlearn = bquote(bnlearn::descendants(graphs$bn, .(v))),
+    dagitty = bquote(dagitty::descendants(graphs$dg, .(v))),
+    pcalg = bquote(pcalg::searchAM(graphs$amat_pag, .(v_idx), type = "de"))
+  )
+
+  run_bench(calls, "descendants", fx)
+}
+```
+
+```{r}
+#| label: plot-descendants
+#| purl: false
+
+plot_op("descendants")
+```
+
+`caugi` is the most consistent here: sub-millisecond on every fixture for both
+ancestors and descendants, and barely moving as $n$ grows.
+`igraph::subcomponent()` and `pgmpy`'s NetworkX-backed traversal also stay fast
+across the grid. Descendants on the dense $n = 10000$ fixture is where the
+design differences blow up: Tetrad takes about ten *seconds*, while `pcalg` and
+`bnlearn` reach several hundred milliseconds---`caugi` finishes the same query
+in roughly a tenth of a millisecond, a five-orders-of-magnitude gap to Tetrad.
+`dagitty` is again one to two orders of magnitude slower than the front-runners
+on the sizes it can handle, paying its DSL-reparsing cost on every call, and is
+skipped at $n = 10000$.
+
+### Markov Blanket
+
+The Markov blanket of a node $v$ is
+`parents(v) ∪ children(v) ∪ parents(children(v))`. `caugi`, `bnlearn`, and
+Tetrad have direct accessors backed by adjacency tables; `dagitty` re-derives it
+from its DSL representation each call; `pgmpy` walks NetworkX edges. `pcalg` and
+`ggm` do not expose a Markov-blanket helper and are omitted.
+
+```{r}
+#| label: bench-markov-blanket
+#| eval: false
+#| echo: true
+
+bench_markov_blanket <- function(graphs, fx) {
+  v <- fx$test_node
+
+  calls <- list(
+    caugi = bquote(caugi::markov_blanket(graphs$cg, .(v))),
+    bnlearn = bquote(bnlearn::mb(graphs$bn, .(v))),
+    dagitty = bquote(dagitty::markovBlanket(graphs$dg, .(v)))
+  )
+
+  run_bench(calls, "markov_blanket", fx)
+}
+```
+
+```{r}
+#| label: plot-markov-blanket
+#| purl: false
+
+plot_op("markov_blanket")
+```
+
+`caugi`, `pgmpy`, and `bnlearn` all resolve Markov blankets in microseconds
+across the entire grid, and Tetrad stays well under a millisecond too. `dagitty`
+is the outlier, climbing into the hundreds of milliseconds on the dense
+$n = 1000$ fixture because it re-derives the blanket from its DSL representation
+on every call; it is skipped at $n = 10000$.
+
+### D-Separation
+
+For each fixture we pick a random `(X, Y)` pair and compute a **minimal
+d-separator** `Z` with `caugi::minimal_separator()`---that is, a smallest set of
+nodes whose conditioning blocks every path between `X` and `Y` in the DAG. The
+same triple `(X, Y, Z)` is then passed to every package's d-separation routine,
+so every package answers "is `X ⫫ Y | Z`?" on identical inputs. Tetrad uses the
+m-separation generalisation (equivalent on DAGs). `pcalg::dsep()` follows
+Lauritzen's moralization-based test on a `graphNEL`.
+
+```{r}
+#| label: bench-dsep
+#| eval: false
+#| echo: true
+
+bench_dsep <- function(graphs, fx) {
+  if (is.null(fx$dsep)) {
+    return(NULL)
+  }
+
+  x <- fx$dsep$x
+  y <- fx$dsep$y
+  z <- unlist(fx$dsep$z)
+
+  calls <- list(
+    caugi = bquote(caugi::d_separated(graphs$cg, .(x), .(y), .(z))),
+    bnlearn = bquote(bnlearn::dsep(graphs$bn, .(x), .(y), .(z))),
+    dagitty = bquote(dagitty::dseparated(graphs$dg, .(x), .(y), .(z))),
+    pcalg = bquote(pcalg::dsep(.(x), .(y), .(z), graphs$gNEL))
+  )
+
+  run_bench(calls, "d_separated", fx)
+}
+```
+
+```{r}
+#| label: plot-dsep
+#| purl: false
+
+plot_op("d_separated")
+```
+
+`caugi` is the clear winner here, staying near a tenth of a millisecond on every
+fixture, including the dense $n = 10000$ graph. `pgmpy` is the runner-up, within
+a few milliseconds throughout. This is the one operation where Tetrad's compiled
+code does *not* save it: its m-separation routine explores paths in a way that
+scales badly on dense graphs, reaching over a second at $n = 1000$ and roughly
+nine seconds at $n = 10000$---a striking example of an algorithmic choice
+dominating the language advantage. Among the R packages, `bnlearn` and `pcalg`
+pay to build a moralized graph on each call (`pcalg` into the hundreds of
+milliseconds at $n = 1000$, slowest of the three R competitors), and `dagitty`
+re-parses its DSL; all three are skipped at $n = 10000$.
+
+### Subgraph Extraction
+
+Subgraph extraction is where we explicitly test graph **building** performance.
+For `caugi` we time `subgraph(cg, nodes) |> build()` together so the CSR rebuild
+cost is captured. `igraph`, `bnlearn`, `pgmpy`, and Tetrad all return
+adjacency-backed subgraphs without an analogous index rebuild step. `pcalg`
+exposes no native subgraph constructor (users typically call `graph::subGraph()`
+on the underlying `graphNEL`), so it is omitted here.
+
+```{r}
+#| label: bench-subgraph
+#| eval: false
+#| echo: true
+
+bench_subgraph <- function(graphs, fx) {
+  sub <- unlist(fx$subgraph_nodes)
+
+  calls <- list(
+    caugi = bquote({
+      sg <- caugi::subgraph(graphs$cg, .(sub))
+      caugi::build(sg)
+    }),
+    igraph = bquote(igraph::subgraph(graphs$ig, .(sub))),
+    bnlearn = bquote(bnlearn::subgraph(graphs$bn, .(sub)))
+  )
+
+  run_bench(calls, "subgraph", fx)
+}
+```
+
+```{r}
+#| label: plot-subgraph
+#| purl: false
+
+plot_op("subgraph")
+```
+
+`caugi` and `igraph` are the only packages that stay in the low-single-digit
+milliseconds at $n = 10000$ (around 1-2 ms). The two run neck-and-neck: `caugi`
+is ahead at $n = 100$ and $n = 1000$, while `igraph` edges it out on the largest
+fixture---remarkably close given that `caugi` pays for a full CSR rebuild on
+every call. Everyone else is one to three
+orders of magnitude slower on the largest fixtures, copying nodes and edges into
+a fresh object each call: `pgmpy` reaches tens to hundreds of milliseconds,
+Tetrad several hundred, and `bnlearn` over two seconds. The takeaway is that
+even though `caugi` graphs are nominally expensive to construct, the rebuild
+after `subgraph()` is fast enough to beat adjacency-list constructors that
+rebuild no indexes at all.
+
+## Summary
+
+Across the seven operations, `caugi` either leads or sits in the leading group:
+
+- It matches or beats `igraph` and `bnlearn` on the $O(1)$ adjacency lookups
+  (`parents`, `children`, Markov blanket).
+- It is the fastest R package by a wide margin on transitive-closure operations
+  (`ancestors`, `descendants`, d-separation), where the CSR's precomputed
+  forward and reverse adjacency pays off.
+- Even on `subgraph()`, where the CSR has to be rebuilt, it stays in the
+  low-single-digit milliseconds at $n = 10000$ (matched only by `igraph`), while
+  `bnlearn`, `pgmpy`, and Tetrad reach hundreds of milliseconds to seconds.
+
+The most striking pattern emerges at $n = 10000$: `caugi` is the only package
+that stays fast across *every* operation. Tetrad (compiled Java) and `pgmpy`
+(NetworkX-backed) beat `caugi` on the simplest lookups by a small constant
+factor, which is unsurprising given the R-level dispatch overhead `caugi` pays
+on every call. But several competitors either run out of room (`dagitty`, `ggm`,
+and the moralization-based d-separation tests are too slow to include at
+$n = 10000$) or collapse on specific operations. Tetrad in particular, despite
+being compiled, takes seconds on dense descendants and d-separation queries
+because of how those routines scale, not because of the language.
+
+The headline holds: by frontloading work into the build step and querying a
+CSR-backed structure, `caugi` keeps query times effectively constant in graph
+size for the operations users hit most often. The price is paid up front, in the
+rebuild step that runs lazily on the first query after a mutation.
+
+## Reproducing These Benchmarks
+
+The R benchmark code shown in the chunks above is the actual source: each chunk
+has `eval = FALSE` so the rendered vignette does not run them, and the wrapper
+script at
+[`tools/benchmark/run_r_bench.R`](https://github.com/frederikfabriciusbjerre/caugi/tree/main/tools/benchmark/run_r_bench.R)
+extracts them with `knitr::purl()` and sources the result into the R session.
+
+The full harness lives in
+[`tools/benchmark/`](https://github.com/frederikfabriciusbjerre/caugi/tree/main/tools/benchmark)
+and uses [Task](https://taskfile.dev) to orchestrate the cross-language runners.
+To reproduce just the R numbers (no Python or Java toolchains needed):
+
+```sh
+cd tools/benchmark
+task fixtures && task r
+```
+
+`task r` purls the vignette into `tools/benchmark/bench_r.R`, runs it, prints a
+per-package, per-operation summary, and writes the raw timings to
+`results/r.csv`. Do not edit `bench_r.R` directly---change the chunks in this
+vignette instead. See `tools/benchmark/README.md` for the full pipeline
+(`task all`) and per-language details.
+
+```{r}
+#| label: bench-driver
+#| include: false
+#| eval: false
+
+results <- list()
+
+for (fx in spec$fixtures) {
+  message(sprintf("[bench_r] %s (n=%d, edges=%d)", fx$id, fx$n, fx$n_edges))
+  graphs <- load_fixture(fx)
+  results[[length(results) + 1L]] <- bench_parents(graphs, fx)
+  results[[length(results) + 1L]] <- bench_children(graphs, fx)
+  results[[length(results) + 1L]] <- bench_ancestors(graphs, fx)
+  results[[length(results) + 1L]] <- bench_descendants(graphs, fx)
+  results[[length(results) + 1L]] <- bench_markov_blanket(graphs, fx)
+  results[[length(results) + 1L]] <- bench_dsep(graphs, fx)
+  results[[length(results) + 1L]] <- bench_subgraph(graphs, fx)
+}
+
+results <- results[!vapply(results, is.null, logical(1))]
+out <- data.table::rbindlist(results)
+data.table::fwrite(out, file = file.path(RESULTS_DIR, "r.csv"))
+
+message(sprintf("[bench_r] wrote %d rows to %s/r.csv", nrow(out), RESULTS_DIR))
+
+op_levels <- c(
+  "parents",
+  "children",
+  "ancestors",
+  "descendants",
+  "markov_blanket",
+  "d_separated",
+  "subgraph"
+)
+
+summary_dt <- out[,
+  .(median_ms = median(median_ns) / 1e6),
+  by = .(package, operation)
+]
+summary_dt[, operation := factor(operation, levels = op_levels)]
+summary_wide <- data.table::dcast(
+  summary_dt,
+  package ~ operation,
+  value.var = "median_ms"
+)
+
+message(
+  "\n[bench_r] median ms per (package, operation), aggregated over fixtures:"
+)
+
+print(summary_wide, digits = 3, row.names = FALSE)
+```
+
+## Session Info
+
+```{r}
+#| label: session-info
+#| purl: false
+
+sessionInfo()
+```

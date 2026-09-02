@@ -24,16 +24,25 @@
       enable = true;
     };
 
+    java = {
+      enable = true;
+      gradle.enable = true;
+    };
+
     python = {
       enable = true;
 
-      package = (
-        pkgs.python3.withPackages (
-          ps: with ps; [
-            pymupdf4llm
-          ]
-        )
-      );
+      directory = "./tools/benchmark";
+
+      venv.enable = true;
+
+      uv = {
+        enable = true;
+        sync = {
+          enable = true;
+          allGroups = true;
+        };
+      };
     };
 
     r = {
@@ -62,12 +71,14 @@
             pcalg
             processx
             rextendr
+            remotes
             rhub
             rlang
             rmarkdown
             S7
             spelling
             testthat
+            tidygraph
             tidyverse
             urlchecker
             usethis
@@ -76,8 +87,6 @@
           ];
         }
       );
-
-      lsp.enable = true;
     };
   };
 }

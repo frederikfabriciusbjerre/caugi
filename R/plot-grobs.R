@@ -385,6 +385,11 @@ make_nodes <- function(coords, labels, node_style, label_style) {
 # @param arrow Optional arrow specification from grid::arrow()
 # @param gp Graphics parameters from grid::gpar()
 # @param name Optional grob name
+# @param obstacle_x,obstacle_y Native coordinates of candidate obstacle node
+#   centers (all nodes other than this edge's endpoints). Used at draw time to
+#   route the edge around nodes it would otherwise cross.
+# @param obstacle_r List of node radii (grid units) matching obstacle_x/y.
+# @param route Logical; whether to bend the edge around obstacles (default TRUE).
 #
 # @returns A gTree of class "caugi_edge_grob"
 make_edge_grob <- function(
@@ -398,7 +403,11 @@ make_edge_grob <- function(
   gp = grid::gpar(),
   name = NULL,
   edge_type = NULL,
-  circle_size = 1.5
+  circle_size = 1.5,
+  obstacle_x = numeric(0),
+  obstacle_y = numeric(0),
+  obstacle_r = list(),
+  route = TRUE
 ) {
   grid::gTree(
     x0 = x0,
@@ -412,6 +421,10 @@ make_edge_grob <- function(
     name = name,
     edge_type = edge_type,
     circle_size = circle_size,
+    obstacle_x = obstacle_x,
+    obstacle_y = obstacle_y,
+    obstacle_r = obstacle_r,
+    route = route,
     cl = "caugi_edge_grob"
   )
 }
@@ -476,13 +489,85 @@ makeContent.caugi_edge_grob <- function(x) {
     y1_adj <- y1_unit
   }
 
-  # Create line grob
-  line_grob <- grid::linesGrob(
-    x = grid::unit.c(x0_adj, x1_adj),
-    y = grid::unit.c(y0_adj, y1_adj),
-    arrow = x$arrow,
-    gp = x$gp
-  )
+  # Route the edge around any non-incident nodes it would otherwise cross.
+  # Detection and curve construction happen in mm, since the layout's native
+  # [0, 1] space is aspect-distorted. The curve is built between node centers
+  # and clipped to the borders, so the edge projects radially from each center.
+  path <- NULL
+  # Endpoint tangents (mm): default to the straight-line direction.
+  t0 <- c(ux_mm, uy_mm)
+  t1 <- c(ux_mm, uy_mm)
+
+  if (isTRUE(x$route) && length_mm > 0 && length(x$obstacle_x) > 0) {
+    c0x <- grid::convertX(x0_unit, "mm", valueOnly = TRUE)
+    c0y <- grid::convertY(y0_unit, "mm", valueOnly = TRUE)
+    c1x <- grid::convertX(x1_unit, "mm", valueOnly = TRUE)
+    c1y <- grid::convertY(y1_unit, "mm", valueOnly = TRUE)
+
+    ox <- grid::convertX(
+      grid::unit(x$obstacle_x, "native"),
+      "mm",
+      valueOnly = TRUE
+    )
+    oy <- grid::convertY(
+      grid::unit(x$obstacle_y, "native"),
+      "mm",
+      valueOnly = TRUE
+    )
+    or <- vapply(
+      x$obstacle_r,
+      function(r) grid::convertWidth(r, "mm", valueOnly = TRUE),
+      numeric(1)
+    )
+
+    lwd_pt <- x$gp$lwd %||% 1
+    line_hw_mm <- (lwd_pt / 72.27 * 25.4) / 2
+    clearance <- line_hw_mm + 1.0
+
+    path <- route_edge_path(
+      c0x,
+      c0y,
+      c1x,
+      c1y,
+      r_from_mm,
+      r_to_mm,
+      ox,
+      oy,
+      or,
+      clearance
+    )
+  }
+
+  # Create line grob (curved polyline if routed, straight line otherwise).
+  if (is.null(path)) {
+    line_grob <- grid::linesGrob(
+      x = grid::unit.c(x0_adj, x1_adj),
+      y = grid::unit.c(y0_adj, y1_adj),
+      arrow = x$arrow,
+      gp = x$gp
+    )
+  } else {
+    line_grob <- grid::linesGrob(
+      x = grid::unit(path$x, "mm"),
+      y = grid::unit(path$y, "mm"),
+      arrow = x$arrow,
+      gp = x$gp
+    )
+
+    # Endpoint tangents from the first/last sampled segments, so endpoint
+    # circles sit tangent to the curve.
+    m <- length(path$x)
+    d0 <- c(path$x[2] - path$x[1], path$y[2] - path$y[1])
+    d1 <- c(path$x[m] - path$x[m - 1], path$y[m] - path$y[m - 1])
+    n0 <- sqrt(sum(d0^2))
+    n1 <- sqrt(sum(d1^2))
+    if (n0 > 0) {
+      t0 <- d0 / n0
+    }
+    if (n1 > 0) {
+      t1 <- d1 / n1
+    }
+  }
 
   # Add circles for o-> and o-o edges
   grob_list <- grid::gList(line_grob)
@@ -495,23 +580,29 @@ makeContent.caugi_edge_grob <- function(x) {
       valueOnly = TRUE
     )
 
-    # Place circle centers just outside the node boundary.
-    # x0_adj/x1_adj are already at the node boundary, so we offset by the
-    # circle radius.
-    if (length_mm > 0) {
+    # Place circle centers just outside the node boundary, offset by the
+    # circle radius along the (curve) tangent at each endpoint. For a routed
+    # edge the endpoints are the clipped curve ends (in mm); otherwise they are
+    # the straight-line clip points (in native units).
+    if (!is.null(path)) {
+      circle_x0 <- grid::unit(path$x[1] + t0[1] * circle_radius_mm, "mm")
+      circle_y0 <- grid::unit(path$y[1] + t0[2] * circle_radius_mm, "mm")
+      circle_x1 <- grid::unit(path$x[m] - t1[1] * circle_radius_mm, "mm")
+      circle_y1 <- grid::unit(path$y[m] - t1[2] * circle_radius_mm, "mm")
+    } else if (length_mm > 0) {
       circle_x0 <- x0_adj +
-        grid::convertWidth(grid::unit(ux_mm * circle_radius_mm, "mm"), "native")
+        grid::convertWidth(grid::unit(t0[1] * circle_radius_mm, "mm"), "native")
       circle_y0 <- y0_adj +
         grid::convertHeight(
-          grid::unit(uy_mm * circle_radius_mm, "mm"),
+          grid::unit(t0[2] * circle_radius_mm, "mm"),
           "native"
         )
 
       circle_x1 <- x1_adj -
-        grid::convertWidth(grid::unit(ux_mm * circle_radius_mm, "mm"), "native")
+        grid::convertWidth(grid::unit(t1[1] * circle_radius_mm, "mm"), "native")
       circle_y1 <- y1_adj -
         grid::convertHeight(
-          grid::unit(uy_mm * circle_radius_mm, "mm"),
+          grid::unit(t1[2] * circle_radius_mm, "mm"),
           "native"
         )
     } else {
@@ -571,6 +662,10 @@ make_edges <- function(
 
       r_from <- node_radii[[from_idx]]
       r_to <- node_radii[[to_idx]]
+
+      # Every other node is a candidate obstacle for routing. Exclude the two
+      # endpoints by index (robust to duplicate coordinates).
+      obstacle_idx <- setdiff(seq_len(nrow(coords)), c(from_idx, to_idx))
 
       edge_type <- edges$edge[i]
 
@@ -668,7 +763,11 @@ make_edges <- function(
         gp = edge_gpar,
         name = paste0("edge.", i),
         edge_type = edge_type,
-        circle_size = style$circle_size
+        circle_size = style$circle_size,
+        obstacle_x = coords$x[obstacle_idx],
+        obstacle_y = coords$y[obstacle_idx],
+        obstacle_r = node_radii[obstacle_idx],
+        route = isTRUE(style$route)
       )
     }
   }

@@ -30,7 +30,9 @@
 #'   Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`, `fill`.
 #'   * Geometry: `arrow_size` (arrow length in mm, default 3), `circle_size`
-#'     (radius of endpoint circles for partial edges in mm, default 1.5)
+#'     (radius of endpoint circles for partial edges in mm, default 1.5),
+#'     `route` (logical, default `TRUE`; when `TRUE`, edges automatically bend
+#'     around non-incident nodes they would otherwise pass through)
 #'   * Local overrides via `by_edge`: a named list with:
 #'       - Node-wide styles: applied to all edges touching a node, e.g.
 #'         `A = list(col = "red", lwd = 2)`
