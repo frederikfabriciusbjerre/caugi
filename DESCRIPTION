@@ -80,6 +80,7 @@ Suggests:
     knitr,
     MASS,
     Matrix,
+    pcalg,
     rmarkdown,
     testthat,
     tidygraph,

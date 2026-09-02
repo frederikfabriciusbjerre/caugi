@@ -779,6 +779,24 @@ impl GraphSession {
         Ok(GraphView::Mpdag(Arc::new(closed)))
     }
 
+    /// Enumerate every DAG in the Markov equivalence class of a PDAG.
+    pub fn enumerate_dags(&mut self) -> Result<Vec<GraphView>, String> {
+        let core = self.core()?;
+        let pdag = Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+        let dags = pdag.enumerate_mec().map_err(|e| self.map_error(e))?;
+        Ok(dags
+            .into_iter()
+            .map(|d| GraphView::Dag(Arc::new(d)))
+            .collect())
+    }
+
+    /// Count DAGs in the Markov equivalence class of a PDAG.
+    pub fn count_dags(&mut self) -> Result<u64, String> {
+        let core = self.core()?;
+        let pdag = Pdag::new(Arc::new(core.as_ref().clone())).map_err(|e| self.map_error(e))?;
+        pdag.count_mec().map_err(|e| self.map_error(e))
+    }
+
     /// Skeleton of the graph.
     pub fn skeleton(&mut self) -> Result<GraphView, String> {
         let view = self.view()?;
