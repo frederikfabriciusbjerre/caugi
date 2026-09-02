@@ -10,6 +10,20 @@
 
 - **Bjarke Hautop Kristensen**. Author.
 
+- **Leonard Henckel**. Contributor, copyright holder.  
+  author of the 'gadjid' crate, from which src/rust/src/graph/aid.rs is
+  derived (MPL-2.0); see LICENSE.note
+
+- **Theo Würtzen**. Contributor, copyright holder.  
+  author of the 'gadjid' crate; see LICENSE.note
+
+- **Sebastian Weichwald**. Contributor, copyright holder.  
+  author of the 'gadjid' crate; see LICENSE.note
+
+- **Authors of the bundled Rust crates**. Contributor, copyright
+  holder.  
+  vendored under src/rust/vendor; see LICENSE.note
+
 ## Citation
 
 Source:

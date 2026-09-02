@@ -1,7 +1,12 @@
 # Adjustment Identification Distance
 
-Compute the Adjustment Identification Distance (AID) between two graphs
-using the `gadjid` Rust package.
+Compute the Adjustment Identification Distance (AID) between two graphs.
+AID counts how often the adjustment-identification strategy applied to
+`guess` yields a causal inference that is incorrect relative to `truth`.
+Implemented in caugi's Rust backend following Henckel, Würtzen &
+Weichwald (2024),
+[doi:10.48550/arXiv.2402.08616](https://doi.org/10.48550/arXiv.2402.08616)
+.
 
 ## Usage
 
@@ -13,11 +18,11 @@ aid(truth, guess, type = c("oset", "ancestor", "parent"), normalized = TRUE)
 
 - truth:
 
-  A `caugi` object.
+  A `caugi` object of class `"DAG"` or `"CPDAG"`.
 
 - guess:
 
-  A `caugi` object.
+  A `caugi` object of class `"DAG"` or `"CPDAG"`.
 
 - type:
 
