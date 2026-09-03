@@ -28,7 +28,9 @@ skeleton(cg) # A --- B
 \seealso{
 Other operations: 
 \code{\link{condition_marginalize}()},
+\code{\link{count_dags}()},
 \code{\link{dag_from_pdag}()},
+\code{\link{enumerate_dags}()},
 \code{\link{exogenize}()},
 \code{\link{latent_project}()},
 \code{\link{meek_closure}()},

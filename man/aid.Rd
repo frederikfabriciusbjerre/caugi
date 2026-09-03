@@ -7,9 +7,9 @@
 aid(truth, guess, type = c("oset", "ancestor", "parent"), normalized = TRUE)
 }
 \arguments{
-\item{truth}{A \code{caugi} object.}
+\item{truth}{A \code{caugi} object of class \code{"DAG"} or \code{"CPDAG"}.}
 
-\item{guess}{A \code{caugi} object.}
+\item{guess}{A \code{caugi} object of class \code{"DAG"} or \code{"CPDAG"}.}
 
 \item{type}{A character string specifying the type of AID to compute.
 Options are \code{"oset"} (default), \code{"ancestor"}, and \code{"parent"}.}
@@ -23,7 +23,10 @@ A numeric representing the AID between the two graphs, if
 }
 \description{
 Compute the Adjustment Identification Distance (AID) between two
-graphs using the \code{gadjid} Rust package.
+graphs. AID counts how often the adjustment-identification strategy applied
+to \code{guess} yields a causal inference that is incorrect relative to \code{truth}.
+Implemented in caugi's Rust backend following Henckel, Würtzen & Weichwald
+(2024), \doi{10.48550/arXiv.2402.08616}.
 }
 \examples{
 set.seed(1)

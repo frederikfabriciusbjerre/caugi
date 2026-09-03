@@ -5,7 +5,7 @@ use crate::edges::EdgeRegistry;
 use crate::graph::serialization::DeserializedGraph;
 use crate::graph::view::GraphView;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
-use quick_xml::{Reader, Writer};
+use quick_xml::{Reader, Writer, XmlVersion};
 
 /// Serialize a caugi graph to GraphML format.
 pub fn serialize_graphml(
@@ -211,7 +211,9 @@ pub fn deserialize_graphml(
         for attr in e.attributes() {
             let attr = attr.map_err(|e| e.to_string())?;
             if attr.key.as_ref() == b"id" {
-                let v = attr.unescape_value().map_err(|e| e.to_string())?;
+                let v = attr
+                    .normalized_value(XmlVersion::Implicit1_0)
+                    .map_err(|e| e.to_string())?;
                 nodes.push(v.into_owned());
                 break;
             }
@@ -240,11 +242,15 @@ pub fn deserialize_graphml(
                         let attr = attr.map_err(|e| e.to_string())?;
                         match attr.key.as_ref() {
                             b"source" => {
-                                let v = attr.unescape_value().map_err(|e| e.to_string())?;
+                                let v = attr
+                                    .normalized_value(XmlVersion::Implicit1_0)
+                                    .map_err(|e| e.to_string())?;
                                 current_edge_from = v.into_owned();
                             }
                             b"target" => {
-                                let v = attr.unescape_value().map_err(|e| e.to_string())?;
+                                let v = attr
+                                    .normalized_value(XmlVersion::Implicit1_0)
+                                    .map_err(|e| e.to_string())?;
                                 current_edge_to = v.into_owned();
                             }
                             _ => {}
@@ -260,7 +266,9 @@ pub fn deserialize_graphml(
                     for attr in e.attributes() {
                         let attr = attr.map_err(|e| e.to_string())?;
                         if attr.key.as_ref() == b"key" {
-                            let v = attr.unescape_value().map_err(|e| e.to_string())?;
+                            let v = attr
+                                .normalized_value(XmlVersion::Implicit1_0)
+                                .map_err(|e| e.to_string())?;
                             data_key = v.into_owned();
                         }
                     }

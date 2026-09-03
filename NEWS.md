@@ -2,6 +2,9 @@
 
 ## New Features
 
+- Add `enumerate_dags()` to enumerate every DAG in the Markov equivalence
+  class of a PDAG, and `count_dags()` to return the MEC size without
+  materializing every DAG (#297).
 - `plot()` now automatically bends edges around non-incident nodes that they
   would otherwise pass straight through, so edges between collinear nodes (e.g.
   within a tier) and edges crossing unrelated nodes stay visible. This is
@@ -22,6 +25,17 @@
 
 ## Improvements
 
+- `aid()` is now implemented natively in caugi's Rust backend, removing the
+  external `gadjid` dependency (and its pinned git revision and vendored
+  sources). Results are unchanged. The AID implementation
+  (`src/rust/src/graph/aid.rs`) is a derivative of `gadjid` and is licensed
+  MPL-2.0; the rest of the crate remains MIT. `aid()` now takes inputs of class
+  `"DAG"` or `"CPDAG"` (previously `"DAG"` or `"PDAG"`), reusing the
+  first-class `"CPDAG"` graph class.
+- Licensing of bundled code is now declared for CRAN: a top-level `LICENSE.note`
+  documents the MPL-2.0 component (the AID files derived from `gadjid`) and the
+  licenses of the vendored Rust crates, and their copyright holders are recorded
+  via `cph`/`ctb` roles in `Authors@R`.
 - Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"` instead of
   `"PDAG"`. This affects the result of `meek_closure()` and
   `generate_graph(class = "CPDAG")`. Predicates and verbs defined on PDAGs
@@ -68,6 +82,12 @@
 - Fixed `to_dot()` and `to_mermaid()` (and `write_dot()`/`write_mermaid()`)
   silently converting partial `--o` and `o-o` edges into plain directed edges,
   dropping the circle endpoints (#307).
+
+## Deprecations
+
+- The first argument of `dag_from_pdag()` is now named `cg`, matching the
+  convention used by the rest of the package. The previous name `PDAG`
+  continues to work as an alias but emits a deprecation warning.
 
 # caugi 1.2.0
 

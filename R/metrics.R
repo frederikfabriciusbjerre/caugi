@@ -69,10 +69,13 @@ hd <- function(cg1, cg2, normalized = FALSE) {
 #' @title Adjustment Identification Distance
 #'
 #' @description Compute the Adjustment Identification Distance (AID) between two
-#' graphs using the `gadjid` Rust package.
+#' graphs. AID counts how often the adjustment-identification strategy applied
+#' to `guess` yields a causal inference that is incorrect relative to `truth`.
+#' Implemented in caugi's Rust backend following Henckel, Würtzen & Weichwald
+#' (2024), <doi:10.48550/arXiv.2402.08616>.
 #'
-#' @param truth A `caugi` object.
-#' @param guess A `caugi` object.
+#' @param truth A `caugi` object of class `"DAG"` or `"CPDAG"`.
+#' @param guess A `caugi` object of class `"DAG"` or `"CPDAG"`.
 #' @param type A character string specifying the type of AID to compute.
 #' Options are `"oset"` (default), `"ancestor"`, and `"parent"`.
 #' @param normalized Logical; if `TRUE`, returns the normalized AID. If `FALSE`,
