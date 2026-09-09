@@ -1,0 +1,54 @@
+# Print a `caugi`
+
+Print a `caugi`
+
+## Usage
+
+``` r
+# S3 method for class 'caugi'
+print(x, max_nodes = getOption("caugi.max_nodes"),
+  max_edges = getOption("caugi.max_edges"), ...)
+```
+
+## Arguments
+
+- x:
+
+  A `caugi` object.
+
+- max_nodes:
+
+  Optional numeric; maximum number of node names to consider. If `NULL`,
+  the method automatically prints as many as fit on one console line
+  (plus a separate truncation line if needed).
+
+- max_edges:
+
+  Optional numeric; maximum number of edges to consider. If `NULL`, the
+  method automatically prints as many edges as fit on two console lines
+  (plus a separate truncation line if needed).
+
+- ...:
+
+  Not used.
+
+## Value
+
+The input `caugi` object, invisibly.
+
+## See also
+
+Other caugi methods:
+[`caugi-equality`](https://caugi.org/reference/caugi-equality.md),
+[`length.caugi()`](https://caugi.org/reference/length.caugi.md)
+
+## Examples
+
+``` r
+cg <- caugi(A %-->% B, class = "DAG")
+print(cg)
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x564e9f0aa210>
+#>   graph_class: DAG
+#>   nodes: A, B
+#>   edges: A-->B
+```

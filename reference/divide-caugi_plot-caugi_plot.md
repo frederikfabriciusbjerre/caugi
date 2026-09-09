@@ -3,6 +3,13 @@
 Stack two plots vertically with configurable spacing. Compositions can
 be nested to create complex multi-plot layouts.
 
+## Usage
+
+``` r
+# S3 method for class 'caugi_plot'
+e1/e2
+```
+
 ## Arguments
 
 - e1:
@@ -44,7 +51,7 @@ Other plotting:
 [`caugi_layout_sugiyama()`](https://caugi.org/reference/caugi_layout_sugiyama.md),
 [`caugi_layout_tiered()`](https://caugi.org/reference/caugi_layout_tiered.md),
 [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md),
-[`plot()`](https://caugi.org/reference/plot.md)
+[`plot.caugi()`](https://caugi.org/reference/plot.caugi.md)
 
 ## Examples
 

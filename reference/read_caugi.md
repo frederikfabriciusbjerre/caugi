@@ -42,7 +42,7 @@ Other export:
 [`format-dot`](https://caugi.org/reference/format-dot.md),
 [`format-graphml`](https://caugi.org/reference/format-graphml.md),
 [`format-mermaid`](https://caugi.org/reference/format-mermaid.md),
-[`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md),
+[`knit_print.caugi_export()`](https://caugi.org/reference/knit_print.caugi_export.md),
 [`read_graphml()`](https://caugi.org/reference/read_graphml.md),
 [`to_dot()`](https://caugi.org/reference/to_dot.md),
 [`to_graphml()`](https://caugi.org/reference/to_graphml.md),

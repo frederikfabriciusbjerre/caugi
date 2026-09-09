@@ -6,6 +6,7 @@
 <url><loc>https://caugi.org/LICENSE-text.html</loc></url>
 <url><loc>https://caugi.org/LICENSE.html</loc></url>
 <url><loc>https://caugi.org/articles/caugi.html</loc></url>
+<url><loc>https://caugi.org/articles/comparisons.html</loc></url>
 <url><loc>https://caugi.org/articles/index.html</loc></url>
 <url><loc>https://caugi.org/articles/motivation.html</loc></url>
 <url><loc>https://caugi.org/articles/package_use.html</loc></url>
@@ -18,7 +19,7 @@
 <url><loc>https://caugi.org/reference/add-caugi_plot-caugi_plot.html</loc></url>
 <url><loc>https://caugi.org/reference/adjustment_set.html</loc></url>
 <url><loc>https://caugi.org/reference/aid.html</loc></url>
-<url><loc>https://caugi.org/reference/all.equal.caugi-colon-colon-caugi.html</loc></url>
+<url><loc>https://caugi.org/reference/all.equal.caugi-caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/all_adjustment_sets_admg.html</loc></url>
 <url><loc>https://caugi.org/reference/all_backdoor_sets.html</loc></url>
 <url><loc>https://caugi.org/reference/ancestors.html</loc></url>
@@ -29,6 +30,7 @@
 <url><loc>https://caugi.org/reference/as_dagitty.html</loc></url>
 <url><loc>https://caugi.org/reference/as_igraph.html</loc></url>
 <url><loc>https://caugi.org/reference/build.html</loc></url>
+<url><loc>https://caugi.org/reference/caugi-equality.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi-package.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_default_options.html</loc></url>
@@ -49,8 +51,9 @@
 <url><loc>https://caugi.org/reference/caugi_serialize.html</loc></url>
 <url><loc>https://caugi.org/reference/caugi_verbs.html</loc></url>
 <url><loc>https://caugi.org/reference/children.html</loc></url>
-<url><loc>https://caugi.org/reference/compare_proxy.caugi-colon-colon-caugi.html</loc></url>
+<url><loc>https://caugi.org/reference/compare_proxy.caugi-caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/condition_marginalize.html</loc></url>
+<url><loc>https://caugi.org/reference/count_dags.html</loc></url>
 <url><loc>https://caugi.org/reference/d_separated.html</loc></url>
 <url><loc>https://caugi.org/reference/dag_from_pdag.html</loc></url>
 <url><loc>https://caugi.org/reference/descendants.html</loc></url>
@@ -92,6 +95,7 @@
 <url><loc>https://caugi.org/reference/edge_operators.html</loc></url>
 <url><loc>https://caugi.org/reference/edge_types.html</loc></url>
 <url><loc>https://caugi.org/reference/edges.html</loc></url>
+<url><loc>https://caugi.org/reference/enumerate_dags.html</loc></url>
 <url><loc>https://caugi.org/reference/exogenize.html</loc></url>
 <url><loc>https://caugi.org/reference/exogenous.html</loc></url>
 <url><loc>https://caugi.org/reference/export-classes.html</loc></url>
@@ -119,7 +123,7 @@
 <url><loc>https://caugi.org/reference/is_valid_backdoor.html</loc></url>
 <url><loc>https://caugi.org/reference/knit_print.caugi_export.html</loc></url>
 <url><loc>https://caugi.org/reference/latent_project.html</loc></url>
-<url><loc>https://caugi.org/reference/length.html</loc></url>
+<url><loc>https://caugi.org/reference/length.caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/m_separated.html</loc></url>
 <url><loc>https://caugi.org/reference/makeContent.caugi_edge_grob.html</loc></url>
 <url><loc>https://caugi.org/reference/markov_blanket.html</loc></url>
@@ -131,9 +135,9 @@
 <url><loc>https://caugi.org/reference/nodes.html</loc></url>
 <url><loc>https://caugi.org/reference/normalize_latent_structure.html</loc></url>
 <url><loc>https://caugi.org/reference/parents.html</loc></url>
-<url><loc>https://caugi.org/reference/plot.html</loc></url>
+<url><loc>https://caugi.org/reference/plot.caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/posteriors.html</loc></url>
-<url><loc>https://caugi.org/reference/print.html</loc></url>
+<url><loc>https://caugi.org/reference/print.caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/read_caugi.html</loc></url>
 <url><loc>https://caugi.org/reference/read_graphml.html</loc></url>
 <url><loc>https://caugi.org/reference/register_caugi_edge.html</loc></url>

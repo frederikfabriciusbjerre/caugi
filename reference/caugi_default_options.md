@@ -51,6 +51,9 @@ caugi_default_options()
 #> $plot$edge_style$fill
 #> [1] "black"
 #> 
+#> $plot$edge_style$route
+#> [1] TRUE
+#> 
 #> 
 #> $plot$label_style
 #> list()

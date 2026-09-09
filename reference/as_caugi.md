@@ -8,7 +8,7 @@ Convert an object to a `caugi`. The object can be a `graphNEL`,
 ``` r
 as_caugi(
   x,
-  class = c("DAG", "PDAG", "MPDAG", "ADMG", "PAG", "UNKNOWN"),
+  class = c("DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
   simple = TRUE,
   collapse = FALSE,
   collapse_to = "---",
@@ -24,9 +24,9 @@ as_caugi(
 
 - class:
 
-  "DAG", "PDAG", "MPDAG", "ADMG", "PAG", or "UNKNOWN". "PAG" is only
-  supported for integer coded matrices. "ADMG" is for Acyclic Directed
-  Mixed Graphs (with `-->` and `<->` edges).
+  Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`, `"CPDAG"`,
+  `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
+  integer coded matrices.
 
 - simple:
 
@@ -60,11 +60,11 @@ integer codes are as follows (as used in `pcalg`):
 
 - 0: no edge
 
-- 1: circle (e.g., `A o-o B` or `A o-- B`)
+- 1: circle (e.g., `A o-o B` or `A --o B`)
 
 - 2: arrowhead (e.g., `A --> B` or `A o-> B`)
 
-- 3: tail (e.g., `A o-- B` or `A --- B`)
+- 3: tail (e.g., `A --o B` or `A --- B`)
 
 ## See also
 

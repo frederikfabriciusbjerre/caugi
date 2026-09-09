@@ -46,9 +46,10 @@ library(caugi)
 ```
 
 You can create simple graphs as well as a number of predefined graph
-classes. Currently, we support `"UNKNOWN"`, `"DAG"`, `"PDAG"`, `"ADMG"`,
-and `"UG"`. We plan on supporting several other causal graph types in
-future releases, such as `"PAG"`, `"MAG"`, and `"SWIG"`.
+classes. Currently, we support `"UNKNOWN"`, `"DAG"`, `"PDAG"`,
+`"MPDAG"`, `"CPGAG"`, `"ADMG"`, `"AG"`, and `"UG"`. We plan on
+supporting several other causal graph types in future releases, such as
+`"PAG"`, `"MAG"`, and `"SWIG"`.
 
 ``` r
 
@@ -73,7 +74,7 @@ The available edges in `caugi` are listed below:
 - `%---%` (undirected)
 - `%<->%` (bidirected)
 - `%o->%` (partially directed)
-- `%o--%` (partially undirected)
+- `%--o%` (partially undirected)
 - `%o-o%` (partial)
 
 You can register more types with
@@ -93,7 +94,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x585b58ab7cf0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x7adebc2b0>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -110,19 +111,10 @@ releases, and we would love your input if you use this feature!
 `caugi` provides a number of functions to query and analyze `caugi`
 objects. Some of the available functions are:
 
-- Relational queries, such as
-  [`parents()`](https://caugi.org/reference/parents.md),
-  [`ancestors()`](https://caugi.org/reference/ancestors.md),
-  [`neighbors()`](https://caugi.org/reference/neighbors.md), and more.
-- Structural queries, such as
-  [`is_acyclic()`](https://caugi.org/reference/is_acyclic.md),
-  [`is_cpdag()`](https://caugi.org/reference/is_cpdag.md), and more.
-- Graph manipulations, such as
-  [`add_edges()`](https://caugi.org/reference/caugi_verbs.md),
-  [`remove_nodes()`](https://caugi.org/reference/caugi_verbs.md), and
-  more.
-- Graph metrics, such as [`shd()`](https://caugi.org/reference/shd.md)
-  and [`aid()`](https://caugi.org/reference/aid.md).
+- Relational queries
+- Structural queries
+- Graph manipulations
+- Graph metrics
 
 ## How it works
 
@@ -348,11 +340,12 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 ## Methods
 
-- [`length`](https://caugi.org/reference/length.md) :
+- [`length(`*`<caugi>`*`)`](https://caugi.org/reference/length.caugi.md)
+  :
 
   Length of a `caugi`
 
-- [`print`](https://caugi.org/reference/print.md) :
+- [`print(`*`<caugi>`*`)`](https://caugi.org/reference/print.caugi.md) :
 
   Print a `caugi`
 
@@ -379,8 +372,14 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 - [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md)
   : Marginalize and/or condition on variables in an ancestral graph (AG)
 
+- [`count_dags()`](https://caugi.org/reference/count_dags.md) : Count
+  DAGs in a Markov equivalence class
+
 - [`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md) :
   Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
+
+- [`enumerate_dags()`](https://caugi.org/reference/enumerate_dags.md) :
+  Enumerate all DAGs in a Markov equivalence class
 
 - [`exogenize()`](https://caugi.org/reference/exogenize.md) : Exogenize
   a graph
@@ -428,7 +427,7 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   GraphML Format Export and Import
 - [`format-mermaid`](https://caugi.org/reference/format-mermaid.md) :
   Mermaid Format Export
-- [`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md)
+- [`knit_print(`*`<caugi_export>`*`)`](https://caugi.org/reference/knit_print.caugi_export.md)
   : Knit Print Method for caugi_export
 - [`read_caugi()`](https://caugi.org/reference/read_caugi.md) : Read
   caugi Graph from File
@@ -451,8 +450,8 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 ## Plotting
 
-- [`add-caugi_plot-caugi_plot`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
-  [`pipe-caugi_plot-caugi_plot`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
+- [`` `+`( ``*`<caugi_plot>`*`)`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
+  [`` `|`( ``*`<caugi_plot>`*`)`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
   : Compose Plots Horizontally
 - [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) :
   Compute Graph Layout
@@ -470,10 +469,10 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   : Tiered Graph Layout
 - [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md) : S7 Class
   for caugi Plot
-- [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md)
+- [`` `/`( ``*`<caugi_plot>`*`)`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md)
   : Compose Plots Vertically
-- [`plot`](https://caugi.org/reference/plot.md) : Create a caugi Graph
-  Plot Object
+- [`plot(`*`<caugi>`*`)`](https://caugi.org/reference/plot.caugi.md) :
+  Create a caugi Graph Plot Object
 
 ## Options
 
@@ -487,6 +486,8 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 ### All vignettes
 
 - [caugi](https://caugi.org/articles/caugi.md):
+- [Comparisons with Other
+  Packages](https://caugi.org/articles/comparisons.md):
 - [Motivation](https://caugi.org/articles/motivation.md):
 - [How to use caugi in a
   package](https://caugi.org/articles/package_use.md):

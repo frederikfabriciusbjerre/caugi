@@ -59,6 +59,9 @@ The plot options are nested under the `plot` key:
 
   - `fill`: Arrow/line color (default: `"black"`)
 
+  - `route`: Whether edges automatically bend around non-incident nodes
+    they would otherwise cross (default: `TRUE`)
+
 - `label_style`: List of label text parameters (see
   [`grid::gpar()`](https://rdrr.io/r/grid/gpar.html))
 
@@ -72,12 +75,12 @@ The plot options are nested under the `plot` key:
 
 Options set via `caugi_options()` serve as global defaults that can be
 overridden by arguments to
-[`plot()`](https://caugi.org/reference/plot.md).
+[`plot.caugi()`](https://caugi.org/reference/plot.caugi.md).
 
 ## See also
 
-[`plot()`](https://caugi.org/reference/plot.md) for per-plot style
-arguments, [`grid::gpar()`](https://rdrr.io/r/grid/gpar.html) for
+[`plot.caugi()`](https://caugi.org/reference/plot.caugi.md) for per-plot
+style arguments, [`grid::gpar()`](https://rdrr.io/r/grid/gpar.html) for
 available graphical parameters
 
 ## Examples
@@ -112,6 +115,9 @@ caugi_options()
 #> 
 #> $plot$edge_style$fill
 #> [1] "black"
+#> 
+#> $plot$edge_style$route
+#> [1] TRUE
 #> 
 #> 
 #> $plot$label_style
@@ -184,6 +190,9 @@ caugi_options("plot")
 #> 
 #> $edge_style$fill
 #> [1] "black"
+#> 
+#> $edge_style$route
+#> [1] TRUE
 #> 
 #> 
 #> $label_style

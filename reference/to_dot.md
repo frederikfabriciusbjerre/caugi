@@ -42,8 +42,13 @@ The function handles different edge types:
 
 - Bidirected edges (`<->`) use `->` with `[dir=both]` attribute
 
-- Partial edges (`o->`) use `->` with `[arrowtail=odot, dir=both]`
+- Partial edges (`o->`) use `->` with `[dir=both, arrowtail=odot]`
   attribute
+
+- Partial edges (`--o`) use `->` with `[arrowhead=odot]` attribute
+
+- Partial edges (`o-o`) use `->` with
+  `[dir=both, arrowtail=odot, arrowhead=odot]` attribute
 
 ## See also
 
@@ -59,7 +64,7 @@ Other export:
 [`format-dot`](https://caugi.org/reference/format-dot.md),
 [`format-graphml`](https://caugi.org/reference/format-graphml.md),
 [`format-mermaid`](https://caugi.org/reference/format-mermaid.md),
-[`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md),
+[`knit_print.caugi_export()`](https://caugi.org/reference/knit_print.caugi_export.md),
 [`read_caugi()`](https://caugi.org/reference/read_caugi.md),
 [`read_graphml()`](https://caugi.org/reference/read_graphml.md),
 [`to_graphml()`](https://caugi.org/reference/to_graphml.md),

@@ -190,11 +190,12 @@
 
 ## Methods
 
-- [`length`](https://caugi.org/reference/length.md) :
+- [`length(`*`<caugi>`*`)`](https://caugi.org/reference/length.caugi.md)
+  :
 
   Length of a `caugi`
 
-- [`print`](https://caugi.org/reference/print.md) :
+- [`print(`*`<caugi>`*`)`](https://caugi.org/reference/print.caugi.md) :
 
   Print a `caugi`
 
@@ -221,8 +222,14 @@
 - [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md)
   : Marginalize and/or condition on variables in an ancestral graph (AG)
 
+- [`count_dags()`](https://caugi.org/reference/count_dags.md) : Count
+  DAGs in a Markov equivalence class
+
 - [`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md) :
   Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
+
+- [`enumerate_dags()`](https://caugi.org/reference/enumerate_dags.md) :
+  Enumerate all DAGs in a Markov equivalence class
 
 - [`exogenize()`](https://caugi.org/reference/exogenize.md) : Exogenize
   a graph
@@ -270,7 +277,7 @@
   GraphML Format Export and Import
 - [`format-mermaid`](https://caugi.org/reference/format-mermaid.md) :
   Mermaid Format Export
-- [`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md)
+- [`knit_print(`*`<caugi_export>`*`)`](https://caugi.org/reference/knit_print.caugi_export.md)
   : Knit Print Method for caugi_export
 - [`read_caugi()`](https://caugi.org/reference/read_caugi.md) : Read
   caugi Graph from File
@@ -293,8 +300,8 @@
 
 ## Plotting
 
-- [`add-caugi_plot-caugi_plot`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
-  [`pipe-caugi_plot-caugi_plot`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
+- [`` `+`( ``*`<caugi_plot>`*`)`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
+  [`` `|`( ``*`<caugi_plot>`*`)`](https://caugi.org/reference/add-caugi_plot-caugi_plot.md)
   : Compose Plots Horizontally
 - [`caugi_layout()`](https://caugi.org/reference/caugi_layout.md) :
   Compute Graph Layout
@@ -312,10 +319,10 @@
   : Tiered Graph Layout
 - [`caugi_plot()`](https://caugi.org/reference/caugi_plot.md) : S7 Class
   for caugi Plot
-- [`divide-caugi_plot-caugi_plot`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md)
+- [`` `/`( ``*`<caugi_plot>`*`)`](https://caugi.org/reference/divide-caugi_plot-caugi_plot.md)
   : Compose Plots Vertically
-- [`plot`](https://caugi.org/reference/plot.md) : Create a caugi Graph
-  Plot Object
+- [`plot(`*`<caugi>`*`)`](https://caugi.org/reference/plot.caugi.md) :
+  Create a caugi Graph Plot Object
 
 ## Options
 

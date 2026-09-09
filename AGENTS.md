@@ -105,7 +105,12 @@ the user-facing API.
     offline-build cache by running
     `rextendr::vendor_pkgs(overwrite = TRUE)` from the package root.
     This refreshes `src/rust/vendor.tar.xz` and
-    `src/rust/vendor-config.toml`; commit both alongside the
+    `src/rust/vendor-config.toml`. Then run
+    `Rscript tools/prune-vendor.R` to strip non-build files (`tests/`,
+    `examples/`, trybuild fixtures) from the vendored crates, which
+    keeps vendored paths short enough to avoid pak’s “very long paths”
+    warning on Windows (see issue \#319). Commit the pruned
+    `src/rust/vendor.tar.xz` and `vendor-config.toml` alongside the
     `Cargo.toml`/`Cargo.lock` change.
 
 ### Testing Requirements
@@ -187,8 +192,11 @@ the user-facing API.
 - `serde_json = "1.0"` - JSON serialization
 - `quick-xml = "0.39"` - XML serialization
 - `rustc-hash = "2.1"` - Fast hash functions
-- `gadjid` (optional, default enabled) - For adjustment identification
-  distance
+
+Note: the Adjustment Identification Distance (AID) is implemented
+natively in `src/rust/src/graph/aid.rs`. That file is a derivative of
+the `gadjid` crate and is therefore licensed **MPL-2.0** (the rest of
+the crate is MIT); see the SPDX header in that file.
 
 ### System Requirements
 

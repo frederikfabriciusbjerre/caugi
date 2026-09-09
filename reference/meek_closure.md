@@ -17,7 +17,8 @@ meek_closure(cg)
 
 ## Value
 
-A `caugi` object of class `"PDAG"` that is closed under Meek's rules.
+A `caugi` object closed under Meek's rules. Class `"MPDAG"` in general,
+or `"DAG"` if the closure orients every edge.
 
 ## References
 
@@ -29,7 +30,9 @@ Artificial Intelligence (UAI-95)*, pp. 403–411. Morgan Kaufmann.
 
 Other operations:
 [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md),
+[`count_dags()`](https://caugi.org/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md),
+[`enumerate_dags()`](https://caugi.org/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/reference/latent_project.md),
 [`moralize()`](https://caugi.org/reference/moralize.md),

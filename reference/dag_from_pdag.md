@@ -11,14 +11,18 @@ raise an error.
 ## Usage
 
 ``` r
-dag_from_pdag(PDAG)
+dag_from_pdag(cg, PDAG)
 ```
 
 ## Arguments
 
+- cg:
+
+  A `caugi` object of class `"PDAG"`, `"MPDAG"`, or `"CPDAG"`.
+
 - PDAG:
 
-  A `caugi` object of class `"PDAG"`.
+  Deprecated alias for `cg`. Use `cg` instead.
 
 ## Value
 
@@ -34,6 +38,8 @@ consistent extension of a partially directed acyclic graph".
 
 Other operations:
 [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md),
+[`count_dags()`](https://caugi.org/reference/count_dags.md),
+[`enumerate_dags()`](https://caugi.org/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/reference/latent_project.md),
 [`meek_closure()`](https://caugi.org/reference/meek_closure.md),
@@ -45,13 +51,13 @@ Other operations:
 ## Examples
 
 ``` r
-PDAG <- caugi(
+pdag <- caugi(
   A %---% B,
   B %---% C,
   class = "PDAG"
 )
-DAG <- dag_from_pdag(PDAG)
-edges(DAG)
+dag <- dag_from_pdag(pdag)
+edges(dag)
 #>      from   edge     to
 #>    <char> <char> <char>
 #> 1:      B    -->      A

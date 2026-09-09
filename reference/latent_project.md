@@ -28,7 +28,9 @@ variables.
 
 Other operations:
 [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md),
+[`count_dags()`](https://caugi.org/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md),
+[`enumerate_dags()`](https://caugi.org/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/reference/exogenize.md),
 [`meek_closure()`](https://caugi.org/reference/meek_closure.md),
 [`moralize()`](https://caugi.org/reference/moralize.md),

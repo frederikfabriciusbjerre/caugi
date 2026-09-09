@@ -15,6 +15,10 @@ caugi_dot(content)
 
   A character string containing the DOT format graph.
 
+## Value
+
+A `caugi_dot` S7 object wrapping the DOT string.
+
 ## See also
 
 Other export:
@@ -28,7 +32,7 @@ Other export:
 [`format-dot`](https://caugi.org/reference/format-dot.md),
 [`format-graphml`](https://caugi.org/reference/format-graphml.md),
 [`format-mermaid`](https://caugi.org/reference/format-mermaid.md),
-[`knit_print.caugi_export`](https://caugi.org/reference/knit_print.caugi_export.md),
+[`knit_print.caugi_export()`](https://caugi.org/reference/knit_print.caugi_export.md),
 [`read_caugi()`](https://caugi.org/reference/read_caugi.md),
 [`read_graphml()`](https://caugi.org/reference/read_graphml.md),
 [`to_dot()`](https://caugi.org/reference/to_dot.md),

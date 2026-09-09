@@ -28,7 +28,9 @@ known as a Markov Graph.
 
 Other operations:
 [`condition_marginalize()`](https://caugi.org/reference/condition_marginalize.md),
+[`count_dags()`](https://caugi.org/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md),
+[`enumerate_dags()`](https://caugi.org/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/reference/latent_project.md),
 [`meek_closure()`](https://caugi.org/reference/meek_closure.md),
@@ -41,7 +43,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 skeleton(cg) # A --- B
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x55ce6e027dd0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x564eac2c30c0>
 #>   graph_class: UG
 #>   nodes: A, B
 #>   edges: A---B

@@ -27,7 +27,9 @@ generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"), seed = NULL)
 
 - class:
 
-  "DAG" or "CPDAG".
+  "DAG" or "CPDAG". When `"CPDAG"`, the result is the CPDAG (essential
+  graph) of the sampled DAG's Markov equivalence class, returned with
+  class `"CPDAG"`.
 
 - seed:
 
@@ -35,7 +37,8 @@ generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"), seed = NULL)
 
 ## Value
 
-The sampled `caugi` object.
+The sampled `caugi` object. `class = "DAG"` returns a `"DAG"`;
+`class = "CPDAG"` returns a `"CPDAG"`.
 
 ## See also
 

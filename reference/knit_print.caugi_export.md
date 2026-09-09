@@ -4,6 +4,13 @@ Renders caugi export objects as code blocks in Quarto/R Markdown
 documents. This method is automatically invoked when an export object is
 the last expression in a code chunk.
 
+## Usage
+
+``` r
+# S3 method for class 'caugi_export'
+knit_print(x, ...)
+```
+
 ## Arguments
 
 - x:
