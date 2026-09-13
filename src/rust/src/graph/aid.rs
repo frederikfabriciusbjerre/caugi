@@ -379,9 +379,13 @@ fn oset_aid(truth: &AidInput, guess: &AidInput, perm: &[u32], inv: &[usize]) -> 
                 // reuses caugi's generic optimal-adjustment-set over the guess's
                 // directed structure.
                 let z = to_truth(
-                    optimal_adjustment_set(guess.n(), gt, perm[y as usize], |u| guess.parents_of(u), |u| {
-                        guess.children_of(u)
-                    })
+                    optimal_adjustment_set(
+                        guess.n(),
+                        gt,
+                        perm[y as usize],
+                        |u| guess.parents_of(u),
+                        |u| guess.children_of(u),
+                    )
                     .into_iter()
                     .collect(),
                     inv,
@@ -488,7 +492,12 @@ mod tests {
         let g = dag(3, &[(1, 2), (2, 0)]);
         let inv = [2usize, 0, 1];
         for kind in KINDS {
-            assert_eq!(aid(kind, AidInput::Dag(&t), AidInput::Dag(&g), &inv).unwrap().1, 0);
+            assert_eq!(
+                aid(kind, AidInput::Dag(&t), AidInput::Dag(&g), &inv)
+                    .unwrap()
+                    .1,
+                0
+            );
         }
     }
 
@@ -499,8 +508,14 @@ mod tests {
         let c = cpdag(2, &[], &[(0, 1)]);
         let inv = ident(2);
         for kind in KINDS {
-            assert_eq!(aid(kind, AidInput::Dag(&d), AidInput::Cpdag(&c), &inv).unwrap(), (1.0, 2));
-            assert_eq!(aid(kind, AidInput::Cpdag(&c), AidInput::Dag(&d), &inv).unwrap(), (1.0, 2));
+            assert_eq!(
+                aid(kind, AidInput::Dag(&d), AidInput::Cpdag(&c), &inv).unwrap(),
+                (1.0, 2)
+            );
+            assert_eq!(
+                aid(kind, AidInput::Cpdag(&c), AidInput::Dag(&d), &inv).unwrap(),
+                (1.0, 2)
+            );
         }
     }
 
@@ -522,7 +537,12 @@ mod tests {
         let c = cpdag(3, &[(0, 2), (1, 2)], &[]);
         let inv = ident(3);
         for kind in KINDS {
-            assert_eq!(aid(kind, AidInput::Cpdag(&c), AidInput::Cpdag(&c), &inv).unwrap().1, 0);
+            assert_eq!(
+                aid(kind, AidInput::Cpdag(&c), AidInput::Cpdag(&c), &inv)
+                    .unwrap()
+                    .1,
+                0
+            );
         }
     }
 
@@ -530,7 +550,13 @@ mod tests {
     fn rejects_bad_index_map() {
         let g = dag(3, &[(0, 1), (1, 2)]);
         let bad = [0usize, 1];
-        let err = aid(AidType::Ancestor, AidInput::Dag(&g), AidInput::Dag(&g), &bad).unwrap_err();
+        let err = aid(
+            AidType::Ancestor,
+            AidInput::Dag(&g),
+            AidInput::Dag(&g),
+            &bad,
+        )
+        .unwrap_err();
         assert!(err.contains("index map length"));
     }
 }
