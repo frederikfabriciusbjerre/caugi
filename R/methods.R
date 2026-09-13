@@ -307,7 +307,6 @@ S7::method(print, caugi) <- print.caugi
 #'
 #' @keywords internal
 #' @export
-
 `all.equal.caugi::caugi` <- function(target, current, ...) {
   if (!inherits(current, "caugi::caugi")) {
     return("current is not a caugi object")
@@ -431,12 +430,6 @@ S7::method(print, caugi) <- print.caugi
 #' their graph content (nodes, edges, simple, class) rather than session
 #' identity. Returns `FALSE` (resp. `TRUE`) when the other operand is not a
 #' caugi object.
-#'
-#' @details
-#' Row order is ignored, and an edge whose glyph is symmetric in the edge
-#' registry is compared as an unordered pair, so `A --- B` and `B --- A` are
-#' the same edge. Asymmetric glyphs are direction-sensitive, so
-#' `A --> B` and `B --> A` are not.
 #'
 #' @param e1,e2 A `caugi` object (one or both sides).
 #'
