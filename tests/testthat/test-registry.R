@@ -199,3 +199,15 @@ test_that("is_edge_symmetric works for registered edges", {
   expect_true(is_edge_symmetric("---"))
   reset_caugi_registry()
 })
+
+test_that("a custom symmetric edge is canonicalised when comparing graphs", {
+  # `==` reads symmetry from the registry rather than a hard-coded glyph list,
+  # so a custom symmetric edge is compared as an unordered pair too.
+  reset_caugi_registry()
+  register_caugi_edge("*-*", "other", "other", "undirected", symmetric = TRUE)
+
+  expect_true(
+    caugi(A %*-*% B, class = "UNKNOWN") == caugi(B %*-*% A, class = "UNKNOWN")
+  )
+  reset_caugi_registry()
+})
