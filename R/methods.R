@@ -369,7 +369,10 @@ S7::method(print, caugi) <- print.caugi
       )
     )
   } else if (nrow(target_edges) > 0) {
-    # Sort both by from, to, edge for comparison
+    # A symmetric glyph denotes the same edge either way round, so orient
+    # those consistently before comparing, then sort to ignore row order.
+    target_edges <- .canonical_edge_order(target_edges)
+    current_edges <- .canonical_edge_order(current_edges)
     data.table::setorder(target_edges, from, to, edge)
     data.table::setorder(current_edges, from, to, edge)
     if (
@@ -390,12 +393,49 @@ S7::method(print, caugi) <- print.caugi
   }
 }
 
+#' @title Canonicalise symmetric edges for comparison
+#'
+#' @description
+#' A symmetric glyph denotes the same edge either way round, so `A --- B` and
+#' `B --- A` must compare equal. Orients every symmetric edge so that `from`
+#' sorts before `to`, leaving asymmetric edges alone.
+#'
+#' Which glyphs are symmetric is read from the edge registry rather than
+#' hard-coded, so custom edges added with [register_caugi_edge()] are handled
+#' too.
+#'
+#' @param e A `data.table` of edges with `from`, `edge` and `to` columns.
+#'
+#' @returns `e` with symmetric edges oriented canonically.
+#'
+#' @keywords internal
+.canonical_edge_order <- function(e) {
+  if (nrow(e) == 0L) {
+    return(e)
+  }
+  reg <- list_caugi_edges()
+  symmetric <- reg$glyph[!is.na(reg$symmetric) & reg$symmetric]
+  swap <- e$edge %in% symmetric & e$from > e$to
+  if (any(swap)) {
+    held <- e$from[swap]
+    e$from[swap] <- e$to[swap]
+    e$to[swap] <- held
+  }
+  e
+}
+
 #' Equality operators for caugi objects
 #'
 #' @description S3 methods for `==` and `!=` that compare two caugi objects by
 #' their graph content (nodes, edges, simple, class) rather than session
 #' identity. Returns `FALSE` (resp. `TRUE`) when the other operand is not a
 #' caugi object.
+#'
+#' @details
+#' Row order is ignored, and an edge whose glyph is symmetric in the edge
+#' registry is compared as an unordered pair, so `A --- B` and `B --- A` are
+#' the same edge. Asymmetric glyphs are direction-sensitive, so
+#' `A --> B` and `B --> A` are not.
 #'
 #' @param e1,e2 A `caugi` object (one or both sides).
 #'
@@ -406,6 +446,12 @@ S7::method(print, caugi) <- print.caugi
 #' cg2 <- caugi(A %-->% B, class = "DAG")
 #' cg1 == cg2 # TRUE
 #' cg1 != caugi(A %-->% C, class = "DAG") # TRUE
+#'
+#' # Symmetric edges are unordered, so these are the same graph.
+#' caugi(A %---% B, class = "UG") == caugi(B %---% A, class = "UG") # TRUE
+#'
+#' # Directed edges are not.
+#' caugi(A %-->% B, class = "DAG") == caugi(B %-->% A, class = "DAG") # FALSE
 #'
 #' @family caugi methods
 #' @concept methods

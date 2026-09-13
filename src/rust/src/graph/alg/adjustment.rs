@@ -13,7 +13,13 @@ use crate::graph::alg::bitset;
 ///
 /// Generic over directed neighbor access so it can be reused by the `Dag`
 /// wrapper and by graphs given only as parent/child adjacency.
-pub fn optimal_adjustment_set<'a, P, C>(n: u32, x: u32, y: u32, parents_of: P, children_of: C) -> Vec<u32>
+pub fn optimal_adjustment_set<'a, P, C>(
+    n: u32,
+    x: u32,
+    y: u32,
+    parents_of: P,
+    children_of: C,
+) -> Vec<u32>
 where
     P: Fn(u32) -> &'a [u32],
     C: Fn(u32) -> &'a [u32],

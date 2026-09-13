@@ -22,11 +22,23 @@ their graph content (nodes, edges, simple, class) rather than session
 identity. Returns \code{FALSE} (resp. \code{TRUE}) when the other operand is not a
 caugi object.
 }
+\details{
+Row order is ignored, and an edge whose glyph is symmetric in the edge
+registry is compared as an unordered pair, so \code{A --- B} and \code{B --- A} are
+the same edge. Asymmetric glyphs are direction-sensitive, so
+\verb{A --> B} and \verb{B --> A} are not.
+}
 \examples{
 cg1 <- caugi(A \%-->\% B, class = "DAG")
 cg2 <- caugi(A \%-->\% B, class = "DAG")
 cg1 == cg2 # TRUE
 cg1 != caugi(A \%-->\% C, class = "DAG") # TRUE
+
+# Symmetric edges are unordered, so these are the same graph.
+caugi(A \%---\% B, class = "UG") == caugi(B \%---\% A, class = "UG") # TRUE
+
+# Directed edges are not.
+caugi(A \%-->\% B, class = "DAG") == caugi(B \%-->\% A, class = "DAG") # FALSE
 
 }
 \seealso{

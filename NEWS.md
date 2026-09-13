@@ -1,3 +1,14 @@
+# caugi (development version)
+
+## Bug Fixes
+
+- `==` and `!=` for `caugi` objects now compare a symmetric edge as an
+  unordered pair, so `caugi(A %---% B) == caugi(B %---% A)` is `TRUE` as it
+  should be. This affected `---`, `<->` and `o-o`, and any symmetric edge added
+  with `register_caugi_edge()`; whether a glyph is symmetric is read from the
+  registry rather than hard-coded. Asymmetric glyphs remain
+  direction-sensitive.
+
 # caugi 1.3.0
 
 ## New Features

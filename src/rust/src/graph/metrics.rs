@@ -453,7 +453,12 @@ mod tests {
 
         // Wrong-length inverse map (2 instead of 3)
         let bad_inv = [0usize, 1usize];
-        let err = aid(AidType::Ancestor, AidInput::Dag(&dag), AidInput::Dag(&dag), &bad_inv);
+        let err = aid(
+            AidType::Ancestor,
+            AidInput::Dag(&dag),
+            AidInput::Dag(&dag),
+            &bad_inv,
+        );
         assert!(
             matches!(err, Err(msg) if msg.contains("index map length does not match graph size"))
         );
@@ -499,21 +504,36 @@ mod tests {
 
         let inv = [0usize, 1usize, 2usize];
         assert_eq!(
-            aid(AidType::Ancestor, AidInput::Dag(&dag), AidInput::Dag(&dag), &inv)
-                .unwrap()
-                .1,
+            aid(
+                AidType::Ancestor,
+                AidInput::Dag(&dag),
+                AidInput::Dag(&dag),
+                &inv
+            )
+            .unwrap()
+            .1,
             0
         );
         assert_eq!(
-            aid(AidType::Oset, AidInput::Dag(&dag), AidInput::Dag(&dag), &inv)
-                .unwrap()
-                .1,
+            aid(
+                AidType::Oset,
+                AidInput::Dag(&dag),
+                AidInput::Dag(&dag),
+                &inv
+            )
+            .unwrap()
+            .1,
             0
         );
         assert_eq!(
-            aid(AidType::Parent, AidInput::Dag(&dag), AidInput::Dag(&dag), &inv)
-                .unwrap()
-                .1,
+            aid(
+                AidType::Parent,
+                AidInput::Dag(&dag),
+                AidInput::Dag(&dag),
+                &inv
+            )
+            .unwrap()
+            .1,
             0
         );
     }
@@ -543,9 +563,14 @@ mod tests {
         let inv = [2usize, 0usize, 1usize];
 
         assert_eq!(
-            aid(AidType::Ancestor, AidInput::Dag(&t), AidInput::Dag(&g), &inv)
-                .unwrap()
-                .1,
+            aid(
+                AidType::Ancestor,
+                AidInput::Dag(&t),
+                AidInput::Dag(&g),
+                &inv
+            )
+            .unwrap()
+            .1,
             0
         );
         assert_eq!(
@@ -576,25 +601,41 @@ mod tests {
         let mut b = GraphBuilder::new_with_registry(3, true, &reg);
         b.add_edge(0, 2, d).unwrap();
         b.add_edge(1, 2, d).unwrap();
-        let p = Cpdag::try_new(Pdag::new(std::sync::Arc::new(b.finalize().unwrap())).unwrap()).unwrap();
+        let p =
+            Cpdag::try_new(Pdag::new(std::sync::Arc::new(b.finalize().unwrap())).unwrap()).unwrap();
 
         let inv = [0usize, 1usize, 2usize];
         assert_eq!(
-            aid(AidType::Ancestor, AidInput::Cpdag(&p), AidInput::Cpdag(&p), &inv)
-                .unwrap()
-                .1,
+            aid(
+                AidType::Ancestor,
+                AidInput::Cpdag(&p),
+                AidInput::Cpdag(&p),
+                &inv
+            )
+            .unwrap()
+            .1,
             0
         );
         assert_eq!(
-            aid(AidType::Oset, AidInput::Cpdag(&p), AidInput::Cpdag(&p), &inv)
-                .unwrap()
-                .1,
+            aid(
+                AidType::Oset,
+                AidInput::Cpdag(&p),
+                AidInput::Cpdag(&p),
+                &inv
+            )
+            .unwrap()
+            .1,
             0
         );
         assert_eq!(
-            aid(AidType::Parent, AidInput::Cpdag(&p), AidInput::Cpdag(&p), &inv)
-                .unwrap()
-                .1,
+            aid(
+                AidType::Parent,
+                AidInput::Cpdag(&p),
+                AidInput::Cpdag(&p),
+                &inv
+            )
+            .unwrap()
+            .1,
             0
         );
     }
@@ -614,18 +655,25 @@ mod tests {
         bt.add_edge(0, 2, d).unwrap();
         bt.add_edge(1, 2, d).unwrap();
         let p_true =
-            Cpdag::try_new(Pdag::new(std::sync::Arc::new(bt.finalize().unwrap())).unwrap()).unwrap();
+            Cpdag::try_new(Pdag::new(std::sync::Arc::new(bt.finalize().unwrap())).unwrap())
+                .unwrap();
 
         // Guess CPDAG: different v-structure 0 -> 1 <- 2 (collider at 1 instead of 2)
         let mut bg = GraphBuilder::new_with_registry(3, true, &reg);
         bg.add_edge(0, 1, d).unwrap();
         bg.add_edge(2, 1, d).unwrap();
         let p_guess =
-            Cpdag::try_new(Pdag::new(std::sync::Arc::new(bg.finalize().unwrap())).unwrap()).unwrap();
+            Cpdag::try_new(Pdag::new(std::sync::Arc::new(bg.finalize().unwrap())).unwrap())
+                .unwrap();
 
         let inv = [0usize, 1usize, 2usize];
-        let (_f, m) =
-            aid(AidType::Oset, AidInput::Cpdag(&p_true), AidInput::Cpdag(&p_guess), &inv).unwrap();
+        let (_f, m) = aid(
+            AidType::Oset,
+            AidInput::Cpdag(&p_true),
+            AidInput::Cpdag(&p_guess),
+            &inv,
+        )
+        .unwrap();
         assert!(m > 0);
     }
 
@@ -642,11 +690,18 @@ mod tests {
         // Valid CPDAG with undirected edge.
         let mut b = GraphBuilder::new_with_registry(3, true, &reg);
         b.add_edge(0, 1, u).unwrap();
-        let p = Cpdag::try_new(Pdag::new(std::sync::Arc::new(b.finalize().unwrap())).unwrap()).unwrap();
+        let p =
+            Cpdag::try_new(Pdag::new(std::sync::Arc::new(b.finalize().unwrap())).unwrap()).unwrap();
 
         // Identity map still exercises the mapping path with undirected entries.
         let inv = [0usize, 1usize, 2usize];
-        let (_f, m) = aid(AidType::Ancestor, AidInput::Cpdag(&p), AidInput::Cpdag(&p), &inv).unwrap();
+        let (_f, m) = aid(
+            AidType::Ancestor,
+            AidInput::Cpdag(&p),
+            AidInput::Cpdag(&p),
+            &inv,
+        )
+        .unwrap();
         assert_eq!(m, 0);
     }
 
@@ -738,11 +793,18 @@ mod tests {
         let mut b = GraphBuilder::new_with_registry(3, true, &reg);
         b.add_edge(0, 2, d).unwrap();
         b.add_edge(1, 2, d).unwrap();
-        let p = Cpdag::try_new(Pdag::new(std::sync::Arc::new(b.finalize().unwrap())).unwrap()).unwrap();
+        let p =
+            Cpdag::try_new(Pdag::new(std::sync::Arc::new(b.finalize().unwrap())).unwrap()).unwrap();
 
         // Wrong-length inverse map to hit the length check.
         let bad_inv = [0usize, 1usize];
-        let err = aid(AidType::Oset, AidInput::Cpdag(&p), AidInput::Cpdag(&p), &bad_inv).unwrap_err();
+        let err = aid(
+            AidType::Oset,
+            AidInput::Cpdag(&p),
+            AidInput::Cpdag(&p),
+            &bad_inv,
+        )
+        .unwrap_err();
         assert!(err.contains("index map length does not match graph size"));
     }
 
