@@ -1578,6 +1578,16 @@ fn rs_to_cpdag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSessi
 }
 
 #[extendr]
+fn rs_dag_extension(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .dag_extension()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
 fn rs_meek_closure(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
     let view = session
         .as_mut()
@@ -2203,6 +2213,7 @@ extendr_module! {
     fn rs_is_cpdag;
     fn rs_is_mpdag;
     fn rs_to_cpdag;
+    fn rs_dag_extension;
     fn rs_meek_closure;
     fn rs_enumerate_dags;
     fn rs_count_dags;
