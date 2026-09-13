@@ -14,7 +14,8 @@ use graph::metrics::{hd_with_perm, shd_with_perm};
 
 use graph::view::GraphView;
 use graph::{
-    admg::Admg, ag::Ag, cpdag::Cpdag, dag::Dag, mpdag::Mpdag, pdag::Pdag, ug::Ug, CaugiGraph,
+    admg::Admg, ag::Ag, cpdag::Cpdag, dag::Dag, mpdag::Mpdag, pag::Pag, pdag::Pdag, ug::Ug,
+    CaugiGraph,
 };
 use std::sync::Arc;
 
@@ -365,6 +366,7 @@ fn graph_class_from_view(view: &GraphView) -> GraphClass {
         GraphView::Ug(_) => GraphClass::Ug,
         GraphView::Admg(_) => GraphClass::Admg,
         GraphView::Ag(_) => GraphClass::Ag,
+        GraphView::Pag(_) => GraphClass::Pag,
         GraphView::Raw(_) => GraphClass::Unknown,
     }
 }
@@ -378,6 +380,7 @@ fn graph_class_label_from_view(view: &GraphView) -> &'static str {
         GraphView::Ug(_) => "UG",
         GraphView::Admg(_) => "ADMG",
         GraphView::Ag(_) => "AG",
+        GraphView::Pag(_) => "PAG",
         GraphView::Raw(_) => "UNKNOWN",
     }
 }
@@ -585,8 +588,12 @@ fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<Grap
             let ag = Ag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
             ExternalPtr::new(GraphView::Ag(Arc::new(ag)))
         }
+        "PAG" => {
+            let pag = Pag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
+            ExternalPtr::new(GraphView::Pag(Arc::new(pag)))
+        }
         "AUTO" => {
-            // Try each class in order: DAG → UG → PDAG → ADMG → AG → Raw
+            // Try each class in order: DAG → UG → PDAG → ADMG → AG → PAG → Raw
             if let Ok(dag) = Dag::new(Arc::clone(&core_arc)) {
                 ExternalPtr::new(GraphView::Dag(Arc::new(dag)))
             } else if let Ok(ug) = Ug::new(Arc::clone(&core_arc)) {
@@ -597,6 +604,8 @@ fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<Grap
                 ExternalPtr::new(GraphView::Admg(Arc::new(admg)))
             } else if let Ok(ag) = Ag::new(Arc::clone(&core_arc)) {
                 ExternalPtr::new(GraphView::Ag(Arc::new(ag)))
+            } else if let Ok(pag) = Pag::new(Arc::clone(&core_arc)) {
+                ExternalPtr::new(GraphView::Pag(Arc::new(pag)))
             } else {
                 ExternalPtr::new(GraphView::Raw(core_arc))
             }
@@ -1740,6 +1749,26 @@ fn rs_moralize(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSessi
 }
 
 #[extendr]
+fn rs_pag_to_mag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .pag_to_mag()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
+fn rs_mag_to_pag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .mag_to_pag()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
 fn rs_latent_project(
     mut session: ExternalPtr<GraphSession>,
     latents: Integers,
@@ -2062,6 +2091,23 @@ fn rs_m_separated(
 }
 
 #[extendr]
+fn rs_is_visible_edge(mut session: ExternalPtr<GraphSession>, from: i32, to: i32) -> bool {
+    let a = rint_to_u32(Rint::from(from), "from");
+    let b = rint_to_u32(Rint::from(to), "to");
+    let n = session.as_ref().n();
+    if a >= n {
+        throw_r_error(format!("Index {} is out of bounds", a));
+    }
+    if b >= n {
+        throw_r_error(format!("Index {} is out of bounds", b));
+    }
+    session
+        .as_mut()
+        .is_visible_edge(a, b)
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
 fn rs_not_m_separated_for_all_subsets(
     mut session: ExternalPtr<GraphSession>,
     node_a: i32,
@@ -2321,6 +2367,8 @@ extendr_module! {
     fn rs_count_dags;
     fn rs_skeleton;
     fn rs_moralize;
+    fn rs_mag_to_pag;
+    fn rs_pag_to_mag;
     fn rs_latent_project;
     fn rs_exogenize;
     fn rs_normalize_latent_structure;
@@ -2329,6 +2377,7 @@ extendr_module! {
     fn rs_d_separated;
     fn rs_minimal_separator;
     fn rs_m_separated;
+    fn rs_is_visible_edge;
     fn rs_not_m_separated_for_all_subsets;
     fn rs_adjustment_set_parents;
     fn rs_adjustment_set_backdoor;

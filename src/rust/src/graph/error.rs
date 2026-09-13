@@ -143,6 +143,60 @@ impl std::fmt::Display for AgError {
 
 impl std::error::Error for AgError {}
 
+// ── PAG Errors ────────────────────────────────────────────────────────────────
+
+/// Errors that can occur when validating a partial ancestral graph.
+///
+/// These cover the structural invariants (stages S0 and S1). Deciding full PAG
+/// validity additionally requires the `pag_to_mag` / `mag_to_pag` round trip.
+#[derive(Debug, Clone)]
+pub enum PagError {
+    /// The definite directed part of the graph contains a cycle.
+    DirectedCycle,
+    /// An endpoint mark was found that cannot appear in a PAG.
+    InvalidEdgeType { found: String },
+    /// Anterior constraint violated: a node with a definite arrowhead is a
+    /// definite anterior of the source.
+    AnteriorConstraintViolation { source: u32, target: u32 },
+    /// Undirected constraint violated: a node has both an undirected edge and
+    /// an arrowhead.
+    UndirectedConstraintViolation { node: u32 },
+    /// The marks are structurally sound but are not the invariant marks of a
+    /// Markov equivalence class.
+    NotAnEquivalenceClass { reason: String },
+}
+
+impl std::fmt::Display for PagError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::DirectedCycle => write!(
+                f,
+                "Partial ancestral graph contains a directed cycle of `-->` edges"
+            ),
+            Self::InvalidEdgeType { found } => write!(
+                f,
+                "Partial ancestral graph endpoints must be arrowheads, tails or circles, found: {}",
+                found
+            ),
+            Self::AnteriorConstraintViolation { source, target } => write!(
+                f,
+                "Anterior constraint violated: node {} has an arrowhead from {} but is an anterior of {}",
+                target, source, source
+            ),
+            Self::UndirectedConstraintViolation { node } => write!(
+                f,
+                "Undirected constraint violated: node {} has both undirected and arrowhead edges",
+                node
+            ),
+            Self::NotAnEquivalenceClass { reason } => {
+                write!(f, "Not a valid partial ancestral graph: {}", reason)
+            }
+        }
+    }
+}
+
+impl std::error::Error for PagError {}
+
 // ── Builder Errors ────────────────────────────────────────────────────────────
 
 /// Errors that can occur when building a graph.

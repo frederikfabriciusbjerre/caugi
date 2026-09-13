@@ -73,6 +73,7 @@ Suggests:
     bnlearn,
     dagitty,
     devtools,
+    ggm,
     ggplot2,
     graph,
     gRbase,

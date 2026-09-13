@@ -98,36 +98,153 @@ test_that("default names V1..Vn when dimnames are missing", {
 })
 
 test_that("PAG code pairs map to expected glyphs", {
-  nm <- c("A", "B", "C", "D")
-  M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
+  ord <- function(df) df[order(df$from, df$edge, df$to), , drop = FALSE]
+  decoded <- function(M) {
+    cg <- as_caugi(M, class = "PAG")
+    expect_identical(cg@graph_class, "PAG")
+    as.data.frame(edges(cg))[c("from", "edge", "to")]
+  }
 
-  # A-B: tail-arrow => A --> B
-  M["A", "B"] <- 2L # mark at B end
-  M["B", "A"] <- 3L # mark at A end
+  # Matrices carrying circle marks (code 1) can only be decoded via
+  # `class = "PAG"`, and `class = "PAG"` now runs the complete PAG check, so
+  # both fixtures below are graphs that really are PAGs (each is the PAG of a
+  # MAG). A node carrying an undirected edge may not carry an arrowhead, so the
+  # six code pairs are still split across two graphs.
 
-  # A-C: tail-tail => A --- C
-  M["A", "C"] <- 3L
-  M["C", "A"] <- 3L
+  # arrow/tail, circle/arrow, arrow/arrow, circle/circle
+  # PAG of a MAG on 5 nodes; the extra A <-> D edge is what makes the marks
+  # invariant, it carries no code pair of its own.
+  nm1 <- c("A", "C", "D", "B", "E")
+  M1 <- matrix(0L, 5, 5, dimnames = list(nm1, nm1))
+  M1["D", "B"] <- 2L # mark at B end   => D --> B   (arrow/tail)
+  M1["B", "D"] <- 3L # mark at D end
+  M1["C", "D"] <- 2L #                 => C o-> D  (circle/arrow)
+  M1["D", "C"] <- 1L
+  M1["A", "B"] <- 2L #                 => A <-> B  (arrow/arrow)
+  M1["B", "A"] <- 2L
+  M1["C", "E"] <- 1L #                 => C o-o E  (circle/circle)
+  M1["E", "C"] <- 1L
+  M1["A", "D"] <- 2L #                 => A <-> D
+  M1["D", "A"] <- 2L
 
-  # B-C: circle-arrow => B o-> C
-  M["B", "C"] <- 2L
-  M["C", "B"] <- 1L
+  expect_equal(
+    ord(decoded(M1)),
+    ord(rbind(
+      data.frame(from = "A", edge = "<->", to = "B"),
+      data.frame(from = "A", edge = "<->", to = "D"),
+      data.frame(from = "C", edge = "o->", to = "D"),
+      data.frame(from = "C", edge = "o-o", to = "E"),
+      data.frame(from = "D", edge = "-->", to = "B")
+    ))
+  )
 
-  # C-D: arrow-arrow => C <-> D
-  M["C", "D"] <- 2L
-  M["D", "C"] <- 2L
+  # tail/tail and tail/circle
+  # PAG of an undirected (selection-only) MAG on 5 nodes.
+  nm2 <- c("A", "B", "C", "D", "E")
+  M2 <- matrix(0L, 5, 5, dimnames = list(nm2, nm2))
+  M2["A", "C"] <- 3L #                 => A --- C  (tail/tail)
+  M2["C", "A"] <- 3L
+  M2["A", "E"] <- 1L #                 => A --o E  (tail/circle)
+  M2["E", "A"] <- 3L
+  M2["A", "D"] <- 3L #                 => A --- D
+  M2["D", "A"] <- 3L
+  M2["B", "C"] <- 3L #                 => B --- C
+  M2["C", "B"] <- 3L
+  M2["B", "D"] <- 3L #                 => B --- D
+  M2["D", "B"] <- 3L
 
-  cg <- as_caugi(M, class = "PAG")
-  e <- as.data.frame(edges(cg))[c("from", "edge", "to")]
+  expect_equal(
+    ord(decoded(M2)),
+    ord(rbind(
+      data.frame(from = "A", edge = "---", to = "C"),
+      data.frame(from = "A", edge = "---", to = "D"),
+      data.frame(from = "A", edge = "--o", to = "E"),
+      data.frame(from = "B", edge = "---", to = "C"),
+      data.frame(from = "B", edge = "---", to = "D")
+    ))
+  )
+})
+
+test_that("mark-coded matrices decode for non-PAG classes", {
+  ord <- function(df) df[order(df$from, df$edge, df$to), , drop = FALSE]
+  nm <- c("a", "b", "c", "d")
+
+  # `amat.pag` coding of the MAG a --> b, b <-> c, b --> d, c --> d
+  M <- matrix(
+    c(0, 3, 0, 0, 2, 0, 2, 3, 0, 2, 0, 3, 0, 2, 2, 0),
+    4,
+    4,
+    dimnames = list(nm, nm)
+  )
+  storage.mode(M) <- "integer"
 
   exp <- rbind(
-    data.frame(from = "A", edge = "-->", to = "B"),
-    data.frame(from = "A", edge = "---", to = "C"),
-    data.frame(from = "B", edge = "o->", to = "C"),
-    data.frame(from = "C", edge = "<->", to = "D")
+    data.frame(from = "a", edge = "-->", to = "b"),
+    data.frame(from = "b", edge = "<->", to = "c"),
+    data.frame(from = "b", edge = "-->", to = "d"),
+    data.frame(from = "c", edge = "-->", to = "d")
   )
-  ord <- function(df) df[order(df$from, df$edge, df$to), , drop = FALSE]
-  expect_equal(ord(e), ord(exp))
+
+  cg_ag <- as_caugi(M, class = "AG")
+  expect_identical(cg_ag@graph_class, "AG")
+  expect_equal(
+    ord(as.data.frame(edges(cg_ag))[c("from", "edge", "to")]),
+    ord(exp)
+  )
+
+  # A {0, 2, 3} matrix is decoded by endpoint marks whatever class is asked
+  # for, so the requested class must not change the decoding. (This block used
+  # `class = "PAG"`; a MAG is generally *not* a valid PAG, and `class = "PAG"`
+  # now runs the complete PAG check, so a second non-PAG class is used here.)
+  cg_unknown <- as_caugi(M, class = "UNKNOWN")
+  expect_identical(cg_unknown@graph_class, "UNKNOWN")
+  expect_equal(
+    ord(as.data.frame(edges(cg_unknown))[c("from", "edge", "to")]),
+    ord(exp)
+  )
+})
+
+test_that("decoded marks are validated against the requested class", {
+  nm <- c("A", "B")
+  M <- matrix(0L, 2, 2, dimnames = list(nm, nm))
+  M["A", "B"] <- 2L # A <-> B
+  M["B", "A"] <- 2L
+
+  expect_error(as_caugi(M, class = "DAG"))
+})
+
+test_that("0/1 matrices keep adjacency semantics for non-PAG classes", {
+  nm <- c("A", "B", "C")
+  m <- matrix(0L, 3, 3, dimnames = list(nm, nm))
+  m["A", "B"] <- 1L
+  m["B", "C"] <- 1L
+
+  cg <- as_caugi(m, class = "DAG")
+  expect_identical(cg@graph_class, "DAG")
+
+  e <- as.data.frame(edges(cg))
+  expect_true(all(e$edge == "-->"))
+  expect_setequal(paste(e$from, e$to), c("A B", "B C"))
+})
+
+test_that("out-of-range matrix codes error", {
+  nm <- c("A", "B")
+  m <- matrix(0L, 2, 2, dimnames = list(nm, nm))
+  m["A", "B"] <- 5L
+
+  expect_error(
+    as_caugi(m, class = "AG"),
+    "Only either 0:1 are allowed or 0,2,3"
+  )
+  expect_error(as_caugi(m, class = "PAG"), "integer codes 0-3", fixed = TRUE)
+
+  # One-sided mark: an endpoint pair that is not a valid edge.
+  m2 <- matrix(0L, 2, 2, dimnames = list(nm, nm))
+  m2["A", "B"] <- 2L
+  expect_error(
+    as_caugi(m2, class = "AG"),
+    "Unsupported endpoint marks between A and B"
+  )
 })
 
 test_that("double and logical matrices dispatch via integer method", {
@@ -392,7 +509,9 @@ test_that("dagitty -> caugi: bidirected '<->' is preserved", {
 test_that("dagitty -> caugi: partial edges 'o->' and 'o-o' map correctly", {
   skip_if_not_installed("dagitty")
   g <- dagitty::dagitty("pag { A @-> B; C @-@ D }")
-  cg <- as_caugi(g, class = "PAG")
+  # This test is about the dagitty edge codes mapping to the right glyphs; the
+  # class is incidental, and `A o-> B` on its own is not a valid PAG.
+  cg <- as_caugi(g, class = "UNKNOWN")
 
   expect_true(any(
     cg@edges$from == "A" & cg@edges$to == "B" & cg@edges$edge == "o->"
@@ -425,13 +544,15 @@ test_that("dagitty -> caugi: isolates are retained alongside edges", {
   expect_equal(nrow(cg@edges), 1L)
 })
 
-test_that("dagitty -> caugi: PAG class is routed to UNKNOWN until supported", {
+test_that("dagitty -> caugi: PAG class is preserved", {
   skip_if_not_installed("dagitty")
-  g <- dagitty::dagitty("pag { A @-> B }")
+  # `A o-> C <-o B` with A, B non-adjacent: the PAG of the collider
+  # `A --> C <-- B`, and a genuinely valid PAG (a lone edge never is).
+  g <- dagitty::dagitty("pag { A @-> C ; B @-> C }")
   cg <- as_caugi(g, class = "PAG")
 
   # graph_class getter returns uppercase from Rust; compare in upper
-  expect_identical(toupper(cg@graph_class), "UNKNOWN")
+  expect_identical(toupper(cg@graph_class), "PAG")
   expect_true(any(cg@edges$edge == "o->"))
 })
 
@@ -565,32 +686,52 @@ test_that("integer matrix dead and error branches are covered", {
   m_bad_switch[1, 2] <- 1L
   expect_error(
     as_caugi(m_bad_switch, class = "PAG"),
-    "Invalid PAG code"
+    "Unsupported endpoint marks"
   )
 })
 
 test_that("PAG normalization swap branches are covered", {
-  nm <- c("A", "B", "C", "D")
-  m <- matrix(0L, 4, 4, dimnames = list(nm, nm))
+  # The swap branches live in the mark decoder and fire when the arrowhead /
+  # circle sits at the *earlier* node of a matrix pair. Circle marks force
+  # `class = "PAG"`, which now runs the complete PAG check, so the branches are
+  # exercised with two genuinely valid PAGs whose node order (dimnames) puts
+  # the relevant endpoints the wrong way round.
 
-  # Reverse directed: A <- B (swap branch 1)
-  m["A", "B"] <- 3L
-  m["B", "A"] <- 2L
+  # Swap branch 1 (arrow/tail  => j --> i) via D --> B, and
+  # swap branch 3 (arrow/circle => j o-> i) via C o-> D.
+  nm1 <- c("B", "D", "C", "A", "E")
+  m1 <- matrix(0L, 5, 5, dimnames = list(nm1, nm1))
+  m1["B", "D"] <- 3L # mark at D end  => D --> B  (branch 1)
+  m1["D", "B"] <- 2L # mark at B end
+  m1["D", "C"] <- 1L #                => C o-> D  (branch 3)
+  m1["C", "D"] <- 2L
+  m1["A", "B"] <- 2L #                => A <-> B
+  m1["B", "A"] <- 2L
+  m1["A", "D"] <- 2L #                => A <-> D
+  m1["D", "A"] <- 2L
+  m1["C", "E"] <- 1L #                => C o-o E
+  m1["E", "C"] <- 1L
 
-  # Reverse partial: A o-- C (swap branch 2)
-  m["A", "C"] <- 3L
-  m["C", "A"] <- 1L
+  e1 <- edges(as_caugi(m1, class = "PAG"))
+  expect_true(any(e1$from == "D" & e1$edge == "-->" & e1$to == "B"))
+  expect_true(any(e1$from == "C" & e1$edge == "o->" & e1$to == "D"))
 
-  # Reverse partial: A <-o D (swap branch 3)
-  m["A", "D"] <- 1L
-  m["D", "A"] <- 2L
+  # Swap branch 2 (circle/tail => j --o i) via A --o E.
+  nm2 <- c("E", "B", "C", "D", "A")
+  m2 <- matrix(0L, 5, 5, dimnames = list(nm2, nm2))
+  m2["E", "A"] <- 3L # mark at A end  => A --o E  (branch 2)
+  m2["A", "E"] <- 1L # mark at E end
+  m2["A", "C"] <- 3L #                => A --- C
+  m2["C", "A"] <- 3L
+  m2["A", "D"] <- 3L #                => A --- D
+  m2["D", "A"] <- 3L
+  m2["B", "C"] <- 3L #                => B --- C
+  m2["C", "B"] <- 3L
+  m2["B", "D"] <- 3L #                => B --- D
+  m2["D", "B"] <- 3L
 
-  cg <- as_caugi(m, class = "PAG")
-  e <- edges(cg)
-
-  expect_true(any(e$from == "B" & e$edge == "-->" & e$to == "A"))
-  expect_true(any(e$from == "C" & e$edge == "--o" & e$to == "A"))
-  expect_true(any(e$from == "D" & e$edge == "o->" & e$to == "A"))
+  e2 <- edges(as_caugi(m2, class = "PAG"))
+  expect_true(any(e2$from == "A" & e2$edge == "--o" & e2$to == "E"))
 })
 
 test_that("class-specific branches for optional backends are covered", {

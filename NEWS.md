@@ -1,19 +1,65 @@
 # caugi (development version)
 
-## Performance Improvements
+## New Features
 
-- `remove_edges()` now removes edges directly in Rust, avoiding graph table
-  reconstruction and redundant session cloning.
-- Node and edge tables use faster constructors, reducing overhead when building
-  graphs and retrieving `nodes()` and `edges()`.
+- Add first-class `"PAG"` (Partial Ancestral Graph) support across the
+  constructor (`caugi()`), coercion (`as_caugi()`), and class mutation
+  (`mutate_caugi()`). Selection bias is in scope, so all six PAG edge types
+  are supported: `-->`, `---`, `<->`, `o-o`, `--o`, and `o->`.
+- `"PAG"` is validated *completely* at construction. A graph carries the class
+  only if there exists a maximal ancestral graph whose Markov equivalence class
+  it represents, which is decided by a `pag_to_mag()` then `mag_to_pag()` round
+  trip. This rejects both over-oriented graphs (a definite mark that is not
+  invariant across the class) and under-oriented ones (a circle where an
+  invariant mark belongs); no purely structural check can detect either.
+  Partially oriented output that is not a complete PAG, such as an RFCI graph
+  or an "anytime" PAG, should use `class = "UNKNOWN"`.
+- Add `is_pag()`, which runs that complete check. Unlike `is_ag()` and
+  `is_mag()` it takes no `force_check` argument, because the graph class cannot
+  be used as a shortcut.
+- Add `pag_to_mag()`, returning a MAG from the Markov equivalence class a PAG
+  represents (Zhang 2008, Theorem 2), and `mag_to_pag()`, returning the PAG of
+  a MAG's class via Zhang's complete orientation rules R1-R10.
+- Add `is_visible_edge()`, which decides whether a directed edge in a PAG is
+  visible (Zhang 2008, Definition 8).
+- Add `dag_to_pag()`, returning the PAG a DAG induces over its observed
+  variables once latents are marginalized out and selection variables are
+  conditioned on. Validated against `pcalg::dag2pag()` on random DAGs with a
+  latent; the two routes share no code (pcalg runs FCI against a d-separation
+  oracle, caugi marginalizes to a MAG and applies the orientation rules).
+  The `selection` argument has no pcalg counterpart, and is checked instead
+  against its defining property: m-separation in the result equals
+  d-separation in the DAG once the selection variables join the conditioning
+  set.
+- `as_adjacency()` gains a `coding` argument. The default `"binary"` is
+  unchanged; `coding = "marks"` writes the mark-coded `amat.pag` form, which
+  can represent all six PAG edge types. `as_caugi()` reads the same coding, so
+  the two round-trip.
+
+## Improvements
+
+- `plot()`, `to_dot()`, `to_mermaid()` and `to_graphml()` already rendered
+  circle endpoint marks and now do so for graphs typed `"PAG"`.
 
 ## Bug Fixes
 
+- `as_caugi()` no longer misreads a mark-coded (`amat.pag`) integer matrix
+  when a non-PAG class is requested. The 0-3 mark decoding was gated on
+  `class == "PAG"`, so a MAG passed as `class = "AG"` fell through to the
+  generic branch where every nonzero entry became a `-->` edge. Decoding is now
+  driven by the data: a matrix containing a 2 or 3 is mark-coded whatever class
+  was requested.
+- `as_caugi()` no longer silently downgrades `class = "PAG"` to `"UNKNOWN"`.
+- `==` and `!=` for `caugi` objects now compare a symmetric edge as an
+  unordered pair, so `caugi(A %---% B) == caugi(B %---% A)` is `TRUE` as it
+  should be. This affected `---`, `<->` and `o-o`, and any symmetric edge added
+  with `register_caugi_edge()`; whether a glyph is symmetric is read from the
+  registry rather than hard-coded. Asymmetric glyphs remain
+  direction-sensitive.
 - `m_separated()` now handles ADMG collider paths with multiple bidirected
   edges, such as `a -> b <-> c <-> d` given `{b, c}`. This also fixes
   `is_valid_adjustment_admg()` and `all_adjustment_sets_admg()`, which use the
   same separation routine in the proper backdoor graph.
-
 - `dag_from_pdag()` no longer adds v-structures the input PDAG did not have.
   Dor and Tarsi's condition (b) requires every undirected neighbour of the
   candidate sink to be adjacent to *all* its other neighbours; the previous
@@ -21,20 +67,19 @@
   adjacent, so on e.g. `A --> B <-- C` with `B --- D` it oriented `D --> B`
   and created two v-structures. The algorithm now lives in Rust, like every
   other graph algorithm in the package.
-
-- `==` and `!=` for `caugi` objects now compare a symmetric edge as an
-unordered pair, so `caugi(A %---% B) == caugi(B %---% A)` is `TRUE` as it
-should be. This affected `---`, `<->` and `o-o`, and any symmetric edge added
-with `register_caugi_edge()`; whether a glyph is symmetric is read from the
-graph's own registry rather than hard-coded. Asymmetric glyphs remain
-direction-sensitive. testthat's `expect_equal()` now agrees with `==`.
-
 - Graphs now keep the edge definitions they were built with after
 `reset_caugi_registry()` and re-registration. Previously `==`, `add_edges()`,
 `mutate_caugi()` and other verbs, `write_caugi()`, `caugi_serialize()` and
 `to_graphml()` used the current global registry instead, so they could
 compare edges wrongly, fail with `Invalid edge code`, or write the wrong
 glyphs. Adding an edge type the graph was not built with is now an error.
+
+## Performance Improvements
+
+- `remove_edges()` now removes edges directly in Rust, avoiding graph table
+  reconstruction and redundant session cloning.
+- Node and edge tables use faster constructors, reducing overhead when building
+  graphs and retrieving `nodes()` and `edges()`.
 
 # caugi 1.3.0
 

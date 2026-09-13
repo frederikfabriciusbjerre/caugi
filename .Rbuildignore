@@ -43,3 +43,6 @@
 ^AGENTS\.md$
 ^CLAUDE\.md$
 ^\.claude$
+^todo\.md$
+^tools/pag-ground-truth$
+^Rplots\.pdf$

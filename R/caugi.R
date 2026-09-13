@@ -39,9 +39,21 @@
 #' the function will throw an error if the input contains parallel edges or
 #' self-loops.
 #' @param class Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
-#' `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick
-#' the appropriate class based on the first match in the order of `"DAG"`,
-#' `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, and `"AG"`.
+#' `"CPDAG"`, `"ADMG"`, `"AG"`, `"PAG"`, or `"UNKNOWN"`. `"AUTO"` will
+#' automatically pick the appropriate class based on the first match in the
+#' order of `"DAG"`, `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, `"AG"`, and `"PAG"`.
+#' `"AG"` is tried before `"PAG"`, so a graph with no circle marks resolves to
+#' the more specific `"AG"`.
+#'
+#' Note that `"PAG"` is validated completely: a graph carries that class only
+#' if there is a maximal ancestral graph whose Markov equivalence class it
+#' represents (see [is_pag()]). Graphs that merely *look* like PAGs are
+#' rejected, including a lone `A o-> B` edge, which is not a PAG because with
+#' two adjacent nodes no endpoint is invariant. Partially oriented output that
+#' is not a complete PAG -- an RFCI graph, an "anytime" PAG, or an
+#' intermediate FCI state -- should use `class = "UNKNOWN"`, which stores the
+#' circle marks without asserting the equivalence-class property. Checking
+#' `"PAG"` involves a maximality test and is exponential in the worst case.
 #' It will default to `"UNKNOWN"` if no match is found.
 #' @param .session For internal use. Build a graph by supplying a
 #' pre-constructed session pointer from Rust.
@@ -253,6 +265,7 @@ caugi <- S7::new_class(
       "CPDAG",
       "ADMG",
       "AG",
+      "PAG",
       "UNKNOWN"
     ),
     state = NULL, # deprecated

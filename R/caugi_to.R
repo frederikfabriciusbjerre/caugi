@@ -121,11 +121,26 @@ as_igraph <- function(x, ...) {
 #' @title Convert a caugi to an adjacency matrix
 #'
 #' @description
-#' Does not take other edge types than the one found in a PDAG.
+#' With the default `coding = "binary"` this produces a 0/1 adjacency matrix
+#' and accepts only the edge types found in a PDAG, ADMG or AG. With
+#' `coding = "marks"` it produces a mark-coded matrix, which can represent all
+#' six PAG edge types.
+#'
+#' @details
+#' The mark coding is `pcalg`'s `amat.pag`: `0` no edge, `1` circle, `2`
+#' arrowhead, `3` tail, where `m[i, j]` is the mark **at node `j`** on the edge
+#' between them. So `m[i, j] == 2` with `m[j, i] == 3` means `i --> j`. Note
+#' this is the opposite convention to `pcalg`'s `amat.cpdag`, where the code
+#' refers to the row index.
+#'
+#' [as_caugi()] reads the same coding back, so
+#' `as_caugi(as_adjacency(cg, "marks"), class = cg@graph_class)` round-trips.
 #'
 #' @param x A `caugi` object.
+#' @param coding Either `"binary"` (default) for a 0/1 adjacency matrix, or
+#'   `"marks"` for the mark-coded `amat.pag` form.
 #'
-#' @returns An integer 0/1 adjacency matrix with row/col names.
+#' @returns An integer matrix with row/col names.
 #'
 #' @examples
 #' cg <- caugi(
@@ -134,12 +149,17 @@ as_igraph <- function(x, ...) {
 #' )
 #' adj <- as_adjacency(cg)
 #'
+#' # A PAG needs the mark coding: circle endpoints have no 0/1 representation.
+#' pag <- mag_to_pag(caugi(A %-->% C, B %-->% C, class = "AG"))
+#' as_adjacency(pag, coding = "marks")
+#'
 #' @family conversions
 #' @concept conversions
 #'
 #' @export
-as_adjacency <- function(x) {
+as_adjacency <- function(x, coding = c("binary", "marks")) {
   is_caugi(x, throw_error = TRUE)
+  coding <- match.arg(coding)
 
   nm <- nodes(x)$name
   n <- length(nm)
@@ -147,6 +167,34 @@ as_adjacency <- function(x) {
 
   e <- edges(x)
   if (nrow(e) == 0L) {
+    return(out)
+  }
+
+  if (identical(coding, "marks")) {
+    # `amat.pag`: the code is the mark at the *column* node.
+    marks <- list(
+      "-->" = c(from = 3L, to = 2L),
+      "<->" = c(from = 2L, to = 2L),
+      "---" = c(from = 3L, to = 3L),
+      "o->" = c(from = 1L, to = 2L),
+      "--o" = c(from = 3L, to = 1L),
+      "o-o" = c(from = 1L, to = 1L)
+    )
+    unknown <- setdiff(unique(e$edge), names(marks))
+    if (length(unknown) > 0L) {
+      stop(
+        "Unsupported edge glyphs in conversion to a mark-coded matrix: ",
+        paste(unknown, collapse = ", "),
+        call. = FALSE
+      )
+    }
+    fi <- match(e$from, nm)
+    ti <- match(e$to, nm)
+    for (k in seq_len(nrow(e))) {
+      m <- marks[[e$edge[k]]]
+      out[fi[k], ti[k]] <- m[["to"]] # mark at the `to` node
+      out[ti[k], fi[k]] <- m[["from"]] # mark at the `from` node
+    }
     return(out)
   }
 

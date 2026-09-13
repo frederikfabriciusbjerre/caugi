@@ -3,6 +3,7 @@ use super::ag::Ag;
 use super::cpdag::Cpdag;
 use super::dag::Dag;
 use super::mpdag::Mpdag;
+use super::pag::Pag;
 use super::pdag::Pdag;
 use super::ug::Ug;
 use super::CaugiGraph;
@@ -49,6 +50,7 @@ pub enum GraphView {
     Ug(Arc<Ug>),
     Admg(Arc<Admg>),
     Ag(Arc<Ag>),
+    Pag(Arc<Pag>),
     Raw(Arc<CaugiGraph>),
 }
 
@@ -63,6 +65,7 @@ impl GraphView {
             GraphView::Ug(u) => u.core_ref(),
             GraphView::Admg(a) => a.core_ref(),
             GraphView::Ag(g) => g.core_ref(),
+            GraphView::Pag(g) => g.core_ref(),
             GraphView::Raw(c) => c,
         }
     }
@@ -77,6 +80,7 @@ impl GraphView {
             GraphView::Ug(g) => g.n(),
             GraphView::Admg(g) => g.n(),
             GraphView::Ag(g) => g.n(),
+            GraphView::Pag(g) => g.n(),
             GraphView::Raw(core) => core.n(),
         }
     }
@@ -222,6 +226,14 @@ impl GraphView {
                 Err("mode 'partial' not valid for AG (no partial edges)".into())
             }
 
+            // PAG: in, out, undirected, bidirected, partial, all
+            (GraphView::Pag(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::In) => Ok(g.parents_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Out) => Ok(g.children_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Undirected) => Ok(g.undirected_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Bidirected) => Ok(g.spouses_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Partial) => Ok(g.partial_of(i)),
+
             // Raw (UNKNOWN): all modes allowed, iterate CSR
             (GraphView::Raw(_), _) => self.neighbors_mode_of_raw(i, mode),
         }
@@ -296,6 +308,7 @@ impl GraphView {
             GraphView::Cpdag(c) => Ok(c.as_pdag().ancestors_of(i)),
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.ancestors_of(i)),
+            GraphView::Pag(g) => Ok(g.ancestors_of(i)),
             GraphView::Ug(_) => Err("ancestors_of not defined for UG".into()),
             GraphView::Raw(_) => Err("ancestors_of not implemented for UNKNOWN class".into()),
         }
@@ -308,6 +321,7 @@ impl GraphView {
             GraphView::Cpdag(c) => Ok(c.as_pdag().descendants_of(i)),
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.descendants_of(i)),
+            GraphView::Pag(g) => Ok(g.descendants_of(i)),
             GraphView::Ug(_) => Err("descendants_of not defined for UG".into()),
             GraphView::Raw(_) => Err("descendants_of not implemented for UNKNOWN class".into()),
         }
@@ -320,6 +334,7 @@ impl GraphView {
             GraphView::Cpdag(c) => Ok(c.as_pdag().anteriors_of(i)),
             GraphView::Admg(_) => Err("anteriors_of not defined for ADMG".into()),
             GraphView::Ag(g) => Ok(g.anteriors_of(i)),
+            GraphView::Pag(g) => Ok(g.anteriors_of(i)),
             GraphView::Ug(_) => Err("anteriors_of not defined for UG".into()),
             GraphView::Raw(_) => Err("anteriors_of not implemented for UNKNOWN class".into()),
         }
@@ -332,10 +347,25 @@ impl GraphView {
             GraphView::Cpdag(c) => Ok(c.as_pdag().posteriors_of(i)),
             GraphView::Admg(_) => Err("posteriors_of not defined for ADMG".into()),
             GraphView::Ag(g) => Ok(g.posteriors_of(i)),
+            GraphView::Pag(g) => Ok(g.posteriors_of(i)),
             GraphView::Ug(_) => Err("posteriors_of not defined for UG".into()),
             GraphView::Raw(_) => Err("posteriors_of not implemented for UNKNOWN class".into()),
         }
     }
+    /// Is the directed edge `a --> b` visible?
+    ///
+    /// Defined for MAGs and PAGs, by the same criterion: visibility asks
+    /// whether an inducing path into `a` is ruled out, so that the edge
+    /// carries no hidden confounding.
+    pub fn is_visible_edge(&self, a: u32, b: u32) -> Result<bool, String> {
+        match self {
+            GraphView::Pag(g) => Ok(g.is_visible_edge(a, b)),
+            // Visibility is defined for MAGs too, and by the same criterion.
+            GraphView::Ag(g) => Ok(super::pag::visible_edge_in_mag(g, a, b)),
+            _ => Err("is_visible_edge is only defined for MAGs and PAGs".into()),
+        }
+    }
+
     pub fn markov_blanket_of(&self, i: u32) -> Result<Vec<u32>, String> {
         match self {
             GraphView::Dag(g) => Ok(g.markov_blanket_of(i)),
@@ -345,6 +375,7 @@ impl GraphView {
             GraphView::Ug(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Admg(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Ag(g) => Ok(g.markov_blanket_of(i)),
+            GraphView::Pag(_) => Err("markov_blanket_of is not yet implemented for PAG".into()),
             GraphView::Raw(_) => Err("markov_blanket_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -365,6 +396,15 @@ impl GraphView {
                     Ok(g.exogenous_nodes())
                 }
             }
+            GraphView::Pag(g) => {
+                if undirected_as_parents {
+                    Ok((0..g.n())
+                        .filter(|&i| g.parents_of(i).is_empty() && g.undirected_of(i).is_empty())
+                        .collect())
+                } else {
+                    Ok((0..g.n()).filter(|&i| g.parents_of(i).is_empty()).collect())
+                }
+            }
             GraphView::Raw(_) => Err("exogenous_nodes not implemented for UNKNOWN class".into()),
         }
     }
@@ -382,6 +422,7 @@ impl GraphView {
             GraphView::Cpdag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ug(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ag(_) => Err("topological_sort is only defined for DAGs".into()),
+            GraphView::Pag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Raw(_) => Err("topological_sort is only defined for DAGs".into()),
         }
     }
@@ -507,6 +548,8 @@ impl GraphView {
         }
     }
 
+    // ---- Generalized adjustment criterion (MAG / PAG, plus DAG and ADMG) ----
+
     pub fn induced_subgraph(&self, keep: &[u32]) -> Result<GraphView, String> {
         let (core2, _new_to_old, _old_to_new) = self.core().induced_subgraph(keep)?;
         let gv = match self {
@@ -554,6 +597,10 @@ impl GraphView {
             GraphView::Ag(_) => {
                 let g = super::ag::Ag::new(std::sync::Arc::new(core2))?;
                 GraphView::Ag(std::sync::Arc::new(g))
+            }
+            GraphView::Pag(_) => {
+                let g = super::pag::Pag::new(std::sync::Arc::new(core2))?;
+                GraphView::Pag(std::sync::Arc::new(g))
             }
             GraphView::Raw(_) => GraphView::Raw(std::sync::Arc::new(core2)),
         };
@@ -612,6 +659,33 @@ impl GraphView {
             GraphView::Mpdag(m) => Ok(GraphView::Mpdag(std::sync::Arc::clone(m))),
             GraphView::Cpdag(c) => Ok(GraphView::Mpdag(std::sync::Arc::new(c.as_mpdag().clone()))),
             _ => Err("to_mpdag is only defined for DAGs, PDAGs, and MPDAGs".into()),
+        }
+    }
+
+    /// A MAG from the Markov equivalence class this PAG represents.
+    pub fn pag_to_mag(&self) -> Result<GraphView, String> {
+        match self {
+            GraphView::Pag(g) => Ok(GraphView::Ag(Arc::new(g.to_mag()?))),
+            _ => Err("pag_to_mag is only defined for PAGs".into()),
+        }
+    }
+
+    /// The PAG representing the Markov equivalence class of this MAG.
+    ///
+    /// Only defined for `AG`-class graphs that are maximal; maximality is
+    /// checked here, since the construction is meaningless otherwise.
+    pub fn mag_to_pag(&self) -> Result<GraphView, String> {
+        match self {
+            GraphView::Ag(g) => {
+                if !g.is_mag() {
+                    return Err("mag_to_pag requires a maximal ancestral graph; this \
+                                ancestral graph is not maximal"
+                        .into());
+                }
+                let pag = super::pag::Pag::from_mag(g)?;
+                Ok(GraphView::Pag(Arc::new(pag)))
+            }
+            _ => Err("mag_to_pag is only defined for MAGs (class 'AG')".into()),
         }
     }
 
