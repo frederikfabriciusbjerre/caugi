@@ -46,6 +46,82 @@ impl Pdag {
         Ok(count)
     }
 
+    /// One consistent DAG extension, by Dor and Tarsi's (1992) algorithm.
+    ///
+    /// Repeatedly take a node `x` that is a sink -- no directed edge out of
+    /// it -- whose undirected neighbours are all adjacent to one another, and
+    /// orient every one of those edges into `x`; then remove `x` and repeat.
+    /// Orienting into a simplicial sink adds no v-structure and no cycle, and
+    /// Dor and Tarsi show that if no such node exists at some step the PDAG
+    /// has no consistent extension at all.
+    ///
+    /// The result keeps every directed edge of the input and orients every
+    /// undirected one, so it is a consistent extension: same skeleton, same
+    /// v-structures.
+    ///
+    /// # Errors
+    ///
+    /// When no step finds a simplicial sink, which means no DAG extends this
+    /// PDAG.
+    pub fn dag_extension(&self) -> Result<Dag, String> {
+        let n = self.n() as usize;
+        let (mut pa, mut ch, mut und) = self.snapshot_sets();
+        let skeleton = build_skeleton(&pa, &ch, &und);
+        let mut removed = vec![false; n];
+
+        for _ in 0..n {
+            // A sink with a complete undirected neighbourhood, among the
+            // nodes not yet removed.
+            let sink = (0..n).find(|&i| {
+                if removed[i] {
+                    return false;
+                }
+                if ch[i].iter().any(|&c| !removed[c as usize]) {
+                    return false;
+                }
+                // Condition (b): every undirected neighbour of `i` is
+                // adjacent to *all* the other nodes adjacent to `i`, the
+                // parents included. Pairwise adjacency among the undirected
+                // neighbours alone is not enough: orienting `y --> i` where
+                // `i` has a parent `a` not adjacent to `y` would add the
+                // v-structure `y --> i <-- a`.
+                let present = |v: u32| !removed[v as usize];
+                und[i].iter().copied().filter(|&u| present(u)).all(|y| {
+                    skeleton[i]
+                        .iter()
+                        .copied()
+                        .filter(|&z| present(z) && z != y)
+                        .all(|z| skeleton[y as usize].contains(&z))
+                })
+            });
+            let x = match sink {
+                Some(x) => x,
+                None => {
+                    return Err("this PDAG cannot be extended to a DAG: no node is a \
+                                sink whose undirected neighbours are all adjacent \
+                                (Dor-Tarsi)"
+                        .into())
+                }
+            };
+
+            // Orient every remaining undirected edge at `x` into `x`.
+            let xu = x as u32;
+            let nbrs: Vec<u32> = und[x].iter().copied().collect();
+            // Every neighbour here is still present: removing a node clears
+            // its undirected edges from both sides.
+            for u in nbrs {
+                und[x].remove(&u);
+                und[u as usize].remove(&xu);
+                pa[x].insert(u);
+                ch[u as usize].insert(xu);
+            }
+            removed[x] = true;
+        }
+
+        let core = build_dag_core(self.core_ref(), &pa, &ch)?;
+        Dag::new(Arc::new(core))
+    }
+
     fn snapshot_sets(&self) -> (Vec<HashSet<u32>>, Vec<HashSet<u32>>, Vec<HashSet<u32>>) {
         let n = self.n() as usize;
         let mut pa = vec![HashSet::new(); n];
@@ -316,6 +392,173 @@ mod tests {
         }
         out.sort_unstable();
         out
+    }
+
+    /// Every undirected edge oriented, every directed edge kept, and the
+    /// skeleton unchanged -- the definition of a consistent extension, minus
+    /// the v-structure condition, which the tests below check case by case.
+    fn assert_extends(p: &Pdag, dag: &Dag) {
+        for i in 0..p.n() {
+            for &c in p.children_of(i) {
+                assert!(
+                    dag.children_of(i).contains(&c),
+                    "directed edge {i} --> {c} was not kept"
+                );
+            }
+            let mut skel_p: Vec<u32> = p.neighbors_of(i).to_vec();
+            let mut skel_d: Vec<u32> = dag
+                .parents_of(i)
+                .iter()
+                .chain(dag.children_of(i))
+                .copied()
+                .collect();
+            skel_p.sort_unstable();
+            skel_d.sort_unstable();
+            assert_eq!(skel_p, skel_d, "skeleton differs at node {i}");
+        }
+    }
+
+    #[test]
+    fn dag_extension_orients_a_chain_without_a_v_structure() {
+        // A--B--C extends to one of the three orientations that avoid
+        // A --> B <-- C.
+        let (reg, _d, u) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, u).unwrap();
+        b.add_edge(1, 2, u).unwrap();
+        let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let dag = p.dag_extension().unwrap();
+        assert_extends(&p, &dag);
+        let pairs = directed_pairs(&dag);
+        assert!(!(pairs.contains(&(0, 1)) && pairs.contains(&(2, 1))));
+        assert!(p
+            .enumerate_mec()
+            .unwrap()
+            .iter()
+            .any(|d| directed_pairs(d) == pairs));
+    }
+
+    #[test]
+    fn dag_extension_keeps_directed_edges_and_the_existing_v_structure() {
+        // A --> B <-- C with D--B: `D --> B` would add a v-structure with
+        // A and C, but they are already a v-structure at B, so the only
+        // question is that D--B gets oriented and nothing else moves.
+        let (reg, d, u) = setup();
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(2, 1, d).unwrap();
+        b.add_edge(3, 1, u).unwrap();
+        let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let dag = p.dag_extension().unwrap();
+        assert_extends(&p, &dag);
+        assert!(directed_pairs(&dag).contains(&(1, 3)), "B --> D expected");
+    }
+
+    #[test]
+    fn dag_extension_orients_a_triangle() {
+        // A fully undirected triangle: every node is simplicial, so the
+        // first one picked becomes the sink.
+        let (reg, _d, u) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, u).unwrap();
+        b.add_edge(1, 2, u).unwrap();
+        b.add_edge(0, 2, u).unwrap();
+        let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let dag = p.dag_extension().unwrap();
+        assert_extends(&p, &dag);
+        assert_eq!(directed_pairs(&dag).len(), 3);
+    }
+
+    #[test]
+    fn dag_extension_refuses_a_pdag_with_no_consistent_extension() {
+        // The undirected four-cycle is not chordal, so no node is
+        // simplicial: whichever edge is oriented first leaves a v-structure
+        // that was not there.
+        let (reg, _d, u) = setup();
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        for (i, j) in [(0, 1), (1, 2), (2, 3), (3, 0)] {
+            b.add_edge(i, j, u).unwrap();
+        }
+        let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let err = p.dag_extension().unwrap_err();
+        assert!(err.contains("cannot be extended to a DAG"), "{err}");
+    }
+
+    #[test]
+    fn dag_extension_does_not_add_a_v_structure_off_a_parent() {
+        // `A --> B, B--C, C--A`: orienting `C --> B` is fine because C and A
+        // are adjacent, so the collider at B stays shielded. The weaker
+        // condition (b) -- undirected neighbours pairwise adjacent -- would
+        // also accept it, which is why the case above is the one that
+        // separates them.
+        let (reg, d, u) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(1, 2, u).unwrap();
+        b.add_edge(2, 0, u).unwrap();
+        let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let dag = p.dag_extension().unwrap();
+        assert_extends(&p, &dag);
+        assert_eq!(directed_pairs(&dag), vec![(0, 1), (2, 0), (2, 1)]);
+    }
+
+    #[test]
+    fn dag_extension_of_an_edgeless_or_already_directed_pdag_is_itself() {
+        let (reg, d, _u) = setup();
+        for edges in [vec![], vec![(0u32, 1u32), (1, 2)]] {
+            let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+            for (u, v) in &edges {
+                b.add_edge(*u, *v, d).unwrap();
+            }
+            let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+            let dag = p.dag_extension().unwrap();
+            assert_extends(&p, &dag);
+            assert_eq!(directed_pairs(&dag), edges);
+        }
+    }
+
+    #[test]
+    fn dag_extension_agrees_with_the_enumeration_on_every_small_pdag() {
+        // Whatever the extension returns must be one of the DAGs in the
+        // class, on every undirected graph on four nodes -- which is the
+        // consistency claim, checked against an independent implementation.
+        let (reg, _d, u) = setup();
+        let pairs = [(0u32, 1u32), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)];
+        let mut extended = 0;
+        let mut refused = 0;
+        for mask in 0..(1u32 << 6) {
+            let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+            for (k, (i, j)) in pairs.iter().enumerate() {
+                if mask & (1 << k) != 0 {
+                    b.add_edge(*i, *j, u).unwrap();
+                }
+            }
+            let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+            match p.dag_extension() {
+                Ok(dag) => {
+                    assert_extends(&p, &dag);
+                    let want = directed_pairs(&dag);
+                    assert!(
+                        p.enumerate_mec()
+                            .unwrap()
+                            .iter()
+                            .any(|d| directed_pairs(d) == want),
+                        "mask {mask}: extension is not in the class"
+                    );
+                    extended += 1;
+                }
+                // An undirected graph always extends unless it is not
+                // chordal, e.g. the four-cycle.
+                Err(_) => refused += 1,
+            }
+        }
+        assert_eq!(extended + refused, 64);
+        assert!(refused > 0 && extended > 0);
     }
 
     #[test]
