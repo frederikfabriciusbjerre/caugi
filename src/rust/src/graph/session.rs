@@ -613,6 +613,7 @@ impl GraphSession {
         spouses_of(node: u32) -> Vec<u32>;
         exogenous_nodes(undirected_as_parents: bool) -> Vec<u32>;
         to_cpdag() -> GraphView;
+        dag_extension() -> GraphView;
         skeleton() -> GraphView;
         moralize() -> GraphView;
         latent_project(latents: &[u32]) -> GraphView;

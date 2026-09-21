@@ -638,13 +638,6 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────── Extend a PDAG to a DAG ──────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
-#' @title Check if two nodes are connected by an edge
-#' @keywords internal
-#' @noRd
-are_connected <- function(cg, u, v) {
-  v %in% neighbors(cg, u, mode = "all")
-}
-
 #' @title Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
 #' @description
 #' Given a Partially Directed Acyclic Graph (PDAG), this function attempts to
@@ -688,65 +681,11 @@ dag_from_pdag <- function(cg, PDAG) {
       cg <- PDAG
     }
   }
+  is_caugi(cg, throw_error = TRUE)
   if (!(cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG"))) {
     stop("Input must be a caugi PDAG/MPDAG/CPDAG graph")
   }
-
-  output_graph <- cg
-  temp_graph <- cg
-
-  nodes_left <- nodes(temp_graph)$name
-
-  while (length(nodes_left) > 0) {
-    found_sink <- FALSE
-
-    for (x in nodes_left) {
-      all_edges <- edges(temp_graph)
-
-      # Condition (a): no outgoing directed edges from x
-      if (length(children(temp_graph, x)) > 0) {
-        next
-      }
-
-      # Condition (b): undirected neighbors all connected
-      undirected_neighbors <- neighbors(temp_graph, x, mode = "undirected")
-
-      if (length(undirected_neighbors) > 1) {
-        neighbor_pairs <- combn(undirected_neighbors, 2, simplify = FALSE)
-        if (
-          any(
-            !sapply(neighbor_pairs, function(p) {
-              are_connected(temp_graph, p[1], p[2])
-            })
-          )
-        ) {
-          next
-        }
-      }
-
-      # x is a valid sink
-      found_sink <- TRUE
-
-      # Orient all undirected edges toward x in output_graph
-      if (length(undirected_neighbors) > 0) {
-        output_graph <- set_edges(
-          output_graph,
-          from = undirected_neighbors,
-          to = rep(x, length(undirected_neighbors)),
-          edge = rep("-->", length(undirected_neighbors))
-        )
-      }
-
-      # Remove x from working graph
-      temp_graph <- do.call(remove_nodes, list(temp_graph, as.name(x)))
-      nodes_left <- setdiff(nodes_left, x)
-      break
-    }
-
-    if (!found_sink) stop("PDAG cannot be extended to a DAG (Dor-Tarsi failed)")
-  }
-
-  mutate_caugi(output_graph, "DAG")
+  .session_to_caugi(rs_dag_extension(cg@session), node_names = cg@nodes$name)
 }
 
 #' @title Enumerate all DAGs in a Markov equivalence class

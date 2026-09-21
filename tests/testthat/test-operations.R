@@ -954,6 +954,30 @@ test_that("dag_from_pdag preserves directed edges in mixed extension cases", {
   expect_equal(nrow(ed), 4L)
 })
 
+test_that("dag_from_pdag adds no v-structure the PDAG did not have (#298)", {
+  # `A --> B <-- C` with `D --- B`. Orienting `D --> B` would add two
+  # v-structures, since D is adjacent to neither A nor C, so the only
+  # consistent extension is `B --> D`. Dor-Tarsi gets this from condition
+  # (b) quantifying over *all* neighbours of the candidate sink, not just
+  # its undirected ones -- B has the parents A and C, which D is not
+  # adjacent to, so B is not a sink here and D is.
+  pdag <- caugi(
+    A %-->% B,
+    C %-->% B,
+    B %---% D,
+    class = "PDAG"
+  )
+
+  dag <- dag_from_pdag(pdag)
+  ed <- as.data.frame(edges(dag))
+  expect_true(is_dag(dag))
+  expect_equal(nrow(ed), 3L)
+  expect_true(any(ed$from == "B" & ed$to == "D"))
+  # The v-structures are exactly the ones the PDAG had.
+  expect_setequal(parents(dag, "B"), c("A", "C"))
+  expect_setequal(parents(dag, "D"), "B")
+})
+
 test_that("dag_from_pdag orients each undirected edge exactly once", {
   pdag <- caugi(
     A %-->% C,

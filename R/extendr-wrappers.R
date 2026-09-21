@@ -114,6 +114,8 @@ rs_is_mpdag <- function(session) .Call(wrap__rs_is_mpdag, session)
 
 rs_to_cpdag <- function(session) .Call(wrap__rs_to_cpdag, session)
 
+rs_dag_extension <- function(session) .Call(wrap__rs_dag_extension, session)
+
 rs_meek_closure <- function(session) .Call(wrap__rs_meek_closure, session)
 
 rs_enumerate_dags <- function(session) .Call(wrap__rs_enumerate_dags, session)

@@ -1,3 +1,15 @@
+# caugi (development version)
+
+## Bug Fixes
+
+- `dag_from_pdag()` no longer adds v-structures the input PDAG did not have.
+  Dor and Tarsi's condition (b) requires every undirected neighbour of the
+  candidate sink to be adjacent to *all* its other neighbours; the previous
+  implementation only required the undirected neighbours to be pairwise
+  adjacent, so on e.g. `A --> B <-- C` with `B --- D` it oriented `D --> B`
+  and created two v-structures. The algorithm now lives in Rust, like every
+  other graph algorithm in the package.
+
 # caugi 1.3.0
 
 ## New Features

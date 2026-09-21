@@ -579,6 +579,21 @@ impl GraphView {
         }
     }
 
+    /// One consistent DAG extension, by Dor and Tarsi's algorithm.
+    ///
+    /// Defined for PDAGs, MPDAGs and CPDAGs. A DAG is returned unchanged --
+    /// it is its own extension.
+    pub fn dag_extension(&self) -> Result<GraphView, String> {
+        let dag = match self {
+            GraphView::Dag(d) => return Ok(GraphView::Dag(std::sync::Arc::clone(d))),
+            GraphView::Pdag(p) => p.dag_extension()?,
+            GraphView::Mpdag(m) => m.as_pdag().dag_extension()?,
+            GraphView::Cpdag(c) => c.as_pdag().dag_extension()?,
+            _ => return Err("a DAG extension is only defined for PDAGs, MPDAGs and CPDAGs".into()),
+        };
+        Ok(GraphView::Dag(std::sync::Arc::new(dag)))
+    }
+
     /// Apply Meek closure and return an MPDAG.
     ///
     /// Defined for DAGs (delegates to `to_cpdag` since a CPDAG is an MPDAG),
