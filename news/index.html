@@ -42,7 +42,15 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.0" id="caugi-130">caugi 1.3.0<a class="anchor" aria-label="anchor" href="#caugi-130"></a></h2>
+<h2 class="pkg-version" data-toc-text="development version" id="caugi-development-version">caugi (development version)<a class="anchor" aria-label="anchor" href="#caugi-development-version"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/dag_from_pdag.html">dag_from_pdag()</a></code> no longer adds v-structures the input PDAG did not have. Dor and Tarsi’s condition (b) requires every undirected neighbour of the candidate sink to be adjacent to <em>all</em> its other neighbours; the previous implementation only required the undirected neighbours to be pairwise adjacent, so on e.g. <code>A --&gt; B &lt;-- C</code> with <code>B --- D</code> it oriented <code>D --&gt; B</code> and created two v-structures. The algorithm now lives in Rust, like every other graph algorithm in the package.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.0" id="caugi-130">caugi 1.3.0<a class="anchor" aria-label="anchor" href="#caugi-130"></a></h2><p class="text-muted">CRAN release: 2026-09-09</p>
 <div class="section level3">
 <h3 id="new-features-1-3-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-3-0"></a></h3>
 <ul><li>Add <code><a href="../reference/enumerate_dags.html">enumerate_dags()</a></code> to enumerate every DAG in the Markov equivalence class of a PDAG, and <code><a href="../reference/count_dags.html">count_dags()</a></code> to return the MEC size without materializing every DAG (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/297" class="external-link">#297</a>).</li>
