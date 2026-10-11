@@ -2,6 +2,13 @@
 
 ## caugi (development version)
 
+### New Features
+
+- Add [`components()`](https://caugi.org/reference/components.md) to
+  partition graphs into weakly connected components or strongly
+  connected components of the directed part, including cyclic graphs of
+  class `"UNKNOWN"`.
+
 ### Performance Improvements
 
 - [`remove_edges()`](https://caugi.org/reference/caugi_verbs.md) now

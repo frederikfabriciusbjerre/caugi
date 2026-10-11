@@ -20,6 +20,9 @@
 
   Get children of nodes in a `caugi`
 
+- [`components()`](https://caugi.org/reference/components.md) : Get
+  connected components of a graph
+
 - [`descendants()`](https://caugi.org/reference/descendants.md) :
 
   Get descendants of nodes in a `caugi`
