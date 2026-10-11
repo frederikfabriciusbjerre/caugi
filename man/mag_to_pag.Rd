@@ -20,19 +20,10 @@ carries an arrowhead or a tail when that mark is shared by every member of
 the class and a circle otherwise.
 }
 \details{
-The construction starts from the skeleton with every mark a circle, orients
-the unshielded colliders as they appear in \code{cg}, and closes under Zhang's
-complete orientation rules R1-R10.
-
-No separating sets are needed. FCI has to infer the unshielded colliders
-from conditional independence, but here a MAG is in hand and Markov
-equivalent MAGs share their unshielded colliders, so they can be read
-straight off it. The same applies to R4, which consults \code{cg} to decide
-whether the middle vertex of a discriminating path is a collider.
-
-Together with \code{\link[=pag_to_mag]{pag_to_mag()}} this decides whether a graph really is a PAG:
-\code{mag_to_pag(pag_to_mag(P))} returns \code{P} exactly when \code{P}'s marks are the
-invariant marks of a Markov equivalence class.
+Starts from the skeleton with every mark a circle, orients the unshielded
+colliders of \code{cg}, and closes under Zhang's complete orientation rules
+R1-R10. No separating sets are needed: Markov equivalent MAGs share their
+unshielded colliders, and R4 reads collider status off \code{cg}.
 }
 \examples{
 mag <- caugi(A \%-->\% B, C \%-->\% B, class = "AG")

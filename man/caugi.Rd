@@ -55,18 +55,10 @@ Can use \code{\link[=build]{build()}} to force lazy compilation if desired.}
 \code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, \code{"PAG"}, or \code{"UNKNOWN"}. \code{"AUTO"} will
 automatically pick the appropriate class based on the first match in the
 order of \code{"DAG"}, \code{"UG"}, \code{"MPDAG"}, \code{"PDAG"}, \code{"ADMG"}, \code{"AG"}, and \code{"PAG"}.
-\code{"AG"} is tried before \code{"PAG"}, so a graph with no circle marks resolves to
-the more specific \code{"AG"}.
 
-Note that \code{"PAG"} is validated completely: a graph carries that class only
-if there is a maximal ancestral graph whose Markov equivalence class it
-represents (see \code{\link[=is_pag]{is_pag()}}). Graphs that merely \emph{look} like PAGs are
-rejected, including a lone \verb{A o-> B} edge, which is not a PAG because with
-two adjacent nodes no endpoint is invariant. Partially oriented output that
-is not a complete PAG -- an RFCI graph, an "anytime" PAG, or an
-intermediate FCI state -- should use \code{class = "UNKNOWN"}, which stores the
-circle marks without asserting the equivalence-class property. Checking
-\code{"PAG"} involves a maximality test and is exponential in the worst case.
+\code{"PAG"} is validated completely (see \code{\link[=is_pag]{is_pag()}}), which is exponential in
+the worst case. Partially oriented output that is not a complete PAG, such
+as an RFCI or "anytime" PAG, should use \code{class = "UNKNOWN"}.
 It will default to \code{"UNKNOWN"} if no match is found.}
 
 \item{state}{DEPRECATED. Replaced by \code{.session}.}

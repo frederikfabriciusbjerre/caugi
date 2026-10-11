@@ -20,7 +20,7 @@
 ## WARNING: do not swap `ggm::msep` for `pcalg::dsepAM`. dsepAM ignores
 ## undirected edges -- on a graph that is only `A --- B` it reports A and B as
 ## m-separated by the empty set -- which silently merges equivalence classes
-## whenever selection bias is present. See todo.md.
+## whenever selection bias is present.
 ##
 ## Run offline. Output is committed as a static fixture; runtime does not
 ## matter (n = 4 takes ~70s).

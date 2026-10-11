@@ -19,27 +19,13 @@ the PAG represents. Which member is returned is an implementation detail;
 every member encodes the same conditional independences.
 }
 \details{
-Implements Theorem 2 of Zhang (2008). A circle opposite a definite mark is
-resolved the only way that keeps the definite mark, so \verb{o->} and \code{--o} both
-become \verb{-->}. Undirected edges are already fully determined and are kept.
-What remains is the \code{o-o} subgraph, which is oriented into a DAG with no
-unshielded colliders via \code{\link[=dag_from_pdag]{dag_from_pdag()}}.
-
-The result is verified rather than assumed: it must be a valid ancestral
-graph and it must be maximal. Maximality is exhaustive and exponential in
-the worst case, the same cost as \code{\link[=is_mag]{is_mag()}}. Building a \code{"PAG"} runs this
-construction as part of its own validation, so a \code{cg} carrying that class
-has already been through it.
+Theorem 2 of Zhang (2008). A circle opposite a definite mark is resolved
+the only way that keeps it, so \verb{o->} and \code{--o} both become \verb{-->}, and the
+\code{o-o} subgraph is oriented into a DAG with no unshielded colliders. The
+result is always a MAG, since a \code{"PAG"} is validated when it is built.
 }
 \examples{
-# A verified-valid PAG: the two circle marks at C and D are not invariant,
-# while the arrowhead at A and the A --> B orientation are.
-pag <- caugi(
-  A \%-->\% B,
-  C \%o->\% A,
-  D \%o->\% A,
-  class = "PAG"
-)
+pag <- caugi(A \%-->\% B, C \%o->\% A, D \%o->\% A, class = "PAG")
 pag_to_mag(pag)
 
 # An all-circle graph is oriented into a DAG with no unshielded colliders.

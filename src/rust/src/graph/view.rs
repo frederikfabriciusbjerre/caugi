@@ -352,16 +352,12 @@ impl GraphView {
             GraphView::Raw(_) => Err("posteriors_of not implemented for UNKNOWN class".into()),
         }
     }
-    /// Is the directed edge `a --> b` visible?
-    ///
-    /// Defined for MAGs and PAGs, by the same criterion: visibility asks
-    /// whether an inducing path into `a` is ruled out, so that the edge
-    /// carries no hidden confounding.
+    /// Is the directed edge `a --> b` visible? Defined for MAGs and PAGs
+    /// by the same criterion.
     pub fn is_visible_edge(&self, a: u32, b: u32) -> Result<bool, String> {
+        use super::pag::MarkGraph;
         match self {
-            GraphView::Pag(g) => Ok(g.is_visible_edge(a, b)),
-            // Visibility is defined for MAGs too, and by the same criterion.
-            GraphView::Ag(g) => Ok(super::pag::visible_edge_in_mag(g, a, b)),
+            GraphView::Ag(_) | GraphView::Pag(_) => Ok(self.core().visible_edge(a, b)),
             _ => Err("is_visible_edge is only defined for MAGs and PAGs".into()),
         }
     }
@@ -458,7 +454,9 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.m_separated(xs, ys, z)),
             GraphView::Dag(d) => Ok(d.d_separated(xs, ys, z)), // d-sep is m-sep for DAGs
             GraphView::Ag(g) => Ok(g.m_separated(xs, ys, z)),
-            _ => Err("m_separated is only defined for ADMGs, AGs, and DAGs".into()),
+            // Exact: every member MAG encodes the same m-separations.
+            GraphView::Pag(g) => Ok(g.to_mag()?.m_separated(xs, ys, z)),
+            _ => Err("m_separated is only defined for ADMGs, AGs, PAGs, and DAGs".into()),
         }
     }
 
@@ -481,7 +479,8 @@ impl GraphView {
             GraphView::Dag(d) => d.minimal_d_separator(xs, ys, include, restrict),
             GraphView::Admg(a) => a.minimal_m_separator(xs, ys, include, restrict),
             GraphView::Ag(g) => g.minimal_m_separator(xs, ys, include, restrict),
-            _ => Err("minimal_separator is only defined for DAGs, ADMGs, and AGs".into()),
+            GraphView::Pag(g) => g.to_mag()?.minimal_m_separator(xs, ys, include, restrict),
+            _ => Err("minimal_separator is only defined for DAGs, ADMGs, AGs, and PAGs".into()),
         }
     }
 
@@ -547,8 +546,6 @@ impl GraphView {
             _ => Err("all_adjustment_sets_admg is only defined for ADMGs".into()),
         }
     }
-
-    // ---- Generalized adjustment criterion (MAG / PAG, plus DAG and ADMG) ----
 
     pub fn induced_subgraph(&self, keep: &[u32]) -> Result<GraphView, String> {
         let (core2, _new_to_old, _old_to_new) = self.core().induced_subgraph(keep)?;
@@ -1298,7 +1295,7 @@ mod tests {
         assert_eq!(v_ag.m_separated(&[0], &[1], &[]).unwrap(), false);
         assert_eq!(
             v_pdag.m_separated(&[0], &[2], &[]).unwrap_err(),
-            "m_separated is only defined for ADMGs, AGs, and DAGs"
+            "m_separated is only defined for ADMGs, AGs, PAGs, and DAGs"
         );
         assert_eq!(v_pdag.anteriors_of(1).unwrap(), vec![0, 2]);
         assert_eq!(v_pdag.posteriors_of(1).unwrap(), vec![2]);

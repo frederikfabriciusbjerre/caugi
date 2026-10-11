@@ -26,12 +26,6 @@
 
 - **Follow Rust standard style**: Run `cargo fmt` before committing Rust code
 - **Documentation**: Use Rust doc comments (`///`) for public functions and modules
-- **Algorithms live in Rust**: every graph algorithm is implemented in Rust, with
-  R providing only the user-facing wrapper -- argument handling, class checks,
-  and marshalling. Do not add a new algorithm in R, even a short one. Composing
-  already-exported functions is fine and stays in R; a loop that walks the graph
-  does not. Format conversion and I/O (`as_adjacency()`, `as_dagitty()`) are
-  marshalling and stay in R.
 - **Performance-focused**: Prioritize performance and memory efficiency in Rust code
 - **Error handling**: Use `Result` types appropriately and provide meaningful error messages
 

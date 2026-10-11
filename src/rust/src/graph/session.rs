@@ -1960,8 +1960,6 @@ mod tests {
         // is_valid_adjustment_set_admg on UG errors
         assert!(ug.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());
         assert!(ug.all_adjustment_sets_admg(&[0], &[2], true, 2).is_err());
-
-        // the class-agnostic adjustment criterion on UG errors too
     }
 
     #[test]

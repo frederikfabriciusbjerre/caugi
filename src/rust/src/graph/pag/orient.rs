@@ -1,58 +1,34 @@
 // SPDX-License-Identifier: MIT
-//! Zhang's complete orientation rules R1-R10 for partial ancestral graphs.
+//! Zhang's complete orientation rules R1-R10, run to a fixed point on a
+//! [`Marks`] working graph.
 //!
-//! The rules resolve circle marks that are in fact invariant across the
-//! represented Markov equivalence class. They run to a fixed point on a
-//! [`Marks`] working graph via [`Marks::close`].
+//! All ten are needed: an incomplete rule set leaves the graph
+//! under-oriented, and the `pag_to_mag` / `mag_to_pag` round trip would then
+//! reject valid PAGs. R4 must decide whether the middle vertex of a
+//! discriminating path is a collider, which needs either FCI's separating
+//! sets or a member MAG; [`Marks::close`] takes the MAG.
 //!
-//! R1-R4 give arrowhead completeness, R5-R7 handle selection bias, and
-//! R8-R10 give tail completeness (Zhang 2008). All ten are needed: an
-//! incomplete rule set leaves a graph under-oriented, which would then make
-//! the `pag_to_mag` / `mag_to_pag` round trip reject valid PAGs.
+//! Ported from `CausalStructures.jl`, with two fixes:
 //!
-//! R4 is the one rule that cannot be applied from the partial graph alone. It
-//! fires on a discriminating path and must then decide whether the middle
-//! vertex is a collider, which needs either the separating sets FCI collects
-//! from data or a known MAG to consult. `close` therefore takes the source
-//! MAG's marks and reads the answer off them, as `CausalStructures.jl` does;
-//! with no MAG available R4 is skipped and the caller gets an
-//! arrowhead-incomplete result, so `close` is not exposed as a standalone
-//! operation.
-//!
-//! Ported from `CausalStructures.jl`'s `_pag_rule_r1!` .. `_pag_rule_r10!`,
-//! with two deliberate differences.
-//!
-//! First, its potentially-directed path search forbids only an arrowhead at
-//! the near end of each edge, so it will traverse an `A --- B` edge. Such an
-//! edge carries a definite tail at both ends and can never be oriented
-//! `A --> B`, so it cannot lie on a potentially-directed path;
-//! [`MarkGraph::possible_children`] excludes it. That only shows up when
-//! selection bias is present, which is in scope here.
-//!
-//! Second, its R8 tests for an arrowhead at `beta` and a tail *or a circle* at
-//! `alpha`, which both misses Zhang's `alpha --o beta --> gamma` antecedent
-//! and admits `alpha o-> beta --> gamma`, where `alpha` need not be an
-//! ancestor of `gamma` at all. [`Marks::rule_8`] follows Zhang: a tail at
-//! `alpha` and either mark at `beta`.
+//! * its potentially-directed paths may cross `---`, which can never be
+//!   oriented `-->`; [`MarkGraph::possible_children`] excludes it.
+//! * its R8 takes a tail *or circle* at `alpha`, which admits
+//!   `alpha o-> beta --> gamma`; Zhang requires a tail.
 
-use super::marks::{MarkGraph, Marks};
+use super::mark_graph::MarkGraph;
+use super::marks::Marks;
 use crate::edges::Mark;
 
 impl Marks {
-    /// Close the marks under R1-R10 until no further mark is implied.
-    ///
-    /// `mag` supplies the marks of a MAG in the represented class, which R4
-    /// consults; pass `None` to skip R4 and accept an arrowhead-incomplete
-    /// result.
-    pub(super) fn close(&mut self, mag: Option<&Marks>) {
+    /// Close the marks under R1-R10 until no further mark is implied. `mag`
+    /// is a member of the represented class, which R4 consults.
+    pub(super) fn close(&mut self, mag: &impl MarkGraph) {
         loop {
             let mut changed = false;
             changed |= self.rule_1();
             changed |= self.rule_2();
             changed |= self.rule_3();
-            if let Some(m) = mag {
-                changed |= self.rule_4(m);
-            }
+            changed |= self.rule_4(mag);
             changed |= self.rule_5();
             changed |= self.rule_6();
             changed |= self.rule_7();
@@ -164,7 +140,7 @@ impl Marks {
     /// R4: on a discriminating path for `<..., a, b, c>` with `b o-* c`,
     /// orient `b <-> c` when `b` is a collider in `mag` and `b --> c`
     /// otherwise.
-    fn rule_4(&mut self, mag: &Marks) -> bool {
+    fn rule_4(&mut self, mag: &impl MarkGraph) -> bool {
         let n = self.n();
         let mut changed = false;
         for b in 0..n {
@@ -195,7 +171,7 @@ impl Marks {
     fn has_discriminating_path(&self, b: u32, c: u32) -> bool {
         (0..self.n())
             .filter(|&a| a != b && a != c)
-            .any(|a| MarkGraph::discriminating_path(self, a, b, c).is_some())
+            .any(|a| self.discriminating_path(a, b, c).is_some())
     }
 
     /// R5: `a o-o b` with an uncovered circle path between them makes that
@@ -279,32 +255,15 @@ impl Marks {
     /// R8: `a --> b --> c` or `a --o b --> c`, together with `a o-> c`,
     /// implies `a --> c`.
     fn rule_8(&mut self) -> bool {
-        self.rule_8_scoped(None)
-    }
-
-    /// R8, optionally restricted to the nodes `scope` admits.
-    ///
-    /// See [`Marks::close_local`] for why the restriction is needed there.
-    fn rule_8_scoped(&mut self, scope: Option<&[bool]>) -> bool {
         let n = self.n();
         let mut changed = false;
-        let inside = |v: u32| match scope {
-            Some(s) => s[v as usize],
-            None => true,
-        };
         for a in 0..n {
             for c in 0..n {
                 if a == c || !self.is_circle_arrow(a, c) {
                     continue;
                 }
-                if !inside(a) || !inside(c) {
-                    continue;
-                }
                 for b in 0..n {
                     if b == a || b == c || !self.adjacent(a, b) || !self.adjacent(b, c) {
-                        continue;
-                    }
-                    if !inside(b) {
                         continue;
                     }
                     // `a --> b` or `a --o b`: a tail at `a`, and either mark
@@ -341,7 +300,7 @@ impl Marks {
                     if self.mark_at(a, b) == Some(Mark::Arrow) {
                         continue;
                     }
-                    if MarkGraph::uncovered_pd_path(self, a, c, Some(b), None, &[]).is_some() {
+                    if self.uncovered_pd_path(a, c, Some(b), &[]).is_some() {
                         changed |= self.set(a, c, Mark::Tail);
                         break;
                     }
@@ -390,7 +349,7 @@ impl Marks {
                     {
                         continue;
                     }
-                    if MarkGraph::uncovered_pd_path(self, a, b, Some(mu), None, &[c]).is_none() {
+                    if self.uncovered_pd_path(a, b, Some(mu), &[c]).is_none() {
                         continue;
                     }
                     for omega in 0..n {
@@ -403,9 +362,7 @@ impl Marks {
                         {
                             continue;
                         }
-                        if MarkGraph::uncovered_pd_path(self, a, d, Some(omega), None, &[c])
-                            .is_some()
-                        {
+                        if self.uncovered_pd_path(a, d, Some(omega), &[c]).is_some() {
                             return true;
                         }
                     }

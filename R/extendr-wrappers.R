@@ -112,6 +112,8 @@ rs_is_admg_type <- function(session) .Call(wrap__rs_is_admg_type, session)
 
 rs_is_ag_type <- function(session) .Call(wrap__rs_is_ag_type, session)
 
+rs_is_pag_type <- function(session) .Call(wrap__rs_is_pag_type, session)
+
 rs_is_mag <- function(session) .Call(wrap__rs_is_mag, session)
 
 rs_is_cpdag <- function(session) .Call(wrap__rs_is_cpdag, session)

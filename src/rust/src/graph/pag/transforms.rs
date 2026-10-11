@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
-//! Building the PAG of a MAG's Markov equivalence class.
+//! Moving between a PAG and the MAGs of its Markov equivalence class.
 
-use super::marks::{MarkGraph, Marks};
+use super::mark_graph::MarkGraph;
+use super::marks::Marks;
 use super::Pag;
 use crate::edges::Mark;
 use crate::graph::ag::Ag;
@@ -48,38 +49,21 @@ pub(super) fn core_from_marks(template: &CaugiGraph, marks: &Marks) -> Result<Ca
     builder.finalize()
 }
 
-/// The marks of `mag`, as a dense working graph.
-fn marks_of_mag(mag: &Ag) -> Marks {
-    let n = mag.n();
-    let mut m = Marks::new(n);
-    for j in 0..n {
-        for &p in mag.parents_of(j) {
-            m.add_edge(p, j, Mark::Tail, Mark::Arrow); // p --> j
-        }
-        for &u in mag.undirected_of(j) {
-            m.add_edge(j, u, Mark::Tail, Mark::Tail); // j --- u
-        }
-        for &s in mag.spouses_of(j) {
-            m.add_edge(j, s, Mark::Arrow, Mark::Arrow); // j <-> s
-        }
-    }
-    m
-}
-
 impl Pag {
-    /// Build a MAG from the Markov equivalence class this PAG represents.
+    /// A MAG from the Markov equivalence class this PAG represents (Zhang
+    /// 2008, Thm. 2).
     ///
-    /// Theorem 2 of Zhang (2008). A circle opposite a definite mark is
-    /// resolved the only way that keeps the definite mark, so `o->` and `--o`
-    /// both become `-->`; `---` and `<->` are already resolved. What remains
-    /// is the `o-o` subgraph, oriented into a DAG with no unshielded colliders
-    /// by simplicial elimination (Dor and Tarsi).
+    /// A circle opposite a definite mark is resolved the only way that keeps
+    /// it, so `o->` and `--o` become `-->`. The remaining `o-o` subgraph is
+    /// oriented into a DAG with no unshielded colliders by simplicial
+    /// elimination.
     ///
-    /// Errors when the `o-o` component is not chordal, since then no member
-    /// MAG exists, and when the result is not a valid maximal ancestral graph.
+    /// Only ancestrality is checked. Maximality is checked once, when the PAG
+    /// is validated in [`Pag::try_new`], so the result for a constructed `Pag`
+    /// is always a MAG.
     pub fn to_mag(&self) -> Result<Ag, String> {
         let n = self.n();
-        let mut marks = self.to_marks();
+        let mut marks = Marks::from_graph(self.core_ref());
 
         // Step 1: a circle opposite a fixed mark is determined. Opposite an
         // arrowhead it must be a tail; opposite a tail it must be an arrowhead,
@@ -122,18 +106,10 @@ impl Pag {
             if remaining.is_empty() {
                 break;
             }
-            // A simplicial vertex: its remaining circle neighbours form a
-            // clique, so orienting every one of them into it adds no
-            // unshielded collider.
-            //
-            // This is Dor-Tarsi with a weaker condition (b) than
-            // [`crate::graph::pdag::Pdag::dag_extension`] uses: only the
-            // circle neighbours need be pairwise adjacent, not every
-            // neighbour of `x`. That is sound here and nowhere else. If `x`
-            // had an arrowhead from some `a` not adjacent to a circle
-            // neighbour `u`, then R1 would already have oriented `x --> u`
-            // off the triple `a *-> x o-* u`, so no such `x o-o u` survives
-            // in a closed PAG. Hence the two stay separate implementations.
+            // A simplicial vertex: orienting its circle neighbours into it adds
+            // no unshielded collider. Only the circle neighbours need form a
+            // clique, unlike `Pdag::dag_extension`; R1 has already ruled out
+            // an arrowhead into `x` from a node non-adjacent to one of them.
             let simplicial = remaining.iter().copied().find(|&x| {
                 let nbrs = &circle_nbrs[x as usize];
                 nbrs.iter()
@@ -159,95 +135,39 @@ impl Pag {
         }
 
         let core = core_from_marks(self.core_ref(), &marks)?;
-        let ag = Ag::new(Arc::new(core))?;
-        if !ag.is_mag() {
-            return Err(
-                "the constructed ancestral graph is not maximal, so this graph is not the \
-                 PAG of any MAG"
-                    .into(),
-            );
-        }
-        Ok(ag)
+        Ag::new(Arc::new(core))
     }
 
-    /// A minimal m-separator of `xs` and `ys`, or `None` when none exists
-    /// within `restrict` containing `include`.
+    /// The PAG of `mag`'s Markov equivalence class.
     ///
-    /// Delegated to [`Ag::minimal_m_separator`] on a member MAG. That is exact
-    /// rather than an approximation: every MAG in the represented class
-    /// encodes the same conditional independences, so `P` and any member have
-    /// precisely the same separators, and therefore the same minimal ones.
-    ///
-    /// Delegating also avoids re-deriving the linear-time algorithm of van der
-    /// Zander and Liskiewicz for circle marks. Its correctness rests on the
-    /// anterior set of `X u Y u I` being a separator whenever one exists, which
-    /// holds for ancestral graphs; the analogous claim for a partially oriented
-    /// graph is not one to assume. A greedy shrink is no safer, since
-    /// m-separation is not monotone in the conditioning set -- adding a
-    /// collider opens paths.
-    ///
-    /// The cost is that of [`Pag::to_mag`], which tests maximality and so is
-    /// exponential in the worst case.
-    pub fn minimal_m_separator(
-        &self,
-        xs: &[u32],
-        ys: &[u32],
-        include: &[u32],
-        restrict: &[u32],
-    ) -> Result<Option<Vec<u32>>, String> {
-        self.to_mag()?
-            .minimal_m_separator(xs, ys, include, restrict)
-    }
-
-    /// Build the PAG representing the Markov equivalence class of `mag`.
-    ///
-    /// The PAG has `mag`'s skeleton, since Markov equivalent MAGs share their
-    /// adjacencies. Each endpoint carries an arrowhead or a tail when that
-    /// mark is shared by every MAG in the class, and a circle otherwise.
-    ///
-    /// The construction starts from the skeleton with every mark a circle,
-    /// orients the unshielded colliders as they appear in `mag`, and closes
-    /// under Zhang's rules R1-R10.
-    ///
-    /// No separating sets are needed. FCI has to infer the unshielded
-    /// colliders from conditional independence, but here a MAG is in hand and
-    /// Markov equivalent MAGs share their unshielded colliders, so they can be
-    /// read straight off it. The same applies to R4, which consults `mag` to
-    /// decide whether the middle vertex of a discriminating path is a
-    /// collider.
+    /// Starts from `mag`'s skeleton with every mark a circle, orients the
+    /// unshielded colliders of `mag` (shared by every member), and closes
+    /// under R1-R10, with R4 reading collider status off `mag`. No separating
+    /// sets are needed because a member is in hand.
     pub fn from_mag(mag: &Ag) -> Result<Self, String> {
-        let n = mag.n();
-        let mag_marks = marks_of_mag(mag);
-
-        // Skeleton, every mark a circle.
-        let mut marks = Marks::new(n);
-        for (i, j, _, _) in mag_marks.edges() {
-            marks.add_edge(i, j, Mark::Circle, Mark::Circle);
+        let m = mag.core_ref();
+        let mut marks = Marks::new(m.n());
+        for i in 0..m.n() {
+            for j in m.neighbors(i) {
+                marks.add_edge(i, j, Mark::Circle, Mark::Circle);
+            }
         }
-
-        // Step 0: the unshielded colliders of `mag` are invariant.
-        for b in 0..n {
-            let nb: Vec<u32> = (0..n).filter(|&w| mag_marks.adjacent(w, b)).collect();
-            for (ii, &a) in nb.iter().enumerate() {
-                for &c in nb.iter().skip(ii + 1) {
-                    if mag_marks.adjacent(a, c) {
-                        continue; // shielded
-                    }
-                    if mag_marks.mark_at(b, a) == Some(Mark::Arrow)
-                        && mag_marks.mark_at(b, c) == Some(Mark::Arrow)
-                    {
-                        marks.set(b, a, Mark::Arrow);
-                        marks.set(b, c, Mark::Arrow);
-                    }
+        for b in 0..m.n() {
+            let into_b: Vec<u32> = m
+                .neighbors(b)
+                .into_iter()
+                .filter(|&a| m.mark_at(b, a) == Some(Mark::Arrow))
+                .collect();
+            for (k, &a) in into_b.iter().enumerate() {
+                for &c in into_b.iter().skip(k + 1).filter(|&&c| !m.adjacent(a, c)) {
+                    marks.set(b, a, Mark::Arrow);
+                    marks.set(b, c, Mark::Arrow);
                 }
             }
         }
-
-        marks.close(Some(&mag_marks));
-
-        let core = core_from_marks(mag.core_ref(), &marks)?;
-        // `new_unchecked`: the round-trip check would call back into this.
-        Pag::new_unchecked(Arc::new(core))
+        marks.close(m);
+        // Unchecked: validation would call back into this.
+        Pag::new_unchecked(Arc::new(core_from_marks(m, &marks)?))
     }
 }
 
@@ -270,13 +190,13 @@ mod tests {
 
     /// The glyph of the edge `{i, j}` as `<mark at i>-<mark at j>`.
     fn glyph(p: &Pag, i: u32, j: u32) -> String {
-        let l = match MarkGraph::mark_at(p, i, j) {
+        let l = match p.core_ref().mark_at(i, j) {
             Some(Mark::Arrow) => '<',
             Some(Mark::Tail) => '-',
             Some(Mark::Circle) => 'o',
             _ => return "none".into(),
         };
-        let r = match MarkGraph::mark_at(p, j, i) {
+        let r = match p.core_ref().mark_at(j, i) {
             Some(Mark::Arrow) => '>',
             Some(Mark::Tail) => '-',
             Some(Mark::Circle) => 'o',
@@ -400,10 +320,10 @@ mod tests {
     fn skeleton_is_preserved() {
         let p = pag_of(4, &[(0, 2, "-->"), (1, 2, "-->"), (2, 3, "-->")]);
         for &(u, v) in &[(0u32, 2u32), (1, 2), (2, 3)] {
-            assert!(MarkGraph::adjacent(&p, u, v));
+            assert!(p.core_ref().adjacent(u, v));
         }
-        assert!(!MarkGraph::adjacent(&p, 0, 1));
-        assert!(!MarkGraph::adjacent(&p, 0, 3));
+        assert!(!p.core_ref().adjacent(0, 1));
+        assert!(!p.core_ref().adjacent(0, 3));
     }
 
     #[test]
@@ -421,7 +341,7 @@ mod tests {
     fn empty_and_single_node_graphs_round_trip() {
         for n in [0u32, 1, 2] {
             let p = pag_of(n, &[]);
-            assert_eq!(MarkGraph::n(&p), n);
+            assert_eq!(p.n(), n);
         }
     }
 }

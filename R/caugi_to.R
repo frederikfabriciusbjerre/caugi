@@ -172,7 +172,7 @@ as_adjacency <- function(x, coding = c("binary", "marks")) {
 
   if (identical(coding, "marks")) {
     # `amat.pag`: the code is the mark at the *column* node.
-    marks <- list(
+    marks <- rbind(
       "-->" = c(from = 3L, to = 2L),
       "<->" = c(from = 2L, to = 2L),
       "---" = c(from = 3L, to = 3L),
@@ -180,7 +180,7 @@ as_adjacency <- function(x, coding = c("binary", "marks")) {
       "--o" = c(from = 3L, to = 1L),
       "o-o" = c(from = 1L, to = 1L)
     )
-    unknown <- setdiff(unique(e$edge), names(marks))
+    unknown <- setdiff(unique(e$edge), rownames(marks))
     if (length(unknown) > 0L) {
       stop(
         "Unsupported edge glyphs in conversion to a mark-coded matrix: ",
@@ -188,13 +188,11 @@ as_adjacency <- function(x, coding = c("binary", "marks")) {
         call. = FALSE
       )
     }
+    m <- marks[e$edge, , drop = FALSE]
     fi <- match(e$from, nm)
     ti <- match(e$to, nm)
-    for (k in seq_len(nrow(e))) {
-      m <- marks[[e$edge[k]]]
-      out[fi[k], ti[k]] <- m[["to"]] # mark at the `to` node
-      out[ti[k], fi[k]] <- m[["from"]] # mark at the `from` node
-    }
+    out[cbind(fi, ti)] <- m[, "to"] # mark at the `to` node
+    out[cbind(ti, fi)] <- m[, "from"] # mark at the `from` node
     return(out)
   }
 

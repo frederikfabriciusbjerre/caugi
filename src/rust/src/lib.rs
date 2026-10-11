@@ -1670,6 +1670,14 @@ fn rs_is_ag_type(mut session: ExternalPtr<GraphSession>) -> bool {
 }
 
 #[extendr]
+fn rs_is_pag_type(mut session: ExternalPtr<GraphSession>) -> bool {
+    session
+        .as_mut()
+        .is_pag_type()
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
 fn rs_is_mag(mut session: ExternalPtr<GraphSession>) -> bool {
     session
         .as_mut()
@@ -2377,6 +2385,7 @@ extendr_module! {
     fn rs_is_ug_type;
     fn rs_is_admg_type;
     fn rs_is_ag_type;
+    fn rs_is_pag_type;
     fn rs_is_mag;
     fn rs_is_cpdag;
     fn rs_is_mpdag;

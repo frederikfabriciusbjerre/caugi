@@ -590,51 +590,32 @@ is_mag <- function(cg, force_check = FALSE) {
 #' @title Is the `caugi` graph a PAG?
 #'
 #' @description
-#' Checks whether the given graph is a Partial Ancestral Graph, i.e. whether
-#' there exists a maximal ancestral graph `M` whose Markov equivalence class
-#' this graph represents.
+#' Checks whether the given graph is a Partial Ancestral Graph: whether there
+#' is a maximal ancestral graph whose Markov equivalence class it represents,
+#' with a circle exactly at the endpoints that are not invariant across that
+#' class.
 #'
 #' @details
-#' This is a *complete* check, in four stages:
+#' The check is complete. [pag_to_mag()] must yield a maximal ancestral graph,
+#' and [mag_to_pag()] must map it back to exactly this graph. That rejects
+#' over-oriented graphs (a definite mark that is not invariant) and
+#' under-oriented ones (a circle where an invariant mark belongs), which no
+#' structural check can detect. The maximality test is exponential in the
+#' worst case, as for [is_mag()].
 #'
-#' 1. every endpoint mark is an arrowhead, a tail or a circle, on a simple
-#'    graph with no self-loops;
-#' 2. the definite directed part is acyclic, no undirected endpoint carries an
-#'    arrowhead, and every definite arrowhead respects the anterior
-#'    constraint;
-#' 3. [pag_to_mag()] yields a graph that really is a maximal ancestral graph;
-#' 4. [mag_to_pag()] maps that MAG back to exactly this graph.
-#'
-#' Stage 4 is what makes the check complete. Stages 1-3 are all necessary but
-#' none of them can see whether the *circles* are in the right places, so
-#' without it both an over-oriented graph (a definite mark that is not in fact
-#' invariant across the class) and an under-oriented one (a circle where an
-#' invariant mark belongs) would pass.
-#'
-#' All four stages run when a `class = "PAG"` graph is constructed, so this
-#' function simply attempts that construction. There is no `force_check`
-#' argument: a graph already carrying the class has been verified, and one that
-#' does not is checked in full.
-#'
-#' Stage 3 tests maximality, which is exhaustive and exponential in the worst
-#' case, the same cost as [is_mag()].
+#' Building a graph with `class = "PAG"` runs the same check, so there is no
+#' `force_check` argument: the class is a guarantee.
 #'
 #' @param cg A `caugi` object.
 #'
 #' @returns A logical value indicating whether the graph is a PAG.
 #'
 #' @examples
-#' # The PAG of a MAG is a PAG, by construction.
 #' is_pag(mag_to_pag(caugi(A %-->% B, C %-->% B, class = "AG"))) # TRUE
 #'
-#' # A graph that is not a PAG cannot carry the class at all, so to ask about
-#' # one you have to hold it as `"UNKNOWN"`. This one is over-oriented: with A
-#' # and C non-adjacent, whether B is a collider would differ between members,
-#' # so those marks are not invariant.
+#' # Over-oriented: with A and C non-adjacent, whether B is a collider differs
+#' # between members, so these marks are not invariant.
 #' is_pag(caugi(A %o->% B, B %o-o% C, class = "UNKNOWN")) # FALSE
-#'
-#' # Trying to build it as a PAG is an error rather than a FALSE.
-#' try(caugi(A %o->% B, B %o-o% C, class = "PAG"))
 #'
 #' @family queries
 #' @concept queries
@@ -642,26 +623,7 @@ is_mag <- function(cg, force_check = FALSE) {
 #' @export
 is_pag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-
-  # Constructing a `"PAG"` runs the complete check, so the class is a
-  # guarantee and can be trusted here.
-  if (identical(cg@graph_class, "PAG")) {
-    return(TRUE)
-  }
-
-  ok <- tryCatch(
-    {
-      caugi(
-        nodes = nodes(cg)$name,
-        edges_df = edges(cg),
-        class = "PAG",
-        simple = TRUE
-      )
-      TRUE
-    },
-    error = function(cnd) FALSE
-  )
-  ok
+  identical(cg@graph_class, "PAG") || rs_is_pag_type(cg@session)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -965,33 +927,20 @@ formals(ancestors) <- alist(
   open = caugi_options("use_open_graph_definition")
 )
 
-#' @title Is a directed edge in a PAG visible?
+#' @title Is a directed edge in a MAG or PAG visible?
 #'
 #' @description
-#' A directed edge `from --> to` in a PAG is *visible* when every MAG in the
-#' represented Markov equivalence class rules out an inducing path between the
-#' two nodes that is into `from`. Visibility is what licenses reading the edge
-#' as an unconfounded direct effect, and it is the ingredient the generalized
-#' adjustment criterion needs for amenability.
+#' A directed edge `from --> to` is *visible* when no MAG in the represented
+#' class can have an inducing path into `from` between the two, so the edge
+#' carries no hidden confounding. Visibility is what licenses reading the edge
+#' as a direct, unconfounded effect.
 #'
 #' @details
-#' The graphical criterion is Zhang (2008, Def. 8), equivalently Maathuis and
-#' Colombo (2015, Def. 3.1): `from --> to` is visible if and only if there is a
-#' node `c` **not** adjacent to `to` such that either
-#'
-#' * there is an edge between `c` and `from` with an arrowhead at `from`, or
-#' * there is a collider path between `c` and `from` with an arrowhead at
-#'   `from`, every non-endpoint of which is a parent of `to`.
-#'
-#' Otherwise the edge is invisible. Only `-->` edges can be visible: `FALSE` is
-#' returned for any other edge type, for a non-adjacent pair, and for the
-#' reverse orientation of a directed edge.
-#'
-#' Defined for both MAGs (`"AG"`) and PAGs, by the same criterion. Visibility
-#' is not about circle marks: a directed edge in a MAG can perfectly well be
-#' invisible, which is exactly what makes the notion useful there -- an
-#' invisible `A --> B` means some member of the represented DAG class has a
-#' latent path into `A`, so the edge cannot simply be cut.
+#' Zhang (2008, Def. 8): `from --> to` is visible iff some node `c` not
+#' adjacent to `to` has either an edge into `from`, or a collider path into
+#' `from` whose non-endpoints are all parents of `to`. Only `-->` edges can be
+#' visible, so `FALSE` is returned for any other edge, for a non-adjacent pair
+#' and for the reverse of a directed edge.
 #'
 #' @param cg A `caugi` object of class `"AG"` or `"PAG"`.
 #' @param from,to Node names, or `NULL`. Use `from_index`/`to_index` to pass
@@ -1002,42 +951,15 @@ formals(ancestors) <- alist(
 #' @returns A logical value; `TRUE` if the edge `from --> to` is visible.
 #'
 #' @examples
-#' # The `pcalg::visibleEdge` documentation fixture, which is a MAG rather than
-#' # a PAG: `a --> b`, `b <-> c`, `b --> d`, `c --> d`.
-#' mag <- caugi(
-#'   A %-->% B,
-#'   B %<->% C,
-#'   B %-->% D,
-#'   C %-->% D,
-#'   class = "AG"
-#' )
-#' # Every other node is adjacent to B, so there is no witness.
-#' is_visible_edge(mag, "A", "B") # FALSE
-#' # A is not adjacent to D and `A --> B` is into B.
-#' is_visible_edge(mag, "B", "D") # TRUE
-#' # The collider path `A --> B <-> C` is into C and its only non-endpoint, B,
-#' # is a parent of D.
-#' is_visible_edge(mag, "C", "D") # TRUE
+#' # The `pcalg::visibleEdge` example MAG.
+#' mag <- caugi(A %-->% B, B %<->% C, B %-->% D, C %-->% D, class = "AG")
+#' is_visible_edge(mag, "A", "B") # FALSE: every other node is adjacent to B
+#' is_visible_edge(mag, "B", "D") # TRUE: A --> B with A, D non-adjacent
+#' is_visible_edge(mag, "C", "D") # TRUE: collider path A --> B <-> C
 #'
-#' # A valid PAG carrying both a visible and an invisible directed edge.
-#' cg <- caugi(
-#'   A %-->% B,
-#'   C %o->% A,
-#'   D %o->% A,
-#'   C %-->% B,
-#'   class = "PAG"
-#' )
-#'
-#' # `A --> B` is visible: D has an arrowhead into A and is not adjacent to B,
-#' # which is the witness condition (a).
-#' is_visible_edge(cg, "A", "B") # TRUE
-#'
-#' # `C --> B` is invisible: every node with an arrowhead into C, and every
-#' # collider path into it, fails the condition.
-#' is_visible_edge(cg, "C", "B") # FALSE
-#'
-#' # Only `-->` edges can be visible.
-#' is_visible_edge(cg, "C", "A") # FALSE, that edge is `o->`
+#' pag <- caugi(A %-->% B, C %o->% A, D %o->% A, C %-->% B, class = "PAG")
+#' is_visible_edge(pag, "A", "B") # TRUE: D *-> A with D, B non-adjacent
+#' is_visible_edge(pag, "C", "B") # FALSE
 #'
 #' @references
 #' Zhang, J. (2008). Causal reasoning with ancestral graphs.
@@ -1435,14 +1357,16 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
   .Call(wrap__districts, cg, nodes, index, all)
 }
 
-#' @title M-separation test for AGs and ADMGs
+#' @title M-separation test for AGs, PAGs and ADMGs
 #'
 #' @description Test whether two sets of nodes are m-separated given a
-#' conditioning set in an ancestral graph (AG) or an ADMG.
+#' conditioning set in an ancestral graph (AG), a PAG, or an ADMG.
 #'
-#' M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs.
+#' M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs. In
+#' a PAG it is decided on a member MAG from [pag_to_mag()], which is exact
+#' since every member encodes the same m-separations.
 #'
-#' @param cg A `caugi` object of class AG, ADMG, or DAG.
+#' @param cg A `caugi` object of class AG, PAG, ADMG, or DAG.
 #' @param X,Y,Z Character vectors of node names, or `NULL`. Use `*_index` to
 #'   pass 1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
 #'   on.

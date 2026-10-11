@@ -2,7 +2,7 @@
 % Please edit documentation in R/queries.R
 \name{is_visible_edge}
 \alias{is_visible_edge}
-\title{Is a directed edge in a PAG visible?}
+\title{Is a directed edge in a MAG or PAG visible?}
 \usage{
 is_visible_edge(cg, from = NULL, to = NULL, from_index = NULL, to_index = NULL)
 }
@@ -19,69 +19,28 @@ is_visible_edge(cg, from = NULL, to = NULL, from_index = NULL, to_index = NULL)
 A logical value; \code{TRUE} if the edge \verb{from --> to} is visible.
 }
 \description{
-A directed edge \verb{from --> to} in a PAG is \emph{visible} when every MAG in the
-represented Markov equivalence class rules out an inducing path between the
-two nodes that is into \code{from}. Visibility is what licenses reading the edge
-as an unconfounded direct effect, and it is the ingredient the generalized
-adjustment criterion needs for amenability.
+A directed edge \verb{from --> to} is \emph{visible} when no MAG in the represented
+class can have an inducing path into \code{from} between the two, so the edge
+carries no hidden confounding. Visibility is what licenses reading the edge
+as a direct, unconfounded effect.
 }
 \details{
-The graphical criterion is Zhang (2008, Def. 8), equivalently Maathuis and
-Colombo (2015, Def. 3.1): \verb{from --> to} is visible if and only if there is a
-node \code{c} \strong{not} adjacent to \code{to} such that either
-\itemize{
-\item there is an edge between \code{c} and \code{from} with an arrowhead at \code{from}, or
-\item there is a collider path between \code{c} and \code{from} with an arrowhead at
-\code{from}, every non-endpoint of which is a parent of \code{to}.
-}
-
-Otherwise the edge is invisible. Only \verb{-->} edges can be visible: \code{FALSE} is
-returned for any other edge type, for a non-adjacent pair, and for the
-reverse orientation of a directed edge.
-
-Defined for both MAGs (\code{"AG"}) and PAGs, by the same criterion. Visibility
-is not about circle marks: a directed edge in a MAG can perfectly well be
-invisible, which is exactly what makes the notion useful there -- an
-invisible \verb{A --> B} means some member of the represented DAG class has a
-latent path into \code{A}, so the edge cannot simply be cut.
+Zhang (2008, Def. 8): \verb{from --> to} is visible iff some node \code{c} not
+adjacent to \code{to} has either an edge into \code{from}, or a collider path into
+\code{from} whose non-endpoints are all parents of \code{to}. Only \verb{-->} edges can be
+visible, so \code{FALSE} is returned for any other edge, for a non-adjacent pair
+and for the reverse of a directed edge.
 }
 \examples{
-# The `pcalg::visibleEdge` documentation fixture, which is a MAG rather than
-# a PAG: `a --> b`, `b <-> c`, `b --> d`, `c --> d`.
-mag <- caugi(
-  A \%-->\% B,
-  B \%<->\% C,
-  B \%-->\% D,
-  C \%-->\% D,
-  class = "AG"
-)
-# Every other node is adjacent to B, so there is no witness.
-is_visible_edge(mag, "A", "B") # FALSE
-# A is not adjacent to D and `A --> B` is into B.
-is_visible_edge(mag, "B", "D") # TRUE
-# The collider path `A --> B <-> C` is into C and its only non-endpoint, B,
-# is a parent of D.
-is_visible_edge(mag, "C", "D") # TRUE
+# The `pcalg::visibleEdge` example MAG.
+mag <- caugi(A \%-->\% B, B \%<->\% C, B \%-->\% D, C \%-->\% D, class = "AG")
+is_visible_edge(mag, "A", "B") # FALSE: every other node is adjacent to B
+is_visible_edge(mag, "B", "D") # TRUE: A --> B with A, D non-adjacent
+is_visible_edge(mag, "C", "D") # TRUE: collider path A --> B <-> C
 
-# A valid PAG carrying both a visible and an invisible directed edge.
-cg <- caugi(
-  A \%-->\% B,
-  C \%o->\% A,
-  D \%o->\% A,
-  C \%-->\% B,
-  class = "PAG"
-)
-
-# `A --> B` is visible: D has an arrowhead into A and is not adjacent to B,
-# which is the witness condition (a).
-is_visible_edge(cg, "A", "B") # TRUE
-
-# `C --> B` is invisible: every node with an arrowhead into C, and every
-# collider path into it, fails the condition.
-is_visible_edge(cg, "C", "B") # FALSE
-
-# Only `-->` edges can be visible.
-is_visible_edge(cg, "C", "A") # FALSE, that edge is `o->`
+pag <- caugi(A \%-->\% B, C \%o->\% A, D \%o->\% A, C \%-->\% B, class = "PAG")
+is_visible_edge(pag, "A", "B") # TRUE: D *-> A with D, B non-adjacent
+is_visible_edge(pag, "C", "B") # FALSE
 
 }
 \references{

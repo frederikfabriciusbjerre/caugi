@@ -59,6 +59,3 @@ tools/benchmark/bench_r.R
 # Claude Code agent state
 .claude/
 revdep/
-
-# byproduct of running plot examples
-Rplots.pdf

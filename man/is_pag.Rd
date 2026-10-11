@@ -13,48 +13,28 @@ is_pag(cg)
 A logical value indicating whether the graph is a PAG.
 }
 \description{
-Checks whether the given graph is a Partial Ancestral Graph, i.e. whether
-there exists a maximal ancestral graph \code{M} whose Markov equivalence class
-this graph represents.
+Checks whether the given graph is a Partial Ancestral Graph: whether there
+is a maximal ancestral graph whose Markov equivalence class it represents,
+with a circle exactly at the endpoints that are not invariant across that
+class.
 }
 \details{
-This is a \emph{complete} check, in four stages:
-\enumerate{
-\item every endpoint mark is an arrowhead, a tail or a circle, on a simple
-graph with no self-loops;
-\item the definite directed part is acyclic, no undirected endpoint carries an
-arrowhead, and every definite arrowhead respects the anterior
-constraint;
-\item \code{\link[=pag_to_mag]{pag_to_mag()}} yields a graph that really is a maximal ancestral graph;
-\item \code{\link[=mag_to_pag]{mag_to_pag()}} maps that MAG back to exactly this graph.
-}
+The check is complete. \code{\link[=pag_to_mag]{pag_to_mag()}} must yield a maximal ancestral graph,
+and \code{\link[=mag_to_pag]{mag_to_pag()}} must map it back to exactly this graph. That rejects
+over-oriented graphs (a definite mark that is not invariant) and
+under-oriented ones (a circle where an invariant mark belongs), which no
+structural check can detect. The maximality test is exponential in the
+worst case, as for \code{\link[=is_mag]{is_mag()}}.
 
-Stage 4 is what makes the check complete. Stages 1-3 are all necessary but
-none of them can see whether the \emph{circles} are in the right places, so
-without it both an over-oriented graph (a definite mark that is not in fact
-invariant across the class) and an under-oriented one (a circle where an
-invariant mark belongs) would pass.
-
-All four stages run when a \code{class = "PAG"} graph is constructed, so this
-function simply attempts that construction. There is no \code{force_check}
-argument: a graph already carrying the class has been verified, and one that
-does not is checked in full.
-
-Stage 3 tests maximality, which is exhaustive and exponential in the worst
-case, the same cost as \code{\link[=is_mag]{is_mag()}}.
+Building a graph with \code{class = "PAG"} runs the same check, so there is no
+\code{force_check} argument: the class is a guarantee.
 }
 \examples{
-# The PAG of a MAG is a PAG, by construction.
 is_pag(mag_to_pag(caugi(A \%-->\% B, C \%-->\% B, class = "AG"))) # TRUE
 
-# A graph that is not a PAG cannot carry the class at all, so to ask about
-# one you have to hold it as `"UNKNOWN"`. This one is over-oriented: with A
-# and C non-adjacent, whether B is a collider would differ between members,
-# so those marks are not invariant.
+# Over-oriented: with A and C non-adjacent, whether B is a collider differs
+# between members, so these marks are not invariant.
 is_pag(caugi(A \%o->\% B, B \%o-o\% C, class = "UNKNOWN")) # FALSE
-
-# Trying to build it as a PAG is an error rather than a FALSE.
-try(caugi(A \%o->\% B, B \%o-o\% C, class = "PAG"))
 
 }
 \seealso{
