@@ -4,6 +4,7 @@
 pub mod acyclic;
 pub mod adjustment;
 pub mod bitset;
+pub mod components;
 pub mod csr;
 pub mod meek;
 pub mod min_msep;

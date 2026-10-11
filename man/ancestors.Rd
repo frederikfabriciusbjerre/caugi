@@ -51,6 +51,7 @@ ancestors(cg, c("B", "C"))
 Other queries:
 \code{\link[=anteriors]{anteriors()}},
 \code{\link[=children]{children()}},
+\code{\link[=components]{components()}},
 \code{\link[=descendants]{descendants()}},
 \code{\link[=districts]{districts()}},
 \code{\link[=edge_types]{edge_types()}},

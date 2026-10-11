@@ -2,11 +2,14 @@
 
 ## New Features
 
-- Add first-class `"PAG"` (Partial Ancestral Graph) support across the
+* Add `components()` to partition graphs into weakly connected components or
+  strongly connected components of the directed part, including cyclic graphs
+  of class `"UNKNOWN"`.
+* Add first-class `"PAG"` (Partial Ancestral Graph) support across the
   constructor (`caugi()`), coercion (`as_caugi()`), and class mutation
   (`mutate_caugi()`). Selection bias is in scope, so all six PAG edge types
   are supported: `-->`, `---`, `<->`, `o-o`, `--o`, and `o->`.
-- `"PAG"` is validated *completely* at construction. A graph carries the class
+* `"PAG"` is validated *completely* at construction. A graph carries the class
   only if there exists a maximal ancestral graph whose Markov equivalence class
   it represents, which is decided by a `pag_to_mag()` then `mag_to_pag()` round
   trip. This rejects both over-oriented graphs (a definite mark that is not
@@ -14,15 +17,15 @@
   invariant mark belongs); no purely structural check can detect either.
   Partially oriented output that is not a complete PAG, such as an RFCI graph
   or an "anytime" PAG, should use `class = "UNKNOWN"`.
-- Add `is_pag()`, which runs that complete check. Unlike `is_ag()` and
+* Add `is_pag()`, which runs that complete check. Unlike `is_ag()` and
   `is_mag()` it takes no `force_check` argument, because the graph class cannot
   be used as a shortcut.
-- Add `pag_to_mag()`, returning a MAG from the Markov equivalence class a PAG
+* Add `pag_to_mag()`, returning a MAG from the Markov equivalence class a PAG
   represents (Zhang 2008, Theorem 2), and `mag_to_pag()`, returning the PAG of
   a MAG's class via Zhang's complete orientation rules R1-R10.
-- Add `is_visible_edge()`, which decides whether a directed edge in a PAG is
+* Add `is_visible_edge()`, which decides whether a directed edge in a PAG is
   visible (Zhang 2008, Definition 8).
-- Add `dag_to_pag()`, returning the PAG a DAG induces over its observed
+* Add `dag_to_pag()`, returning the PAG a DAG induces over its observed
   variables once latents are marginalized out and selection variables are
   conditioned on. Validated against `pcalg::dag2pag()` on random DAGs with a
   latent; the two routes share no code (pcalg runs FCI against a d-separation
@@ -31,25 +34,25 @@
   against its defining property: m-separation in the result equals
   d-separation in the DAG once the selection variables join the conditioning
   set.
-- `as_adjacency()` gains a `coding` argument. The default `"binary"` is
+* `as_adjacency()` gains a `coding` argument. The default `"binary"` is
   unchanged; `coding = "marks"` writes the mark-coded `amat.pag` form, which
   can represent all six PAG edge types. `as_caugi()` reads the same coding, so
   the two round-trip.
 
 ## Improvements
 
-- `plot()`, `to_dot()`, `to_mermaid()` and `to_graphml()` already rendered
+* `plot()`, `to_dot()`, `to_mermaid()` and `to_graphml()` already rendered
   circle endpoint marks and now do so for graphs typed `"PAG"`.
 
 ## Bug Fixes
 
-- `as_caugi()` no longer misreads a mark-coded (`amat.pag`) integer matrix
+* `as_caugi()` no longer misreads a mark-coded (`amat.pag`) integer matrix
   when a non-PAG class is requested. The 0-3 mark decoding was gated on
   `class == "PAG"`, so a MAG passed as `class = "AG"` fell through to the
   generic branch where every nonzero entry became a `-->` edge. Decoding is now
   driven by the data: a matrix containing a 2 or 3 is mark-coded whatever class
   was requested.
-- `as_caugi()` no longer silently downgrades `class = "PAG"` to `"UNKNOWN"`.
+* `as_caugi()` no longer silently downgrades `class = "PAG"` to `"UNKNOWN"`.
 - `==` and `!=` for `caugi` objects now compare a symmetric edge as an
   unordered pair, so `caugi(A %---% B) == caugi(B %---% A)` is `TRUE` as it
   should be. This affected `---`, `<->` and `o-o`, and any symmetric edge added

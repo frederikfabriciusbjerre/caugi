@@ -1578,6 +1578,25 @@ fn districts(cg: Robj, nodes: Robj, index: Robj, all: Robj) -> Robj {
 }
 
 #[extendr]
+fn components(cg: Robj, mode: &str) -> Robj {
+    use graph::alg::components::{components, ComponentMode};
+
+    let mode = match mode {
+        "weak" => ComponentMode::Weak,
+        "strong" => ComponentMode::Strong,
+        _ => throw_r_error("`mode` must be 'weak' or 'strong'."),
+    };
+    let mut session = session_ptr_from_cg(&cg);
+    let core = session.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
+    let groups = components(&core, mode);
+    let out: Vec<Robj> = groups
+        .iter()
+        .map(|group| indices_to_names(group, session.as_ref().names()))
+        .collect();
+    extendr_api::prelude::List::from_values(out).into_robj()
+}
+
+#[extendr]
 fn topological_sort(cg: Robj) -> Robj {
     let mut session = session_ptr_from_cg(&cg);
     let result = session
@@ -2348,6 +2367,7 @@ extendr_module! {
     fn markov_blanket;
     fn exogenous;
     fn topological_sort;
+    fn components;
     fn spouses;
     fn districts;
     fn parents;

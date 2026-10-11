@@ -63,6 +63,7 @@ Richardson, T. and Spirtes, P. (2002). Ancestral graph Markov models.
 Other queries:
 \code{\link[=ancestors]{ancestors()}},
 \code{\link[=children]{children()}},
+\code{\link[=components]{components()}},
 \code{\link[=descendants]{descendants()}},
 \code{\link[=districts]{districts()}},
 \code{\link[=edge_types]{edge_types()}},

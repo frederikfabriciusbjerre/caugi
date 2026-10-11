@@ -1313,6 +1313,48 @@ formals(exogenous) <- alist(cg = , undirected_as_parents = FALSE)
 # Implemented directly in Rust via `topological_sort()` in `src/rust/src/lib.rs`.
 topological_sort <- topological_sort
 
+#' @title Get connected components of a graph
+#'
+#' @description Partition a graph into maximal weakly or strongly connected
+#' components. This query supports every graph class, including cyclic graphs
+#' of class `"UNKNOWN"`.
+#'
+#' @param cg A `caugi` object.
+#' @param mode Character; `"weak"` (default) or `"strong"`. Weak connectivity
+#' ignores edge directions and includes all edge types. Strong connectivity
+#' uses only fully directed edges: every node in a component can reach every
+#' other node by following directed edges. Undirected, bidirected, and partial
+#' edges are ignored in strong mode.
+#'
+#' @returns A list of character vectors, one per component. Nodes within each
+#' component follow the graph's node order, and components are ordered by their
+#' first node in that order. Isolated nodes form singleton components. An empty
+#' graph returns `list()`.
+#'
+#' @details Every strong component of a DAG is a singleton. Strong components
+#' describe mutual directed reachability, whereas [districts()] describe
+#' connectivity through bidirected edges.
+#'
+#' @examples
+#' cg <- caugi(A %-->% B, C %-->% B, D, class = "DAG")
+#' components(cg) # list(c("A", "B", "C"), "D")
+#' components(cg, mode = "strong") # Four singleton components
+#'
+#' cyclic <- caugi(
+#'   A %-->% B, B %-->% C, C %-->% A, C %-->% D,
+#'   class = "UNKNOWN"
+#' )
+#' components(cyclic, mode = "strong") # list(c("A", "B", "C"), "D")
+#'
+#' @family queries
+#' @concept queries
+#' @export
+components <- function(cg, mode = c("weak", "strong")) {
+  is_caugi(cg, throw_error = TRUE)
+  mode <- match.arg(mode)
+  .Call(wrap__components, cg, mode)
+}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────── ADMG-specific queries ────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
