@@ -2,6 +2,16 @@
 
 ## caugi (development version)
 
+### Performance Improvements
+
+- [`remove_edges()`](https://caugi.org/reference/caugi_verbs.md) now
+  removes edges directly in Rust, avoiding graph table reconstruction
+  and redundant session cloning.
+- Node and edge tables use faster constructors, reducing overhead when
+  building graphs and retrieving
+  [`nodes()`](https://caugi.org/reference/nodes.md) and
+  [`edges()`](https://caugi.org/reference/edges.md).
+
 ### Bug Fixes
 
 - [`dag_from_pdag()`](https://caugi.org/reference/dag_from_pdag.md) no

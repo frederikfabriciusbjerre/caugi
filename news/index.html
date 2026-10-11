@@ -44,6 +44,12 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="caugi-development-version">caugi (development version)<a class="anchor" aria-label="anchor" href="#caugi-development-version"></a></h2>
 <div class="section level3">
+<h3 id="performance-improvements-development-version">Performance Improvements<a class="anchor" aria-label="anchor" href="#performance-improvements-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/caugi_verbs.html">remove_edges()</a></code> now removes edges directly in Rust, avoiding graph table reconstruction and redundant session cloning.</li>
+<li>Node and edge tables use faster constructors, reducing overhead when building graphs and retrieving <code><a href="../reference/nodes.html">nodes()</a></code> and <code><a href="../reference/edges.html">edges()</a></code>.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>
 <code><a href="../reference/dag_from_pdag.html">dag_from_pdag()</a></code> no longer adds v-structures the input PDAG did not have. Dor and Tarsi’s condition (b) requires every undirected neighbour of the candidate sink to be adjacent to <em>all</em> its other neighbours; the previous implementation only required the undirected neighbours to be pairwise adjacent, so on e.g. <code>A --&gt; B &lt;-- C</code> with <code>B --- D</code> it oriented <code>D --&gt; B</code> and created two v-structures. The algorithm now lives in Rust, like every other graph algorithm in the package.</li>
