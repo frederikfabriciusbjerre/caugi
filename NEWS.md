@@ -1,5 +1,7 @@
 # caugi (development version)
 
+* `to_dot()`, `to_mermaid()`, and `to_graphml()` now work with development S7.
+
 ## New Features
 
 * Add `components()` to partition graphs into weakly connected components or

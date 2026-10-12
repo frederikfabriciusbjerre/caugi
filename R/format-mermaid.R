@@ -26,7 +26,7 @@ caugi_mermaid <- S7::new_class(
   "caugi_mermaid",
   parent = caugi_export,
   constructor = function(content) {
-    S7::new_object(caugi_export, content = content, format = "mermaid")
+    S7::new_object(caugi_export(), content = content, format = "mermaid")
   }
 )
 

@@ -26,7 +26,7 @@ caugi_dot <- S7::new_class(
   "caugi_dot",
   parent = caugi_export,
   constructor = function(content) {
-    S7::new_object(caugi_export, content = content, format = "dot")
+    S7::new_object(caugi_export(), content = content, format = "dot")
   }
 )
 
