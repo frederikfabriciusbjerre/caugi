@@ -1,6 +1,6 @@
 # caugi (development version)
 
-* `to_dot()`, `to_mermaid()`, and `to_graphml()` now work with development S7.
+* Updates for compatibility with S7 > 0.2.2.
 
 ## New Features
 
