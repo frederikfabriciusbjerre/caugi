@@ -25,7 +25,11 @@
   )
 
   caugi_options(caugi_default_options())
-  S7::methods_register()
+  if ("S7_on_load" %in% getNamespaceExports("S7")) {
+    S7::S7_on_load()
+  } else {
+    S7::methods_register()
+  }
 
   # Register waldo compare_proxy for caugi (for testthat edition 3)
   register_waldo_method <- function() {
@@ -74,3 +78,13 @@
 }
 
 # nocov end
+
+.onUnload <- function(...) {
+  if ("S7_on_unload" %in% getNamespaceExports("S7")) {
+    S7::S7_on_unload()
+  }
+}
+
+if ("S7_on_build" %in% getNamespaceExports("S7")) {
+  S7::S7_on_build()
+}
