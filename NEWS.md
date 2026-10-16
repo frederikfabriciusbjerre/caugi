@@ -7,7 +7,19 @@
 * Add `components()` to partition graphs into weakly connected components or
   strongly connected components of the directed part, including cyclic graphs
   of class `"UNKNOWN"`.
-  
+* Add a `"PAG"` (Partial Ancestral Graph) class, with selection bias in scope,
+  so all six edge types `-->`, `---`, `<->`, `o-o`, `--o` and `o->` are
+  supported. The class is validated completely: a graph carries it only if its
+  marks are exactly the invariant marks of some MAG's Markov equivalence class.
+  Partially oriented output such as an RFCI graph belongs in `"UNKNOWN"`.
+* Add `is_pag()`, `pag_to_mag()` (Zhang 2008, Theorem 2), `mag_to_pag()` (via
+  the complete orientation rules R1-R10), and `dag_to_pag()`, which
+  marginalizes latents and conditions on selection variables.
+* Add `is_visible_edge()` for directed edges in MAGs and PAGs.
+* `m_separated()` and `minimal_separator()` accept PAGs.
+* `as_adjacency()` gains `coding = "marks"`, writing the `amat.pag` coding
+  that `as_caugi()` reads, so the two round-trip.
+
 ## Performance Improvements
 
 * `remove_edges()` now removes edges directly in Rust, avoiding graph table
@@ -16,6 +28,11 @@
   graphs and retrieving `nodes()` and `edges()`.
 
 ## Bug Fixes
+
+* `as_caugi()` now decodes a mark-coded (`amat.pag`) matrix for any requested
+  class, not only `"PAG"`; a MAG passed with `class = "AG"` previously became
+  all `-->` edges. It also no longer downgrades `class = "PAG"` to
+  `"UNKNOWN"`.
 
 * `m_separated()` now handles ADMG collider paths with multiple bidirected
   edges, such as `a -> b <-> c <-> d` given `{b, c}`. This also fixes
@@ -29,6 +46,20 @@
   adjacent, so on e.g. `A --> B <-- C` with `B --- D` it oriented `D --> B`
   and created two v-structures. The algorithm now lives in Rust, like every
   other graph algorithm in the package.
+
+- `==` and `!=` for `caugi` objects now compare a symmetric edge as an
+unordered pair, so `caugi(A %---% B) == caugi(B %---% A)` is `TRUE` as it
+should be. This affected `---`, `<->` and `o-o`, and any symmetric edge added
+with `register_caugi_edge()`; whether a glyph is symmetric is read from the
+graph's own registry rather than hard-coded. Asymmetric glyphs remain
+direction-sensitive. testthat's `expect_equal()` now agrees with `==`.
+
+- Graphs now keep the edge definitions they were built with after
+`reset_caugi_registry()` and re-registration. Previously `==`, `add_edges()`,
+`mutate_caugi()` and other verbs, `write_caugi()`, `caugi_serialize()` and
+`to_graphml()` used the current global registry instead, so they could
+compare edges wrongly, fail with `Invalid edge code`, or write the wrong
+glyphs. Adding an edge type the graph was not built with is now an error.
 
 # caugi 1.3.0
 

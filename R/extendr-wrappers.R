@@ -68,6 +68,10 @@ rs_indices_of <- function(session, names) .Call(wrap__rs_indices_of, session, na
 
 rs_edges_df <- function(session) .Call(wrap__rs_edges_df, session)
 
+rs_codes_of <- function(session, glyphs) .Call(wrap__rs_codes_of, session, glyphs)
+
+rs_canonical_edges <- function(session) .Call(wrap__rs_canonical_edges, session)
+
 rs_is_valid <- function(session) .Call(wrap__rs_is_valid, session)
 
 rs_build <- function(session) invisible(.Call(wrap__rs_build, session))
@@ -108,6 +112,8 @@ rs_is_admg_type <- function(session) .Call(wrap__rs_is_admg_type, session)
 
 rs_is_ag_type <- function(session) .Call(wrap__rs_is_ag_type, session)
 
+rs_is_pag_type <- function(session) .Call(wrap__rs_is_pag_type, session)
+
 rs_is_mag <- function(session) .Call(wrap__rs_is_mag, session)
 
 rs_is_cpdag <- function(session) .Call(wrap__rs_is_cpdag, session)
@@ -128,6 +134,10 @@ rs_skeleton <- function(session) .Call(wrap__rs_skeleton, session)
 
 rs_moralize <- function(session) .Call(wrap__rs_moralize, session)
 
+rs_mag_to_pag <- function(session) .Call(wrap__rs_mag_to_pag, session)
+
+rs_pag_to_mag <- function(session) .Call(wrap__rs_pag_to_mag, session)
+
 rs_latent_project <- function(session, latents) .Call(wrap__rs_latent_project, session, latents)
 
 rs_exogenize <- function(session, nodes) .Call(wrap__rs_exogenize, session, nodes)
@@ -143,6 +153,8 @@ rs_d_separated <- function(session, xs, ys, z) .Call(wrap__rs_d_separated, sessi
 rs_minimal_separator <- function(session, xs, ys, include, restrict) .Call(wrap__rs_minimal_separator, session, xs, ys, include, restrict)
 
 rs_m_separated <- function(session, xs, ys, z) .Call(wrap__rs_m_separated, session, xs, ys, z)
+
+rs_is_visible_edge <- function(session, from, to) .Call(wrap__rs_is_visible_edge, session, from, to)
 
 rs_not_m_separated_for_all_subsets <- function(session, node_a, node_b, other_nodes, cond_vars) .Call(wrap__rs_not_m_separated_for_all_subsets, session, node_a, node_b, other_nodes, cond_vars)
 
@@ -178,17 +190,16 @@ graph_builder_resolve_class <- function(b, class) .Call(wrap__graph_builder_reso
 
 rs_compute_tiered_layout <- function(session, tier_assignments, num_tiers, orientation) .Call(wrap__rs_compute_tiered_layout, session, tier_assignments, num_tiers, orientation)
 
-rs_write_caugi_file <- function(session, reg, graph_class, path, comment, tags) invisible(.Call(wrap__rs_write_caugi_file, session, reg, graph_class, path, comment, tags))
+rs_write_caugi_file <- function(session, graph_class, path, comment, tags) invisible(.Call(wrap__rs_write_caugi_file, session, graph_class, path, comment, tags))
 
 read_caugi_file <- function(path, reg) .Call(wrap__read_caugi_file, path, reg)
 
-rs_serialize_caugi <- function(session, reg, graph_class, comment, tags) .Call(wrap__rs_serialize_caugi, session, reg, graph_class, comment, tags)
+rs_serialize_caugi <- function(session, graph_class, comment, tags) .Call(wrap__rs_serialize_caugi, session, graph_class, comment, tags)
 
 deserialize_caugi <- function(json, reg) .Call(wrap__deserialize_caugi, json, reg)
 
-rs_serialize_graphml <- function(session, reg, graph_class) .Call(wrap__rs_serialize_graphml, session, reg, graph_class)
+rs_serialize_graphml <- function(session, graph_class) .Call(wrap__rs_serialize_graphml, session, graph_class)
 
 deserialize_graphml <- function(xml, reg) .Call(wrap__deserialize_graphml, xml, reg)
-
 
 # nolint end

@@ -68,7 +68,6 @@ to_graphml <- function(x) {
   is_caugi(x, throw_error = TRUE)
   xml <- rs_serialize_graphml(
     x@session,
-    caugi_registry(),
     x@graph_class
   )
 

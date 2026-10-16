@@ -54,7 +54,7 @@ Two adjacent areas are intentionally out of scope:
 
   | Package     | DAG                 | CPDAG             | MPDAG            | MAG            | PAG            | ADMG                 | SWIG | UG              | Mixed/general      |
   | :---------- | :------------------ | :---------------- | :--------------- | :------------- | :------------- | :------------------- | :--- | :-------------- | :----------------- |
-  | **caugi**   | ●                   | ●[^caugi-cpdag]   | ●                | ◐[^caugi-mag]  | ○              | ●                    | ○    | ●               | ●                  |
+  | **caugi**   | ●                   | ●[^caugi-cpdag]   | ●                | ◐[^caugi-mag]  | ●[^caugi-pag]  | ●                    | ○    | ●               | ●                  |
   | igraph      | ◐[^igraph-dag]      | ○[^igraph-cpdag]  | ○                | ○              | ○              | ○                    | ○    | ◐[^igraph-ug]   | ◐[^igraph-mixed]   |
   | graph       | ◐[^graph-dag]       | ○                 | ○                | ○              | ○              | ○                    | ○    | ◐[^graph-ug]    | ◐[^graph-mixed]    |
   | gRbase      | ◐[^grbase-dag]      | ○                 | ○                | ○              | ○              | ○                    | ○    | ◐[^grbase-ug]   | ○                  |
@@ -78,6 +78,17 @@ Two adjacent areas are intentionally out of scope:
     `as_caugi()`, and `mutate_caugi()`). `generate_graph(class = "CPDAG")`
     returns a graph typed `"CPDAG"`, and `is_cpdag()` also validates the
     structure post-hoc for graphs of other classes.
+
+[^caugi-pag]: `caugi` has a dedicated `PAG` class, validated *completely* at
+    construction: a graph carries `class = "PAG"` only if there exists a
+    maximal ancestral graph whose Markov equivalence class it represents,
+    decided by a `pag_to_mag()` then `mag_to_pag()` round trip. This rejects
+    both over-oriented graphs (a definite mark that is not invariant across the
+    class) and under-oriented ones (a circle where an invariant mark belongs);
+    no purely structural check can see either. Selection bias is in scope, so
+    `---` and `--o` edges are supported. Partially oriented output that is not
+    a complete PAG---an RFCI graph or an "anytime" PAG---should use
+    `class = "UNKNOWN"`.
 
 [^caugi-mag]: `caugi` accepts `class = "AG"` (ancestral graph) in the
     constructor and exports `is_mag()` to validate maximality post-hoc, but

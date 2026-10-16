@@ -358,7 +358,6 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   class
 ) {
   n <- length(node_names)
-  reg <- caugi_registry()
 
   rs_set_n(session, as.integer(n))
   rs_set_simple(session, isTRUE(simple))
@@ -368,7 +367,7 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   if (n > 0L && nrow(edges_dt) > 0L) {
     id <- seq_len(n) - 1L
     names(id) <- node_names
-    codes <- edge_registry_code_of(reg, edges_dt$edge)
+    codes <- rs_codes_of(session, edges_dt$edge)
     rs_set_edges(
       session,
       as.integer(unname(id[edges_dt$from])),
@@ -445,10 +444,9 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
       rs_set_names(target_session, new_nodes)
     }
 
-    reg <- caugi_registry()
     id <- seq_len(length(new_nodes)) - 1L
     names(id) <- new_nodes
-    codes <- edge_registry_code_of(reg, edges$edge)
+    codes <- rs_codes_of(target_session, edges$edge)
     rs_replace_edges(
       target_session,
       as.integer(unname(id[edges$from])),

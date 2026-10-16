@@ -14,7 +14,8 @@ use graph::metrics::{hd_with_perm, shd_with_perm};
 
 use graph::view::GraphView;
 use graph::{
-    admg::Admg, ag::Ag, cpdag::Cpdag, dag::Dag, mpdag::Mpdag, pdag::Pdag, ug::Ug, CaugiGraph,
+    admg::Admg, ag::Ag, cpdag::Cpdag, dag::Dag, mpdag::Mpdag, pag::Pag, pdag::Pdag, ug::Ug,
+    CaugiGraph,
 };
 use std::sync::Arc;
 
@@ -365,6 +366,7 @@ fn graph_class_from_view(view: &GraphView) -> GraphClass {
         GraphView::Ug(_) => GraphClass::Ug,
         GraphView::Admg(_) => GraphClass::Admg,
         GraphView::Ag(_) => GraphClass::Ag,
+        GraphView::Pag(_) => GraphClass::Pag,
         GraphView::Raw(_) => GraphClass::Unknown,
     }
 }
@@ -378,6 +380,7 @@ fn graph_class_label_from_view(view: &GraphView) -> &'static str {
         GraphView::Ug(_) => "UG",
         GraphView::Admg(_) => "ADMG",
         GraphView::Ag(_) => "AG",
+        GraphView::Pag(_) => "PAG",
         GraphView::Raw(_) => "UNKNOWN",
     }
 }
@@ -585,8 +588,12 @@ fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<Grap
             let ag = Ag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
             ExternalPtr::new(GraphView::Ag(Arc::new(ag)))
         }
+        "PAG" => {
+            let pag = Pag::new(Arc::clone(&core_arc)).unwrap_or_else(|e| throw_r_error(e));
+            ExternalPtr::new(GraphView::Pag(Arc::new(pag)))
+        }
         "AUTO" => {
-            // Try each class in order: DAG → UG → PDAG → ADMG → AG → Raw
+            // Try each class in order: DAG → UG → PDAG → ADMG → AG → PAG → Raw
             if let Ok(dag) = Dag::new(Arc::clone(&core_arc)) {
                 ExternalPtr::new(GraphView::Dag(Arc::new(dag)))
             } else if let Ok(ug) = Ug::new(Arc::clone(&core_arc)) {
@@ -597,6 +604,8 @@ fn graphview_new(core: ExternalPtr<CaugiGraph>, class: &str) -> ExternalPtr<Grap
                 ExternalPtr::new(GraphView::Admg(Arc::new(admg)))
             } else if let Ok(ag) = Ag::new(Arc::clone(&core_arc)) {
                 ExternalPtr::new(GraphView::Ag(Arc::new(ag)))
+            } else if let Ok(pag) = Pag::new(Arc::clone(&core_arc)) {
+                ExternalPtr::new(GraphView::Pag(Arc::new(pag)))
             } else {
                 ExternalPtr::new(GraphView::Raw(core_arc))
             }
@@ -777,7 +786,6 @@ fn rs_parent_aid(
 #[extendr]
 fn rs_write_caugi_file(
     mut session: ExternalPtr<GraphSession>,
-    reg: ExternalPtr<EdgeRegistry>,
     graph_class: &str,
     path: &str,
     comment: Nullable<&str>,
@@ -796,7 +804,6 @@ fn rs_write_caugi_file(
 
     graph::serialization::write_caugi_file(
         view.as_ref(),
-        reg.as_ref(),
         graph_class,
         node_names_vec,
         path,
@@ -809,7 +816,6 @@ fn rs_write_caugi_file(
 #[extendr]
 fn rs_serialize_caugi(
     mut session: ExternalPtr<GraphSession>,
-    reg: ExternalPtr<EdgeRegistry>,
     graph_class: &str,
     comment: Nullable<&str>,
     tags: Nullable<Strings>,
@@ -827,7 +833,6 @@ fn rs_serialize_caugi(
 
     graph::serialization::serialize_caugi(
         view.as_ref(),
-        reg.as_ref(),
         graph_class,
         node_names_vec,
         comment_opt,
@@ -837,16 +842,12 @@ fn rs_serialize_caugi(
 }
 
 #[extendr]
-fn rs_serialize_graphml(
-    mut session: ExternalPtr<GraphSession>,
-    reg: ExternalPtr<EdgeRegistry>,
-    graph_class: &str,
-) -> String {
+fn rs_serialize_graphml(mut session: ExternalPtr<GraphSession>, graph_class: &str) -> String {
     let node_names_vec: Vec<String> = session.as_ref().names().to_vec();
 
     let view = session.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
 
-    graph::graphml::serialize_graphml(view.as_ref(), reg.as_ref(), graph_class, node_names_vec)
+    graph::graphml::serialize_graphml(view.as_ref(), graph_class, node_names_vec)
         .unwrap_or_else(|e| throw_r_error(e))
 }
 
@@ -1240,6 +1241,57 @@ fn rs_edges_df(session: ExternalPtr<GraphSession>) -> Robj {
     list!(from0 = from0, to0 = to0, code = code, glyph = glyph).into_robj()
 }
 
+/// Codes of `glyphs` in this session's own registry snapshot, so edges added
+/// to an existing graph keep the meaning they had when it was built.
+#[extendr]
+fn rs_codes_of(session: ExternalPtr<GraphSession>, glyphs: Strings) -> Vec<i32> {
+    let specs = &session.as_ref().registry().specs;
+    glyphs
+        .iter()
+        .map(|g| {
+            specs
+                .iter()
+                .position(|s| s.glyph == g.as_ref())
+                .unwrap_or_else(|| {
+                    throw_r_error(format!(
+                        "Edge type '{}' is not in this graph's registry. \
+                         Rebuild the graph to use edges registered after it was created.",
+                        g.as_ref()
+                    ))
+                }) as i32
+        })
+        .collect()
+}
+
+/// Edges in canonical form for comparing graphs: symmetric edges are oriented
+/// by node name and rows are sorted. Each row carries its full spec from this
+/// session's registry, so glyphs that mean different things never compare
+/// equal.
+#[extendr]
+fn rs_canonical_edges(session: ExternalPtr<GraphSession>) -> Robj {
+    let s = session.as_ref();
+    let (e, specs, names) = (s.edge_buffer(), &s.registry().specs, s.names());
+    let mut rows: Vec<_> = (0..e.len())
+        .map(|i| {
+            let spec = &specs[e.etype[i] as usize];
+            let (mut u, mut v) = (&names[e.from[i] as usize], &names[e.to[i] as usize]);
+            if spec.symmetric && u > v {
+                std::mem::swap(&mut u, &mut v);
+            }
+            // ponytail: Debug covers every EdgeSpec field, including future ones.
+            (u, v, format!("{spec:?}"), &spec.glyph)
+        })
+        .collect();
+    rows.sort_unstable();
+    list!(
+        from = rows.iter().map(|r| r.0.as_str()).collect::<Vec<_>>(),
+        edge = rows.iter().map(|r| r.3.as_str()).collect::<Vec<_>>(),
+        to = rows.iter().map(|r| r.1.as_str()).collect::<Vec<_>>(),
+        spec = rows.iter().map(|r| r.2.as_str()).collect::<Vec<_>>()
+    )
+    .into_robj()
+}
+
 #[extendr]
 fn rs_is_valid(session: ExternalPtr<GraphSession>) -> Robj {
     list!(
@@ -1618,6 +1670,14 @@ fn rs_is_ag_type(mut session: ExternalPtr<GraphSession>) -> bool {
 }
 
 #[extendr]
+fn rs_is_pag_type(mut session: ExternalPtr<GraphSession>) -> bool {
+    session
+        .as_mut()
+        .is_pag_type()
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
 fn rs_is_mag(mut session: ExternalPtr<GraphSession>) -> bool {
     session
         .as_mut()
@@ -1710,6 +1770,26 @@ fn rs_moralize(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSessi
     let view = session
         .as_mut()
         .moralize()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
+fn rs_pag_to_mag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .pag_to_mag()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
+fn rs_mag_to_pag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .mag_to_pag()
         .unwrap_or_else(|e| throw_r_error(e));
     let names: Vec<String> = session.as_ref().names().to_vec();
     ExternalPtr::new(session_from_view(view, names))
@@ -2038,6 +2118,23 @@ fn rs_m_separated(
 }
 
 #[extendr]
+fn rs_is_visible_edge(mut session: ExternalPtr<GraphSession>, from: i32, to: i32) -> bool {
+    let a = rint_to_u32(Rint::from(from), "from");
+    let b = rint_to_u32(Rint::from(to), "to");
+    let n = session.as_ref().n();
+    if a >= n {
+        throw_r_error(format!("Index {} is out of bounds", a));
+    }
+    if b >= n {
+        throw_r_error(format!("Index {} is out of bounds", b));
+    }
+    session
+        .as_mut()
+        .is_visible_edge(a, b)
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
 fn rs_not_m_separated_for_all_subsets(
     mut session: ExternalPtr<GraphSession>,
     node_a: i32,
@@ -2265,6 +2362,8 @@ extendr_module! {
     fn rs_index_of;
     fn rs_indices_of;
     fn rs_edges_df;
+    fn rs_codes_of;
+    fn rs_canonical_edges;
     fn rs_is_valid;
     fn rs_build;
     fn children;
@@ -2286,6 +2385,7 @@ extendr_module! {
     fn rs_is_ug_type;
     fn rs_is_admg_type;
     fn rs_is_ag_type;
+    fn rs_is_pag_type;
     fn rs_is_mag;
     fn rs_is_cpdag;
     fn rs_is_mpdag;
@@ -2296,6 +2396,8 @@ extendr_module! {
     fn rs_count_dags;
     fn rs_skeleton;
     fn rs_moralize;
+    fn rs_mag_to_pag;
+    fn rs_pag_to_mag;
     fn rs_latent_project;
     fn rs_exogenize;
     fn rs_normalize_latent_structure;
@@ -2304,6 +2406,7 @@ extendr_module! {
     fn rs_d_separated;
     fn rs_minimal_separator;
     fn rs_m_separated;
+    fn rs_is_visible_edge;
     fn rs_not_m_separated_for_all_subsets;
     fn rs_adjustment_set_parents;
     fn rs_adjustment_set_backdoor;

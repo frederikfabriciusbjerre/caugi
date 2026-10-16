@@ -30,12 +30,15 @@ Other operations:
 \code{\link[=condition_marginalize]{condition_marginalize()}},
 \code{\link[=count_dags]{count_dags()}},
 \code{\link[=dag_from_pdag]{dag_from_pdag()}},
+\code{\link[=dag_to_pag]{dag_to_pag()}},
 \code{\link[=enumerate_dags]{enumerate_dags()}},
 \code{\link[=exogenize]{exogenize()}},
 \code{\link[=latent_project]{latent_project()}},
+\code{\link[=mag_to_pag]{mag_to_pag()}},
 \code{\link[=meek_closure]{meek_closure()}},
 \code{\link[=moralize]{moralize()}},
 \code{\link[=mutate_caugi]{mutate_caugi()}},
-\code{\link[=normalize_latent_structure]{normalize_latent_structure()}}
+\code{\link[=normalize_latent_structure]{normalize_latent_structure()}},
+\code{\link[=pag_to_mag]{pag_to_mag()}}
 }
 \concept{operations}

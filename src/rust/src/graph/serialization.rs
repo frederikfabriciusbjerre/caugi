@@ -52,7 +52,6 @@ struct MetaData {
 /// Serialize a caugi graph to JSON format.
 pub fn serialize_caugi(
     graph: &GraphView,
-    registry: &EdgeRegistry,
     graph_class: &str,
     node_names: Vec<String>,
     comment: Option<String>,
@@ -78,7 +77,7 @@ pub fn serialize_caugi(
             let j = core.col_index[k] as usize;
             let edge_id = core.etype[k];
             let side = core.side[k]; // 0=tail-ish, 1=head-ish
-            let edge_spec = registry.spec_of_code(edge_id).map_err(|e| e.to_string())?;
+            let edge_spec = core.spec(k);
 
             // For symmetric edges, only output once (when i <= j)
             // For directed edges, only output from the tail side (side == 0)
@@ -186,14 +185,13 @@ pub fn deserialize_caugi(json: &str, registry: &EdgeRegistry) -> Result<Deserial
 
 pub fn write_caugi_file(
     graph: &GraphView,
-    registry: &EdgeRegistry,
     graph_class: &str,
     node_names: Vec<String>,
     path: &str,
     comment: Option<String>,
     tags: Option<Vec<String>>,
 ) -> Result<(), String> {
-    let json = serialize_caugi(graph, registry, graph_class, node_names, comment, tags)?;
+    let json = serialize_caugi(graph, graph_class, node_names, comment, tags)?;
     let mut file = std::fs::File::create(path).map_err(|e| e.to_string())?;
     file.write_all(json.as_bytes()).map_err(|e| e.to_string())?;
     file.write_all(b"\n").map_err(|e| e.to_string())?;
@@ -246,7 +244,6 @@ mod tests {
 
         let json = serialize_caugi(
             &view,
-            &reg,
             "DAG",
             names.clone(),
             Some("example".to_string()),
@@ -276,7 +273,6 @@ mod tests {
         let view = make_pdag_with_undirected(&reg);
         let json = serialize_caugi(
             &view,
-            &reg,
             "PDAG",
             vec!["A".to_string(), "B".to_string()],
             None,
@@ -296,8 +292,7 @@ mod tests {
     fn serialize_rejects_wrong_name_length() {
         let reg = make_registry();
         let view = make_dag_view(&reg);
-        let err =
-            serialize_caugi(&view, &reg, "DAG", vec!["X".to_string()], None, None).unwrap_err();
+        let err = serialize_caugi(&view, "DAG", vec!["X".to_string()], None, None).unwrap_err();
         assert!(err.contains("Node names length (1) does not match graph size (3)"));
     }
 
@@ -381,7 +376,6 @@ mod tests {
 
         write_caugi_file(
             &view,
-            &reg,
             "DAG",
             names.clone(),
             out.to_str().unwrap(),
@@ -402,7 +396,6 @@ mod tests {
 
         let write_err = write_caugi_file(
             &view,
-            &reg,
             "DAG",
             vec!["X".to_string(), "Y".to_string(), "Z".to_string()],
             "/definitely/not/a/real/dir/out.json",

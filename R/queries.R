@@ -587,6 +587,45 @@ is_mag <- function(cg, force_check = FALSE) {
   is_it
 }
 
+#' @title Is the `caugi` graph a PAG?
+#'
+#' @description
+#' Checks whether the given graph is a Partial Ancestral Graph: whether there
+#' is a maximal ancestral graph whose Markov equivalence class it represents,
+#' with a circle exactly at the endpoints that are not invariant across that
+#' class.
+#'
+#' @details
+#' The check is complete. [pag_to_mag()] must yield a maximal ancestral graph,
+#' and [mag_to_pag()] must map it back to exactly this graph. That rejects
+#' over-oriented graphs (a definite mark that is not invariant) and
+#' under-oriented ones (a circle where an invariant mark belongs), which no
+#' structural check can detect. The maximality test is exponential in the
+#' worst case, as for [is_mag()].
+#'
+#' Building a graph with `class = "PAG"` runs the same check, so there is no
+#' `force_check` argument: the class is a guarantee.
+#'
+#' @param cg A `caugi` object.
+#'
+#' @returns A logical value indicating whether the graph is a PAG.
+#'
+#' @examples
+#' is_pag(mag_to_pag(caugi(A %-->% B, C %-->% B, class = "AG"))) # TRUE
+#'
+#' # Over-oriented: with A and C non-adjacent, whether B is a collider differs
+#' # between members, so these marks are not invariant.
+#' is_pag(caugi(A %o->% B, B %o-o% C, class = "UNKNOWN")) # FALSE
+#'
+#' @family queries
+#' @concept queries
+#'
+#' @export
+is_pag <- function(cg) {
+  is_caugi(cg, throw_error = TRUE)
+  identical(cg@graph_class, "PAG") || rs_is_pag_type(cg@session)
+}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────── Nodes and edges ────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
@@ -887,6 +926,70 @@ formals(ancestors) <- alist(
   index = NULL,
   open = caugi_options("use_open_graph_definition")
 )
+
+#' @title Is a directed edge in a MAG or PAG visible?
+#'
+#' @description
+#' A directed edge `from --> to` is *visible* when no MAG in the represented
+#' class can have an inducing path into `from` between the two, so the edge
+#' carries no hidden confounding. Visibility is what licenses reading the edge
+#' as a direct, unconfounded effect.
+#'
+#' @details
+#' Zhang (2008, Def. 8): `from --> to` is visible iff some node `c` not
+#' adjacent to `to` has either an edge into `from`, or a collider path into
+#' `from` whose non-endpoints are all parents of `to`. Only `-->` edges can be
+#' visible, so `FALSE` is returned for any other edge, for a non-adjacent pair
+#' and for the reverse of a directed edge.
+#'
+#' @param cg A `caugi` object of class `"AG"` or `"PAG"`.
+#' @param from,to Node names, or `NULL`. Use `from_index`/`to_index` to pass
+#'   1-based indices instead.
+#' @param from_index,to_index Optional numeric 1-based indices (exclusive with
+#'   `from`, `to` respectively).
+#'
+#' @returns A logical value; `TRUE` if the edge `from --> to` is visible.
+#'
+#' @examples
+#' # The `pcalg::visibleEdge` example MAG.
+#' mag <- caugi(A %-->% B, B %<->% C, B %-->% D, C %-->% D, class = "AG")
+#' is_visible_edge(mag, "A", "B") # FALSE: every other node is adjacent to B
+#' is_visible_edge(mag, "B", "D") # TRUE: A --> B with A, D non-adjacent
+#' is_visible_edge(mag, "C", "D") # TRUE: collider path A --> B <-> C
+#'
+#' pag <- caugi(A %-->% B, C %o->% A, D %o->% A, C %-->% B, class = "PAG")
+#' is_visible_edge(pag, "A", "B") # TRUE: D *-> A with D, B non-adjacent
+#' is_visible_edge(pag, "C", "B") # FALSE
+#'
+#' @references
+#' Zhang, J. (2008). Causal reasoning with ancestral graphs.
+#' *Journal of Machine Learning Research*, 9, 1437-1474.
+#'
+#' Maathuis, M. H. and Colombo, D. (2015). A generalized back-door criterion.
+#' *The Annals of Statistics*, 43(3), 1060-1088.
+#'
+#' @family queries
+#' @concept queries
+#'
+#' @export
+is_visible_edge <- function(
+  cg,
+  from = NULL,
+  to = NULL,
+  from_index = NULL,
+  to_index = NULL
+) {
+  is_caugi(cg, throw_error = TRUE)
+
+  from_idx0 <- .resolve_idx0_mget(cg@session, from, from_index)
+  to_idx0 <- .resolve_idx0_mget(cg@session, to, to_index)
+
+  if (length(from_idx0) != 1L || length(to_idx0) != 1L) {
+    stop("`from` and `to` must each name exactly one node.", call. = FALSE)
+  }
+
+  rs_is_visible_edge(cg@session, from_idx0, to_idx0)
+}
 
 #' @title Get descendants of nodes in a `caugi`
 #'
@@ -1254,14 +1357,16 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
   .Call(wrap__districts, cg, nodes, index, all)
 }
 
-#' @title M-separation test for AGs and ADMGs
+#' @title M-separation test for AGs, PAGs and ADMGs
 #'
 #' @description Test whether two sets of nodes are m-separated given a
-#' conditioning set in an ancestral graph (AG) or an ADMG.
+#' conditioning set in an ancestral graph (AG), a PAG, or an ADMG.
 #'
-#' M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs.
+#' M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs. In
+#' a PAG it is decided on a member MAG from [pag_to_mag()], which is exact
+#' since every member encodes the same m-separations.
 #'
-#' @param cg A `caugi` object of class AG, ADMG, or DAG.
+#' @param cg A `caugi` object of class AG, PAG, ADMG, or DAG.
 #' @param X,Y,Z Character vectors of node names, or `NULL`. Use `*_index` to
 #'   pass 1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
 #'   on.

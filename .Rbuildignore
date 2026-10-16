@@ -43,3 +43,4 @@
 ^AGENTS\.md$
 ^CLAUDE\.md$
 ^\.claude$
+^tools/pag-ground-truth$

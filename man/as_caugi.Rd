@@ -90,25 +90,27 @@ for (cg_converted in list(cg_ig, cg_gn, cg_adj, cg_bn, cg_dg)) {
 ig2 <- igraph::graph_from_literal(A - +B, B - +A, C - +D)
 cg2 <- as_caugi(ig2, class = "PDAG", collapse = TRUE, collapse_to = "---")
 
-# coded integer matrix for PAGs (pcalg style)
+# coded integer matrix for PAGs (pcalg style). `class = "PAG"` is fully
+# validated, so the marks must genuinely be the invariant marks of a Markov
+# equivalence class; this one is.
 nm <- c("A", "B", "C", "D")
 M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
 
 # A --> B
-M["A", "B"] <- 2L # mark at B end
-M["B", "A"] <- 3L # mark at A end
+M["A", "B"] <- 2L # arrowhead at B
+M["B", "A"] <- 3L # tail at A
 
-# A --- C
-M["A", "C"] <- 3L
-M["C", "A"] <- 3L
+# A o-> C
+M["A", "C"] <- 2L # arrowhead at C
+M["C", "A"] <- 1L # circle at A
 
-# B o-> C
-M["B", "C"] <- 2L
-M["C", "B"] <- 1L
+# C --> B
+M["C", "B"] <- 2L # arrowhead at B
+M["B", "C"] <- 3L # tail at C
 
-# C o-o D
-M["C", "D"] <- 1L
-M["D", "C"] <- 1L
+# D o-> C
+M["D", "C"] <- 2L # arrowhead at C
+M["C", "D"] <- 1L # circle at D
 
 cg <- as_caugi(M, class = "PAG")
 

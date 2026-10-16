@@ -4,16 +4,32 @@
 \alias{as_adjacency}
 \title{Convert a caugi to an adjacency matrix}
 \usage{
-as_adjacency(x)
+as_adjacency(x, coding = c("binary", "marks"))
 }
 \arguments{
 \item{x}{A \code{caugi} object.}
+
+\item{coding}{Either \code{"binary"} (default) for a 0/1 adjacency matrix, or
+\code{"marks"} for the mark-coded \code{amat.pag} form.}
 }
 \value{
-An integer 0/1 adjacency matrix with row/col names.
+An integer matrix with row/col names.
 }
 \description{
-Does not take other edge types than the one found in a PDAG.
+With the default \code{coding = "binary"} this produces a 0/1 adjacency matrix
+and accepts only the edge types found in a PDAG, ADMG or AG. With
+\code{coding = "marks"} it produces a mark-coded matrix, which can represent all
+six PAG edge types.
+}
+\details{
+The mark coding is \code{pcalg}'s \code{amat.pag}: \code{0} no edge, \code{1} circle, \code{2}
+arrowhead, \code{3} tail, where \code{m[i, j]} is the mark \strong{at node \code{j}} on the edge
+between them. So \code{m[i, j] == 2} with \code{m[j, i] == 3} means \verb{i --> j}. Note
+this is the opposite convention to \code{pcalg}'s \code{amat.cpdag}, where the code
+refers to the row index.
+
+\code{\link[=as_caugi]{as_caugi()}} reads the same coding back, so
+\code{as_caugi(as_adjacency(cg, "marks"), class = cg@graph_class)} round-trips.
 }
 \examples{
 cg <- caugi(
@@ -21,6 +37,10 @@ cg <- caugi(
   class = "DAG"
 )
 adj <- as_adjacency(cg)
+
+# A PAG needs the mark coding: circle endpoints have no 0/1 representation.
+pag <- mag_to_pag(caugi(A \%-->\% C, B \%-->\% C, class = "AG"))
+as_adjacency(pag, coding = "marks")
 
 }
 \seealso{

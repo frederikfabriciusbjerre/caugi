@@ -143,6 +143,34 @@ impl std::fmt::Display for AgError {
 
 impl std::error::Error for AgError {}
 
+// ── PAG Errors ────────────────────────────────────────────────────────────────
+
+/// Errors that can occur when validating a partial ancestral graph.
+#[derive(Debug, Clone)]
+pub enum PagError {
+    /// An endpoint mark was found that cannot appear in a PAG.
+    InvalidEdgeType { found: String },
+    /// The marks are not the invariant marks of a Markov equivalence class.
+    NotAnEquivalenceClass { reason: String },
+}
+
+impl std::fmt::Display for PagError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidEdgeType { found } => write!(
+                f,
+                "Partial ancestral graph endpoints must be arrowheads, tails or circles, found: {}",
+                found
+            ),
+            Self::NotAnEquivalenceClass { reason } => {
+                write!(f, "Not a valid partial ancestral graph: {}", reason)
+            }
+        }
+    }
+}
+
+impl std::error::Error for PagError {}
+
 // ── Builder Errors ────────────────────────────────────────────────────────────
 
 /// Errors that can occur when building a graph.

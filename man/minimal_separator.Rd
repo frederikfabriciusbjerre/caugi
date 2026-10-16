@@ -37,7 +37,7 @@ minimal_d_separator(
 )
 }
 \arguments{
-\item{cg}{A \code{caugi} object (DAG, ADMG, or AG).}
+\item{cg}{A \code{caugi} object (DAG, ADMG, AG, or PAG).}
 
 \item{X, Y}{Character vectors of node names. Use \verb{*_index} to pass 1-based
 indices.}
@@ -57,8 +57,8 @@ or \code{NULL} if no valid separator exists within the restriction R.
 \description{
 Computes a minimal separator Z for sets X and Y, optionally with
 mandatory inclusions and restrictions on the separator. Supports DAGs (where
-the result is a d-separator), ADMGs, and ancestral graphs (where the result
-is an m-separator).
+the result is a d-separator), ADMGs, ancestral graphs and PAGs (where the
+result is an m-separator).
 }
 \details{
 A separator Z for X and Y is a set of nodes such that conditioning on Z
@@ -69,7 +69,8 @@ The algorithm runs in linear time O(n + m) and is unified across graph
 classes via the Bayes-ball reachability of van der Zander & Liśkiewicz
 (2020). For DAGs the algorithm specializes to FINDMINSEPINDAG; for ADMGs and
 AGs (and their subclasses CPDAG, RCG, MAG) it uses the general FINDMINSEP
-over mixed graphs.
+over mixed graphs. For a PAG it runs on a member MAG from \code{\link[=pag_to_mag]{pag_to_mag()}},
+which is exact since every member encodes the same m-separations.
 }
 \examples{
 cg <- caugi(

@@ -356,8 +356,10 @@ test_that("AUTO class picks the correct class", {
   expect_equal(cg@graph_class, "UG")
   cg <- caugi(A %<->% B, class = "AUTO")
   expect_equal(cg@graph_class, "ADMG")
-  cg <- caugi(A %o->% B, class = "AUTO")
-  expect_equal(cg@graph_class, "UNKNOWN")
+  # `A o-> C <-o B` with A, B non-adjacent is a genuinely valid PAG (the PAG of
+  # the collider `A --> C <-- B`); a lone `A o-> B` is not.
+  cg <- caugi(A %o->% C, B %o->% C, class = "AUTO")
+  expect_equal(cg@graph_class, "PAG")
   cg <- caugi(A %-->% B %---% C, class = "AUTO")
   expect_equal(cg@graph_class, "PDAG")
   cg <- caugi(A %---% B, A %-->% C, B %-->% C, class = "AUTO")

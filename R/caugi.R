@@ -39,9 +39,13 @@
 #' the function will throw an error if the input contains parallel edges or
 #' self-loops.
 #' @param class Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
-#' `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick
-#' the appropriate class based on the first match in the order of `"DAG"`,
-#' `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, and `"AG"`.
+#' `"CPDAG"`, `"ADMG"`, `"AG"`, `"PAG"`, or `"UNKNOWN"`. `"AUTO"` will
+#' automatically pick the appropriate class based on the first match in the
+#' order of `"DAG"`, `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, `"AG"`, and `"PAG"`.
+#'
+#' `"PAG"` is validated completely (see [is_pag()]), which is exponential in
+#' the worst case. Partially oriented output that is not a complete PAG, such
+#' as an RFCI or "anytime" PAG, should use `class = "UNKNOWN"`.
 #' It will default to `"UNKNOWN"` if no match is found.
 #' @param .session For internal use. Build a graph by supplying a
 #' pre-constructed session pointer from Rust.
@@ -253,6 +257,7 @@ caugi <- S7::new_class(
       "CPDAG",
       "ADMG",
       "AG",
+      "PAG",
       "UNKNOWN"
     ),
     state = NULL, # deprecated

@@ -12,6 +12,7 @@ use super::builder::GraphBuilder;
 use super::cpdag::Cpdag;
 use super::dag::Dag;
 use super::mpdag::Mpdag;
+use super::pag::Pag;
 use super::pdag::Pdag;
 use super::ug::Ug;
 use super::view::GraphView;
@@ -73,6 +74,8 @@ pub enum GraphClass {
     Admg,
     /// Ancestral Graph (`-->`, `<->`, `---`)
     Ag,
+    /// Partial Ancestral Graph (`-->`, `---`, `<->`, `o-o`, `--o`, `o->`)
+    Pag,
     /// Unknown/Raw (no validation)
     Unknown,
     /// Auto - no validation, will be resolved when edges are added
@@ -90,7 +93,8 @@ impl std::str::FromStr for GraphClass {
             "cpdag" => Ok(GraphClass::Cpdag),
             "ug" => Ok(GraphClass::Ug),
             "admg" => Ok(GraphClass::Admg),
-            "ag" | "mag" | "pag" => Ok(GraphClass::Ag),
+            "ag" | "mag" => Ok(GraphClass::Ag),
+            "pag" => Ok(GraphClass::Pag),
             "unknown" | "raw" => Ok(GraphClass::Unknown),
             "auto" => Ok(GraphClass::Auto),
             _ => Err(format!("Unknown graph class: '{}'", s)),
@@ -108,6 +112,7 @@ impl GraphClass {
             GraphClass::Ug => "UG",
             GraphClass::Admg => "ADMG",
             GraphClass::Ag => "AG",
+            GraphClass::Pag => "PAG",
             GraphClass::Unknown => "UNKNOWN",
             GraphClass::Auto => "AUTO",
         }
@@ -608,6 +613,10 @@ impl GraphSession {
                 let ag = Ag::new(core).map_err(|e| self.map_error(e))?;
                 Ok(GraphView::Ag(Arc::new(ag)))
             }
+            GraphClass::Pag => {
+                let pag = Pag::new(core).map_err(|e| self.map_error(e))?;
+                Ok(GraphView::Pag(Arc::new(pag)))
+            }
             GraphClass::Unknown | GraphClass::Auto => Ok(GraphView::Raw(core)),
         }
     }
@@ -654,6 +663,7 @@ impl GraphSession {
         ancestors_of(node: u32) -> Vec<u32>;
         descendants_of(node: u32) -> Vec<u32>;
         anteriors_of(node: u32) -> Vec<u32>;
+        is_visible_edge(from: u32, to: u32) -> bool;
         posteriors_of(node: u32) -> Vec<u32>;
         markov_blanket_of(node: u32) -> Vec<u32>;
         districts() -> Vec<Vec<u32>>;
@@ -664,6 +674,8 @@ impl GraphSession {
         dag_extension() -> GraphView;
         skeleton() -> GraphView;
         moralize() -> GraphView;
+        mag_to_pag() -> GraphView;
+        pag_to_mag() -> GraphView;
         latent_project(latents: &[u32]) -> GraphView;
         exogenize(nodes: &[u32]) -> GraphView;
         normalize_latent_structure(latents: &[u32]) -> (GraphView, Vec<u32>);
@@ -705,6 +717,11 @@ impl GraphSession {
     /// Check if the graph is compatible with AG.
     pub fn is_ag_type(&mut self) -> Result<bool, String> {
         Ok(Ag::new(self.core()?).is_ok())
+    }
+
+    /// Check if the graph is compatible with PAG.
+    pub fn is_pag_type(&mut self) -> Result<bool, String> {
+        Ok(Pag::new(self.core()?).is_ok())
     }
 
     /// Check if the graph is a CPDAG (PDAG-only).
@@ -756,6 +773,10 @@ impl GraphSession {
                 Ag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
                 Ok(GraphClass::Ag)
             }
+            GraphClass::Pag => {
+                Pag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
+                Ok(GraphClass::Pag)
+            }
             GraphClass::Unknown => Ok(GraphClass::Unknown),
             GraphClass::Auto => {
                 if Dag::new(Arc::clone(&core)).is_ok() {
@@ -772,6 +793,8 @@ impl GraphSession {
                     Ok(GraphClass::Admg)
                 } else if Ag::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Ag)
+                } else if Pag::new(Arc::clone(&core)).is_ok() {
+                    Ok(GraphClass::Pag)
                 } else {
                     Ok(GraphClass::Unknown)
                 }
@@ -1201,6 +1224,7 @@ mod tests {
         assert_eq!("ug".parse::<GraphClass>().unwrap(), GraphClass::Ug);
         assert_eq!("admg".parse::<GraphClass>().unwrap(), GraphClass::Admg);
         assert_eq!("mag".parse::<GraphClass>().unwrap(), GraphClass::Ag);
+        assert_eq!("pag".parse::<GraphClass>().unwrap(), GraphClass::Pag);
         assert_eq!("raw".parse::<GraphClass>().unwrap(), GraphClass::Unknown);
         assert_eq!("auto".parse::<GraphClass>().unwrap(), GraphClass::Auto);
         assert!("not-a-class".parse::<GraphClass>().is_err());
@@ -1212,8 +1236,46 @@ mod tests {
         assert_eq!(GraphClass::Ug.as_str(), "UG");
         assert_eq!(GraphClass::Admg.as_str(), "ADMG");
         assert_eq!(GraphClass::Ag.as_str(), "AG");
+        assert_eq!(GraphClass::Pag.as_str(), "PAG");
         assert_eq!(GraphClass::Unknown.as_str(), "UNKNOWN");
         assert_eq!(GraphClass::Auto.as_str(), "AUTO");
+    }
+
+    #[test]
+    fn auto_prefers_ag_over_pag_unless_circles_present() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+        let b = reg.code_of("<->").unwrap();
+        let u = reg.code_of("---").unwrap();
+        let ca = reg.code_of("o->").unwrap();
+
+        // Circle-free AG: 0 --> 1, 1 <-> 2, 0 --- 3. Still resolves to AG.
+        let mut ag = GraphSession::new(&reg, 4, true, GraphClass::Auto);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(1, 2, b);
+        e.push(0, 3, u);
+        ag.set_edges(e);
+        assert_eq!(ag.resolve_class(GraphClass::Auto).unwrap(), GraphClass::Ag);
+        assert!(ag.is_ag_type().unwrap());
+
+        // `0 o-> 2 <-o 1` with 0 and 1 non-adjacent: the PAG of the collider
+        // `0 --> 2 <-- 1`, so a genuinely valid PAG. An `o->` edge is not an
+        // AG edge, so this resolves to PAG.
+        let mut pag = GraphSession::new(&reg, 3, true, GraphClass::Auto);
+        let mut e2 = EdgeBuffer::new();
+        e2.push(0, 2, ca);
+        e2.push(1, 2, ca);
+        pag.set_edges(e2);
+        assert_eq!(
+            pag.resolve_class(GraphClass::Auto).unwrap(),
+            GraphClass::Pag
+        );
+        assert_eq!(pag.resolve_class(GraphClass::Pag).unwrap(), GraphClass::Pag);
+        assert!(pag.is_pag_type().unwrap());
+        assert!(!pag.is_ag_type().unwrap());
+        pag.set_class(GraphClass::Pag);
+        assert!(matches!(&*pag.view().unwrap(), GraphView::Pag(_)));
     }
 
     #[test]
