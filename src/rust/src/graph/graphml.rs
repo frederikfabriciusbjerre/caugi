@@ -10,7 +10,6 @@ use quick_xml::{Reader, Writer, XmlVersion};
 /// Serialize a caugi graph to GraphML format.
 pub fn serialize_graphml(
     graph: &GraphView,
-    registry: &EdgeRegistry,
     graph_class: &str,
     node_names: Vec<String>,
 ) -> Result<String, String> {
@@ -102,7 +101,7 @@ pub fn serialize_graphml(
             let j = core.col_index[k] as usize;
             let edge_id = core.etype[k];
             let side = core.side[k];
-            let edge_spec = registry.spec_of_code(edge_id).map_err(|e| e.to_string())?;
+            let edge_spec = core.spec(k);
 
             // Deduplication logic (same as serialization.rs)
             if edge_spec.symmetric {
@@ -441,7 +440,7 @@ mod tests {
         let view = GraphView::Raw(std::sync::Arc::new(graph));
 
         let node_names = vec!["A".to_string(), "B".to_string(), "C".to_string()];
-        let xml = serialize_graphml(&view, &reg, "DAG", node_names).unwrap();
+        let xml = serialize_graphml(&view, "DAG", node_names).unwrap();
 
         assert!(xml.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
         assert!(xml.contains("<graphml"));
@@ -467,7 +466,7 @@ mod tests {
         let view = GraphView::Raw(std::sync::Arc::new(graph));
 
         let node_names = vec!["A&B".to_string(), "C<D".to_string()];
-        let xml = serialize_graphml(&view, &reg, "DAG", node_names).unwrap();
+        let xml = serialize_graphml(&view, "DAG", node_names).unwrap();
 
         assert!(xml.contains("A&amp;B"));
         assert!(xml.contains("C&lt;D"));
@@ -494,7 +493,7 @@ mod tests {
             "C".to_string(),
             "D".to_string(),
         ];
-        let xml = serialize_graphml(&view, &reg, "UNKNOWN", node_names).unwrap();
+        let xml = serialize_graphml(&view, "UNKNOWN", node_names).unwrap();
 
         assert!(xml.contains("--&gt;"));
         assert!(xml.contains("---"));
@@ -607,7 +606,7 @@ mod tests {
         let view = GraphView::Raw(std::sync::Arc::new(graph));
 
         let node_names = vec!["A".to_string(), "B".to_string(), "C".to_string()];
-        let xml = serialize_graphml(&view, &reg, "UNKNOWN", node_names.clone()).unwrap();
+        let xml = serialize_graphml(&view, "UNKNOWN", node_names.clone()).unwrap();
 
         let deserialized = deserialize_graphml(&xml, &reg).unwrap();
 
@@ -626,7 +625,7 @@ mod tests {
         let view = GraphView::Raw(std::sync::Arc::new(graph));
 
         let node_names = vec!["A".to_string(), "B".to_string()];
-        let xml = serialize_graphml(&view, &reg, "DAG", node_names).unwrap();
+        let xml = serialize_graphml(&view, "DAG", node_names).unwrap();
 
         assert!(xml.contains("<node id=\"A\""));
         assert!(xml.contains("<node id=\"B\""));
@@ -662,7 +661,7 @@ mod tests {
         let graph = builder.finalize().unwrap();
         let view = GraphView::Raw(std::sync::Arc::new(graph));
 
-        let err = serialize_graphml(&view, &reg, "DAG", vec!["A".to_string()]).unwrap_err();
+        let err = serialize_graphml(&view, "DAG", vec!["A".to_string()]).unwrap_err();
         assert!(err.contains("Node names length (1) does not match graph size (2)"));
     }
 

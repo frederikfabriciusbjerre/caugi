@@ -217,4 +217,42 @@ test_that("== and != compare caugi objects by graph content", {
   cg_a <- caugi(A %-->% B, B %-->% C, class = "DAG")
   cg_b <- caugi(B %-->% C, A %-->% B, class = "DAG")
   expect_true(cg_a == cg_b)
+
+  # Nor does it when symmetric and asymmetric edges are mixed.
+  expect_true(
+    caugi(A %-->% B, B %<->% C, class = "ADMG") ==
+      caugi(C %<->% B, A %-->% B, class = "ADMG")
+  )
+
+  # Different endpoints of a symmetric edge are still a different graph.
+  expect_false(caugi(A %---% B, class = "UG") == caugi(A %---% C, class = "UG"))
+  expect_false(
+    caugi(A %---% B, class = "UG") == caugi(A %-->% B, class = "DAG")
+  )
+})
+
+# `==` compares graph content, so a symmetric edge must be an unordered pair.
+#
+# Regression test. `==` previously compared the `from`/`to` columns literally,
+# so `A --- B` and `B --- A` -- the same edge -- came out unequal. Any
+# comparison of a graph against one a transformation produced was therefore
+# sensitive to the declared node order alone.
+test_that("symmetric edges compare as unordered pairs", {
+  expect_true(caugi(A %---% B, class = "UG") == caugi(B %---% A, class = "UG"))
+  expect_true(
+    caugi(A %<->% B, class = "ADMG") == caugi(B %<->% A, class = "ADMG")
+  )
+  expect_true(
+    caugi(A %o-o% B, class = "UNKNOWN") == caugi(B %o-o% A, class = "UNKNOWN")
+  )
+})
+
+test_that("asymmetric edges stay direction-sensitive", {
+  expect_false(
+    caugi(A %-->% B, class = "DAG") == caugi(B %-->% A, class = "DAG")
+  )
+  # `o->` is asymmetric: the circle and the arrowhead sit on named ends.
+  expect_false(
+    caugi(A %o->% B, class = "UNKNOWN") == caugi(B %o->% A, class = "UNKNOWN")
+  )
 })

@@ -777,7 +777,6 @@ fn rs_parent_aid(
 #[extendr]
 fn rs_write_caugi_file(
     mut session: ExternalPtr<GraphSession>,
-    reg: ExternalPtr<EdgeRegistry>,
     graph_class: &str,
     path: &str,
     comment: Nullable<&str>,
@@ -796,7 +795,6 @@ fn rs_write_caugi_file(
 
     graph::serialization::write_caugi_file(
         view.as_ref(),
-        reg.as_ref(),
         graph_class,
         node_names_vec,
         path,
@@ -809,7 +807,6 @@ fn rs_write_caugi_file(
 #[extendr]
 fn rs_serialize_caugi(
     mut session: ExternalPtr<GraphSession>,
-    reg: ExternalPtr<EdgeRegistry>,
     graph_class: &str,
     comment: Nullable<&str>,
     tags: Nullable<Strings>,
@@ -827,7 +824,6 @@ fn rs_serialize_caugi(
 
     graph::serialization::serialize_caugi(
         view.as_ref(),
-        reg.as_ref(),
         graph_class,
         node_names_vec,
         comment_opt,
@@ -837,16 +833,12 @@ fn rs_serialize_caugi(
 }
 
 #[extendr]
-fn rs_serialize_graphml(
-    mut session: ExternalPtr<GraphSession>,
-    reg: ExternalPtr<EdgeRegistry>,
-    graph_class: &str,
-) -> String {
+fn rs_serialize_graphml(mut session: ExternalPtr<GraphSession>, graph_class: &str) -> String {
     let node_names_vec: Vec<String> = session.as_ref().names().to_vec();
 
     let view = session.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
 
-    graph::graphml::serialize_graphml(view.as_ref(), reg.as_ref(), graph_class, node_names_vec)
+    graph::graphml::serialize_graphml(view.as_ref(), graph_class, node_names_vec)
         .unwrap_or_else(|e| throw_r_error(e))
 }
 
@@ -1238,6 +1230,57 @@ fn rs_edges_df(session: ExternalPtr<GraphSession>) -> Robj {
     }
 
     list!(from0 = from0, to0 = to0, code = code, glyph = glyph).into_robj()
+}
+
+/// Codes of `glyphs` in this session's own registry snapshot, so edges added
+/// to an existing graph keep the meaning they had when it was built.
+#[extendr]
+fn rs_codes_of(session: ExternalPtr<GraphSession>, glyphs: Strings) -> Vec<i32> {
+    let specs = &session.as_ref().registry().specs;
+    glyphs
+        .iter()
+        .map(|g| {
+            specs
+                .iter()
+                .position(|s| s.glyph == g.as_ref())
+                .unwrap_or_else(|| {
+                    throw_r_error(format!(
+                        "Edge type '{}' is not in this graph's registry. \
+                         Rebuild the graph to use edges registered after it was created.",
+                        g.as_ref()
+                    ))
+                }) as i32
+        })
+        .collect()
+}
+
+/// Edges in canonical form for comparing graphs: symmetric edges are oriented
+/// by node name and rows are sorted. Each row carries its full spec from this
+/// session's registry, so glyphs that mean different things never compare
+/// equal.
+#[extendr]
+fn rs_canonical_edges(session: ExternalPtr<GraphSession>) -> Robj {
+    let s = session.as_ref();
+    let (e, specs, names) = (s.edge_buffer(), &s.registry().specs, s.names());
+    let mut rows: Vec<_> = (0..e.len())
+        .map(|i| {
+            let spec = &specs[e.etype[i] as usize];
+            let (mut u, mut v) = (&names[e.from[i] as usize], &names[e.to[i] as usize]);
+            if spec.symmetric && u > v {
+                std::mem::swap(&mut u, &mut v);
+            }
+            // ponytail: Debug covers every EdgeSpec field, including future ones.
+            (u, v, format!("{spec:?}"), &spec.glyph)
+        })
+        .collect();
+    rows.sort_unstable();
+    list!(
+        from = rows.iter().map(|r| r.0.as_str()).collect::<Vec<_>>(),
+        edge = rows.iter().map(|r| r.3.as_str()).collect::<Vec<_>>(),
+        to = rows.iter().map(|r| r.1.as_str()).collect::<Vec<_>>(),
+        spec = rows.iter().map(|r| r.2.as_str()).collect::<Vec<_>>()
+    )
+    .into_robj()
 }
 
 #[extendr]
@@ -2265,6 +2308,8 @@ extendr_module! {
     fn rs_index_of;
     fn rs_indices_of;
     fn rs_edges_df;
+    fn rs_codes_of;
+    fn rs_canonical_edges;
     fn rs_is_valid;
     fn rs_build;
     fn children;

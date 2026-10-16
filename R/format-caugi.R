@@ -73,7 +73,6 @@ write_caugi <- function(x, path, comment = NULL, tags = NULL) {
 
   rs_write_caugi_file(
     x@session,
-    caugi_registry(),
     x@graph_class,
     path,
     comment,
@@ -188,7 +187,6 @@ caugi_serialize <- function(x, comment = NULL, tags = NULL) {
 
   rs_serialize_caugi(
     x@session,
-    caugi_registry(),
     x@graph_class,
     comment,
     tags
