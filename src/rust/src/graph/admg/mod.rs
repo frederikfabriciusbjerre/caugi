@@ -33,6 +33,7 @@ impl Admg {
     /// Validates that:
     /// 1. The directed part is acyclic
     /// 2. Only directed and bidirected edges are present
+    /// 3. There are no self-loops
     ///
     /// Parents, spouses, and children for each node are stored contiguously and sorted.
     ///
@@ -58,6 +59,9 @@ impl Admg {
         // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
         for i in 0..n {
             for k in core.row_range(i as u32) {
+                if core.col_index[k] == i as u32 {
+                    return Err(AdmgError::SelfLoop { node: i as u32 });
+                }
                 let spec = core.spec(k);
                 match spec.class {
                     EdgeClass::Directed => {
@@ -648,7 +652,7 @@ mod tests {
     #[test]
     fn admg_msep_iv_example() {
         let (reg, dir, bid) = setup();
-        // Need simple=false to allow both directed and bidirected edges between same nodes
+        // Non-simple builder: a bow puts a directed and a bidirected edge on one pair
         let mut b = GraphBuilder::new_with_registry(3, false, &reg);
         // Instrumental variable setup:
         // Z -> X -> Y, X <-> Y (latent confounding)
@@ -713,7 +717,7 @@ mod tests {
     #[test]
     fn admg_adjustment_latent_confounding() {
         let (reg, dir, bid) = setup();
-        // Need simple=false to allow both directed and bidirected edges between same nodes
+        // Non-simple builder: a bow puts a directed and a bidirected edge on one pair
         let mut b = GraphBuilder::new_with_registry(3, false, &reg);
         // Latent confounding via bidirected: X -> Y, X <-> Y
         // 0:X, 1:Y, 2:other

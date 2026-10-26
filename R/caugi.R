@@ -35,9 +35,14 @@
 #' `from`, `edge`, and `to` to specify edges. Mutually exclusive with `...`
 #' and `from`, `edge`, `to`. Can be used to create graphs using `edges(cg)`
 #' from another `caugi` object, `cg`.
-#' @param simple Logical; if `TRUE` (default), the graph is a simple graph, and
-#' the function will throw an error if the input contains parallel edges or
-#' self-loops.
+#' @param simple Deprecated in caugi 1.4.0 and
+#' to be removed in 2.0.0; the graph class now decides whether multiple edges
+#' are allowed. If omitted (recommended), it is derived from `class`: `FALSE`
+#' for `"UNKNOWN"` and `"ADMG"` (so self-loops and parallel edges in
+#' `"UNKNOWN"`, and bows in `"ADMG"`, are allowed) and `TRUE` for every other
+#' class. Supplying it gives a deprecation warning but is still honoured:
+#' `TRUE` forbids parallel edges and self-loops, and `FALSE` is only allowed
+#' for `"UNKNOWN"`, `"ADMG"`, and `"AG"`.
 #' @param class Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
 #' `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick
 #' the appropriate class based on the first match in the order of `"DAG"`,
@@ -48,6 +53,11 @@
 #' @param build DEPRECATED. The graph is always built lazily, so this argument is ignored.
 #' Can use [build()] to force lazy compilation if desired.
 #' @param state DEPRECATED. Replaced by `.session`.
+#'
+#' @details
+#' The `@simple` property reports whether the graph forbids parallel edges and
+#' self-loops. It is deprecated together with the `simple` argument and will
+#' be removed in caugi 2.0.0; use [is_simple()] to check the graph itself.
 #'
 #' @returns A `caugi` S7 object containing the nodes, edges, and a
 #' pointer to the underlying Rust graph structure.
@@ -77,16 +87,18 @@
 #'   class = "DAG"
 #' )
 #'
-#' # create a non-simple graph
+#' # create a graph with parallel edges (allowed for UNKNOWN)
 #' cg4 <- caugi(
 #'   A %-->% B,
 #'   B %-->% A,
-#'   class = "UNKNOWN",
-#'   simple = FALSE
+#'   class = "UNKNOWN"
 #' )
 #'
-#' cg4@simple # FALSE
+#' is_simple(cg4) # FALSE
 #' cg4@graph_class # "UNKNOWN"
+#'
+#' # an ADMG may contain bows
+#' cg5 <- caugi(A %-->% B, A %<->% B, class = "ADMG")
 #'
 #' @family caugi
 #' @concept caugi
@@ -242,7 +254,7 @@ caugi <- S7::new_class(
     to = NULL,
     nodes = NULL,
     edges_df = NULL,
-    simple = TRUE,
+    simple = NULL, # deprecated
     build = NULL, # deprecated
     class = c(
       "AUTO",
@@ -287,6 +299,11 @@ caugi <- S7::new_class(
     }
     class <- toupper(class)
     class <- match.arg(class)
+    if (is.null(simple)) {
+      simple <- .default_simple(class)
+    } else {
+      .warn_simple_deprecated()
+    }
 
     calls <- as.list(substitute(list(...)))[-1L]
     has_expr <- length(calls) > 0L
@@ -546,6 +563,48 @@ caugi <- S7::new_class(
 
   # Top-level task callbacks execute through an internal `cb(...)` frame.
   any(grepl("^cb\\(expr, value, (ok|succeeded), visible\\)$", call_text))
+}
+
+#' @title Default `simple` flag for a graph class
+#'
+#' @description Only `"UNKNOWN"` and `"ADMG"` allow multiple edges between a
+#' pair of nodes by default; every other class is simple.
+#'
+#' @param class Character; a graph class.
+#'
+#' @returns A logical scalar.
+#'
+#' @keywords internal
+.default_simple <- function(class) {
+  !class %in% c("UNKNOWN", "ADMG")
+}
+
+#' @title Warn that the `simple` argument is deprecated
+#'
+#' @description Signals a warning of class `caugi_deprecated_simple` (and
+#' `deprecatedWarning`).
+#'
+#' @returns `NULL`, invisibly.
+#'
+#' @keywords internal
+.warn_simple_deprecated <- function() {
+  warning(structure(
+    class = c(
+      "caugi_deprecated_simple",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "The `simple` argument is deprecated and will be removed in caugi ",
+        "2.0.0; the graph class now determines whether multiple edges are ",
+        "allowed."
+      ),
+      call = NULL
+    )
+  ))
+  invisible(NULL)
 }
 
 .deprecated_field_warning <- function(message) {

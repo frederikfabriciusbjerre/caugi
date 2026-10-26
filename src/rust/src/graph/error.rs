@@ -12,6 +12,8 @@ pub enum AdmgError {
     InvalidEdgeType { found: String },
     /// A node index is out of bounds.
     InvalidNodeIndex { index: u32, max: u32 },
+    /// ADMGs cannot contain self-loops.
+    SelfLoop { node: u32 },
 }
 
 impl std::fmt::Display for AdmgError {
@@ -26,6 +28,7 @@ impl std::fmt::Display for AdmgError {
             Self::InvalidNodeIndex { index, max } => {
                 write!(f, "Node index {} out of bounds (max: {})", index, max)
             }
+            Self::SelfLoop { node } => write!(f, "ADMG contains a self-loop (node {})", node),
         }
     }
 }

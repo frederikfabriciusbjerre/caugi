@@ -17,8 +17,8 @@
 #' @param class Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
 #'  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
 #'  integer coded matrices.
-#' @param simple logical. If `TRUE` (default) the graph will be simple
-#' (no multiple edges or self-loops).
+#' @param simple Deprecated; see [caugi()]. If omitted (recommended), it is
+#' derived from `class`.
 #' @param collapse logical. If `TRUE` collapse mutual directed edges to
 #' undirected edges. Default is `FALSE`.
 #' @param collapse_to Character string to use as the edge glyph when collapsing.
@@ -109,7 +109,7 @@ as_caugi <- S7::new_generic(
       "PAG",
       "UNKNOWN"
     ),
-    simple = TRUE,
+    simple = NULL,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -134,7 +134,7 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -158,7 +158,7 @@ S7::method(
       edge = character(),
       to = character(),
       nodes = nm,
-      simple = isTRUE(simple),
+      simple = simple,
       class = class
     ))
   }
@@ -207,7 +207,7 @@ S7::method(
     edge = edge,
     to = to,
     nodes = nm,
-    simple = isTRUE(simple),
+    simple = simple,
     class = class
   )
 }
@@ -229,7 +229,7 @@ register_graphnel_s4_class <- function() {
       "PAG",
       "UNKNOWN"
     ),
-    simple = TRUE,
+    simple = NULL,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -262,7 +262,7 @@ register_graphnel_s4_class <- function() {
         edge = character(),
         to = character(),
         nodes = nm,
-        simple = isTRUE(simple),
+        simple = simple,
         class = class
       ))
     }
@@ -293,7 +293,7 @@ register_graphnel_s4_class <- function() {
       edge = edge,
       to = to,
       nodes = nm,
-      simple = isTRUE(simple),
+      simple = simple,
       class = class
     )
   }
@@ -315,7 +315,7 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -456,7 +456,7 @@ S7::method(
         edge = character(),
         to = character(),
         nodes = nm,
-        simple = isTRUE(simple),
+        simple = simple,
         class = class
       ))
     }
@@ -494,7 +494,7 @@ S7::method(
     edge = edge,
     to = to,
     nodes = nm,
-    simple = isTRUE(simple),
+    simple = simple,
     class = class
   )
 }
@@ -515,7 +515,7 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -558,7 +558,7 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -598,7 +598,7 @@ register_matrix_s4_class <- function() {
       "PAG",
       "UNKNOWN"
     ),
-    simple = TRUE,
+    simple = NULL,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -632,7 +632,7 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -667,7 +667,7 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -686,7 +686,7 @@ S7::method(
       edge = character(),
       to = character(),
       nodes = nm,
-      simple = isTRUE(simple),
+      simple = simple,
       class = if (class == "PAG") "UNKNOWN" else class
     ))
   }
@@ -764,7 +764,7 @@ S7::method(
     edge = edge,
     to = to,
     nodes = nm,
-    simple = isTRUE(simple),
+    simple = simple,
     class = class
   )
 }
@@ -785,7 +785,7 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -805,7 +805,7 @@ S7::method(
       edge = character(),
       to = character(),
       nodes = nm,
-      simple = isTRUE(simple),
+      simple = simple,
       class = class
     ))
   }
@@ -843,7 +843,7 @@ S7::method(
     edge = edge,
     to = to,
     nodes = nm,
-    simple = isTRUE(simple),
+    simple = simple,
     class = class
   )
 }

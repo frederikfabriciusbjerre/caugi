@@ -46,7 +46,7 @@ test_that("is_acyclic fast path handles MPDAG class", {
   expect_true(is_acyclic(cg, force_check = TRUE))
 })
 
-test_that("is_simple reflects declared state and force_check path", {
+test_that("is_simple checks the graph structure", {
   cg_simple <- caugi(A %-->% B, class = "DAG")
   expect_true(is_simple(cg_simple))
   expect_true(is_simple(cg_simple, force_check = TRUE))
@@ -54,11 +54,16 @@ test_that("is_simple reflects declared state and force_check path", {
   cg_nonsimple <- caugi(
     A %-->% B,
     A %<->% B,
-    class = "UNKNOWN",
-    simple = FALSE
+    class = "UNKNOWN"
   )
   expect_false(is_simple(cg_nonsimple))
   expect_false(is_simple(cg_nonsimple, force_check = TRUE))
+
+  # UNKNOWN allows multi-edges, but this graph has none
+  cg_unknown <- caugi(A %-->% B, class = "UNKNOWN")
+  expect_false(cg_unknown@simple)
+  expect_true(is_simple(cg_unknown))
+  expect_false(is_simple(caugi(A %-->% A, class = "UNKNOWN")))
 })
 
 test_that("query builds", {
@@ -806,8 +811,7 @@ test_that("subgraph filters edges to kept names and sorts", {
     edge = c("-->", "-->", "---", "<->"),
     to = c("B", "C", "A", "C"),
     nodes = c("A", "B", "C", "D"),
-    class = "UNKNOWN",
-    simple = FALSE
+    class = "UNKNOWN"
   )
   # Keep C, A => should keep (A <-> C) and (C --- A), sorted by from,to,edge
   s <- subgraph(g, nodes = c("C", "A"))

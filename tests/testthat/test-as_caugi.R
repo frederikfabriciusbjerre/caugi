@@ -29,7 +29,7 @@ test_that("collapse merges mutual directed edges to undirected", {
   m["A", "B"] <- 1L
   m["B", "A"] <- 1L
 
-  cg_no <- as_caugi(m, class = "UNKNOWN", collapse = FALSE, simple = FALSE)
+  cg_no <- as_caugi(m, class = "UNKNOWN", collapse = FALSE)
   cg_yes <- as_caugi(m, class = "PDAG", collapse = TRUE)
 
   e_no <- as.data.frame(edges(cg_no))
@@ -307,7 +307,7 @@ test_that("graphNEL dispatch works (directed and undirected)", {
 
   h <- graph::graphNEL(nodes = c("A", "B"), edgemode = "undirected")
   h <- graph::addEdge("A", "B", h)
-  cg_u <- as_caugi(h, class = "UNKNOWN", simple = FALSE)
+  cg_u <- as_caugi(h, class = "UNKNOWN")
   eu <- as.data.frame(edges(cg_u))
   expect_equal(nrow(eu), 1L)
   expect_equal(eu$edge, "---")
@@ -405,7 +405,7 @@ test_that("dagitty -> caugi: partial edges 'o->' and 'o-o' map correctly", {
 test_that("dagitty -> caugi: collapse mutual directed pairs to symmetric glyph", {
   skip_if_not_installed("dagitty")
   g <- dagitty::dagitty("dag { A -> B; B -> A }")
-  cg_noc <- as_caugi(g, class = "UNKNOWN", collapse = FALSE, simple = FALSE)
+  cg_noc <- as_caugi(g, class = "UNKNOWN", collapse = FALSE)
   expect_equal(nrow(cg_noc@edges), 2L)
   expect_setequal(cg_noc@edges$edge, c("-->"))
 
@@ -438,7 +438,7 @@ test_that("dagitty -> caugi: PAG class is routed to UNKNOWN until supported", {
 test_that("dagitty -> caugi: respects `simple` flag and builds session", {
   skip_if_not_installed("dagitty")
   g <- dagitty::dagitty("dag { A -> B }")
-  cg <- as_caugi(g, class = "DAG", simple = TRUE)
+  cg <- as_caugi(g, class = "DAG")
 
   expect_true(!is.null(cg@session))
   expect_true(isTRUE(cg@simple))

@@ -158,9 +158,9 @@ test_that("mutate_caugi throws error, when mutation isn't possible", {
   expect_error(mutate_caugi(cg, class = "DAG"), "Cannot convert caugi of class")
 })
 
-test_that("mutate_caugi keeps simple = FALSE where the target class allows it", {
+test_that("mutate_caugi applies the target class's multi-edge rule", {
   # A bow is a valid, non-simple ADMG.
-  cg <- caugi(A %-->% B, A %<->% B, class = "UNKNOWN", simple = FALSE)
+  cg <- caugi(A %-->% B, A %<->% B, class = "UNKNOWN")
   cg_admg <- mutate_caugi(cg, class = "ADMG")
   expect_false(cg_admg@simple)
   expect_silent(build(cg_admg))
@@ -172,14 +172,20 @@ test_that("mutate_caugi keeps simple = FALSE where the target class allows it", 
   expect_silent(build(cg_back))
 
   # Simple-only targets become simple.
-  cg_dag_like <- caugi(A %-->% B, B %-->% C, class = "UNKNOWN", simple = FALSE)
+  cg_dag_like <- caugi(A %-->% B, B %-->% C, class = "UNKNOWN")
   cg_dag <- mutate_caugi(cg_dag_like, class = "DAG")
   expect_true(cg_dag@simple)
   expect_silent(build(cg_dag))
   expect_equal(children(cg_dag, "A"), "B")
 
-  # Simple sources stay simple.
-  expect_true(mutate_caugi(caugi(A %-->% B), class = "ADMG")@simple)
+  # The target class decides, so a DAG converted to ADMG may gain bows.
+  cg_admg2 <- mutate_caugi(caugi(A %-->% B, class = "DAG"), class = "ADMG")
+  expect_false(cg_admg2@simple)
+  expect_s7_class(add_edges(cg_admg2, A %<->% B), caugi)
+
+  # Multi-edges cannot move into a simple-only class.
+  expect_error(mutate_caugi(cg, class = "AG"), "Cannot convert")
+  expect_error(mutate_caugi(cg, class = "PDAG"), "Cannot convert")
 })
 
 test_that("mutate_caugi works for all classes to UNKNOWN", {

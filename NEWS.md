@@ -15,11 +15,24 @@
 - Node and edge tables use faster constructors, reducing overhead when building
   graphs and retrieving `nodes()` and `edges()`.
 
+## Improvements
+
+* `is_simple()` now always checks the graph itself instead of returning the
+  declared `simple` flag; `force_check` is ignored.
+* `remove_edges()` without `edge` now only errors when the given pair actually
+  holds several edges, instead of whenever the graph allows multi-edges.
+
 ## Bug Fixes
 
-- `mutate_caugi()` no longer forces `simple = TRUE` on every target class. A
-  non-simple graph converted to `"UNKNOWN"`, `"ADMG"` or `"AG"` keeps
-  `simple = FALSE`, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to a
+- `"ADMG"` graphs now reject self-loops; previously
+  `caugi(A %<->% A, class = "ADMG", simple = FALSE)` was accepted.
+
+- `is_dag()`, `is_pdag()`, `is_ug()`, `is_ag()`, `is_cpdag()`, `is_mpdag()`
+  and `is_mag()` now return `FALSE` for graphs with parallel edges or
+  self-loops.
+
+- `mutate_caugi()` now gives the converted graph the target class's
+  multi-edge rule, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to a
   valid ADMG instead of a simple graph with parallel edges that failed on
   `build()` or any query. The converted graph is now built eagerly, so invalid
   conversions fail immediately.
@@ -50,6 +63,16 @@ direction-sensitive. testthat's `expect_equal()` now agrees with `==`.
 `to_graphml()` used the current global registry instead, so they could
 compare edges wrongly, fail with `Invalid edge code`, or write the wrong
 glyphs. Adding an edge type the graph was not built with is now an error.
+
+## Deprecations
+
+* The `simple` argument of `caugi()` and `as_caugi()`, and the `@simple`
+  property, are deprecated and will be removed in caugi 2.0.0. The graph class
+  now determines whether multiple edges are allowed: when `simple` is omitted
+  it is `FALSE` for `"UNKNOWN"` and `"ADMG"` and `TRUE` for every other class.
+  Bows (`A %-->% B`, `A %<->% B`) therefore build as an ADMG, and parallel
+  edges or self-loops build as `"UNKNOWN"`, without `simple = FALSE`.
+  Supplying `simple` still works but warns.
 
 # caugi 1.3.0
 

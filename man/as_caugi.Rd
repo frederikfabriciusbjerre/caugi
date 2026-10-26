@@ -7,7 +7,7 @@
 as_caugi(
   x,
   class = c("DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -20,8 +20,8 @@ as_caugi(
 \code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"PAG"} is only supported for
 integer coded matrices.}
 
-\item{simple}{logical. If \code{TRUE} (default) the graph will be simple
-(no multiple edges or self-loops).}
+\item{simple}{Deprecated; see \code{\link[=caugi]{caugi()}}. If omitted (recommended), it is
+derived from \code{class}.}
 
 \item{collapse}{logical. If \code{TRUE} collapse mutual directed edges to
 undirected edges. Default is \code{FALSE}.}

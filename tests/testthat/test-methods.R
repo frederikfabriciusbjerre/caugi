@@ -136,7 +136,7 @@ test_that("compare_proxy and all.equal branches are covered", {
   expect_match(eq_fun(cg, list()), "current is not a caugi object")
 
   cg_simple <- caugi(A %-->% B, class = "DAG")
-  cg_non_simple <- caugi(A %-->% B, class = "UNKNOWN", simple = FALSE)
+  cg_non_simple <- caugi(A %-->% B, class = "UNKNOWN")
   diff_simple <- eq_fun(cg_simple, cg_non_simple)
   expect_true(any(grepl("^simple:", diff_simple)))
   expect_true(any(grepl("^graph_class:", diff_simple)))
@@ -202,8 +202,7 @@ test_that("== and != compare caugi objects by graph content", {
 
   # Different `simple` flag.
   expect_false(
-    caugi(A %-->% B, class = "DAG") ==
-      caugi(A %-->% B, class = "UNKNOWN", simple = FALSE)
+    caugi(A %-->% B, class = "DAG") == caugi(A %-->% B, class = "UNKNOWN")
   )
 
   # Non-caugi other operand falls back to FALSE / TRUE.

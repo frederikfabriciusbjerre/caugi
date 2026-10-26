@@ -682,19 +682,26 @@ impl GraphSession {
         Ok(crate::graph::alg::directed_part_is_acyclic(core.as_ref()))
     }
 
+    /// The core if it is structurally simple, else `None`: simple-only
+    /// classes reject multi-edges the class validators do not look for.
+    fn simple_core(&mut self) -> Result<Option<Arc<CaugiGraph>>, String> {
+        let core = self.core()?;
+        Ok(core.check_simple().is_ok().then_some(core))
+    }
+
     /// Check if the graph is compatible with DAG.
     pub fn is_dag_type(&mut self) -> Result<bool, String> {
-        Ok(Dag::new(self.core()?).is_ok())
+        Ok(self.simple_core()?.is_some_and(|c| Dag::new(c).is_ok()))
     }
 
     /// Check if the graph is compatible with PDAG.
     pub fn is_pdag_type(&mut self) -> Result<bool, String> {
-        Ok(Pdag::new(self.core()?).is_ok())
+        Ok(self.simple_core()?.is_some_and(|c| Pdag::new(c).is_ok()))
     }
 
     /// Check if the graph is compatible with UG.
     pub fn is_ug_type(&mut self) -> Result<bool, String> {
-        Ok(Ug::new(self.core()?).is_ok())
+        Ok(self.simple_core()?.is_some_and(|c| Ug::new(c).is_ok()))
     }
 
     /// Check if the graph is compatible with ADMG.
@@ -704,22 +711,31 @@ impl GraphSession {
 
     /// Check if the graph is compatible with AG.
     pub fn is_ag_type(&mut self) -> Result<bool, String> {
-        Ok(Ag::new(self.core()?).is_ok())
+        Ok(self.simple_core()?.is_some_and(|c| Ag::new(c).is_ok()))
     }
 
     /// Check if the graph is a CPDAG (PDAG-only).
     pub fn is_cpdag(&mut self) -> Result<bool, String> {
-        Ok(Pdag::new(self.core()?).map_or(false, |p| Cpdag::try_new(p).is_ok()))
+        Ok(self
+            .simple_core()?
+            .and_then(|c| Pdag::new(c).ok())
+            .is_some_and(|p| Cpdag::try_new(p).is_ok()))
     }
 
     /// Check if the graph is an MPDAG (PDAG + Meek closure).
     pub fn is_mpdag(&mut self) -> Result<bool, String> {
-        Ok(Pdag::new(self.core()?).map_or(false, |p| Mpdag::try_new(p).is_ok()))
+        Ok(self
+            .simple_core()?
+            .and_then(|c| Pdag::new(c).ok())
+            .is_some_and(|p| Mpdag::try_new(p).is_ok()))
     }
 
     /// Check if the graph is a MAG (AG only).
     pub fn is_mag(&mut self) -> Result<bool, String> {
-        Ok(Ag::new(self.core()?).map_or(false, |ag| ag.is_mag()))
+        Ok(self
+            .simple_core()?
+            .and_then(|c| Ag::new(c).ok())
+            .is_some_and(|ag| ag.is_mag()))
     }
 
     /// Resolve a graph class given the current edges/core.
@@ -1706,6 +1722,30 @@ mod tests {
             )
             .is_none());
         assert!(session.map_error_str("unmapped error").is_none());
+    }
+
+    #[test]
+    fn admg_rejects_self_loops_and_simple_classes_reject_multi_edges() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+        let b = reg.code_of("<->").unwrap();
+        let u = reg.code_of("---").unwrap();
+
+        let mut bow = GraphSession::new(&reg, 2, false, GraphClass::Admg);
+        bow.set_edges_from_vecs(vec![0, 0], vec![1, 1], vec![d, b]);
+        assert!(bow.view().is_ok());
+        assert!(bow.core().unwrap().check_simple().is_err());
+        assert!(bow.is_admg_type().unwrap());
+        assert!(!bow.is_ag_type().unwrap());
+
+        let mut admg_loop = GraphSession::new(&reg, 2, false, GraphClass::Admg);
+        admg_loop.set_edges_from_vecs(vec![0], vec![0], vec![b]);
+        assert!(admg_loop.view().unwrap_err().contains("self-loop (node 0)"));
+
+        let mut raw = GraphSession::new(&reg, 2, false, GraphClass::Unknown);
+        raw.set_edges_from_vecs(vec![0, 0], vec![1, 1], vec![d, u]);
+        assert!(!raw.is_pdag_type().unwrap());
+        assert!(!raw.is_mpdag().unwrap());
     }
 
     #[test]
