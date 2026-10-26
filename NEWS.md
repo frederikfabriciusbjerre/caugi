@@ -7,6 +7,9 @@
 * Add `components()` to partition graphs into weakly connected components or
   strongly connected components of the directed part, including cyclic graphs
   of class `"UNKNOWN"`.
+* `adjustment_set()` now accepts several treatments `X` and outcomes `Y` for
+  every `type`. `type = "optimal"` returns the O-set of Henckel, Perković &
+  Maathuis (2022) for node sets.
   
 ## Performance Improvements
 
@@ -32,6 +35,13 @@
   `X = c("X1", "X2")`. The forbidden set also left out the descendants of `Y`,
   so `{D}` was accepted for `X --> Y --> D`. Both are now checked against a
   brute-force implementation of the criterion.
+
+- `adjustment_set()` now checks its result against the generalized adjustment
+  criterion and errors when it is not valid, rather than returning an invalid
+  set. This affected graphs where a node of `Y` is a parent of `X`, where no
+  valid set exists, and `type = "optimal"` when `Y` is not a descendant of
+  `X`: for `X <-- U --> Y` it returned the empty set, and now points to
+  `type = "backdoor"`, which returns `U`.
 
 - `m_separated()` now handles ADMG collider paths with multiple bidirected
   edges, such as `a -> b <-> c <-> d` given `{b, c}`. This also fixes

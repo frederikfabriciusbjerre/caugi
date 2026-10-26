@@ -54,6 +54,33 @@ where
     a
 }
 
+/// Ancestors of `seeds` along directed paths that avoid `avoid`. Nodes in
+/// `avoid` are marked when reached but never climbed through, so with
+/// `seeds = Y` and `avoid = X`, a node `v ∉ X` is marked iff it has a directed
+/// path to `Y` avoiding `X`.
+pub fn ancestors_mask_avoiding<'a, F>(
+    seeds: &[u32],
+    avoid: &[u32],
+    parents_of: F,
+    n: u32,
+) -> Vec<bool>
+where
+    F: Fn(u32) -> &'a [u32],
+{
+    let avoid = mask_from(avoid, n);
+    ancestors_mask(
+        seeds,
+        |u| {
+            if avoid[u as usize] {
+                &[]
+            } else {
+                parents_of(u)
+            }
+        },
+        n,
+    )
+}
+
 /// Descendants mask of a seed set. `d[v] == true` iff `v ∈ De(seeds) ∪ seeds`.
 ///
 /// # Arguments

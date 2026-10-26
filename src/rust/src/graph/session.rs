@@ -672,6 +672,7 @@ impl GraphSession {
         m_separated(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
         adjustment_set_parents(xs: &[u32], ys: &[u32]) -> Vec<u32>;
         adjustment_set_backdoor(xs: &[u32], ys: &[u32]) -> Vec<u32>;
+        adjustment_set_optimal(xs: &[u32], ys: &[u32]) -> Vec<u32>;
         is_valid_adjustment_set_admg(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
         all_adjustment_sets_admg(xs: &[u32], ys: &[u32], minimal: bool, max_size: u32) -> Vec<Vec<u32>>;
     }
@@ -800,16 +801,6 @@ impl GraphSession {
     pub fn count_dags(&mut self) -> Result<u64, String> {
         let pdag = Pdag::new(self.core()?).map_err(|e| self.map_error(e))?;
         pdag.count_mec().map_err(|e| self.map_error(e))
-    }
-
-    /// Adjustment set: optimal.
-    pub fn adjustment_set_optimal(&mut self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
-        if xs.len() != 1 || ys.len() != 1 {
-            return Err("adjustment_set_optimal expects exactly one X and one Y".into());
-        }
-        let view = self.view()?;
-        view.adjustment_set_optimal(xs[0], ys[0])
-            .map_err(|e| self.map_error(e))
     }
 
     /// Validate a backdoor set.
@@ -1453,6 +1444,7 @@ mod tests {
         let mut edges = EdgeBuffer::new();
         edges.push(2, 0, d);
         edges.push(2, 1, d);
+        edges.push(0, 1, d);
         session.set_edges(edges);
 
         let parents = session.adjustment_set_parents(&[0], &[1]).unwrap();
@@ -1472,7 +1464,12 @@ mod tests {
             .iter()
             .all(|set| set.iter().all(|&z| z < 3 && z != 0 && z != 1)));
 
-        assert!(session.adjustment_set_optimal(&[0, 2], &[1]).is_err());
+        // Several treatments are supported; Y as a parent of X has no valid set.
+        assert_eq!(
+            session.adjustment_set_optimal(&[0, 2], &[1]).unwrap(),
+            Vec::<u32>::new()
+        );
+        assert!(session.adjustment_set_backdoor(&[0], &[2]).is_err());
         assert!(session.is_valid_backdoor_set(&[0, 2], &[1], &[2]).is_err());
         assert!(session.all_backdoor_sets(&[0, 2], &[1], true, 3).is_err());
     }

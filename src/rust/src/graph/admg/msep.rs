@@ -35,23 +35,10 @@ impl Admg {
         bitset::ancestors_mask(seeds, |u| self.parents_of(u), self.n())
     }
 
-    /// Ancestors of `seeds` along directed paths that avoid `avoid`. Nodes in
-    /// `avoid` are marked when reached but never climbed through, so with
-    /// `seeds = Y` and `avoid = X`, a node `v ∉ X` is marked iff it has a
-    /// directed path to `Y` avoiding `X`.
+    /// Ancestors of `seeds` along directed paths that avoid `avoid`; see
+    /// [`bitset::ancestors_mask_avoiding`].
     pub(super) fn ancestors_mask_avoiding(&self, seeds: &[u32], avoid: &[u32]) -> Vec<bool> {
-        let avoid = bitset::mask_from(avoid, self.n());
-        bitset::ancestors_mask(
-            seeds,
-            |u| {
-                if avoid[u as usize] {
-                    &[]
-                } else {
-                    self.parents_of(u)
-                }
-            },
-            self.n(),
-        )
+        bitset::ancestors_mask_avoiding(seeds, avoid, |u| self.parents_of(u), self.n())
     }
 
     /// Ancestors mask in the graph obtained by deleting every directed edge

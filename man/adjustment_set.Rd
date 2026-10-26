@@ -16,7 +16,7 @@ adjustment_set(
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{X, Y}{Node names.}
+\item{X, Y}{Node names; one or more each, and disjoint.}
 
 \item{X_index, Y_index}{Optional numeric 1-based indices.}
 
@@ -27,20 +27,34 @@ The \code{optimal} option computes the O-set.}
 A character vector of node names representing the adjustment set.
 }
 \description{
-Computes an adjustment set for \code{X -> Y} in a DAG.
+Computes an adjustment set for the effect of \code{X} on \code{Y} in a
+DAG. \code{X} and \code{Y} can each hold one or more nodes.
 }
 \details{
 Types supported:
 \itemize{
-\item \code{"parents"}: \eqn{\bigcup \mathrm{Pa}(X)} minus \eqn{X \cup Y}
-\item \code{"backdoor"}: an inclusion-minimal valid backdoor adjustment set, found in
+\item \code{"parents"}: \eqn{\bigcup \mathrm{Pa}(X)} minus \eqn{X \cup Y}. With a
+single treatment this is valid whenever any valid set exists. With several
+treatments it can fail while other sets work, because a parent of one
+treatment can lie on a causal path from another.
+\item \code{"backdoor"}: an inclusion-minimal valid adjustment set, found in
 linear time as a minimal d-separator of \code{X} and \code{Y} in the proper backdoor
-graph (van der Zander, Liśkiewicz & Textor, 2019). Unlike \code{"parents"} (which
-always conditions on every parent of \code{X}), this drops nodes that are not
-needed to block a backdoor path. Note that minimal is not the same as
-statistically optimal; use \code{"optimal"} for the efficient O-set.
-\item \code{"optimal"}: O-set (only for single \code{x} and single \code{y})
+graph (van der Zander, Liśkiewicz & Textor, 2019). It finds a valid set
+whenever one exists. Unlike \code{"parents"} (which always conditions on every
+parent of \code{X}), this drops nodes that are not needed to block a backdoor
+path. Note that minimal is not the same as statistically optimal; use
+\code{"optimal"} for the efficient O-set.
+\item \code{"optimal"}: the O-set \eqn{\mathrm{Pa}(\mathrm{cn}(X, Y)) \setminus
+  \mathrm{forb}(X, Y)} (Henckel, Perković & Maathuis, 2022). When every node
+in \code{Y} is a descendant of \code{X}, it is valid whenever any valid set exists.
 }
+
+Every result is checked against the generalized adjustment criterion
+(Perković et al., 2018). An error is raised when the requested set is not
+valid. In particular, a valid set need not exist with several treatments:
+in \verb{X1 --> L --> X2}, \verb{L --> Y}, only \code{L} blocks \verb{X2 <-- L --> Y}, but it
+lies on the causal path \verb{X1 --> L --> Y}. With a single treatment, no valid
+set exists only when a node of \code{Y} is a parent of \code{X}.
 }
 \examples{
 cg <- caugi(
@@ -59,6 +73,10 @@ cg <- caugi(
 adjustment_set(cg, "X", "Y", type = "parents") # C, A
 adjustment_set(cg, "X", "Y", type = "backdoor") # A
 adjustment_set(cg, "X", "Y", type = "optimal") # K
+
+# Several treatments
+cg2 <- caugi(X1 \%-->\% W, W \%-->\% X2, X2 \%-->\% Y, U \%-->\% W + Y, class = "DAG")
+adjustment_set(cg2, c("X1", "X2"), "Y", type = "optimal") # U
 
 }
 \seealso{

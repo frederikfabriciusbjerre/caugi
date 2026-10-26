@@ -187,22 +187,15 @@ impl Dag {
         moral::moral_adj(self.n(), |u| self.parents_of(u), mask)
     }
 
-    /// Backward reachability through parents from every `y ∈ ys`.
-    pub(crate) fn can_reach_any_y(&self, ys: &[u32]) -> Vec<bool> {
-        let mut r = vec![false; self.n() as usize];
-        let mut st = ys.to_vec();
-        while let Some(v) = st.pop() {
-            let vi = v as usize;
-            if r[vi] {
-                continue;
-            }
-            r[vi] = true;
-            st.extend_from_slice(self.parents_of(v));
-        }
-        r
+    /// Ancestors of `seeds` along directed paths that avoid `avoid`; see
+    /// [`bitset::ancestors_mask_avoiding`].
+    pub(crate) fn ancestors_mask_avoiding(&self, seeds: &[u32], avoid: &[u32]) -> Vec<bool> {
+        bitset::ancestors_mask_avoiding(seeds, avoid, |u| self.parents_of(u), self.n())
     }
 
     /// Drop predicate for removing the first edge on each proper causal path.
+    /// `reach_y` must come from `ancestors_mask_avoiding(ys, xs)`, so `x -> v`
+    /// is dropped only when `v ∉ X` reaches `Y` without passing through `X`.
     /// Uses mark-based direction: is_outgoing_arrow means row_u -> v.
     pub(crate) fn drop_first_edge(
         &self,
@@ -215,12 +208,12 @@ impl Dag {
         let v = c.col_index[k];
         if c.is_outgoing_arrow(k) {
             // edge row_u -> v (Arrow points FROM me toward neighbor)
-            // Drop if row_u is in X and v can reach Y
-            xs_mask[row_u as usize] && reach_y[v as usize]
+            // Drop if row_u is in X and v ∉ X can reach Y
+            xs_mask[row_u as usize] && !xs_mask[v as usize] && reach_y[v as usize]
         } else {
             // edge v -> row_u (Arrow points INTO me)
-            // Drop if v is in X and row_u can reach Y
-            xs_mask[v as usize] && reach_y[row_u as usize]
+            // Drop if v is in X and row_u ∉ X can reach Y
+            xs_mask[v as usize] && !xs_mask[row_u as usize] && reach_y[row_u as usize]
         }
     }
 

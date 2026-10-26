@@ -165,16 +165,7 @@ test_that("all_backdoor_sets includes empty set, if valid", {
   expect_setequal(sets, valid_sets)
 })
 
-test_that("adjustment functions cannot take multiple inputs", {
-  expect_error(
-    adjustment_set(
-      adjustment_set_cg,
-      X = c("X", "A"),
-      Y = "Y",
-      type = "parents"
-    ),
-    "Provide exactly one X and one Y."
-  )
+test_that("backdoor and d-separation functions cannot take multiple inputs", {
   expect_error(
     is_valid_backdoor(adjustment_set_cg, X = "X", Y = c("Y", "D"), Z = "A"),
     "Provide exactly one X and one Y."
@@ -192,7 +183,11 @@ test_that("adjustment functions cannot take multiple inputs", {
 test_that("adjust functions fails with faulty input", {
   expect_error(
     adjustment_set(adjustment_set_cg, X = "X", Y = NULL, type = "parents"),
-    "Either the node name or the node index must be provided"
+    "Y \\(or Y_index\\) must be provided"
+  )
+  expect_error(
+    adjustment_set(adjustment_set_cg, X = c("X", "Y"), Y = "Y"),
+    "X and Y must be disjoint"
   )
   expect_error(
     adjustment_set(
@@ -412,5 +407,113 @@ test_that("ADMG adjustment agrees with a brute-force oracle on random graphs", {
       vapply(all_sets, key, character(1)),
       vapply(subsets[truth], key, character(1))
     )
+  }
+})
+
+test_that("adjustment_set() takes several treatments", {
+  # W reaches Y only through X2, so it is not causal, but it is a collider on
+  # X1 --> W <-- U --> Y: the parents of X ({W}) are not valid, {U} is.
+  cg <- caugi(
+    X1 %-->% W,
+    W %-->% X2,
+    X2 %-->% Y,
+    U %-->% W + Y,
+    class = "DAG"
+  )
+  X <- c("X1", "X2")
+  expect_equal(adjustment_set(cg, X, "Y", type = "optimal"), "U")
+  expect_equal(adjustment_set(cg, X, "Y", type = "backdoor"), "U")
+  expect_error(
+    adjustment_set(cg, X, "Y", type = "parents"),
+    "parents of X are not a valid adjustment set"
+  )
+})
+
+test_that("adjustment_set() errors when no valid set exists", {
+  # Only L blocks X2 <-- L --> Y, but L is on the causal path X1 --> L --> Y.
+  cg <- caugi(X1 %-->% L, L %-->% X2 + Y, X2 %-->% Y, class = "DAG")
+  for (type in c("optimal", "parents", "backdoor")) {
+    expect_error(
+      adjustment_set(cg, c("X1", "X2"), "Y", type = type),
+      "No valid adjustment set exists"
+    )
+  }
+  # Y is a parent of X.
+  expect_error(
+    adjustment_set(
+      caugi(Y %-->% X, class = "DAG"),
+      "X",
+      "Y",
+      type = "backdoor"
+    ),
+    "No valid adjustment set exists"
+  )
+})
+
+test_that("adjustment_set(type = 'optimal') needs Y to descend from X", {
+  cg <- caugi(U %-->% X + Y2, X %-->% Y1, class = "DAG")
+  expect_error(
+    adjustment_set(cg, "X", c("Y1", "Y2"), type = "optimal"),
+    "not a descendant of X"
+  )
+  expect_equal(adjustment_set(cg, "X", c("Y1", "Y2"), type = "backdoor"), "U")
+})
+
+test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
+  set.seed(20261027)
+  nodes <- paste0("V", 1:7)
+  for (rep in seq_len(150)) {
+    ord <- sample(nodes)
+    pairs <- t(combn(7, 2))
+    keep <- runif(nrow(pairs)) < 0.35
+    edges <- data.frame(
+      from = ord[pairs[keep, 1]],
+      edge = rep("-->", sum(keep)),
+      to = ord[pairs[keep, 2]]
+    )
+    cg <- caugi(
+      from = edges$from,
+      edge = edges$edge,
+      to = edges$to,
+      nodes = nodes,
+      class = "DAG"
+    )
+    X <- sample(nodes, sample(1:2, 1))
+    Y <- sample(setdiff(nodes, X), sample(1:2, 1))
+    rest <- setdiff(nodes, c(X, Y))
+    oracle <- .gac_oracle(edges, X, Y)
+    subsets <- unlist(
+      lapply(0:length(rest), function(k) combn(rest, k, simplify = FALSE)),
+      recursive = FALSE
+    )
+    any_valid <- any(vapply(subsets, oracle, logical(1)))
+    de_x <- X
+    repeat {
+      nxt <- union(de_x, edges$to[edges$from %in% de_x])
+      if (length(nxt) == length(de_x)) {
+        break
+      }
+      de_x <- nxt
+    }
+    label <- paste("rep", rep)
+
+    for (type in c("parents", "backdoor", "optimal")) {
+      z <- tryCatch(
+        adjustment_set(cg, X, Y, type = type),
+        error = conditionMessage
+      )
+      if (!grepl("adjustment set", z[1])) {
+        expect_true(oracle(z), label = paste(label, type))
+      } else if (grepl("No valid adjustment set exists", z)) {
+        expect_false(any_valid, label = paste(label, type))
+      } else {
+        # "parents" or "optimal" was not valid, but another set is.
+        expect_true(any_valid, label = paste(label, type))
+        expect_false(type == "backdoor", label = paste(label, type))
+        if (type == "optimal") {
+          expect_false(all(Y %in% de_x), label = paste(label, type))
+        }
+      }
+    }
   }
 })
