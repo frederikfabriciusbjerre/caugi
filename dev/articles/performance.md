@@ -379,7 +379,7 @@ first query after a mutation.
 The R benchmark code shown in the chunks above is the actual source:
 each chunk has `eval = FALSE` so the rendered vignette does not run
 them, and the wrapper script at
-[`tools/benchmark/run_r_bench.R`](https://github.com/frederikfabriciusbjerre/caugi/tree/main/tools/benchmark/run_r_bench.R)
+[`tools/benchmark/run_r_bench.R`](https://github.com/frederikfabriciusbjerre/caugi/blob/main/tools/benchmark/run_r_bench.R)
 extracts them with
 [`knitr::purl()`](https://rdrr.io/pkg/knitr/man/knit.html) and sources
 the result into the R session.
@@ -405,7 +405,7 @@ pipeline (`task all`) and per-language details.
 
     #> R version 4.6.1 (2026-06-24)
     #> Platform: x86_64-pc-linux-gnu
-    #> Running under: Ubuntu 24.04.4 LTS
+    #> Running under: Ubuntu 24.04.5 LTS
     #> 
     #> Matrix products: default
     #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -427,8 +427,8 @@ pipeline (`task all`) and per-language details.
     #> [1] ggplot2_4.0.3
     #> 
     #> loaded via a namespace (and not attached):
-    #>  [1] vctrs_0.7.3        cli_3.6.6          knitr_1.51         rlang_1.3.0       
-    #>  [5] xfun_0.60          otel_0.2.0         generics_0.1.4     S7_0.2.2          
+    #>  [1] vctrs_0.7.3        cli_3.6.6          knitr_1.52         rlang_1.3.0       
+    #>  [5] xfun_0.62          otel_0.2.0         generics_0.1.4     S7_0.2.2          
     #>  [9] textshaping_1.0.5  jsonlite_2.0.0     glue_1.8.1         htmltools_0.5.9   
     #> [13] ragg_1.5.2         sass_0.4.10        scales_1.4.0       rmarkdown_2.32    
     #> [17] grid_4.6.1         tibble_3.3.1       evaluate_1.0.5     jquerylib_0.1.4   

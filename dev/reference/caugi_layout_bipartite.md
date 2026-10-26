@@ -53,7 +53,7 @@ Other plotting:
 [`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_tiered.md),
 [`caugi_plot()`](https://caugi.org/dev/reference/caugi_plot.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md),
-[`plot()`](https://caugi.org/dev/reference/plot.md)
+[`plot.caugi()`](https://caugi.org/dev/reference/plot.caugi.md)
 
 ## Examples
 

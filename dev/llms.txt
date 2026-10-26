@@ -46,9 +46,10 @@ library(caugi)
 ```
 
 You can create simple graphs as well as a number of predefined graph
-classes. Currently, we support `"UNKNOWN"`, `"DAG"`, `"PDAG"`, `"ADMG"`,
-and `"UG"`. We plan on supporting several other causal graph types in
-future releases, such as `"PAG"`, `"MAG"`, and `"SWIG"`.
+classes. Currently, we support `"UNKNOWN"`, `"DAG"`, `"PDAG"`,
+`"MPDAG"`, `"CPGAG"`, `"ADMG"`, `"AG"`, and `"UG"`. We plan on
+supporting several other causal graph types in future releases, such as
+`"PAG"`, `"MAG"`, and `"SWIG"`.
 
 ``` r
 
@@ -93,7 +94,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x585b58ab7cf0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x7adebc2b0>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B<--C
@@ -110,21 +111,10 @@ releases, and we would love your input if you use this feature!
 `caugi` provides a number of functions to query and analyze `caugi`
 objects. Some of the available functions are:
 
-- Relational queries, such as
-  [`parents()`](https://caugi.org/dev/reference/parents.md),
-  [`ancestors()`](https://caugi.org/dev/reference/ancestors.md),
-  [`neighbors()`](https://caugi.org/dev/reference/neighbors.md), and
-  more.
-- Structural queries, such as
-  [`is_acyclic()`](https://caugi.org/dev/reference/is_acyclic.md),
-  [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md), and more.
-- Graph manipulations, such as
-  [`add_edges()`](https://caugi.org/dev/reference/caugi_verbs.md),
-  [`remove_nodes()`](https://caugi.org/dev/reference/caugi_verbs.md),
-  and more.
-- Graph metrics, such as
-  [`shd()`](https://caugi.org/dev/reference/shd.md) and
-  [`aid()`](https://caugi.org/dev/reference/aid.md).
+- Relational queries
+- Structural queries
+- Graph manipulations
+- Graph metrics
 
 ## How it works
 
@@ -179,6 +169,9 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 - [`children()`](https://caugi.org/dev/reference/children.md) :
 
   Get children of nodes in a `caugi`
+
+- [`components()`](https://caugi.org/dev/reference/components.md) : Get
+  connected components of a graph
 
 - [`descendants()`](https://caugi.org/dev/reference/descendants.md) :
 
@@ -355,11 +348,13 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 ## Methods
 
-- [`length`](https://caugi.org/dev/reference/length.md) :
+- [`length(`*`<caugi>`*`)`](https://caugi.org/dev/reference/length.caugi.md)
+  :
 
   Length of a `caugi`
 
-- [`print`](https://caugi.org/dev/reference/print.md) :
+- [`print(`*`<caugi>`*`)`](https://caugi.org/dev/reference/print.caugi.md)
+  :
 
   Print a `caugi`
 
@@ -441,7 +436,7 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   : GraphML Format Export and Import
 - [`format-mermaid`](https://caugi.org/dev/reference/format-mermaid.md)
   : Mermaid Format Export
-- [`knit_print.caugi_export`](https://caugi.org/dev/reference/knit_print.caugi_export.md)
+- [`knit_print(`*`<caugi_export>`*`)`](https://caugi.org/dev/reference/knit_print.caugi_export.md)
   : Knit Print Method for caugi_export
 - [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md) : Read
   caugi Graph from File
@@ -464,8 +459,8 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 ## Plotting
 
-- [`add-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md)
-  [`pipe-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md)
+- [`` `+`( ``*`<caugi_plot>`*`)`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md)
+  [`` `|`( ``*`<caugi_plot>`*`)`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md)
   : Compose Plots Horizontally
 - [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md) :
   Compute Graph Layout
@@ -483,10 +478,10 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   : Tiered Graph Layout
 - [`caugi_plot()`](https://caugi.org/dev/reference/caugi_plot.md) : S7
   Class for caugi Plot
-- [`divide-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md)
+- [`` `/`( ``*`<caugi_plot>`*`)`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md)
   : Compose Plots Vertically
-- [`plot`](https://caugi.org/dev/reference/plot.md) : Create a caugi
-  Graph Plot Object
+- [`plot(`*`<caugi>`*`)`](https://caugi.org/dev/reference/plot.caugi.md)
+  : Create a caugi Graph Plot Object
 
 ## Options
 

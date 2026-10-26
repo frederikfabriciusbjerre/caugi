@@ -13,7 +13,7 @@ appearance.
 ## Basic Plotting
 
 The simplest way to visualize a `caugi` graph is with the
-[`plot()`](https://caugi.org/dev/reference/plot.md) function:
+[`plot()`](https://caugi.org/dev/reference/plot.caugi.md) function:
 
 ``` r
 
@@ -31,7 +31,7 @@ plot(cg)
 
 ![](visualization_files/figure-html/basic-plot-1.png)
 
-By default, [`plot()`](https://caugi.org/dev/reference/plot.md)
+By default, [`plot()`](https://caugi.org/dev/reference/plot.caugi.md)
 automatically selects the best layout algorithm based on your graph
 type. For graphs with only directed edges, it uses the Sugiyama
 hierarchical layout. For graphs with other edge types, it uses the
@@ -318,7 +318,7 @@ head(layout_sug)
 
 ## Customizing Plots
 
-The [`plot()`](https://caugi.org/dev/reference/plot.md) function
+The [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) function
 provides extensive customization options for nodes, edges, and labels.
 
 ### Node Styling
@@ -509,9 +509,9 @@ through the middle one—but also whenever a long edge happens to cross an
 unrelated node.
 
 By default (`route = TRUE`),
-[`plot()`](https://caugi.org/dev/reference/plot.md) detects these cases
-from the node positions and sizes and gently bends the offending edge
-around the node, leaving all node positions untouched:
+[`plot()`](https://caugi.org/dev/reference/plot.caugi.md) detects these
+cases from the node positions and sizes and gently bends the offending
+edge around the node, leaving all node positions untouched:
 
 ``` r
 
@@ -530,9 +530,9 @@ plot(cg_clique, layout = layout_clique)
 ![](visualization_files/figure-html/edge-routing-1.png)
 
 Because routing is a draw-time operation, it works the same whether you
-let [`plot()`](https://caugi.org/dev/reference/plot.md) compute the
-layout or pass a pre-computed one. Disable it globally, by edge type, or
-per edge through the usual `edge_style` overrides:
+let [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) compute
+the layout or pass a pre-computed one. Disable it globally, by edge
+type, or per edge through the usual `edge_style` overrides:
 
 ``` r
 

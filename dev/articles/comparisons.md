@@ -734,10 +734,10 @@ request with the relevant information.
     layout selection is delegated entirely to igraph.
 
 [^102]: `pcAlgo` and `fciAlgo` objects have
-    [`plot()`](https://caugi.org/dev/reference/plot.md) S4 methods that
-    delegate to `Rgraphviz`. `iplotPC()` delegates to `igraph`’s plot.
-    `plotSG()` also requires `Rgraphviz`. There are no native layout
-    algorithms in pcalg itself.
+    [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) S4 methods
+    that delegate to `Rgraphviz`. `iplotPC()` delegates to `igraph`’s
+    plot. `plotSG()` also requires `Rgraphviz`. There are no native
+    layout algorithms in pcalg itself.
 
 [^103]: `graphLayout(x, method = "spring")` implements a single
     spring/force-directed layout algorithm. The documentation explicitly
@@ -801,9 +801,10 @@ request with the relevant information.
 [^113]: `DAG.to_graphviz()` returns a pygraphviz `AGraph` (requires the
     optional `pygraphviz` dependency); `DAG.to_daft()` returns a `daft`
     PGM object. Neither is a
-    [`plot()`](https://caugi.org/dev/reference/plot.md) method that
-    renders to screen directly. No built-in `matplotlib`-based
-    [`plot()`](https://caugi.org/dev/reference/plot.md) is present.
+    [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) method
+    that renders to screen directly. No built-in `matplotlib`-based
+    [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) is
+    present.
 
 [^114]: Layout computation is delegated to pygraphviz (via
     `to_graphviz()`) or to NetworkX spring-layout variants (inside

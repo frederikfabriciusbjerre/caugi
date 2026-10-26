@@ -20,6 +20,9 @@
 
   Get children of nodes in a `caugi`
 
+- [`components()`](https://caugi.org/dev/reference/components.md) : Get
+  connected components of a graph
+
 - [`descendants()`](https://caugi.org/dev/reference/descendants.md) :
 
   Get descendants of nodes in a `caugi`
@@ -195,11 +198,13 @@
 
 ## Methods
 
-- [`length`](https://caugi.org/dev/reference/length.md) :
+- [`length(`*`<caugi>`*`)`](https://caugi.org/dev/reference/length.caugi.md)
+  :
 
   Length of a `caugi`
 
-- [`print`](https://caugi.org/dev/reference/print.md) :
+- [`print(`*`<caugi>`*`)`](https://caugi.org/dev/reference/print.caugi.md)
+  :
 
   Print a `caugi`
 
@@ -281,7 +286,7 @@
   : GraphML Format Export and Import
 - [`format-mermaid`](https://caugi.org/dev/reference/format-mermaid.md)
   : Mermaid Format Export
-- [`knit_print.caugi_export`](https://caugi.org/dev/reference/knit_print.caugi_export.md)
+- [`knit_print(`*`<caugi_export>`*`)`](https://caugi.org/dev/reference/knit_print.caugi_export.md)
   : Knit Print Method for caugi_export
 - [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md) : Read
   caugi Graph from File
@@ -304,8 +309,8 @@
 
 ## Plotting
 
-- [`add-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md)
-  [`pipe-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md)
+- [`` `+`( ``*`<caugi_plot>`*`)`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md)
+  [`` `|`( ``*`<caugi_plot>`*`)`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md)
   : Compose Plots Horizontally
 - [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md) :
   Compute Graph Layout
@@ -323,10 +328,10 @@
   : Tiered Graph Layout
 - [`caugi_plot()`](https://caugi.org/dev/reference/caugi_plot.md) : S7
   Class for caugi Plot
-- [`divide-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md)
+- [`` `/`( ``*`<caugi_plot>`*`)`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md)
   : Compose Plots Vertically
-- [`plot`](https://caugi.org/dev/reference/plot.md) : Create a caugi
-  Graph Plot Object
+- [`plot(`*`<caugi>`*`)`](https://caugi.org/dev/reference/plot.caugi.md)
+  : Create a caugi Graph Plot Object
 
 ## Options
 

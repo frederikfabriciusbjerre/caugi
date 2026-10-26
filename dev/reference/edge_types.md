@@ -24,6 +24,7 @@ Other queries:
 [`ancestors()`](https://caugi.org/dev/reference/ancestors.md),
 [`anteriors()`](https://caugi.org/dev/reference/anteriors.md),
 [`children()`](https://caugi.org/dev/reference/children.md),
+[`components()`](https://caugi.org/dev/reference/components.md),
 [`descendants()`](https://caugi.org/dev/reference/descendants.md),
 [`districts()`](https://caugi.org/dev/reference/districts.md),
 [`edges()`](https://caugi.org/dev/reference/edges.md),

@@ -75,13 +75,14 @@ The plot options are nested under the `plot` key:
 
 Options set via `caugi_options()` serve as global defaults that can be
 overridden by arguments to
-[`plot()`](https://caugi.org/dev/reference/plot.md).
+[`plot.caugi()`](https://caugi.org/dev/reference/plot.caugi.md).
 
 ## See also
 
-[`plot()`](https://caugi.org/dev/reference/plot.md) for per-plot style
-arguments, [`grid::gpar()`](https://rdrr.io/r/grid/gpar.html) for
-available graphical parameters
+[`plot.caugi()`](https://caugi.org/dev/reference/plot.caugi.md) for
+per-plot style arguments,
+[`grid::gpar()`](https://rdrr.io/r/grid/gpar.html) for available
+graphical parameters
 
 ## Examples
 

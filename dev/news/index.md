@@ -2,6 +2,79 @@
 
 ## caugi (development version)
 
+- Updates for compatibility with S7 \> 0.2.2.
+
+### New Features
+
+- Add [`components()`](https://caugi.org/dev/reference/components.md) to
+  partition graphs into weakly connected components or strongly
+  connected components of the directed part, including cyclic graphs of
+  class `"UNKNOWN"`.
+
+### Performance Improvements
+
+- [`remove_edges()`](https://caugi.org/dev/reference/caugi_verbs.md) now
+  removes edges directly in Rust, avoiding graph table reconstruction
+  and redundant session cloning.
+- Node and edge tables use faster constructors, reducing overhead when
+  building graphs and retrieving
+  [`nodes()`](https://caugi.org/dev/reference/nodes.md) and
+  [`edges()`](https://caugi.org/dev/reference/edges.md).
+
+### Bug Fixes
+
+- [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md) no
+  longer forces `simple = TRUE` on every target class. A non-simple
+  graph converted to `"UNKNOWN"`, `"ADMG"` or `"AG"` keeps
+  `simple = FALSE`, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to
+  a valid ADMG instead of a simple graph with parallel edges that failed
+  on [`build()`](https://caugi.org/dev/reference/build.md) or any query.
+  The converted graph is now built eagerly, so invalid conversions fail
+  immediately.
+
+- [`m_separated()`](https://caugi.org/dev/reference/m_separated.md) now
+  handles ADMG collider paths with multiple bidirected edges, such as
+  `a -> b <-> c <-> d` given `{b, c}`. This also fixes
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  and
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md),
+  which use the same separation routine in the proper backdoor graph.
+
+- [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
+  no longer adds v-structures the input PDAG did not have. Dor and
+  Tarsi’s condition (b) requires every undirected neighbour of the
+  candidate sink to be adjacent to *all* its other neighbours; the
+  previous implementation only required the undirected neighbours to be
+  pairwise adjacent, so on e.g. `A --> B <-- C` with `B --- D` it
+  oriented `D --> B` and created two v-structures. The algorithm now
+  lives in Rust, like every other graph algorithm in the package.
+
+- `==` and `!=` for `caugi` objects now compare a symmetric edge as an
+  unordered pair, so `caugi(A %---% B) == caugi(B %---% A)` is `TRUE` as
+  it should be. This affected `---`, `<->` and `o-o`, and any symmetric
+  edge added with
+  [`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md);
+  whether a glyph is symmetric is read from the graph’s own registry
+  rather than hard-coded. Asymmetric glyphs remain direction-sensitive.
+  testthat’s `expect_equal()` now agrees with `==`.
+
+- Graphs now keep the edge definitions they were built with after
+  [`reset_caugi_registry()`](https://caugi.org/dev/reference/registry.md)
+  and re-registration. Previously `==`,
+  [`add_edges()`](https://caugi.org/dev/reference/caugi_verbs.md),
+  [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md)
+  and other verbs,
+  [`write_caugi()`](https://caugi.org/dev/reference/write_caugi.md),
+  [`caugi_serialize()`](https://caugi.org/dev/reference/caugi_serialize.md)
+  and [`to_graphml()`](https://caugi.org/dev/reference/to_graphml.md)
+  used the current global registry instead, so they could compare edges
+  wrongly, fail with `Invalid edge code`, or write the wrong glyphs.
+  Adding an edge type the graph was not built with is now an error.
+
+## caugi 1.3.0
+
+CRAN release: 2026-09-09
+
 ### New Features
 
 - Add
@@ -10,12 +83,12 @@
   [`count_dags()`](https://caugi.org/dev/reference/count_dags.md) to
   return the MEC size without materializing every DAG
   ([\#297](https://github.com/frederikfabriciusbjerre/caugi/issues/297)).
-- [`plot()`](https://caugi.org/dev/reference/plot.md) now automatically
-  bends edges around non-incident nodes that they would otherwise pass
-  straight through, so edges between collinear nodes (e.g. within a
-  tier) and edges crossing unrelated nodes stay visible. This is
-  controlled by `edge_style$route` (default `TRUE`); disable it with
-  `edge_style = list(route = FALSE)`, or per edge type/edge via the
+- [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) now
+  automatically bends edges around non-incident nodes that they would
+  otherwise pass straight through, so edges between collinear nodes
+  (e.g. within a tier) and edges crossing unrelated nodes stay visible.
+  This is controlled by `edge_style$route` (default `TRUE`); disable it
+  with `edge_style = list(route = FALSE)`, or per edge type/edge via the
   usual `edge_style` overrides.
 - Add `==` and `!=` methods for `caugi` objects so `cg1 == cg2` returns
   a single logical comparing graph content (class, nodes, edges,
@@ -34,6 +107,13 @@
   ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
   [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md), etc.)
   continue to accept CPDAGs unchanged.
+- Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"`
+  instead of `"PDAG"`. This affects the result of
+  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
+  and `generate_graph(class = "CPDAG")`. Predicates and verbs defined on
+  PDAGs ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+  [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
+  etc.) continue to accept MPDAGs unchanged.
 
 ### Improvements
 
@@ -44,33 +124,15 @@
   a derivative of `gadjid` and is licensed MPL-2.0; the rest of the
   crate remains MIT. [`aid()`](https://caugi.org/dev/reference/aid.md)
   now takes inputs of class `"DAG"` or `"CPDAG"` (previously `"DAG"` or
-  `"PDAG"`), reusing the first-class `"CPDAG"` graph class.
+  `"PDAG"`).
 - Licensing of bundled code is now declared for CRAN: a top-level
   `LICENSE.note` documents the MPL-2.0 component (the AID files derived
   from `gadjid`) and the licenses of the vendored Rust crates, and their
   copyright holders are recorded via `cph`/`ctb` roles in `Authors@R`.
-- Meek-closed PDAGs are now reported with `@graph_class = "MPDAG"`
-  instead of `"PDAG"`. This affects the result of
-  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
-  and `generate_graph(class = "CPDAG")`. Predicates and verbs defined on
-  PDAGs ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
-  [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
-  etc.) continue to accept MPDAGs unchanged.
 - `adjustment_set(type = "backdoor")` now returns an inclusion-minimal
   backdoor adjustment set, computed in linear time as a minimal
   d-separator in the proper backdoor graph, rather than the full set of
-  parents of the exposure. `"PDAG"`. This affects the result of
-  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md).
-  Predicates and verbs defined on PDAGs
-  ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
-  [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
-  etc.) continue to accept MPDAGs unchanged. `"PDAG"`. This affects the
-  result of
-  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
-  and `generate_graph(class = "CPDAG")`. Predicates and verbs defined on
-  PDAGs ([`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
-  [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
-  etc.) continue to accept MPDAGs unchanged.
+  parents of the exposure.
 - The performance vignette is now a true vignette (rather than a
   pkgdown-only article) and is rebuilt manually from a cross-language
   harness under `tools/benchmark/`. The harness compares `caugi` to
@@ -88,35 +150,29 @@
   distance now aligns nodes by name before comparing, so logically
   identical graphs always give the same distance
   ([\#323](https://github.com/frederikfabriciusbjerre/caugi/issues/323)).
-
 - Fix
   [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
   failing with `` `from`, `edge`, `to` must be equal length. `` when a
   sink had multiple undirected neighbors
   ([\#298](https://github.com/frederikfabriciusbjerre/caugi/issues/298)).
-
 - Fixed a bug causing a partially undirected (`--o`) edges to be plotted
   as undirected edges.
-
 - Fix `adjustment_set(type = "backdoor")` returning an invalid (often
   empty) set when a parent of the exposure lies on a backdoor path but
   is not an ancestor of the outcome
   ([\#308](https://github.com/frederikfabriciusbjerre/caugi/issues/308)).
   The result is now always a valid backdoor adjustment set.
-
 - Fixed [`is_mag()`](https://caugi.org/dev/reference/is_mag.md)
-  returning incorrect results for some ancestral graphs.
-
+  returning incorrect results for some ancestral graphs
+  ([\#309](https://github.com/frederikfabriciusbjerre/caugi/issues/309)).
+  Adjacency was tested by binary-searching the concatenation of
+  separately sorted neighbor buckets, which is not globally sorted, so
+  some adjacent pairs were missed.
 - Stripped non-build files (`tests/`, `examples/`, trybuild fixtures)
   from the vendored Rust dependencies so no vendored path exceeds 100
   characters. This silences pak’s “very long paths” warning and avoids
   installation failures on Windows without long-path support
   ([\#319](https://github.com/frederikfabriciusbjerre/caugi/issues/319)).
-  Adjacency was tested by binary-searching the concatenation of
-  separately sorted neighbor buckets, which is not globally sorted, so
-  some adjacent pairs were missed
-  ([\#309](https://github.com/frederikfabriciusbjerre/caugi/issues/309)).
-
 - Fixed [`to_dot()`](https://caugi.org/dev/reference/to_dot.md) and
   [`to_mermaid()`](https://caugi.org/dev/reference/to_mermaid.md) (and
   [`write_dot()`](https://caugi.org/dev/reference/write_dot.md)/[`write_mermaid()`](https://caugi.org/dev/reference/write_mermaid.md))
@@ -254,10 +310,10 @@ CRAN release: 2026-03-20
 - Added `all.equal` and `compare_proxy` methods for caugi objects to
   support graph-content comparison in tests.
 - Add `asp` parameter to
-  [`plot()`](https://caugi.org/dev/reference/plot.md) for controlling
-  the aspect ratio. When `asp = 1`, the plot respects equal units on
-  both axes, preserving the layout coordinates. Works like base R’s
-  `asp` parameter (y/x aspect ratio)
+  [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) for
+  controlling the aspect ratio. When `asp = 1`, the plot respects equal
+  units on both axes, preserving the layout coordinates. Works like base
+  R’s `asp` parameter (y/x aspect ratio)
   ([\#195](https://github.com/frederikfabriciusbjerre/caugi/issues/195)).
 - Add `pdag_to_dag()` function that generates a random DAG consistent
   with a given CPDAG/PDAG structure if possible
@@ -266,8 +322,9 @@ CRAN release: 2026-03-20
 ### Bug Fixes
 
 - Fixed a bug causing
-  [`plot()`](https://caugi.org/dev/reference/plot.md) to use incorrect
-  layout if node names were not in the same order as in the graph object
+  [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) to use
+  incorrect layout if node names were not in the same order as in the
+  graph object
   ([\#198](https://github.com/frederikfabriciusbjerre/caugi/issues/198)).
 - Fixed [`set_edges()`](https://caugi.org/dev/reference/caugi_verbs.md)
   so that it correctly replaces symmetric edges in simple graphs.
@@ -326,13 +383,13 @@ CRAN release: 2026-01-22
   [`caugi_deserialize()`](https://caugi.org/dev/reference/caugi_deserialize.md).
   The format is a versioned JSON schema that captures graph structure,
   class, and optional metadata (comments and tags).
-- Add [`plot()`](https://caugi.org/dev/reference/plot.md) method for
-  visualizing graphs using various layout algorithms. The plot is
+- Add [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) method
+  for visualizing graphs using various layout algorithms. The plot is
   rendered using grid graphics and returns a `caugi_plot` object that
   can be customized with `node_style`, `edge_style`, and `label_style`
-  arguments. The [`plot()`](https://caugi.org/dev/reference/plot.md)
-  method accepts layouts as strings, functions, or pre-computed
-  data.frames.
+  arguments. The
+  [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) method
+  accepts layouts as strings, functions, or pre-computed data.frames.
 - Add
   [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md)
   function to compute node coordinates for graph visualization.
@@ -378,9 +435,9 @@ CRAN release: 2026-01-22
 - [`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_tiered.md)
   now returns a `tier` column and `orientation` attribute in the layout
   data.frame, allowing
-  [`plot()`](https://caugi.org/dev/reference/plot.md) to automatically
-  use tier information without requiring the `tiers` argument to be
-  passed again.
+  [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) to
+  automatically use tier information without requiring the `tiers`
+  argument to be passed again.
 
 ### Bug Fixes
 

@@ -13,7 +13,8 @@ base class for all export formats. It provides:
 
 - `format` property: Character string indicating the format type
 
-- Common methods: [`print()`](https://caugi.org/dev/reference/print.md),
+- Common methods:
+  [`print()`](https://caugi.org/dev/reference/print.caugi.md),
   [`as.character()`](https://rdrr.io/r/base/character.html),
   `knit_print()`
 
@@ -38,7 +39,7 @@ Other export:
 [`format-dot`](https://caugi.org/dev/reference/format-dot.md),
 [`format-graphml`](https://caugi.org/dev/reference/format-graphml.md),
 [`format-mermaid`](https://caugi.org/dev/reference/format-mermaid.md),
-[`knit_print.caugi_export`](https://caugi.org/dev/reference/knit_print.caugi_export.md),
+[`knit_print.caugi_export()`](https://caugi.org/dev/reference/knit_print.caugi_export.md),
 [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md),
 [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md),
 [`to_dot()`](https://caugi.org/dev/reference/to_dot.md),

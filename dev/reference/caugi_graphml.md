@@ -14,6 +14,10 @@ caugi_graphml(content)
 
   A character string containing the GraphML format graph.
 
+## Value
+
+A `caugi_graphml` S7 object wrapping the GraphML string.
+
 ## See also
 
 Other export:
@@ -27,7 +31,7 @@ Other export:
 [`format-dot`](https://caugi.org/dev/reference/format-dot.md),
 [`format-graphml`](https://caugi.org/dev/reference/format-graphml.md),
 [`format-mermaid`](https://caugi.org/dev/reference/format-mermaid.md),
-[`knit_print.caugi_export`](https://caugi.org/dev/reference/knit_print.caugi_export.md),
+[`knit_print.caugi_export()`](https://caugi.org/dev/reference/knit_print.caugi_export.md),
 [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md),
 [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md),
 [`to_dot()`](https://caugi.org/dev/reference/to_dot.md),

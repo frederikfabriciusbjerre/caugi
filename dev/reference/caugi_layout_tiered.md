@@ -51,8 +51,9 @@ A `data.frame` with columns `name`, `x`, `y`, and `tier` containing node
 names, their coordinates, and tier assignments (0-indexed). The returned
 data.frame also has an `orientation` attribute storing the orientation
 used. When passed to
-[`plot()`](https://caugi.org/dev/reference/plot.md), tier information is
-automatically extracted, so you don't need to specify `tiers` again.
+[`plot()`](https://caugi.org/dev/reference/plot.caugi.md), tier
+information is automatically extracted, so you don't need to specify
+`tiers` again.
 
 ## See also
 
@@ -66,7 +67,7 @@ Other plotting:
 [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md),
 [`caugi_plot()`](https://caugi.org/dev/reference/caugi_plot.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md),
-[`plot()`](https://caugi.org/dev/reference/plot.md)
+[`plot.caugi()`](https://caugi.org/dev/reference/plot.caugi.md)
 
 ## Examples
 
