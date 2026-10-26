@@ -40,14 +40,16 @@
 #' are allowed. If omitted (recommended), it is derived from `class`: `FALSE`
 #' for `"UNKNOWN"` and `"ADMG"` (so self-loops and parallel edges in
 #' `"UNKNOWN"`, and bows in `"ADMG"`, are allowed) and `TRUE` for every other
-#' class. Supplying it gives a deprecation warning but is still honoured:
+#' class. With `"AUTO"`, it follows the class the graph resolves to. Supplying it gives a deprecation warning but is still honoured:
 #' `TRUE` forbids parallel edges and self-loops, and `FALSE` is only allowed
 #' for `"UNKNOWN"`, `"ADMG"`, and `"AG"`.
 #' @param class Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
 #' `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick
 #' the appropriate class based on the first match in the order of `"DAG"`,
 #' `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, and `"AG"`.
-#' It will default to `"UNKNOWN"` if no match is found.
+#' It will default to `"UNKNOWN"` if no match is found. A graph with parallel
+#' edges or self-loops resolves to `"ADMG"` if it is a valid ADMG (e.g. a bow)
+#' and to `"UNKNOWN"` otherwise.
 #' @param .session For internal use. Build a graph by supplying a
 #' pre-constructed session pointer from Rust.
 #' @param build DEPRECATED. The graph is always built lazily, so this argument is ignored.
@@ -299,7 +301,8 @@ caugi <- S7::new_class(
     }
     class <- toupper(class)
     class <- match.arg(class)
-    if (is.null(simple)) {
+    default_simple <- is.null(simple)
+    if (default_simple) {
       simple <- .default_simple(class)
     } else {
       .warn_simple_deprecated()
@@ -391,7 +394,13 @@ caugi <- S7::new_class(
       }
     }
 
-    if (!simple && class != "UNKNOWN" && class != "ADMG" && class != "AG") {
+    if (
+      !default_simple &&
+        !simple &&
+        class != "UNKNOWN" &&
+        class != "ADMG" &&
+        class != "AG"
+    ) {
       stop(
         "If simple = FALSE, class must be 'UNKNOWN', 'ADMG', or 'AG'",
         call. = FALSE
@@ -462,6 +471,10 @@ caugi <- S7::new_class(
 
     if (!identical(resolved_class, class)) {
       rs_set_class(session, resolved_class)
+      if (default_simple) {
+        # AUTO builds permissively; the resolved class sets the rule.
+        rs_set_simple(session, .default_simple(resolved_class))
+      }
     }
 
     .caugi_env$constructing_session <- TRUE
@@ -568,7 +581,8 @@ caugi <- S7::new_class(
 #' @title Default `simple` flag for a graph class
 #'
 #' @description Only `"UNKNOWN"` and `"ADMG"` allow multiple edges between a
-#' pair of nodes by default; every other class is simple.
+#' pair of nodes by default; every other class is simple. `"AUTO"` builds
+#' permissively and takes the default of the class it resolves to.
 #'
 #' @param class Character; a graph class.
 #'
@@ -576,7 +590,7 @@ caugi <- S7::new_class(
 #'
 #' @keywords internal
 .default_simple <- function(class) {
-  !class %in% c("UNKNOWN", "ADMG")
+  !class %in% c("UNKNOWN", "ADMG", "AUTO")
 }
 
 #' @title Warn that the `simple` argument is deprecated

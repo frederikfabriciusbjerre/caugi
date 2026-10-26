@@ -14,6 +14,7 @@ A logical scalar.
 }
 \description{
 Only \code{"UNKNOWN"} and \code{"ADMG"} allow multiple edges between a
-pair of nodes by default; every other class is simple.
+pair of nodes by default; every other class is simple. \code{"AUTO"} builds
+permissively and takes the default of the class it resolves to.
 }
 \keyword{internal}

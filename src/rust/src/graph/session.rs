@@ -394,9 +394,27 @@ impl GraphSession {
     }
 
     pub fn set_simple(&mut self, simple: bool) {
-        if self.simple != simple {
-            self.simple = simple;
-            self.invalidate_core();
+        if self.simple == simple {
+            return;
+        }
+        self.simple = simple;
+        // A built core stays valid unless it must become simple but is not;
+        // keeping it avoids a rebuild after AUTO resolution. The CSR arrays
+        // are shared, so only the flag is copied.
+        let kept = self
+            .core
+            .get()
+            .filter(|core| !simple || core.check_simple().is_ok())
+            .map(|core| CaugiGraph {
+                simple,
+                ..(**core).clone()
+            });
+        match kept {
+            Some(core) => {
+                self.core.set(Arc::new(core));
+                self.view.clear();
+            }
+            None => self.invalidate_core(),
         }
     }
 
@@ -774,7 +792,14 @@ impl GraphSession {
             }
             GraphClass::Unknown => Ok(GraphClass::Unknown),
             GraphClass::Auto => {
-                if Dag::new(Arc::clone(&core)).is_ok() {
+                // Only ADMG and UNKNOWN admit parallel edges or self-loops.
+                if core.check_simple().is_err() {
+                    if Admg::new(Arc::clone(&core)).is_ok() {
+                        Ok(GraphClass::Admg)
+                    } else {
+                        Ok(GraphClass::Unknown)
+                    }
+                } else if Dag::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Dag)
                 } else if Ug::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Ug)
@@ -1278,10 +1303,25 @@ mod tests {
         assert!(session.built_core().is_some());
         assert!(session.built_view().is_some());
 
+        // Loosening keeps the core (it is still valid) but drops the view.
         session.set_simple(false);
-        assert!(session.built_core().is_none());
+        assert!(session.built_core().is_some());
         assert!(session.built_view().is_none());
         assert!(!session.simple());
+        assert!(!session.core().unwrap().simple);
+
+        // Tightening keeps a core that is simple ...
+        session.set_simple(true);
+        assert!(session.built_core().is_some());
+        assert!(session.core().unwrap().simple);
+
+        // ... and drops one that is not.
+        session.set_simple(false);
+        session.set_edges_from_vecs(vec![0, 1], vec![1, 0], vec![d, d]);
+        session.core().unwrap();
+        session.set_simple(true);
+        assert!(session.built_core().is_none());
+        assert!(session.core().is_err());
 
         session.set_edges_from_vecs(vec![0], vec![1], vec![d]);
         assert_eq!(session.edge_buffer().from, vec![0]);
@@ -1741,6 +1781,20 @@ mod tests {
         let mut admg_loop = GraphSession::new(&reg, 2, false, GraphClass::Admg);
         admg_loop.set_edges_from_vecs(vec![0], vec![0], vec![b]);
         assert!(admg_loop.view().unwrap_err().contains("self-loop (node 0)"));
+
+        let mut auto_bow = GraphSession::new(&reg, 2, false, GraphClass::Auto);
+        auto_bow.set_edges_from_vecs(vec![0, 0], vec![1, 1], vec![d, b]);
+        assert_eq!(
+            auto_bow.resolve_class(GraphClass::Auto).unwrap(),
+            GraphClass::Admg
+        );
+
+        let mut auto_loop = GraphSession::new(&reg, 2, false, GraphClass::Auto);
+        auto_loop.set_edges_from_vecs(vec![0], vec![0], vec![b]);
+        assert_eq!(
+            auto_loop.resolve_class(GraphClass::Auto).unwrap(),
+            GraphClass::Unknown
+        );
 
         let mut raw = GraphSession::new(&reg, 2, false, GraphClass::Unknown);
         raw.set_edges_from_vecs(vec![0, 0], vec![1, 1], vec![d, u]);

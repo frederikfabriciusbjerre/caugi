@@ -71,8 +71,10 @@ glyphs. Adding an edge type the graph was not built with is now an error.
   now determines whether multiple edges are allowed: when `simple` is omitted
   it is `FALSE` for `"UNKNOWN"` and `"ADMG"` and `TRUE` for every other class.
   Bows (`A %-->% B`, `A %<->% B`) therefore build as an ADMG, and parallel
-  edges or self-loops build as `"UNKNOWN"`, without `simple = FALSE`.
-  Supplying `simple` still works but warns.
+  edges or self-loops build as `"UNKNOWN"`, without `simple = FALSE`. With the
+  default `class = "AUTO"`, such graphs now resolve to `"ADMG"` (if valid) or
+  `"UNKNOWN"` instead of erroring, and a graph that resolves to a simple class
+  gets that class's rule. Supplying `simple` still works but warns.
 
 # caugi 1.3.0
 

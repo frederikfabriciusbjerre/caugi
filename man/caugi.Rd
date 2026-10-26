@@ -48,7 +48,7 @@ to be removed in 2.0.0; the graph class now decides whether multiple edges
 are allowed. If omitted (recommended), it is derived from \code{class}: \code{FALSE}
 for \code{"UNKNOWN"} and \code{"ADMG"} (so self-loops and parallel edges in
 \code{"UNKNOWN"}, and bows in \code{"ADMG"}, are allowed) and \code{TRUE} for every other
-class. Supplying it gives a deprecation warning but is still honoured:
+class. With \code{"AUTO"}, it follows the class the graph resolves to. Supplying it gives a deprecation warning but is still honoured:
 \code{TRUE} forbids parallel edges and self-loops, and \code{FALSE} is only allowed
 for \code{"UNKNOWN"}, \code{"ADMG"}, and \code{"AG"}.}
 
@@ -59,7 +59,9 @@ Can use \code{\link[=build]{build()}} to force lazy compilation if desired.}
 \code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"AUTO"} will automatically pick
 the appropriate class based on the first match in the order of \code{"DAG"},
 \code{"UG"}, \code{"MPDAG"}, \code{"PDAG"}, \code{"ADMG"}, and \code{"AG"}.
-It will default to \code{"UNKNOWN"} if no match is found.}
+It will default to \code{"UNKNOWN"} if no match is found. A graph with parallel
+edges or self-loops resolves to \code{"ADMG"} if it is a valid ADMG (e.g. a bow)
+and to \code{"UNKNOWN"} otherwise.}
 
 \item{state}{DEPRECATED. Replaced by \code{.session}.}
 

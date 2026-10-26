@@ -21,7 +21,7 @@ test_that("caugi objects have session after construction", {
 })
 
 test_that("verbs error when breaking simple graph assumptions", {
-  cg <- caugi()
+  cg <- caugi(class = "DAG")
   # Error now thrown at add_edges time (eager validation)
   expect_error(
     add_edges(
@@ -33,7 +33,7 @@ test_that("verbs error when breaking simple graph assumptions", {
     "Parallel edges not allowed"
   )
 
-  cg <- caugi()
+  cg <- caugi(class = "DAG")
   expect_error(
     add_edges(
       cg,

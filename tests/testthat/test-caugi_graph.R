@@ -194,7 +194,32 @@ test_that("the class decides the default for multi-edges and self-loops", {
   expect_error(caugi(A %---% B, A %-->% B, class = "UG"), "Parallel edges")
   expect_error(caugi(A %-->% B, B %-->% A, class = "DAG"), "Parallel edges")
   expect_error(caugi(A %-->% A, class = "DAG"), "Self-loops")
-  expect_error(caugi(A %-->% B, A %<->% B), "Parallel edges") # AUTO
+})
+
+test_that("AUTO resolves graphs with multi-edges to ADMG or UNKNOWN", {
+  bow <- caugi(A %-->% B, A %<->% B)
+  expect_identical(bow@graph_class, "ADMG")
+  expect_false(bow@simple)
+  expect_equal(spouses(bow, "A"), "B")
+
+  for (cg in list(
+    caugi(A %-->% B, A %---% B),
+    caugi(A %<->% A),
+    caugi(A %-->% B, B %-->% A)
+  )) {
+    expect_identical(cg@graph_class, "UNKNOWN")
+    expect_false(cg@simple)
+    expect_false(is_simple(cg))
+  }
+
+  # simple graphs take the default of the class they resolve to
+  dag <- caugi(A %-->% B, B %-->% C)
+  expect_identical(dag@graph_class, "DAG")
+  expect_true(dag@simple)
+  expect_true(is_simple(dag))
+  expect_error(add_edges(dag, A %<->% B), "Parallel edges")
+  expect_false(caugi(A %-->% B, C %<->% B)@simple) # ADMG
+  expect_false(caugi()@simple) # empty -> UNKNOWN
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
