@@ -11,7 +11,8 @@
   every `type`. `type = "optimal"` returns the O-set of Henckel, Perković &
   Maathuis (2022) for node sets. As in their Remark 3.14 and
   `pcalg::optAdjSet()`, nodes of `Y` that are not descendants of `X` are
-  dropped with a warning, since the total effect on them is zero.
+  dropped with a warning, since the total effect on them is zero. A dropped
+  node can itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 * `is_valid_backdoor()`, `all_backdoor_sets()` and `d_separated()` now accept
   several treatments `X` and outcomes `Y` on DAGs. The back-door functions use
   the generalized back-door criterion of Maathuis & Colombo (2015, Def. 3.7):

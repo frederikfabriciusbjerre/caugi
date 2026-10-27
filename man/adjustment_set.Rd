@@ -50,6 +50,9 @@ their Remark 3.14, nodes of \code{Y} that are not descendants of \code{X} are
 dropped with a warning, since the total effect on them is zero, and the
 O-set is computed for the rest of \code{Y}. It is then valid whenever any valid
 set exists. If no node of \code{Y} is a descendant of \code{X}, an error is raised.
+A dropped node can itself be in the O-set: for \verb{X --> Y1 <-- Y2} with
+\code{Y = c("Y1", "Y2")}, \code{Y2} is dropped from \code{Y} and returned as the O-set,
+since it is a parent of \code{Y1}.
 }
 
 Every result is checked against the generalized adjustment criterion

@@ -323,6 +323,78 @@ test_that("collider-driven adjustment candidates are validated consistently", {
   }
 }
 
+# Random edges on `nodes` in a random topological order. Each pair gets no
+# edge, `-->`, `<->` or a bow (both), with probabilities `prob`.
+.random_admg_edges <- function(nodes, prob = c(0.45, 0.3, 0.15, 0.1)) {
+  ord <- sample(nodes)
+  pairs <- t(combn(length(nodes), 2))
+  kind <- sample(c("", "-->", "<->", "bow"), nrow(pairs), TRUE, prob)
+  from <- ord[pairs[, 1]]
+  to <- ord[pairs[, 2]]
+  dir <- kind %in% c("-->", "bow")
+  bi <- kind %in% c("<->", "bow")
+  data.frame(
+    from = c(from[dir], from[bi]),
+    edge = rep(c("-->", "<->"), c(sum(dir), sum(bi))),
+    to = c(to[dir], to[bi])
+  )
+}
+
+# Ground truth from the definition of an adjustment set, with no graphical
+# criterion. In a random binary model compatible with the graph (each `<->` is
+# a latent common parent), returns for each Z the largest gap between
+# P(y | do(x)) and sum_z P(y | x, z) P(z). Z is valid iff the gap is zero.
+.exact_adjustment_gap <- function(edges, nodes, X, Y, Zs) {
+  dir <- edges[edges$edge == "-->", ]
+  bi <- edges[edges$edge == "<->", ]
+  par <- setNames(lapply(nodes, function(v) dir$from[dir$to == v]), nodes)
+  lat <- paste0("L", seq_len(nrow(bi)))
+  for (i in seq_len(nrow(bi))) {
+    par[[bi$from[i]]] <- c(par[[bi$from[i]]], lat[i])
+    par[[bi$to[i]]] <- c(par[[bi$to[i]]], lat[i])
+    par[[lat[i]]] <- character(0)
+  }
+  vars <- c(nodes, lat)
+  S <- as.matrix(expand.grid(rep(list(0:1), length(vars))))
+  colnames(S) <- vars
+  code <- function(cols) {
+    if (length(cols) == 0) {
+      return(rep(0, nrow(S)))
+    }
+    drop(S[, cols, drop = FALSE] %*% 2^(seq_along(cols) - 1))
+  }
+  # P(v = s_v | parents) for every state s, from random conditional tables.
+  fac <- vapply(
+    vars,
+    function(v) {
+      p1 <- runif(2^length(par[[v]]), 0.05, 0.95)[code(par[[v]]) + 1]
+      ifelse(S[, v] == 1, p1, 1 - p1)
+    },
+    numeric(nrow(S))
+  )
+  joint <- exp(rowSums(log(fac)))
+  # Truncated factorisation: drop the factors of X.
+  do_w <- exp(rowSums(log(fac[, setdiff(vars, X), drop = FALSE])))
+  cx <- code(X)
+  cy <- code(Y)
+  p_do <- tapply(do_w, list(cx, cy), sum)
+  vapply(
+    Zs,
+    function(Z) {
+      cz <- code(Z)
+      pxyz <- tapply(joint, list(cx, cy, cz), sum)
+      pxz <- tapply(joint, list(cx, cz), sum)
+      pz <- tapply(joint, cz, sum)
+      adj <- p_do * 0
+      for (k in seq_along(pz)) {
+        adj <- adj + pxyz[,, k] / pxz[, k] * pz[k]
+      }
+      max(abs(adj - p_do))
+    },
+    numeric(1)
+  )
+}
+
 test_that("ADMG adjustment with several treatments uses proper causal paths", {
   # W reaches Y only through the other treatment X2, so it is not causal.
   cg <- caugi(X1 %-->% W, W %-->% X2, X2 %-->% Y, class = "ADMG")
@@ -365,26 +437,14 @@ test_that("ADMG adjustment agrees with a brute-force oracle on random graphs", {
   set.seed(20261026)
   nodes <- paste0("V", 1:6)
   for (rep in seq_len(150)) {
-    ord <- sample(nodes)
-    pairs <- t(combn(6, 2))
-    kind <- sample(
-      c("", "-->", "<->"),
-      nrow(pairs),
-      replace = TRUE,
-      prob = c(0.45, 0.35, 0.2)
-    )
-    keep <- kind != ""
-    edges <- data.frame(
-      from = ord[pairs[keep, 1]],
-      edge = kind[keep],
-      to = ord[pairs[keep, 2]]
-    )
+    edges <- .random_admg_edges(nodes)
     cg <- caugi(
       from = edges$from,
       edge = edges$edge,
       to = edges$to,
       nodes = nodes,
-      class = "ADMG"
+      class = "ADMG",
+      simple = FALSE
     )
     X <- sample(nodes, sample(1:2, 1))
     Y <- sample(setdiff(nodes, X), sample(1:2, 1))
@@ -471,6 +531,14 @@ test_that("adjustment_set(type = 'optimal') drops Y not descending from X", {
     "No node in Y is a descendant of X"
   )
   expect_equal(adjustment_set(cg, "X", c("Y1", "Y2"), type = "backdoor"), "U")
+
+  # A dropped node can be in the O-set: Y2 is a parent of Y1.
+  cg <- caugi(X %-->% Y1, Y2 %-->% Y1, class = "DAG")
+  expect_warning(
+    z <- adjustment_set(cg, "X", c("Y1", "Y2"), type = "optimal"),
+    "dropped from Y.*Y2"
+  )
+  expect_equal(z, "Y2")
 })
 
 test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
@@ -553,6 +621,87 @@ test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
       expect_false(any_valid_d, label = paste(label, "optimal"))
     } else {
       expect_true(oracle_d(z), label = paste(label, "optimal"))
+    }
+  }
+})
+
+test_that("adjustment agrees with exact do-calculus in random binary models", {
+  subsets_of <- function(s) {
+    unlist(
+      lapply(0:length(s), function(k) combn(s, k, simplify = FALSE)),
+      recursive = FALSE
+    )
+  }
+  key <- function(z) paste(sort(z), collapse = ",")
+  set.seed(20261028)
+
+  # ADMGs with bows: every candidate Z.
+  nodes <- paste0("V", 1:6)
+  for (rep in seq_len(100)) {
+    edges <- .random_admg_edges(nodes)
+    cg <- caugi(
+      from = edges$from,
+      edge = edges$edge,
+      to = edges$to,
+      nodes = nodes,
+      class = "ADMG",
+      simple = FALSE
+    )
+    X <- sample(nodes, sample(1:2, 1))
+    Y <- sample(setdiff(nodes, X), sample(1:2, 1))
+    Zs <- subsets_of(setdiff(nodes, c(X, Y)))
+    truth <- .exact_adjustment_gap(edges, nodes, X, Y, Zs) < 1e-10
+    got <- vapply(
+      Zs,
+      function(z) is_valid_adjustment_admg(cg, X = X, Y = Y, Z = z),
+      logical(1)
+    )
+    expect_identical(got, truth, label = paste("ADMG rep", rep))
+  }
+
+  # DAGs: adjustment_set() for every type.
+  nodes <- paste0("V", 1:6)
+  for (rep in seq_len(60)) {
+    edges <- .random_admg_edges(nodes, prob = c(0.6, 0.4, 0, 0))
+    cg <- caugi(
+      from = edges$from,
+      edge = edges$edge,
+      to = edges$to,
+      nodes = nodes,
+      class = "DAG"
+    )
+    X <- sample(nodes, sample(1:2, 1))
+    Y <- sample(setdiff(nodes, X), sample(1:2, 1))
+    de_x <- X
+    repeat {
+      nxt <- union(de_x, edges$to[edges$from %in% de_x])
+      if (length(nxt) == length(de_x)) {
+        break
+      }
+      de_x <- nxt
+    }
+    for (type in c("parents", "backdoor", "optimal")) {
+      label <- paste("DAG rep", rep, type)
+      # "optimal" answers for Y ∩ De(X) (Henckel et al. 2022, Remark 3.14).
+      Yt <- if (type == "optimal") intersect(Y, de_x) else Y
+      z <- tryCatch(
+        suppressWarnings(adjustment_set(cg, X, Y, type = type)),
+        error = conditionMessage
+      )
+      if (length(Yt) == 0) {
+        expect_match(z, "No node in Y is a descendant of X", label = label)
+        next
+      }
+      Zs <- subsets_of(setdiff(nodes, c(X, Yt)))
+      truth <- .exact_adjustment_gap(edges, nodes, X, Yt, Zs) < 1e-10
+      if (length(z) == 1 && grepl("No valid adjustment set exists", z)) {
+        expect_false(any(truth), label = label)
+      } else if (length(z) == 1 && grepl("adjustment set", z)) {
+        # "parents" is not valid here, but another set is.
+        expect_true(any(truth), label = label)
+      } else {
+        expect_true(truth[match(key(z), vapply(Zs, key, ""))], label = label)
+      }
     }
   }
 })
@@ -648,6 +797,11 @@ test_that("backdoor and d-separation agree with path oracles on random DAGs", {
       recursive = FALSE
     )
     valid <- vapply(subsets, gbc, logical(1))
+    # Every accepted set gives P(y | do(x)) exactly.
+    if (any(valid)) {
+      gap <- .exact_adjustment_gap(edges, nodes, X, Y, subsets[valid])
+      expect_true(all(gap < 1e-10), label = label)
+    }
     for (i in seq_along(subsets)) {
       Z <- subsets[[i]]
       expect_identical(is_valid_backdoor(cg, X, Y, Z), valid[i], label = label)

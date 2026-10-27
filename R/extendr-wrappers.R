@@ -154,7 +154,7 @@ rs_adjustment_set_parents <- function(session, xs, ys) .Call(wrap__rs_adjustment
 
 rs_adjustment_set_backdoor <- function(session, xs, ys) .Call(wrap__rs_adjustment_set_backdoor, session, xs, ys)
 
-rs_adjustment_set_optimal <- function(session, xs, ys) .Call(wrap__rs_adjustment_set_optimal, session, xs, ys)
+rs_adjustment_set_optimal <- function(session, xs, ys, return_dropped) .Call(wrap__rs_adjustment_set_optimal, session, xs, ys, return_dropped)
 
 rs_is_valid_backdoor_set <- function(session, xs, ys, z) .Call(wrap__rs_is_valid_backdoor_set, session, xs, ys, z)
 

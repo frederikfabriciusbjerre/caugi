@@ -82,6 +82,9 @@ d_separated <- function(
 #'   dropped with a warning, since the total effect on them is zero, and the
 #'   O-set is computed for the rest of `Y`. It is then valid whenever any valid
 #'   set exists. If no node of `Y` is a descendant of `X`, an error is raised.
+#'   A dropped node can itself be in the O-set: for `X --> Y1 <-- Y2` with
+#'   `Y = c("Y1", "Y2")`, `Y2` is dropped from `Y` and returned as the O-set,
+#'   since it is a parent of `Y1`.
 #'
 #' Every result is checked against the generalized adjustment criterion
 #' (Perković et al., 2018). An error is raised when the requested set is not
@@ -146,19 +149,6 @@ adjustment_set <- function(
   if (any(X_idx0 %in% Y_idx0)) {
     stop("X and Y must be disjoint.", call. = FALSE)
   }
-  if (type == "optimal") {
-    # Mirrors the pruning in Rust (Henckel et al., 2022, Remark 3.14).
-    de_x <- unlist(descendants(cg, index = X_idx0 + 1L))
-    dropped <- setdiff(cg@nodes$name[Y_idx0 + 1L], de_x)
-    if (length(dropped) > 0 && length(dropped) < length(Y_idx0)) {
-      warning(
-        "Not a descendant of X, so dropped from Y (the effect on it is zero): ",
-        paste(dropped, collapse = ", "),
-        ". The O-set is for the rest of Y.",
-        call. = FALSE
-      )
-    }
-  }
 
   idx0 <- switch(
     type,
@@ -168,7 +158,21 @@ adjustment_set <- function(
       X_idx0,
       Y_idx0
     ),
-    optimal = rs_adjustment_set_optimal(cg@session, X_idx0, Y_idx0)
+    optimal = {
+      # Rust drops the nodes of Y that are not descendants of X (Henckel et
+      # al., 2022, Remark 3.14) and reports them.
+      res <- rs_adjustment_set_optimal(cg@session, X_idx0, Y_idx0, TRUE)
+      if (length(res$dropped) > 0) {
+        warning(
+          "Not a descendant of X, so dropped from Y (the effect on it is ",
+          "zero): ",
+          paste(cg@nodes$name[res$dropped + 1L], collapse = ", "),
+          ". The O-set is for the rest of Y.",
+          call. = FALSE
+        )
+      }
+      res$set
+    }
   )
   cg@nodes$name[idx0 + 1L]
 }
