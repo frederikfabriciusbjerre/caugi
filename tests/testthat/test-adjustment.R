@@ -347,6 +347,14 @@ test_that("ADMG adjustment with several treatments uses proper causal paths", {
   expect_length(all_adjustment_sets_admg(cg, X = c("X1", "X2"), Y = "Y"), 0)
 })
 
+test_that("ADMG adjustment allows descendants of X off the causal paths", {
+  # main forbade all of De(X) here, as X is an ancestor of Y.
+  cg <- caugi(X %-->% Y + D, class = "ADMG")
+  expect_true(is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = "D"))
+  sets <- all_adjustment_sets_admg(cg, X = "X", Y = "Y", minimal = FALSE)
+  expect_setequal(lapply(sets, sort), list(character(0), "D"))
+})
+
 test_that("ADMG adjustment forbids descendants of the outcome", {
   cg <- caugi(X %-->% Y, Y %-->% D, class = "ADMG")
   expect_false(is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = "D"))
