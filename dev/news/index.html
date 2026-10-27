@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.0.9000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.4.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,21 +43,28 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="caugi-development-version">caugi (development version)<a class="anchor" aria-label="anchor" href="#caugi-development-version"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/is_valid_adjustment_admg.html">is_valid_adjustment_admg()</a></code> and <code><a href="../reference/all_adjustment_sets_admg.html">all_adjustment_sets_admg()</a></code> no longer reject valid adjustment sets that contain a descendant of a treatment. The forbidden set counted every treatment that is an ancestor of <code>Y</code> as a node on a causal path, so it forbade all of <code>De(X ∩ An(Y))</code> instead of only the descendants of the non-treatment nodes on <em>proper</em> causal paths (those whose only treatment node is the first). With one treatment, <code>{D}</code> was rejected for <code>X --&gt; Y</code>, <code>X --&gt; D</code>; with several, <code>{W}</code> was rejected for <code>X1 --&gt; W --&gt; X2 --&gt; Y</code> with <code>X = c("X1", "X2")</code>. Both functions are now checked against a brute-force implementation of the criterion.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.0" id="caugi-140">caugi 1.4.0<a class="anchor" aria-label="anchor" href="#caugi-140"></a></h2>
 <ul><li>Updates for compatibility with S7 &gt; 0.2.2.</li>
 </ul><div class="section level3">
-<h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-1-4-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-4-0"></a></h3>
 <ul><li>Add <code><a href="../reference/components.html">components()</a></code> to partition graphs into weakly connected components or strongly connected components of the directed part, including cyclic graphs of class <code>"UNKNOWN"</code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="performance-improvements-development-version">Performance Improvements<a class="anchor" aria-label="anchor" href="#performance-improvements-development-version"></a></h3>
+<h3 id="performance-improvements-1-4-0">Performance Improvements<a class="anchor" aria-label="anchor" href="#performance-improvements-1-4-0"></a></h3>
 <ul><li>
 <code><a href="../reference/caugi_verbs.html">remove_edges()</a></code> now removes edges directly in Rust, avoiding graph table reconstruction and redundant session cloning.</li>
 <li>Node and edge tables use faster constructors, reducing overhead when building graphs and retrieving <code><a href="../reference/nodes.html">nodes()</a></code> and <code><a href="../reference/edges.html">edges()</a></code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-1-4-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-4-0"></a></h3>
 <ul><li><p><code><a href="../reference/mutate_caugi.html">mutate_caugi()</a></code> no longer forces <code>simple = TRUE</code> on every target class. A non-simple graph converted to <code>"UNKNOWN"</code>, <code>"ADMG"</code> or <code>"AG"</code> keeps <code>simple = FALSE</code>, so e.g. a bow (<code>A %--&gt;% B</code>, <code>A %&lt;-&gt;% B</code>) converts to a valid ADMG instead of a simple graph with parallel edges that failed on <code><a href="../reference/build.html">build()</a></code> or any query. The converted graph is now built eagerly, so invalid conversions fail immediately.</p></li>
-<li><p><code><a href="../reference/is_valid_adjustment_admg.html">is_valid_adjustment_admg()</a></code> and <code><a href="../reference/all_adjustment_sets_admg.html">all_adjustment_sets_admg()</a></code> no longer reject valid adjustment sets that contain a descendant of a treatment. The forbidden set counted every treatment that is an ancestor of <code>Y</code> as a node on a causal path, so it forbade all of <code>De(X ∩ An(Y))</code> instead of only the descendants of the non-treatment nodes on <em>proper</em> causal paths (those whose only treatment node is the first). With one treatment, <code>{D}</code> was rejected for <code>X --&gt; Y</code>, <code>X --&gt; D</code>; with several, <code>{W}</code> was rejected for <code>X1 --&gt; W --&gt; X2 --&gt; Y</code> with <code>X = c("X1", "X2")</code>. Both functions are now checked against a brute-force implementation of the criterion.</p></li>
 <li><p><code><a href="../reference/m_separated.html">m_separated()</a></code> now handles ADMG collider paths with multiple bidirected edges, such as <code>a -&gt; b &lt;-&gt; c &lt;-&gt; d</code> given <code>{b, c}</code>. This also fixes <code><a href="../reference/is_valid_adjustment_admg.html">is_valid_adjustment_admg()</a></code> and <code><a href="../reference/all_adjustment_sets_admg.html">all_adjustment_sets_admg()</a></code>, which use the same separation routine in the proper backdoor graph.</p></li>
 <li><p><code><a href="../reference/dag_from_pdag.html">dag_from_pdag()</a></code> no longer adds v-structures the input PDAG did not have. Dor and Tarsi’s condition (b) requires every undirected neighbour of the candidate sink to be adjacent to <em>all</em> its other neighbours; the previous implementation only required the undirected neighbours to be pairwise adjacent, so on e.g. <code>A --&gt; B &lt;-- C</code> with <code>B --- D</code> it oriented <code>D --&gt; B</code> and created two v-structures. The algorithm now lives in Rust, like every other graph algorithm in the package.</p></li>
 <li><p><code>==</code> and <code>!=</code> for <code>caugi</code> objects now compare a symmetric edge as an unordered pair, so <code>caugi(A %---% B) == caugi(B %---% A)</code> is <code>TRUE</code> as it should be. This affected <code>---</code>, <code>&lt;-&gt;</code> and <code>o-o</code>, and any symmetric edge added with <code><a href="../reference/register_caugi_edge.html">register_caugi_edge()</a></code>; whether a glyph is symmetric is read from the graph’s own registry rather than hard-coded. Asymmetric glyphs remain direction-sensitive. testthat’s <code>expect_equal()</code> now agrees with <code>==</code>.</p></li>
