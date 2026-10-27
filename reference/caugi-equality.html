@@ -13,7 +13,7 @@ caugi object."><meta property="og:image" content="https://caugi.org/reference/fi
 
     <a class="navbar-brand me-2" href="../index.html">caugi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ caugi object."><meta property="og:image" content="https://caugi.org/reference/fi
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Equality operators for caugi objects</h1>
-      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/main/R/methods.R" class="external-link"><code>R/methods.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/frederikfabriciusbjerre/caugi/blob/v1.4.0/R/methods.R" class="external-link"><code>R/methods.R</code></a></small>
       <div class="d-none name"><code>caugi-equality.Rd</code></div>
     </div>
 
@@ -77,6 +77,15 @@ caugi object.</p>
     <p>A single logical.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Row order is ignored, and an edge whose glyph is symmetric in the graph's
+own edge registry is compared as an unordered pair, so <code>A --- B</code> and
+<code>B --- A</code> are the same edge. Edges are also compared by their full
+definition, so a glyph re-registered with a different meaning does not
+match the original. Asymmetric glyphs are direction-sensitive, so
+<code>A --&gt; B</code> and <code>B --&gt; A</code> are not.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other caugi methods:
 <code><a href="length.caugi.html">length.caugi()</a></code>,
@@ -91,6 +100,14 @@ caugi object.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span><span class="va">cg1</span> <span class="op">!=</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span> <span class="co"># TRUE</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Symmetric edges are unordered, so these are the same graph.</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%---%</a></span> <span class="va">B</span>, class <span class="op">=</span> <span class="st">"UG"</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="edge_operators.html">%---%</a></span> <span class="va">A</span>, class <span class="op">=</span> <span class="st">"UG"</span><span class="op">)</span> <span class="co"># TRUE</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Directed edges are not.</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">A</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span> <span class="co"># FALSE</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -1,6 +1,6 @@
 # Changelog
 
-## caugi (development version)
+## caugi 1.4.0
 
 - Updates for compatibility with S7 \> 0.2.2.
 
@@ -23,6 +23,15 @@
 
 ### Bug Fixes
 
+- [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md) no
+  longer forces `simple = TRUE` on every target class. A non-simple
+  graph converted to `"UNKNOWN"`, `"ADMG"` or `"AG"` keeps
+  `simple = FALSE`, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to
+  a valid ADMG instead of a simple graph with parallel edges that failed
+  on [`build()`](https://caugi.org/reference/build.md) or any query. The
+  converted graph is now built eagerly, so invalid conversions fail
+  immediately.
+
 - [`m_separated()`](https://caugi.org/reference/m_separated.md) now
   handles ADMG collider paths with multiple bidirected edges, such as
   `a -> b <-> c <-> d` given `{b, c}`. This also fixes
@@ -39,6 +48,28 @@
   adjacent, so on e.g. `A --> B <-- C` with `B --- D` it oriented
   `D --> B` and created two v-structures. The algorithm now lives in
   Rust, like every other graph algorithm in the package.
+
+- `==` and `!=` for `caugi` objects now compare a symmetric edge as an
+  unordered pair, so `caugi(A %---% B) == caugi(B %---% A)` is `TRUE` as
+  it should be. This affected `---`, `<->` and `o-o`, and any symmetric
+  edge added with
+  [`register_caugi_edge()`](https://caugi.org/reference/register_caugi_edge.md);
+  whether a glyph is symmetric is read from the graph’s own registry
+  rather than hard-coded. Asymmetric glyphs remain direction-sensitive.
+  testthat’s `expect_equal()` now agrees with `==`.
+
+- Graphs now keep the edge definitions they were built with after
+  [`reset_caugi_registry()`](https://caugi.org/reference/registry.md)
+  and re-registration. Previously `==`,
+  [`add_edges()`](https://caugi.org/reference/caugi_verbs.md),
+  [`mutate_caugi()`](https://caugi.org/reference/mutate_caugi.md) and
+  other verbs,
+  [`write_caugi()`](https://caugi.org/reference/write_caugi.md),
+  [`caugi_serialize()`](https://caugi.org/reference/caugi_serialize.md)
+  and [`to_graphml()`](https://caugi.org/reference/to_graphml.md) used
+  the current global registry instead, so they could compare edges
+  wrongly, fail with `Invalid edge code`, or write the wrong glyphs.
+  Adding an edge type the graph was not built with is now an error.
 
 ## caugi 1.3.0
 

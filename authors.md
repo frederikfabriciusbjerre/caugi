@@ -28,15 +28,15 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/frederikfabriciusbjerre/caugi/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/frederikfabriciusbjerre/caugi/blob/v1.4.0/DESCRIPTION)
 
 Fabricius-Bjerre F, Larsson J, Sachs M, Kristensen B (2026). *caugi:
-Causal Graph Interface*. R package version 1.3.0, <https://caugi.org/>.
+Causal Graph Interface*. R package version 1.4.0, <https://caugi.org/>.
 
     @Manual{,
       title = {caugi: Causal Graph Interface},
       author = {Frederik Fabricius-Bjerre and Johan Larsson and Michael Sachs and Bjarke Hautop Kristensen},
       year = {2026},
-      note = {R package version 1.3.0},
+      note = {R package version 1.4.0},
       url = {https://caugi.org/},
     }
