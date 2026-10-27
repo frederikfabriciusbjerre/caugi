@@ -196,7 +196,7 @@ This vignette compares the performance of `caugi` against R packages
 ([`igraph`](https://r.igraph.org/), [`bnlearn`](https://www.bnlearn.com/),
 [`dagitty`](https://dagitty.net/),
 [`ggm`](https://cran.r-project.org/package=ggm),
-[`pcalg`](https://pcalg.r-forge.r-project.org/)), the Python package
+[`pcalg`](https://CRAN.R-project.org/package=pcalg)), the Python package
 [`pgmpy`](https://pgmpy.org/), and the Java library
 [Tetrad](https://www.cmu.edu/dietrich/philosophy/tetrad/). We focus on the
 practical trade-offs that arise from different core data structures and design

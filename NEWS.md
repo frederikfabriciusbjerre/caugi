@@ -1,34 +1,15 @@
 # caugi (development version)
 
-* Updates for compatibility with S7 > 0.2.2.
-
 ## New Features
 
-* Add `components()` to partition graphs into weakly connected components or
-  strongly connected components of the directed part, including cyclic graphs
-  of class `"UNKNOWN"`.
 * `adjustment_set()` now accepts several treatments `X` and outcomes `Y` for
   every `type`. `type = "optimal"` returns the O-set of Henckel, Perković &
   Maathuis (2022) for node sets. As in their Remark 3.14 and
   `pcalg::optAdjSet()`, nodes of `Y` that are not descendants of `X` are
   dropped with a warning, since the total effect on them is zero. A dropped
   node can itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
-  
-## Performance Improvements
-
-- `remove_edges()` now removes edges directly in Rust, avoiding graph table
-  reconstruction and redundant session cloning.
-- Node and edge tables use faster constructors, reducing overhead when building
-  graphs and retrieving `nodes()` and `edges()`.
 
 ## Bug Fixes
-
-- `mutate_caugi()` no longer forces `simple = TRUE` on every target class. A
-  non-simple graph converted to `"UNKNOWN"`, `"ADMG"` or `"AG"` keeps
-  `simple = FALSE`, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to a
-  valid ADMG instead of a simple graph with parallel edges that failed on
-  `build()` or any query. The converted graph is now built eagerly, so invalid
-  conversions fail immediately.
 
 - `is_valid_adjustment_admg()` and `all_adjustment_sets_admg()` no longer
   reject valid adjustment sets that contain a descendant of a treatment. The
@@ -46,6 +27,32 @@
   valid set exists, and `type = "optimal"` when `Y` is not a descendant of
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
+
+# caugi 1.4.0
+
+* Updates for compatibility with S7 > 0.2.2.
+
+## New Features
+
+* Add `components()` to partition graphs into weakly connected components or
+  strongly connected components of the directed part, including cyclic graphs
+  of class `"UNKNOWN"`.
+  
+## Performance Improvements
+
+- `remove_edges()` now removes edges directly in Rust, avoiding graph table
+  reconstruction and redundant session cloning.
+- Node and edge tables use faster constructors, reducing overhead when building
+  graphs and retrieving `nodes()` and `edges()`.
+
+## Bug Fixes
+
+- `mutate_caugi()` no longer forces `simple = TRUE` on every target class. A
+  non-simple graph converted to `"UNKNOWN"`, `"ADMG"` or `"AG"` keeps
+  `simple = FALSE`, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to a
+  valid ADMG instead of a simple graph with parallel edges that failed on
+  `build()` or any query. The converted graph is now built eagerly, so invalid
+  conversions fail immediately.
 
 - `m_separated()` now handles ADMG collider paths with multiple bidirected
   edges, such as `a -> b <-> c <-> d` given `{b, c}`. This also fixes
