@@ -810,11 +810,8 @@ impl GraphSession {
         ys: &[u32],
         z: &[u32],
     ) -> Result<bool, String> {
-        if xs.len() != 1 || ys.len() != 1 {
-            return Err("is_valid_backdoor_set expects exactly one X and one Y".into());
-        }
         let view = self.view()?;
-        view.is_valid_backdoor_set(xs[0], ys[0], z)
+        view.is_valid_backdoor_set(xs, ys, z)
             .map_err(|e| self.map_error(e))
     }
 
@@ -826,11 +823,8 @@ impl GraphSession {
         minimal: bool,
         max_size: u32,
     ) -> Result<Vec<Vec<u32>>, String> {
-        if xs.len() != 1 || ys.len() != 1 {
-            return Err("all_backdoor_sets expects exactly one X and one Y".into());
-        }
         let view = self.view()?;
-        view.all_backdoor_sets(xs[0], ys[0], minimal, max_size)
+        view.all_backdoor_sets(xs, ys, minimal, max_size)
             .map_err(|e| self.map_error(e))
     }
 
@@ -1470,8 +1464,11 @@ mod tests {
             Vec::<u32>::new()
         );
         assert!(session.adjustment_set_backdoor(&[0], &[2]).is_err());
-        assert!(session.is_valid_backdoor_set(&[0, 2], &[1], &[2]).is_err());
-        assert!(session.all_backdoor_sets(&[0, 2], &[1], true, 3).is_err());
+        assert!(session.is_valid_backdoor_set(&[0, 2], &[1], &[]).unwrap());
+        assert_eq!(
+            session.all_backdoor_sets(&[0, 2], &[1], true, 3).unwrap(),
+            vec![Vec::<u32>::new()]
+        );
     }
 
     #[test]

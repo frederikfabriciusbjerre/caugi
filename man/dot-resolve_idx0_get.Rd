@@ -2,10 +2,13 @@
 % Please edit documentation in R/adjustment.R
 \name{.resolve_idx0_get}
 \alias{.resolve_idx0_get}
+\alias{.resolve_idx0_xy}
 \alias{.resolve_idx0_mget}
 \title{Resolve node name or index to 0-based index.}
 \usage{
 .resolve_idx0_get(session, node_name = NULL, node_index = NULL)
+
+.resolve_idx0_xy(session, node_name, node_index, arg)
 
 .resolve_idx0_mget(session, node_name = NULL, node_index = NULL)
 }

@@ -32,6 +32,7 @@
 #'
 #' d_separated(cg, "X", "Y", Z = c("A", "D")) # TRUE
 #' d_separated(cg, "X", "Y", Z = NULL) # FALSE
+#' d_separated(cg, c("C", "X"), c("K", "Y"), Z = c("A", "D")) # TRUE
 #'
 #' @family adjustment
 #' @concept adjustment
@@ -47,14 +48,8 @@ d_separated <- function(
   Z_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  if (
-    length(X) > 1 || length(Y) > 1 || length(X_index) > 1 || length(Y_index) > 1
-  ) {
-    stop("Provide exactly one X and one Y.", call. = FALSE)
-  }
-
-  X_idx0 <- .resolve_idx0_get(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_get(cg@session, Y, Y_index)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
 
   rs_d_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
@@ -180,11 +175,33 @@ adjustment_set <- function(
 
 #' @title Is a backdoor set valid?
 #'
-#' @description Checks whether `Z` is a valid backdoor adjustment set for
-#' `X --> Y`.
+#' @description Checks whether `Z` satisfies the generalized back-door
+#' criterion relative to `X` and `Y` in a DAG. `X` and `Y` can each hold one
+#' or more nodes.
+#'
+#' @details
+#' `Z` satisfies the generalized back-door criterion (Maathuis & Colombo,
+#' 2015, Def. 3.7) when
+#' 1. `Z` contains no descendant of `X`, and
+#' 2. for every node \eqn{X_i} in `X`, \eqn{Z \cup X \setminus \{X_i\}} blocks
+#'    every back-door path (a path starting with an edge into \eqn{X_i}) from
+#'    \eqn{X_i} to `Y`.
+#'
+#' With one treatment and one outcome this is Pearl's back-door criterion.
+#' With several treatments it can accept sets that Pearl's set version
+#' rejects, since that version requires `Z` alone to block every back-door
+#' path of each treatment. Every set accepted here is a valid adjustment set,
+#' but a valid adjustment set may be rejected, for example one containing a
+#' descendant of `X` off the causal paths.
+#'
+#' @references
+#' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
+#' \emph{The Annals of Statistics}, 43(3), 1060--1088.
+#' \doi{10.1214/14-AOS1295}.
+#'
 #' @param cg A `caugi` object.
 #'
-#' @param X,Y Single node names.
+#' @param X,Y Node names; one or more each, and disjoint.
 #' @param Z Optional node set for conditioning
 #' @param X_index,Y_index,Z_index Optional 1-based indices.
 #'
@@ -208,6 +225,10 @@ adjustment_set <- function(
 #' is_valid_backdoor(cg, X = "X", Y = "Y", Z = "K") # TRUE
 #' is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("A", "C")) # TRUE
 #'
+#' # Several treatments: X2 blocks X1 <-- X2 --> Y, so no adjustment is needed
+#' cg2 <- caugi(X2 %-->% X1 + Y, X1 %-->% Y, class = "DAG")
+#' is_valid_backdoor(cg2, X = c("X1", "X2"), Y = "Y", Z = NULL) # TRUE
+#'
 #' @family adjustment
 #' @concept adjustment
 #'
@@ -222,14 +243,11 @@ is_valid_backdoor <- function(
   Z_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  if (
-    length(X) > 1 || length(Y) > 1 || length(X_index) > 1 || length(Y_index) > 1
-  ) {
-    stop("Provide exactly one X and one Y.", call. = FALSE)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
+  if (any(X_idx0 %in% Y_idx0)) {
+    stop("X and Y must be disjoint.", call. = FALSE)
   }
-
-  X_idx0 <- .resolve_idx0_get(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_get(cg@session, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
 
   rs_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
@@ -238,10 +256,12 @@ is_valid_backdoor <- function(
 #' @title Get all backdoor sets up to a certain size.
 #'
 #' @description This function returns the backdoor sets up to size `max_size`,
-#' which per default is set to 10.
+#' which per default is set to 3. A set is a backdoor set when
+#' [is_valid_backdoor()] accepts it, i.e. it satisfies the generalized
+#' back-door criterion.
 #'
 #' @param cg A `caugi`.
-#' @param X,Y Single node name.
+#' @param X,Y Node names; one or more each, and disjoint.
 #' @param X_index,Y_index Optional 1-based indices (exclusive with name args).
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
@@ -303,14 +323,11 @@ all_backdoor_sets <- function(
   max_size = 3L
 ) {
   is_caugi(cg, throw_error = TRUE)
-  if (
-    length(X) > 1 || length(Y) > 1 || length(X_index) > 1 || length(Y_index) > 1
-  ) {
-    stop("Provide exactly one X and one Y.", call. = FALSE)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
+  if (any(X_idx0 %in% Y_idx0)) {
+    stop("X and Y must be disjoint.", call. = FALSE)
   }
-
-  X_idx0 <- .resolve_idx0_get(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_get(cg@session, Y, Y_index)
 
   sets_idx0 <- rs_all_backdoor_sets(
     cg@session,
@@ -651,6 +668,15 @@ all_adjustment_sets_admg <- function(
       call. = FALSE
     )
   }
+}
+
+#' @name .resolve_idx0_get
+#' @keywords internal
+.resolve_idx0_xy <- function(session, node_name, node_index, arg) {
+  if (is.null(node_name) && is.null(node_index)) {
+    stop(arg, " (or ", arg, "_index) must be provided.", call. = FALSE)
+  }
+  .resolve_idx0_mget(session, node_name, node_index)
 }
 
 #' @name .resolve_idx0_get

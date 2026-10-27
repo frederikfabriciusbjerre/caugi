@@ -12,6 +12,13 @@
   Maathuis (2022) for node sets. As in their Remark 3.14 and
   `pcalg::optAdjSet()`, nodes of `Y` that are not descendants of `X` are
   dropped with a warning, since the total effect on them is zero.
+* `is_valid_backdoor()`, `all_backdoor_sets()` and `d_separated()` now accept
+  several treatments `X` and outcomes `Y` on DAGs. The back-door functions use
+  the generalized back-door criterion of Maathuis & Colombo (2015, Def. 3.7):
+  `Z` contains no descendant of `X`, and for each treatment `Xi`, `Z` together
+  with the other treatments blocks every back-door path from `Xi` to `Y`. With
+  one treatment and one outcome this is Pearl's back-door criterion, so
+  single-pair results are unchanged.
   
 ## Performance Improvements
 

@@ -17,7 +17,7 @@ all_backdoor_sets(
 \arguments{
 \item{cg}{A \code{caugi}.}
 
-\item{X, Y}{Single node name.}
+\item{X, Y}{Node names; one or more each, and disjoint.}
 
 \item{X_index, Y_index}{Optional 1-based indices (exclusive with name args).}
 
@@ -31,7 +31,9 @@ A list of character vectors, each an adjustment set
 }
 \description{
 This function returns the backdoor sets up to size \code{max_size},
-which per default is set to 10.
+which per default is set to 3. A set is a backdoor set when
+\code{\link[=is_valid_backdoor]{is_valid_backdoor()}} accepts it, i.e. it satisfies the generalized
+back-door criterion.
 }
 \examples{
 cg <- caugi(

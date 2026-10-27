@@ -180,49 +180,60 @@ impl Dag {
         !reachability::reachable_to_any(&adj, &mask, xs, &blocked, ys)
     }
 
-    /// Validates a proposed backdoor set `z` for pair `(x, y)`.
+    /// Validates `z` for `Xs → Ys` by the generalized back-door criterion
+    /// (Maathuis & Colombo, 2015, Def. 3.7), which for one `x` and one `y` is
+    /// Pearl's back-door criterion:
+    /// 1) `z` contains no descendant of `Xs`.
+    /// 2) For every `x ∈ Xs`, `z ∪ Xs \ {x}` blocks every back-door path from
+    ///    `x` to `Ys`.
     ///
-    /// Conditions:
-    /// 1) `z` must not contain descendants of `x`.
-    /// 2) Each parent `p` of `x` must be d-separated from `y` given `z ∪ {x}`.
-    pub fn is_valid_backdoor_set(&self, x: u32, y: u32, z: &[u32]) -> bool {
-        let de_mask = bitset::descendants_mask(&[x], |u| self.children_of(u), self.n());
-        for &v in z {
-            if de_mask[v as usize] {
-                return false;
-            }
+    /// Condition 2 is checked in one pass as `Pa(Xs) ⊥ Ys | z ∪ Xs`:
+    /// conditioning on `x` blocks the paths out of it and leaves exactly the
+    /// back-door paths through its parents.
+    pub fn is_valid_backdoor_set(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> bool {
+        let de_mask = self.descendants_mask(xs);
+        if z.iter().any(|&v| de_mask[v as usize]) {
+            return false;
         }
 
-        let mut obs = Vec::with_capacity(z.len() + 1);
-        obs.extend_from_slice(z);
-        obs.push(x);
-        for &p in self.parents_of(x) {
-            if !self.d_separated(&[p], &[y], &obs) {
-                return false;
-            }
-        }
-        true
+        let mut pa: Vec<u32> = xs
+            .iter()
+            .flat_map(|&x| self.parents_of(x))
+            .copied()
+            .collect();
+        pa.sort_unstable();
+        pa.dedup();
+        let mut obs = z.to_vec();
+        obs.extend_from_slice(xs);
+        self.d_separated(&pa, ys, &obs)
     }
 
-    /// Universe of candidates for backdoor adjustment wrt. `(x, y)`.
-    fn backdoor_universe(&self, x: u32, y: u32) -> Vec<u32> {
-        let de_mask = bitset::descendants_mask(&[x], |u| self.children_of(u), self.n());
+    /// Universe of candidates for backdoor adjustment wrt. `(Xs, Ys)`.
+    fn backdoor_universe(&self, xs: &[u32], ys: &[u32]) -> Vec<u32> {
+        // De(Xs) contains Xs.
+        let de_mask = self.descendants_mask(xs);
         (0..self.n())
-            .filter(|&v| v != x && v != y && !de_mask[v as usize])
+            .filter(|v| !de_mask[*v as usize] && !ys.contains(v))
             .collect()
     }
 
     /// Enumerate all valid backdoor sets up to size `max_size`.
     /// If `minimal` is true, return only inclusion-minimal sets.
-    pub fn all_backdoor_sets(&self, x: u32, y: u32, minimal: bool, max_size: u32) -> Vec<Vec<u32>> {
-        let u = self.backdoor_universe(x, y);
+    pub fn all_backdoor_sets(
+        &self,
+        xs: &[u32],
+        ys: &[u32],
+        minimal: bool,
+        max_size: u32,
+    ) -> Vec<Vec<u32>> {
+        let u = self.backdoor_universe(xs, ys);
         let mut acc = Vec::new();
         let mut cur = Vec::new();
         let max_size = max_size as usize;
         for k in 0..=max_size.min(u.len()) {
             subsets::k_subsets(&u, k, 0, &mut cur, &mut acc);
         }
-        acc.retain(|z| self.is_valid_backdoor_set(x, y, z));
+        acc.retain(|z| self.is_valid_backdoor_set(xs, ys, z));
         if minimal {
             subsets::prune_minimal(&mut acc);
         }
@@ -350,11 +361,11 @@ mod tests {
         b.add_edge(0, 2, d).unwrap();
 
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        assert!(!g.is_valid_backdoor_set(1, 2, &[]));
-        assert!(g.is_valid_backdoor_set(1, 2, &[0]));
-        assert!(!g.is_valid_backdoor_set(0, 2, &[1])); // 1 is a descendant of 0
+        assert!(!g.is_valid_backdoor_set(&[1], &[2], &[]));
+        assert!(g.is_valid_backdoor_set(&[1], &[2], &[0]));
+        assert!(!g.is_valid_backdoor_set(&[0], &[2], &[1])); // 1 is a descendant of 0
 
-        let mut sets = g.all_backdoor_sets(1, 2, true, 20);
+        let mut sets = g.all_backdoor_sets(&[1], &[2], true, 20);
         sets.sort();
         assert_eq!(sets, vec![vec![0]]);
     }
@@ -407,7 +418,7 @@ mod tests {
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
         let z = g.adjustment_set_backdoor(&[1], &[2]).unwrap();
         assert!(z.is_empty());
-        assert!(g.is_valid_backdoor_set(1, 2, &z));
+        assert!(g.is_valid_backdoor_set(&[1], &[2], &z));
     }
 
     #[test]
@@ -429,7 +440,7 @@ mod tests {
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
         let z = g.adjustment_set_backdoor(&[2], &[3]).unwrap();
         assert_eq!(z, vec![1]); // {B}
-        assert!(g.is_valid_backdoor_set(2, 3, &z));
+        assert!(g.is_valid_backdoor_set(&[2], &[3], &z));
     }
 
     #[test]
@@ -446,7 +457,7 @@ mod tests {
         b.add_edge(1, 3, d).unwrap();
 
         let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        let mut sets = dag.all_backdoor_sets(2, 3, true, 20);
+        let mut sets = dag.all_backdoor_sets(&[2], &[3], true, 20);
         sets.sort();
         assert_eq!(sets, vec![vec![0, 1]]);
     }
@@ -526,6 +537,23 @@ mod tests {
         assert!(g.adjustment_set_backdoor(&[0, 2], &[3]).unwrap().is_empty());
         assert!(g.adjustment_set_optimal(&[0, 2], &[3]).unwrap().is_empty());
         assert!(g.is_valid_adjustment_set(&[0, 2], &[3], &[1]));
+    }
+
+    #[test]
+    fn dag_backdoor_several_treatments_conditions_on_the_others() {
+        // X2=1 -> X1=0, X2 -> Y=2, X1 -> Y: X2 blocks X1 <- X2 -> Y, so the
+        // empty set is valid (Pearl's pairwise set version rejects every set).
+        let g = dag_from(3, &[(1, 0), (1, 2), (0, 2)]);
+        assert!(g.is_valid_backdoor_set(&[0, 1], &[2], &[]));
+
+        // U=0 -> X1=2, U -> X2=3, V=1 -> X2, V -> Y=4, X1 -> Y, X2 -> Y:
+        // conditioning on the collider X2 opens X1 <- U -> X2 <- V -> Y, and
+        // V also confounds X2, so every valid set holds V.
+        let g = dag_from(5, &[(0, 2), (0, 3), (1, 3), (1, 4), (2, 4), (3, 4)]);
+        assert!(!g.is_valid_backdoor_set(&[2, 3], &[4], &[]));
+        assert!(!g.is_valid_backdoor_set(&[2, 3], &[4], &[0]));
+        assert!(g.is_valid_backdoor_set(&[2, 3], &[4], &[1]));
+        assert_eq!(g.all_backdoor_sets(&[2, 3], &[4], true, 3), vec![vec![1]]);
     }
 
     #[test]

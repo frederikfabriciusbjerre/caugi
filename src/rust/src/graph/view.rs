@@ -462,21 +462,21 @@ impl GraphView {
             _ => Err("adjustment_set_optimal is only defined for DAGs".into()),
         }
     }
-    pub fn is_valid_backdoor_set(&self, x: u32, y: u32, z: &[u32]) -> Result<bool, String> {
+    pub fn is_valid_backdoor_set(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> Result<bool, String> {
         match self {
-            GraphView::Dag(d) => Ok(d.is_valid_backdoor_set(x, y, z)),
+            GraphView::Dag(d) => Ok(d.is_valid_backdoor_set(xs, ys, z)),
             _ => Err("is_valid_backdoor_set is only defined for DAGs".into()),
         }
     }
     pub fn all_backdoor_sets(
         &self,
-        x: u32,
-        y: u32,
+        xs: &[u32],
+        ys: &[u32],
         minimal: bool,
         max_size: u32,
     ) -> Result<Vec<Vec<u32>>, String> {
         match self {
-            GraphView::Dag(d) => Ok(d.all_backdoor_sets(x, y, minimal, max_size)),
+            GraphView::Dag(d) => Ok(d.all_backdoor_sets(xs, ys, minimal, max_size)),
             _ => Err("all_backdoor_sets is only defined for DAGs".into()),
         }
     }
@@ -929,9 +929,12 @@ mod tests {
         assert_eq!(v.adjustment_set_optimal(&[1], &[2]).unwrap(), vec![0]);
 
         // backdoor validity + enumeration
-        assert_eq!(v.is_valid_backdoor_set(1, 2, &[0]).unwrap(), true);
-        assert_eq!(v.is_valid_backdoor_set(1, 2, &[]).unwrap(), false);
-        assert_eq!(v.all_backdoor_sets(1, 2, true, 5).unwrap(), vec![vec![0]]);
+        assert_eq!(v.is_valid_backdoor_set(&[1], &[2], &[0]).unwrap(), true);
+        assert_eq!(v.is_valid_backdoor_set(&[1], &[2], &[]).unwrap(), false);
+        assert_eq!(
+            v.all_backdoor_sets(&[1], &[2], true, 5).unwrap(),
+            vec![vec![0]]
+        );
     }
 
     // --- d-sep simple chain to hit both true/false via GraphView::Dag ---
@@ -1011,21 +1014,21 @@ mod tests {
 
         // is_valid_backdoor_set
         assert_eq!(
-            vp.is_valid_backdoor_set(0, 1, &[]).unwrap_err(),
+            vp.is_valid_backdoor_set(&[0], &[1], &[]).unwrap_err(),
             "is_valid_backdoor_set is only defined for DAGs"
         );
         assert_eq!(
-            vr.is_valid_backdoor_set(0, 1, &[]).unwrap_err(),
+            vr.is_valid_backdoor_set(&[0], &[1], &[]).unwrap_err(),
             "is_valid_backdoor_set is only defined for DAGs"
         );
 
         // all_backdoor_sets
         assert_eq!(
-            vp.all_backdoor_sets(0, 1, true, 5).unwrap_err(),
+            vp.all_backdoor_sets(&[0], &[1], true, 5).unwrap_err(),
             "all_backdoor_sets is only defined for DAGs"
         );
         assert_eq!(
-            vr.all_backdoor_sets(0, 1, true, 5).unwrap_err(),
+            vr.all_backdoor_sets(&[0], &[1], true, 5).unwrap_err(),
             "all_backdoor_sets is only defined for DAGs"
         );
     }

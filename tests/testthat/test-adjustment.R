@@ -165,18 +165,18 @@ test_that("all_backdoor_sets includes empty set, if valid", {
   expect_setequal(sets, valid_sets)
 })
 
-test_that("backdoor and d-separation functions cannot take multiple inputs", {
+test_that("backdoor and d-separation functions check X and Y", {
   expect_error(
-    is_valid_backdoor(adjustment_set_cg, X = "X", Y = c("Y", "D"), Z = "A"),
-    "Provide exactly one X and one Y."
+    is_valid_backdoor(adjustment_set_cg, X = "X", Y = c("Y", "X"), Z = "A"),
+    "X and Y must be disjoint."
   )
   expect_error(
-    all_backdoor_sets(adjustment_set_cg, X = "X", Y = c("Y", "D")),
-    "Provide exactly one X and one Y."
+    all_backdoor_sets(adjustment_set_cg, X = "X", Y = c("Y", "X")),
+    "X and Y must be disjoint."
   )
   expect_error(
-    d_separated(adjustment_set_cg, X_index = c(1L, 2L), Y = "Y", Z = "A"),
-    "Provide exactly one X and one Y."
+    d_separated(adjustment_set_cg, X_index = c(1L, 2L), Z = "A"),
+    "Y \\(or Y_index\\) must be provided."
   )
 })
 
@@ -554,5 +554,131 @@ test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
     } else {
       expect_true(oracle_d(z), label = paste(label, "optimal"))
     }
+  }
+})
+
+# TRUE when some path from `from` to `Y` in a DAG is open given `S`, found by
+# walking every path; `backdoor = TRUE` keeps only paths whose first edge
+# points into `from`.
+.open_path_exists <- function(edges, from, Y, S, backdoor = FALSE) {
+  an_s <- S
+  repeat {
+    nxt <- union(an_s, edges$from[edges$to %in% an_s])
+    if (length(nxt) == length(an_s)) {
+      break
+    }
+    an_s <- nxt
+  }
+  # `head_in`: the edge into the last node of `path` points at it.
+  walk <- function(path, head_in) {
+    v <- path[length(path)]
+    for (i in which(edges$from == v | edges$to == v)) {
+      w <- if (edges$from[i] == v) edges$to[i] else edges$from[i]
+      if (w %in% path) {
+        next
+      }
+      if (length(path) == 1) {
+        if (backdoor && edges$to[i] != v) next
+      } else {
+        collider <- head_in && edges$to[i] == v
+        if (if (collider) !v %in% an_s else v %in% S) next
+      }
+      if (w %in% Y || walk(c(path, w), edges$to[i] == w)) {
+        return(TRUE)
+      }
+    }
+    FALSE
+  }
+  walk(from, FALSE)
+}
+
+# Generalized back-door criterion (Maathuis & Colombo 2015, Def. 3.7) as
+# stated: Z holds no descendant of X, and for each x in X, Z ∪ X \ {x} blocks
+# every back-door path from x to Y.
+.gbc_oracle <- function(edges, X, Y) {
+  de_x <- X
+  repeat {
+    nxt <- union(de_x, edges$to[edges$from %in% de_x])
+    if (length(nxt) == length(de_x)) {
+      break
+    }
+    de_x <- nxt
+  }
+  function(Z) {
+    !any(Z %in% de_x) &&
+      !any(vapply(
+        X,
+        function(x) {
+          .open_path_exists(edges, x, Y, union(Z, setdiff(X, x)), TRUE)
+        },
+        logical(1)
+      ))
+  }
+}
+
+test_that("backdoor and d-separation agree with path oracles on random DAGs", {
+  set.seed(20261028)
+  nodes <- paste0("V", 1:7)
+  key <- function(sets) vapply(sets, \(z) paste(sort(z), collapse = ","), "")
+  for (rep in seq_len(120)) {
+    ord <- sample(nodes)
+    pairs <- t(combn(7, 2))
+    keep <- runif(nrow(pairs)) < 0.35
+    edges <- data.frame(
+      from = ord[pairs[keep, 1]],
+      edge = rep("-->", sum(keep)),
+      to = ord[pairs[keep, 2]]
+    )
+    cg <- caugi(
+      from = edges$from,
+      edge = edges$edge,
+      to = edges$to,
+      nodes = nodes,
+      class = "DAG"
+    )
+    X <- sample(nodes, sample(1:2, 1))
+    Y <- sample(setdiff(nodes, X), sample(1:2, 1))
+    rest <- setdiff(nodes, c(X, Y))
+    gbc <- .gbc_oracle(edges, X, Y)
+    gac <- .gac_oracle(edges, X, Y)
+    label <- paste("rep", rep)
+
+    subsets <- unlist(
+      lapply(0:length(rest), function(k) combn(rest, k, simplify = FALSE)),
+      recursive = FALSE
+    )
+    valid <- vapply(subsets, gbc, logical(1))
+    for (i in seq_along(subsets)) {
+      Z <- subsets[[i]]
+      expect_identical(is_valid_backdoor(cg, X, Y, Z), valid[i], label = label)
+      # The criterion implies adjustment (Maathuis & Colombo 2015, Thm. 3.1).
+      if (valid[i]) {
+        expect_true(gac(Z), label = label)
+      }
+      open <- any(vapply(
+        X,
+        function(x) .open_path_exists(edges, x, Y, Z),
+        logical(1)
+      ))
+      expect_identical(d_separated(cg, X, Y, Z), !open, label = label)
+    }
+
+    all_sets <- all_backdoor_sets(cg, X, Y, minimal = FALSE, max_size = 5)
+    expect_setequal(key(all_sets), key(subsets[valid]))
+    minimal <- subsets[valid][vapply(
+      subsets[valid],
+      function(z) {
+        !any(vapply(
+          subsets[valid],
+          \(w) all(w %in% z) && length(w) < length(z),
+          logical(1)
+        ))
+      },
+      logical(1)
+    )]
+    expect_setequal(
+      key(all_backdoor_sets(cg, X, Y, max_size = 5)),
+      key(minimal)
+    )
   }
 })
