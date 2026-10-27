@@ -456,9 +456,14 @@ impl GraphView {
             _ => Err("adjustment_set_backdoor is only defined for DAGs".into()),
         }
     }
-    pub fn adjustment_set_optimal(&self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
+    pub fn adjustment_set_optimal(
+        &self,
+        xs: &[u32],
+        ys: &[u32],
+        return_dropped: bool,
+    ) -> Result<(Vec<u32>, Option<Vec<u32>>), String> {
         match self {
-            GraphView::Dag(d) => d.adjustment_set_optimal(xs, ys),
+            GraphView::Dag(d) => d.adjustment_set_optimal(xs, ys, return_dropped),
             _ => Err("adjustment_set_optimal is only defined for DAGs".into()),
         }
     }
@@ -926,7 +931,10 @@ mod tests {
         // adjustment sets (parents/backdoor/optimal) all return {0}
         assert_eq!(v.adjustment_set_parents(&[1], &[2]).unwrap(), vec![0]);
         assert_eq!(v.adjustment_set_backdoor(&[1], &[2]).unwrap(), vec![0]);
-        assert_eq!(v.adjustment_set_optimal(&[1], &[2]).unwrap(), vec![0]);
+        assert_eq!(
+            v.adjustment_set_optimal(&[1], &[2], false).unwrap().0,
+            vec![0]
+        );
 
         // backdoor validity + enumeration
         assert_eq!(v.is_valid_backdoor_set(1, 2, &[0]).unwrap(), true);
@@ -1001,11 +1009,11 @@ mod tests {
 
         // adjustment_set_optimal
         assert_eq!(
-            vp.adjustment_set_optimal(&[0], &[1]).unwrap_err(),
+            vp.adjustment_set_optimal(&[0], &[1], false).unwrap_err(),
             "adjustment_set_optimal is only defined for DAGs"
         );
         assert_eq!(
-            vr.adjustment_set_optimal(&[0], &[1]).unwrap_err(),
+            vr.adjustment_set_optimal(&[0], &[1], false).unwrap_err(),
             "adjustment_set_optimal is only defined for DAGs"
         );
 

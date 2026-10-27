@@ -672,7 +672,7 @@ impl GraphSession {
         m_separated(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
         adjustment_set_parents(xs: &[u32], ys: &[u32]) -> Vec<u32>;
         adjustment_set_backdoor(xs: &[u32], ys: &[u32]) -> Vec<u32>;
-        adjustment_set_optimal(xs: &[u32], ys: &[u32]) -> Vec<u32>;
+        adjustment_set_optimal(xs: &[u32], ys: &[u32], return_dropped: bool) -> (Vec<u32>, Option<Vec<u32>>);
         is_valid_adjustment_set_admg(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
         all_adjustment_sets_admg(xs: &[u32], ys: &[u32], minimal: bool, max_size: u32) -> Vec<Vec<u32>>;
     }
@@ -1453,7 +1453,7 @@ mod tests {
         let backdoor = session.adjustment_set_backdoor(&[0], &[1]).unwrap();
         assert!(backdoor.iter().all(|&z| z < 3 && z != 0 && z != 1));
 
-        let optimal = session.adjustment_set_optimal(&[0], &[1]).unwrap();
+        let (optimal, _) = session.adjustment_set_optimal(&[0], &[1], false).unwrap();
         assert!(optimal.iter().all(|&z| z < 3 && z != 0 && z != 1));
 
         assert!(session
@@ -1466,7 +1466,10 @@ mod tests {
 
         // Several treatments are supported; Y as a parent of X has no valid set.
         assert_eq!(
-            session.adjustment_set_optimal(&[0, 2], &[1]).unwrap(),
+            session
+                .adjustment_set_optimal(&[0, 2], &[1], false)
+                .unwrap()
+                .0,
             Vec::<u32>::new()
         );
         assert!(session.adjustment_set_backdoor(&[0], &[2]).is_err());
@@ -1510,7 +1513,7 @@ mod tests {
         assert!(ug.minimal_separator(&[0], &[1], &[], &[]).is_err());
         assert!(ug.adjustment_set_parents(&[0], &[1]).is_err());
         assert!(ug.adjustment_set_backdoor(&[0], &[1]).is_err());
-        assert!(ug.adjustment_set_optimal(&[0], &[1]).is_err());
+        assert!(ug.adjustment_set_optimal(&[0], &[1], false).is_err());
         assert!(ug.is_valid_backdoor_set(&[0], &[1], &[]).is_err());
         assert!(ug.all_backdoor_sets(&[0], &[1], true, 2).is_err());
 
@@ -1947,7 +1950,7 @@ mod tests {
         assert!(pdag.districts().is_err());
         assert!(pdag.adjustment_set_parents(&[0], &[2]).is_err());
         assert!(pdag.adjustment_set_backdoor(&[0], &[2]).is_err());
-        assert!(pdag.adjustment_set_optimal(&[0], &[2]).is_err());
+        assert!(pdag.adjustment_set_optimal(&[0], &[2], false).is_err());
         assert!(pdag.is_valid_backdoor_set(&[0], &[2], &[1]).is_err());
         assert!(pdag.all_backdoor_sets(&[0], &[2], true, 2).is_err());
         assert!(pdag.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());
@@ -2058,7 +2061,7 @@ mod tests {
         assert!(dag.m_separated(&[0], &[1], &[]).is_err());
         assert!(dag.adjustment_set_parents(&[0], &[1]).is_err());
         assert!(dag.adjustment_set_backdoor(&[0], &[1]).is_err());
-        assert!(dag.adjustment_set_optimal(&[0], &[1]).is_err());
+        assert!(dag.adjustment_set_optimal(&[0], &[1], false).is_err());
         assert!(dag.is_valid_backdoor_set(&[0], &[1], &[]).is_err());
         assert!(dag.all_backdoor_sets(&[0], &[1], false, 10).is_err());
         assert!(dag.is_valid_adjustment_set_admg(&[0], &[1], &[]).is_err());
