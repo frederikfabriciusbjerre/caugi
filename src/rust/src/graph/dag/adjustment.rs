@@ -110,20 +110,33 @@ impl Dag {
     }
 
     /// Optimal adjustment set (O-set) for `Xs → Ys`:
-    /// `O(Xs,Ys) = Pa(cn(Xs,Ys)) \ (forb(Xs,Ys) ∪ Ys)` (Henckel, Perković &
-    /// Maathuis, 2022). When every `y` is a descendant of `Xs` it is valid
-    /// whenever any valid adjustment set exists, and among those it gives the
-    /// smallest asymptotic variance in linear models.
+    /// `O(Xs,Ys) = Pa(cn(Xs,Ys)) \ forb(Xs,Ys)` (Henckel, Perković &
+    /// Maathuis, 2022). Following their Remark 3.14, the nodes of `Ys` that are
+    /// not descendants of `Xs` are dropped first, since the total effect on them
+    /// is zero; the O-set is then for the remaining `Ys`. By their Theorem 3.13
+    /// it is valid whenever any valid adjustment set exists, and among those it
+    /// gives the smallest asymptotic variance in linear models.
     ///
     /// # Errors
     ///
-    /// When the O-set is not valid, saying whether any valid set exists.
+    /// When no node of `Ys` is a descendant of `Xs`, or no valid adjustment set
+    /// exists.
     pub fn adjustment_set_optimal(&self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
         let n = self.n() as usize;
-        let cn = self.causal_nodes(xs, ys);
+        let de_x = self.descendants_mask(xs);
+        let ys: Vec<u32> = ys.iter().copied().filter(|&y| de_x[y as usize]).collect();
+        if ys.is_empty() {
+            return Err(
+                "No node in Y is a descendant of X, so the total effect of X \
+                 on Y is zero; use type = \"backdoor\" for an adjustment set."
+                    .into(),
+            );
+        }
+        // Every y is now in cn, so De(cn) ∪ Xs = forb(Xs,Ys) already covers Ys.
+        let cn = self.causal_nodes(xs, &ys);
         let mut drop = self.descendants_mask(&cn);
-        for &v in xs.iter().chain(ys) {
-            drop[v as usize] = true;
+        for &x in xs {
+            drop[x as usize] = true;
         }
         let mut keep = vec![false; n];
         for &c in &cn {
@@ -133,18 +146,13 @@ impl Dag {
         }
         let z = bitset::collect_from_mask(&keep);
 
-        if self.is_valid_adjustment_set(xs, ys, &z) {
+        // With Ys ⊆ De(Xs), the O-set is invalid only when no valid set exists
+        // (Henckel et al., 2022, Theorem 3.13). A valid set for the full Ys is
+        // also valid for this subset, so none exists for the full Ys either.
+        if self.is_valid_adjustment_set(xs, &ys, &z) {
             Ok(z)
-        } else if self.adjustment_set_backdoor(xs, ys).is_err() {
-            Err(NO_VALID_SET.into())
         } else {
-            // Only reachable when some y is not a descendant of X: the O-set
-            // then does not block the backdoor paths into that y.
-            Err(
-                "The O-set is not a valid adjustment set here, as some node in Y \
-                 is not a descendant of X; use type = \"backdoor\"."
-                    .into(),
-            )
+            Err(NO_VALID_SET.into())
         }
     }
 
@@ -541,13 +549,18 @@ mod tests {
     }
 
     #[test]
-    fn dag_optimal_errors_when_an_outcome_is_not_a_descendant() {
-        // X=0 -> Y1=1, X <- U=2 -> Y2=3: the O-set is empty and misses U,
-        // which "backdoor" finds.
+    fn dag_optimal_drops_outcomes_that_are_not_descendants() {
+        // X=0 -> Y1=1, X <- U=2 -> Y2=3: Y2 is dropped (Henckel et al., 2022,
+        // Remark 3.14) and the O-set for Y1 is empty.
         let g = dag_from(4, &[(0, 1), (2, 0), (2, 3)]);
-        assert_eq!(g.adjustment_set_backdoor(&[0], &[1, 3]).unwrap(), vec![2]);
-        let err = g.adjustment_set_optimal(&[0], &[1, 3]).unwrap_err();
-        assert!(err.contains("not a descendant of X"));
+        assert!(g.adjustment_set_optimal(&[0], &[1, 3]).unwrap().is_empty());
+        let err = g.adjustment_set_optimal(&[0], &[3]).unwrap_err();
+        assert!(err.contains("No node in Y is a descendant of X"));
+
+        // X=0 -> Y1=1 <- Y2=2: the dropped Y2 is a parent of Y1, so it is in
+        // the O-set for Y1.
+        let g = dag_from(3, &[(0, 1), (2, 1)]);
+        assert_eq!(g.adjustment_set_optimal(&[0], &[1, 2]).unwrap(), vec![2]);
     }
 
     #[test]

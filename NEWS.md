@@ -9,7 +9,9 @@
   of class `"UNKNOWN"`.
 * `adjustment_set()` now accepts several treatments `X` and outcomes `Y` for
   every `type`. `type = "optimal"` returns the O-set of Henckel, Perković &
-  Maathuis (2022) for node sets.
+  Maathuis (2022) for node sets. As in their Remark 3.14 and
+  `pcalg::optAdjSet()`, nodes of `Y` that are not descendants of `X` are
+  dropped with a warning, since the total effect on them is zero.
   
 ## Performance Improvements
 
@@ -40,8 +42,8 @@
   criterion and errors when it is not valid, rather than returning an invalid
   set. This affected graphs where a node of `Y` is a parent of `X`, where no
   valid set exists, and `type = "optimal"` when `Y` is not a descendant of
-  `X`: for `X <-- U --> Y` it returned the empty set, and now points to
-  `type = "backdoor"`, which returns `U`.
+  `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
+  the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
 - `m_separated()` now handles ADMG collider paths with multiple bidirected
   edges, such as `a -> b <-> c <-> d` given `{b, c}`. This also fixes

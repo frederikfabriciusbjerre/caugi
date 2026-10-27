@@ -450,11 +450,17 @@ test_that("adjustment_set() errors when no valid set exists", {
   )
 })
 
-test_that("adjustment_set(type = 'optimal') needs Y to descend from X", {
+test_that("adjustment_set(type = 'optimal') drops Y not descending from X", {
+  # Henckel, Perković & Maathuis (2022), Remark 3.14, as in pcalg::optAdjSet.
   cg <- caugi(U %-->% X + Y2, X %-->% Y1, class = "DAG")
+  expect_warning(
+    z <- adjustment_set(cg, "X", c("Y1", "Y2"), type = "optimal"),
+    "dropped from Y.*Y2"
+  )
+  expect_equal(z, character(0))
   expect_error(
-    adjustment_set(cg, "X", c("Y1", "Y2"), type = "optimal"),
-    "not a descendant of X"
+    adjustment_set(cg, "X", "Y2", type = "optimal"),
+    "No node in Y is a descendant of X"
   )
   expect_equal(adjustment_set(cg, "X", c("Y1", "Y2"), type = "backdoor"), "U")
 })
@@ -497,7 +503,7 @@ test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
     }
     label <- paste("rep", rep)
 
-    for (type in c("parents", "backdoor", "optimal")) {
+    for (type in c("parents", "backdoor")) {
       z <- tryCatch(
         adjustment_set(cg, X, Y, type = type),
         error = conditionMessage
@@ -507,13 +513,38 @@ test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
       } else if (grepl("No valid adjustment set exists", z)) {
         expect_false(any_valid, label = paste(label, type))
       } else {
-        # "parents" or "optimal" was not valid, but another set is.
+        # "parents" was not valid, but another set is.
         expect_true(any_valid, label = paste(label, type))
         expect_false(type == "backdoor", label = paste(label, type))
-        if (type == "optimal") {
-          expect_false(all(Y %in% de_x), label = paste(label, type))
-        }
       }
+    }
+
+    # "optimal" answers for Y ∩ De(X) (Henckel et al. 2022, Remark 3.14).
+    Yd <- intersect(Y, de_x)
+    z <- tryCatch(
+      suppressWarnings(adjustment_set(cg, X, Y, type = "optimal")),
+      error = conditionMessage
+    )
+    if (length(Yd) == 0) {
+      expect_match(z, "No node in Y is a descendant of X", label = label)
+      next
+    }
+    oracle_d <- .gac_oracle(edges, X, Yd)
+    rest_d <- setdiff(nodes, c(X, Yd))
+    any_valid_d <- any(vapply(
+      unlist(
+        lapply(0:length(rest_d), function(k) {
+          combn(rest_d, k, simplify = FALSE)
+        }),
+        recursive = FALSE
+      ),
+      oracle_d,
+      logical(1)
+    ))
+    if (grepl("No valid adjustment set exists", z[1])) {
+      expect_false(any_valid_d, label = paste(label, "optimal"))
+    } else {
+      expect_true(oracle_d(z), label = paste(label, "optimal"))
     }
   }
 })

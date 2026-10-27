@@ -45,8 +45,11 @@ parent of \code{X}), this drops nodes that are not needed to block a backdoor
 path. Note that minimal is not the same as statistically optimal; use
 \code{"optimal"} for the efficient O-set.
 \item \code{"optimal"}: the O-set \eqn{\mathrm{Pa}(\mathrm{cn}(X, Y)) \setminus
-  \mathrm{forb}(X, Y)} (Henckel, Perković & Maathuis, 2022). When every node
-in \code{Y} is a descendant of \code{X}, it is valid whenever any valid set exists.
+  \mathrm{forb}(X, Y)} (Henckel, Perković & Maathuis, 2022). Following
+their Remark 3.14, nodes of \code{Y} that are not descendants of \code{X} are
+dropped with a warning, since the total effect on them is zero, and the
+O-set is computed for the rest of \code{Y}. It is then valid whenever any valid
+set exists. If no node of \code{Y} is a descendant of \code{X}, an error is raised.
 }
 
 Every result is checked against the generalized adjustment criterion

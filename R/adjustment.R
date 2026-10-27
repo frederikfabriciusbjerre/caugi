@@ -82,8 +82,11 @@ d_separated <- function(
 #'   path. Note that minimal is not the same as statistically optimal; use
 #'   `"optimal"` for the efficient O-set.
 #' - `"optimal"`: the O-set \eqn{\mathrm{Pa}(\mathrm{cn}(X, Y)) \setminus
-#'   \mathrm{forb}(X, Y)} (Henckel, Perković & Maathuis, 2022). When every node
-#'   in `Y` is a descendant of `X`, it is valid whenever any valid set exists.
+#'   \mathrm{forb}(X, Y)} (Henckel, Perković & Maathuis, 2022). Following
+#'   their Remark 3.14, nodes of `Y` that are not descendants of `X` are
+#'   dropped with a warning, since the total effect on them is zero, and the
+#'   O-set is computed for the rest of `Y`. It is then valid whenever any valid
+#'   set exists. If no node of `Y` is a descendant of `X`, an error is raised.
 #'
 #' Every result is checked against the generalized adjustment criterion
 #' (Perković et al., 2018). An error is raised when the requested set is not
@@ -147,6 +150,19 @@ adjustment_set <- function(
   Y_idx0 <- unique(.resolve_idx0_mget(cg@session, Y, Y_index))
   if (any(X_idx0 %in% Y_idx0)) {
     stop("X and Y must be disjoint.", call. = FALSE)
+  }
+  if (type == "optimal") {
+    # Mirrors the pruning in Rust (Henckel et al., 2022, Remark 3.14).
+    de_x <- unlist(descendants(cg, index = X_idx0 + 1L))
+    dropped <- setdiff(cg@nodes$name[Y_idx0 + 1L], de_x)
+    if (length(dropped) > 0 && length(dropped) < length(Y_idx0)) {
+      warning(
+        "Not a descendant of X, so dropped from Y (the effect on it is zero): ",
+        paste(dropped, collapse = ", "),
+        ". The O-set is for the rest of Y.",
+        call. = FALSE
+      )
+    }
   }
 
   idx0 <- switch(
