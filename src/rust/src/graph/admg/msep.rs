@@ -230,11 +230,13 @@ impl Admg {
     /// causal path from `xs` to `ys` removed. A proper causal path is a
     /// directed path `x = v0 → v1 → ... → vk = y` whose internal nodes
     /// `v1, …, vk` are not in `xs`. Equivalently, the deleted edges are
-    /// `x → v` with `x ∈ xs`, `v ∉ xs`, and `v ∈ An(ys) ∪ ys`.
+    /// `x → v` with `x ∈ xs`, `v ∉ xs`, and a directed path from `v` to `ys`
+    /// that avoids `xs`.
     ///
     /// Returns `true` iff `xs ⊥_m ys | z` in that graph. Together with the
-    /// forbidden-set check, this is the second condition of the Generalized
-    /// Adjustment Criterion of Perković et al. (2018).
+    /// forbidden-set check, this is the adjustment criterion for ADMGs
+    /// (Shpitser, VanderWeele & Robins, 2010), in the proper-backdoor-graph
+    /// form of van der Zander, Liśkiewicz & Textor (2019).
     pub(super) fn m_separated_pbg(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> bool {
         if xs.is_empty() || ys.is_empty() {
             return true;

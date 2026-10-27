@@ -58,8 +58,11 @@ impl Admg {
 
     /// Validate whether Z is a valid adjustment set for estimating X → Y.
     ///
-    /// Uses the generalized adjustment criterion (GAC) for ADMGs (Perković,
-    /// Textor, Kalisch, Maathuis 2018):
+    /// Uses the adjustment criterion of Shpitser, VanderWeele & Robins (2010),
+    /// which is stated for latent projections (ADMGs), in the forbidden-set and
+    /// proper-backdoor-graph form of Perković et al. (2018) and van der Zander,
+    /// Liśkiewicz & Textor (2019). Those two papers cover DAGs, CPDAGs, MAGs
+    /// and PAGs, not ADMGs:
     /// 1. Z ∩ forb(X,Y) = ∅, where forb(X,Y) = De(cn(X,Y)) ∪ X
     ///    (Z must not contain any node in the forbidden set)
     /// 2. X and Y are m-separated by Z in the proper backdoor graph
