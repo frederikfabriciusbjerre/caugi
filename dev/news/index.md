@@ -2,6 +2,17 @@
 
 ## caugi (development version)
 
+### New Features
+
+- [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
+  now accepts several treatments `X` and outcomes `Y` for every `type`.
+  `type = "optimal"` returns the O-set of Henckel, Perković &
+  Maathuis (2022) for node sets. As in their Remark 3.14 and
+  [`pcalg::optAdjSet()`](https://rdrr.io/pkg/pcalg/man/optAdjSet.html),
+  nodes of `Y` that are not descendants of `X` are dropped with a
+  warning, since the total effect on them is zero. A dropped node can
+  itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
+
 ### Bug Fixes
 
 - [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
@@ -17,7 +28,18 @@
   `X1 --> W --> X2 --> Y` with `X = c("X1", "X2")`. Both functions are
   now checked against a brute-force implementation of the criterion.
 
+- [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
+  now checks its result against the generalized adjustment criterion and
+  errors when it is not valid, rather than returning an invalid set.
+  This affected graphs where a node of `Y` is a parent of `X`, where no
+  valid set exists, and `type = "optimal"` when `Y` is not a descendant
+  of `X`: for `X <-- U --> Y` it returned the empty set, and now errors
+  because the effect is zero, pointing to `type = "backdoor"`, which
+  returns `U`.
+
 ## caugi 1.4.0
+
+CRAN release: 2026-10-27
 
 - Updates for compatibility with S7 \> 0.2.2.
 

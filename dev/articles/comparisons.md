@@ -562,9 +562,10 @@ request with the relevant information.
     rather than v-structures (unshielded colliders) exclusively.
 
 [^74]: `adjustment_set(cg, X, Y, type = "optimal")` returns the O-set of
-    Henckel/Perković/Maathuis (2019), but only for DAGs—the underlying
-    Rust implementation errors on non-DAG graph classes. There is no
-    O-set support for CPDAGs, MPDAGs, MAGs, or PAGs.
+    Henckel/Perković/Maathuis (2019, 2022), for one or more treatments
+    and outcomes, but only for DAGs—the underlying Rust implementation
+    errors on non-DAG graph classes. There is no O-set support for
+    CPDAGs, MPDAGs, MAGs, or PAGs.
 
 [^75]: `backdoor(amat, x, y, type)` implements the Generalized Backdoor
     Criterion (GBC) of Maathuis & Colombo (2015), which subsumes Pearl’s
