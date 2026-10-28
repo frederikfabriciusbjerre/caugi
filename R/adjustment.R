@@ -399,7 +399,6 @@ all_backdoor_sets <- function(
 #'
 #' # Works on ADMGs (returns a minimal m-separator)
 #' admg <- caugi(
-#'   X %-->% Y,
 #'   L %-->% X,
 #'   L %-->% Y,
 #'   class = "ADMG"

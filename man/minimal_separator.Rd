@@ -91,7 +91,6 @@ minimal_separator(cg, "X", "Y", R = c("A", "M"))
 
 # Works on ADMGs (returns a minimal m-separator)
 admg <- caugi(
-  X \%-->\% Y,
   L \%-->\% X,
   L \%-->\% Y,
   class = "ADMG"

@@ -339,8 +339,8 @@ is_pdag <- function(cg, force_check = FALSE) {
 #' @examples
 #' cg_cpdag <- caugi(
 #'   A %---% B,
-#'   A %-->% C,
 #'   B %-->% C,
+#'   D %-->% C,
 #'   class = "PDAG"
 #' )
 #' is_cpdag(cg_cpdag) # TRUE
