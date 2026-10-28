@@ -193,8 +193,9 @@ S7::method(
     rev_key <- interaction(to, from, drop = TRUE)
     has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
-    # keep asymmetric rows and the first canonical rep of each symmetric group
-    keep_rep <- !duplicated(key) & (from == canon_from)
+    # keep asymmetric rows and the first row of each symmetric group, whatever
+    # its direction; it is rewritten in canonical order below
+    keep_rep <- !duplicated(key)
     keep <- !has_rev | keep_rep
 
     # write collapsed rows

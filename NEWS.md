@@ -16,6 +16,9 @@
 
 ## Bug Fixes
 
+- `as_caugi(<igraph>, collapse = TRUE)` no longer drops a mutual pair when
+  the reverse edge comes first (e.g. `B -> A` before `A -> B`).
+
 - `--o` edges now round-trip through dagitty: `as_caugi()` reads dagitty's
   `o--` code (written by `as_dagitty()` for `--o`) instead of erroring.
 

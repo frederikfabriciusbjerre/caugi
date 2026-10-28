@@ -214,6 +214,15 @@ test_that("igraph dispatch works and respects directedness + collapse", {
   expect_equal(e_col$from, "A")
   expect_equal(e_col$to, "B")
   expect_equal(e_col$edge, "---")
+
+  # reverse edge first
+  g_rev <- igraph::graph_from_edgelist(
+    matrix(c("B", "A", "A", "B"), 2, 2, byrow = TRUE),
+    directed = TRUE
+  )
+  e_rev <- edges(as_caugi(g_rev, class = "PDAG", collapse = TRUE))
+  expect_equal(nrow(e_rev), 1L)
+  expect_equal(c(e_rev$from, e_rev$edge, e_rev$to), c("A", "---", "B"))
 })
 
 test_that("empty igraph yield empty caugi graphs", {
