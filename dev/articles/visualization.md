@@ -308,12 +308,12 @@ layout_kk <- caugi_layout(dag, method = "kamada-kawai")
 # Examine coordinates
 head(layout_sug)
 #>   name    x   y
-#> 1   X1 0.25 0.0
-#> 2   X2 0.75 0.0
+#> 1   X1 0.25 1.0
+#> 2   X2 0.75 1.0
 #> 3   M1 0.00 0.5
 #> 4   M2 0.50 0.5
 #> 5   M3 1.00 0.5
-#> 6    Y 0.50 1.0
+#> 6    Y 0.50 0.0
 ```
 
 ## Customizing Plots
@@ -1126,12 +1126,12 @@ coords <- caugi_layout(dag, method = "sugiyama")
 # The layout can be used for analysis or custom plotting
 print(coords)
 #>   name    x   y
-#> 1   X1 0.25 0.0
-#> 2   X2 0.75 0.0
+#> 1   X1 0.25 1.0
+#> 2   X2 0.75 1.0
 #> 3   M1 0.00 0.5
 #> 4   M2 0.50 0.5
 #> 5   M3 1.00 0.5
-#> 6    Y 0.50 1.0
+#> 6    Y 0.50 0.0
 
 # Plot uses the same layout, calling caugi_layout internally
 plot(dag, layout = "sugiyama")

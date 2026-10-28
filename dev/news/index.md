@@ -15,6 +15,12 @@
 
 ### Bug Fixes
 
+- [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md)
+  now places parents above their children, matching the documented
+  top-to-bottom flow. This also fixes automatic layouts and plots of
+  DAGs, including graphs with disconnected components
+  ([\#421](https://github.com/frederikfabriciusbjerre/caugi/issues/421)).
+
 - [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
   and
   [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
