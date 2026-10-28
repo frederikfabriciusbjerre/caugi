@@ -16,6 +16,10 @@
 
 ## Bug Fixes
 
+- `to_dot()` now quotes node names that are DOT keywords (`node`, `edge`,
+  `graph`, `digraph`, `subgraph`, `strict`, in any case), and escapes `"` and
+  `\\` in string attribute values.
+
 - `caugi(..., nodes = )` no longer drops isolated nodes declared in the DSL,
   e.g. `D` in `caugi(A %-->% B, D, nodes = c("A", "B", "C"))`.
 

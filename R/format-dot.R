@@ -250,10 +250,17 @@ write_dot <- function(x, file, ...) {
   invisible(file)
 }
 
+# Helper function to quote a DOT string, escaping quotes and backslashes
+quote_dot <- function(x) {
+  x <- gsub("\\\\", "\\\\\\\\", x)
+  x <- gsub('"', '\\\\"', x)
+  paste0('"', x, '"')
+}
+
 # Helper function to format DOT values
 format_dot_value <- function(x) {
   if (is.character(x)) {
-    paste0('"', x, '"')
+    quote_dot(x)
   } else {
     as.character(x)
   }
@@ -262,15 +269,11 @@ format_dot_value <- function(x) {
 # Helper function to escape DOT identifiers
 escape_dot_id <- function(x) {
   # Check if identifier needs quotes
-  # DOT identifiers can be alphanumeric + underscore, or must be quoted
-  needs_quotes <- !grepl("^[a-zA-Z_][a-zA-Z0-9_]*$", x)
+  # DOT identifiers can be alphanumeric + underscore, or must be quoted.
+  # Keywords (case-insensitive) must be quoted too.
+  keywords <- c("node", "edge", "graph", "digraph", "subgraph", "strict")
+  needs_quotes <- !grepl("^[a-zA-Z_][a-zA-Z0-9_]*$", x) ||
+    tolower(x) %in% keywords
 
-  if (needs_quotes) {
-    # Escape quotes and backslashes
-    x <- gsub("\\\\", "\\\\\\\\", x)
-    x <- gsub('"', '\\\\"', x)
-    paste0('"', x, '"')
-  } else {
-    x
-  }
+  if (needs_quotes) quote_dot(x) else x
 }
