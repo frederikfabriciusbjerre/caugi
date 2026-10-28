@@ -15,6 +15,10 @@
 
 ### Bug Fixes
 
+- [`write_caugi()`](https://caugi.org/dev/reference/write_caugi.md) and
+  [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md) now
+  expand `~` in `path`.
+
 - [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md)
   now places parents above their children, matching the documented
   top-to-bottom flow. This also fixes automatic layouts and plots of
