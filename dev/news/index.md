@@ -15,6 +15,19 @@
 
 ### Bug Fixes
 
+- [`generate_graph()`](https://caugi.org/dev/reference/generate_graph.md)
+  no longer overflows an integer for `n >= 46342`.
+
+- 
+
+- [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) on an
+  igraph with no vertices now gives a graph with no nodes instead of a
+  single node `"V"`.
+
+- [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) on a
+  matrix now errors when `rownames` and `colnames` are both set and
+  differ, instead of silently using the `colnames`.
+
 - [`write_caugi()`](https://caugi.org/dev/reference/write_caugi.md) and
   [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md) now
   expand `~` in `path`.
