@@ -186,11 +186,9 @@ test_that("as_adjacency returns 0-matrix for nodes-only graph", {
 })
 
 test_that("as_adjacency errors on unsupported glyphs", {
-  # Bidirected edges are now supported (for ADMG)
+  # Bidirected edges would be indistinguishable from undirected ones
   cg1 <- caugi(A %<->% B, class = "UNKNOWN")
-  adj1 <- as_adjacency(cg1)
-  expect_equal(adj1["A", "B"], 1L)
-  expect_equal(adj1["B", "A"], 1L) # symmetric
+  expect_error(as_adjacency(cg1), "Unsupported edge glyphs.*<->")
 
   # Partial edges (o->) are not supported
   cg2 <- caugi(A %o->% B, class = "UNKNOWN")

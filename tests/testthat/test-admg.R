@@ -429,23 +429,15 @@ test_that("ADMG can be converted to igraph", {
   expect_equal(igraph::vcount(ig), 3L)
 })
 
-test_that("ADMG can be converted to adjacency matrix", {
+test_that("ADMG with bidirected edges can't be converted to adjacency matrix", {
   admg <- caugi(
     A %-->% B,
     A %<->% C,
     class = "ADMG"
   )
 
-  adj <- as_adjacency(admg)
-  expect_equal(nrow(adj), 3L)
-  expect_equal(ncol(adj), 3L)
-
-  # A -> B: adj[A,B] = 1
-  expect_equal(adj["A", "B"], 1L)
-
-  # A <-> C: symmetric
-  expect_equal(adj["A", "C"], 1L)
-  expect_equal(adj["C", "A"], 1L)
+  # `<->` would be encoded the same as `---`
+  expect_error(as_adjacency(admg), "Unsupported edge glyphs")
 })
 
 # ─────────────────────────────────────────────────────────────────────────────

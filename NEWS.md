@@ -16,6 +16,9 @@
 
 ## Bug Fixes
 
+- `as_adjacency()` now errors on `<->` edges, as documented, instead of
+  encoding them the same as `---`.
+
 - `as_caugi(<igraph>, collapse = TRUE)` no longer drops a mutual pair when
   the reverse edge comes first (e.g. `B -> A` before `A -> B`).
 

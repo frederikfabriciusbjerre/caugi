@@ -121,7 +121,9 @@ as_igraph <- function(x, ...) {
 #' @title Convert a caugi to an adjacency matrix
 #'
 #' @description
-#' Does not take other edge types than the one found in a PDAG.
+#' Only supports the edge types found in a PDAG (`-->` and `---`). A `---` edge
+#' is written as `1` in both directions, so other symmetric edges such as `<->`
+#' are rejected rather than encoded the same way.
 #'
 #' @param x A `caugi` object.
 #'
@@ -150,7 +152,7 @@ as_adjacency <- function(x) {
     return(out)
   }
 
-  ok <- e$edge %in% c("-->", "---", "<->")
+  ok <- e$edge %in% c("-->", "---")
   if (any(!ok)) {
     stop(
       "Unsupported edge glyphs in conversion to adjacency: ",
@@ -174,15 +176,6 @@ as_adjacency <- function(x) {
     ju <- j[und_ix]
     out[cbind(iu, ju)] <- 1L
     out[cbind(ju, iu)] <- 1L
-  }
-
-  # Bidirected edges: symmetric entries (for ADMG support)
-  bid_ix <- e$edge %in% c("<->")
-  if (any(bid_ix)) {
-    ib <- i[bid_ix]
-    jb <- j[bid_ix]
-    out[cbind(ib, jb)] <- 1L
-    out[cbind(jb, ib)] <- 1L
   }
 
   out
