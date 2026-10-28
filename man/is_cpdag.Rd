@@ -19,8 +19,8 @@ Complete Partially Directed Acyclic Graph (CPDAG).
 \examples{
 cg_cpdag <- caugi(
   A \%---\% B,
-  A \%-->\% C,
   B \%-->\% C,
+  D \%-->\% C,
   class = "PDAG"
 )
 is_cpdag(cg_cpdag) # TRUE

@@ -68,8 +68,7 @@ separator: no proper subset of Z (excluding I) still separates X and Y.
 The algorithm runs in linear time O(n + m) and is unified across graph
 classes via the Bayes-ball reachability of van der Zander & Liśkiewicz
 (2020). For DAGs the algorithm specializes to FINDMINSEPINDAG; for ADMGs and
-AGs (and their subclasses CPDAG, RCG, MAG) it uses the general FINDMINSEP
-over mixed graphs.
+AGs (including MAGs) it uses the general FINDMINSEP over mixed graphs.
 }
 \examples{
 cg <- caugi(
@@ -91,7 +90,6 @@ minimal_separator(cg, "X", "Y", R = c("A", "M"))
 
 # Works on ADMGs (returns a minimal m-separator)
 admg <- caugi(
-  X \%-->\% Y,
   L \%-->\% X,
   L \%-->\% Y,
   class = "ADMG"
