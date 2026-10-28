@@ -22,6 +22,27 @@
 
 ### Bug Fixes
 
+- [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) now uses a
+  common coordinate range for both axes, so floating-point noise in
+  nearly horizontal or vertical layouts is no longer stretched to fill
+  the panel
+  ([\#424](https://github.com/frederikfabriciusbjerre/caugi/issues/424)).
+
+- [`to_dot()`](https://caugi.org/dev/reference/to_dot.md) now quotes
+  node names that are DOT keywords (`node`, `edge`, `graph`, `digraph`,
+  `subgraph`, `strict`, in any case), and escapes `"` and `\\` in string
+  attribute values.
+
+- `caugi(..., nodes = )` no longer drops isolated nodes declared in the
+  DSL, e.g. `D` in `caugi(A %-->% B, D, nodes = c("A", "B", "C"))`.
+
+- [`as_adjacency()`](https://caugi.org/dev/reference/as_adjacency.md)
+  now errors on `<->` edges, as documented, instead of encoding them the
+  same as `---`.
+
+- `as_caugi(<igraph>, collapse = TRUE)` no longer drops a mutual pair
+  when the reverse edge comes first (e.g. `B -> A` before `A -> B`).
+
 - `--o` edges now round-trip through dagitty:
   [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) reads
   dagitty’s `o--` code (written by

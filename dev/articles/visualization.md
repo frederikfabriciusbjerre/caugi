@@ -37,6 +37,11 @@ type. For graphs with only directed edges, it uses the Sugiyama
 hierarchical layout. For graphs with other edge types, it uses the
 Fruchterman-Reingold force-directed layout.
 
+Both axes use a common coordinate range, so nearly horizontal or
+vertical layouts retain their shape without amplifying floating-point
+noise. Narrow layouts can therefore leave empty space in the panel. Use
+`asp = 1` for equal axis scaling.
+
 ## Layout Algorithms
 
 The `caugi` package provides several layout algorithms, each optimized

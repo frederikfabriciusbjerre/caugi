@@ -1,6 +1,8 @@
 # Convert a caugi to an adjacency matrix
 
-Does not take other edge types than the one found in a PDAG.
+Only supports the edge types found in a PDAG (`-->` and `---`). A `---`
+edge is written as `1` in both directions, so other symmetric edges such
+as `<->` are rejected rather than encoded the same way.
 
 ## Usage
 

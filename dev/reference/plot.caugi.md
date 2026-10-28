@@ -128,11 +128,11 @@ plot(x, layout = "auto", node_style = list(),
 - asp:
 
   Numeric value for the y/x aspect ratio. If `NA` or `NULL` (default),
-  the aspect ratio is automatically determined to fill the available
-  space. Use `asp = 1` to ensure that one unit on the x-axis equals one
-  unit on the y-axis, which respects the layout coordinates. Values
-  other than 1 will stretch the plot accordingly (e.g., `asp = 2` makes
-  the y-axis twice as tall as the x-axis for the same data range).
+  both axes use a common coordinate range within the available space.
+  Use `asp = 1` to ensure that one unit on the x-axis equals one unit on
+  the y-axis, which respects the layout coordinates. Values other than 1
+  will stretch the plot accordingly (e.g., `asp = 2` makes the y-axis
+  twice as tall as the x-axis for the same data range).
 
 - outer_margin:
 

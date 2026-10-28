@@ -44,7 +44,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 exogenize(cg, nodes = "B") # A, B
-#> <caugi object; 2 nodes, 0 edges; simple: TRUE; session=0x563738b49fb0>
+#> <caugi object; 2 nodes, 0 edges; simple: TRUE; session=0x562cebaa56c0>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: (none)

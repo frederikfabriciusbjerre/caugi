@@ -103,6 +103,10 @@ customize their appearance.</p>
 algorithm based on your graph type. For graphs with only directed edges,
 it uses the Sugiyama hierarchical layout. For graphs with other edge
 types, it uses the Fruchterman-Reingold force-directed layout.</p>
+<p>Both axes use a common coordinate range, so nearly horizontal or
+vertical layouts retain their shape without amplifying floating-point
+noise. Narrow layouts can therefore leave empty space in the panel. Use
+<code>asp = 1</code> for equal axis scaling.</p>
 </div>
 <div class="section level2">
 <h2 id="layout-algorithms">Layout Algorithms<a class="anchor" aria-label="anchor" href="#layout-algorithms"></a>
