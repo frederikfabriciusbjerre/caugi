@@ -256,9 +256,10 @@ test_that("cg --> dagitty --> cg --> dagitty round-trip", {
     D %---% E,
     F %o->% G,
     H %o-o% I,
+    K %--o% L,
     J, # isolated
     class = "UNKNOWN",
-    nodes = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
+    nodes = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")
   )
 
   dg <- as_dagitty(cg)
@@ -277,7 +278,9 @@ test_that("cg --> dagitty --> cg --> dagitty round-trip", {
 
   # Also check caugi equality
   expect_equal(nodes(cg), nodes(cg2))
-  expect_equal(nodes(cg), nodes(cg2))
+  e2 <- edges(cg2)
+  expect_equal(e2[e2$from == "K" | e2$to == "K", ]$edge, "--o")
+  expect_equal(e2[e2$from == "K" | e2$to == "K", ]$from, "K")
 })
 
 test_that("as_dagitty errors on non-caugi input", {

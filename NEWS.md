@@ -16,6 +16,9 @@
 
 ## Bug Fixes
 
+- `--o` edges now round-trip through dagitty: `as_caugi()` reads dagitty's
+  `o--` code (written by `as_dagitty()` for `--o`) instead of erroring.
+
 - `as_dagitty()` now quotes node names, so names with spaces or edge
   symbols (e.g. `"my var"`, `"x->y"`) no longer turn into extra nodes or
   edges. It errors on nodes named `node` or `graph`, which dagitty rejects.

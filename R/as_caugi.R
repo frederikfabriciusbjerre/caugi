@@ -701,13 +701,17 @@ S7::method(
   # normalize direction when dagitty encodes reverse
   e <- gsub("@", "o", e, fixed = TRUE)
 
-  # swap reverse encodings (anything starting with "<-")
-  rev <- grepl("^<-", e)
+  # swap reverse encodings (anything starting with "<-", and "o--")
+  rev <- grepl("^<-", e) | e == "o--"
   if (any(rev)) {
     tmp <- v[rev]
     v[rev] <- w[rev]
     w[rev] <- tmp
-    e[rev] <- sub("^<-o$", "o->", sub("^<-$", "->", e[rev]))
+    e[rev] <- sub(
+      "^o--$",
+      "--o",
+      sub("^<-o$", "o->", sub("^<-$", "->", e[rev]))
+    )
   }
 
   map_glyph <- function(s) {
@@ -718,6 +722,7 @@ S7::method(
       "--" = "---",
       "o->" = "o->",
       "o-o" = "o-o",
+      "--o" = "--o",
       stop("Unsupported dagitty edge code: ", s, call. = FALSE)
     )
   }
