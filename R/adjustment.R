@@ -352,8 +352,7 @@ all_backdoor_sets <- function(
 #' The algorithm runs in linear time O(n + m) and is unified across graph
 #' classes via the Bayes-ball reachability of van der Zander & Liśkiewicz
 #' (2020). For DAGs the algorithm specializes to FINDMINSEPINDAG; for ADMGs and
-#' AGs (and their subclasses CPDAG, RCG, MAG) it uses the general FINDMINSEP
-#' over mixed graphs.
+#' AGs (including MAGs) it uses the general FINDMINSEP over mixed graphs.
 #'
 #' @param cg A `caugi` object (DAG, ADMG, or AG).
 #' @param X,Y Character vectors of node names. Use `*_index` to pass 1-based
