@@ -385,18 +385,8 @@ caugi <- S7::new_class(
     if (has_expr) {
       terms <- .collect_edges_nodes(calls)
       edges <- terms$edges
-      declared <- terms$declared
-      if (!is.null(nodes)) {
-        edge_node_names <- unique(c(edges$from, edges$to))
-        if (all(edge_node_names %in% nodes)) {
-          # declared nodes contain all edge nodes: preserve their order
-          declared <- nodes
-        } else {
-          # use edge order first, then add declared isolates
-          declared <- unique(c(edge_node_names, nodes))
-        }
-        declared <- unique(c(declared, nodes))
-      }
+      # merge `nodes` with the DSL isolates; ordering is handled below
+      declared <- unique(c(nodes, terms$declared))
     } else if (has_vec) {
       edges <- .edge_constructor(from = from, edge = edge, to = to)
       declared <- nodes

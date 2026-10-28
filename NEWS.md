@@ -16,6 +16,9 @@
 
 ## Bug Fixes
 
+- `caugi(..., nodes = )` no longer drops isolated nodes declared in the DSL,
+  e.g. `D` in `caugi(A %-->% B, D, nodes = c("A", "B", "C"))`.
+
 - `as_adjacency()` now errors on `<->` edges, as documented, instead of
   encoding them the same as `---`.
 

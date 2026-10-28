@@ -103,6 +103,14 @@ test_that("expression and isolated nodes in nodes", {
   expect_equal(nodes(cg)$name, c("A", "B", "C", "D", "E"))
 })
 
+test_that("nodes does not drop isolates declared in the DSL", {
+  cg <- caugi(A %-->% B, D, nodes = c("A", "B", "C"))
+  expect_equal(nodes(cg)$name, c("A", "B", "C", "D"))
+
+  cg <- caugi(A %-->% B, D, nodes = "C")
+  expect_equal(nodes(cg)$name, c("A", "B", "C", "D"))
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────── Simple / non-simple ──────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
