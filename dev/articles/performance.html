@@ -355,9 +355,9 @@ every call; it is skipped at
 </h3>
 <p>For each fixture we pick a random <code>(X, Y)</code> pair and
 compute a <strong>minimal d-separator</strong> <code>Z</code> with
-<code><a href="../reference/minimal_separator.html">caugi::minimal_separator()</a></code>—that is, a smallest set of nodes
-whose conditioning blocks every path between <code>X</code> and
-<code>Y</code> in the DAG. The same triple <code>(X, Y, Z)</code> is
+<code><a href="../reference/minimal_separator.html">caugi::minimal_separator()</a></code>—that is, an inclusion-minimal
+set of nodes whose conditioning blocks every path between <code>X</code>
+and <code>Y</code> in the DAG. The same triple <code>(X, Y, Z)</code> is
 then passed to every package’s d-separation routine, so every package
 answers “is <code>X ⫫ Y | Z</code>?” on identical inputs. Tetrad uses
 the m-separation generalisation (equivalent on DAGs).

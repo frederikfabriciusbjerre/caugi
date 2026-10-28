@@ -252,10 +252,10 @@ $`n = 10000`$.
 For each fixture we pick a random `(X, Y)` pair and compute a **minimal
 d-separator** `Z` with
 [`caugi::minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md)—that
-is, a smallest set of nodes whose conditioning blocks every path between
-`X` and `Y` in the DAG. The same triple `(X, Y, Z)` is then passed to
-every package’s d-separation routine, so every package answers “is
-`X ⫫ Y | Z`?” on identical inputs. Tetrad uses the m-separation
+is, an inclusion-minimal set of nodes whose conditioning blocks every
+path between `X` and `Y` in the DAG. The same triple `(X, Y, Z)` is then
+passed to every package’s d-separation routine, so every package answers
+“is `X ⫫ Y | Z`?” on identical inputs. Tetrad uses the m-separation
 generalisation (equivalent on DAGs).
 [`pcalg::dsep()`](https://rdrr.io/pkg/pcalg/man/dsep.html) follows
 Lauritzen’s moralization-based test on a `graphNEL`.

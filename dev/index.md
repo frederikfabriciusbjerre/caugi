@@ -47,7 +47,7 @@ library(caugi)
 
 You can create simple graphs as well as a number of predefined graph
 classes. Currently, we support the classes `"DAG"`, `"PDAG"`, `"MPDAG"`,
-`"CPGAG"`, `"ADMG"`, `"AG"`, `"UG"` as well as an `"UNKNOWN"` class. We
+`"CPDAG"`, `"ADMG"`, `"AG"`, `"UG"` as well as an `"UNKNOWN"` class. We
 plan on supporting several other causal graph types in future releases,
 such as `"PAG"`, `"MAG"`, and `"SWIG"`.
 
