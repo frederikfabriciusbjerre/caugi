@@ -66,6 +66,9 @@ make_tiers <- function(
   by_tier <- tier_style$by_tier
 
   padding <- tier_style$global$padding
+  if (!grid::is.unit(padding)) {
+    padding <- grid::unit(padding, "mm")
+  }
 
   do_labels <- tier_style$global$labels
   do_boxes <- tier_style$global$boxes

@@ -701,6 +701,22 @@ test_that("plot with tier_style and label_style works", {
   )
 })
 
+test_that("a numeric tier_style padding is read as mm", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(
+    plot(
+      cg,
+      tiers = list(a = "A", b = c("B", "C")),
+      tier_style = list(boxes = TRUE, padding = 3)
+    ),
+    caugi_plot
+  )
+})
+
 test_that("plot with tiers orientation='rows' and labels works", {
   cg <- caugi(
     A %-->% B + C,

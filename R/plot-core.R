@@ -49,8 +49,8 @@
 #'   when `boxes = TRUE` is set within this list. Supports:
 #'   * Appearance (passed to `gpar()`): `fill`, `col` (border color), `lwd`,
 #'     `lty`, `alpha`
-#'   * Geometry: `padding` (padding around tier nodes as proportion of plot range,
-#'     default 0.05)
+#'   * Geometry: `padding` (padding around tier nodes, a [grid::unit()] or a
+#'     number in mm like node padding, default 4 mm)
 #'   * Labels: `labels` (logical or character vector). If `TRUE`, uses tier names
 #'     from `tiers` argument. If a character vector, uses custom labels (one per
 #'     tier). If `FALSE` or `NULL` (default), no labels are shown.

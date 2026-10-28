@@ -16,6 +16,9 @@
 
 ## Bug Fixes
 
+- `plot()` now reads a numeric `tier_style` `padding` as mm, like node
+  padding, instead of erroring. The docs now give the correct default (4 mm).
+
 - Numeric node names in the DSL are no longer written in scientific notation:
   `100000 %-->% B` now creates node `"100000"` instead of `"1e+05"`.
 
