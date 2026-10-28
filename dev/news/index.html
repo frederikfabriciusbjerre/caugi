@@ -50,7 +50,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li><p><code><a href="../reference/condition_marginalize.html">condition_marginalize()</a></code> no longer errors when the resulting graph has no edges, e.g. for <code>X --&gt; Z &lt;-- Y</code> with <code>Z</code> marginalized.</p></li>
+<ul><li><p><code><a href="../reference/condition_marginalize.html">condition_marginalize()</a></code> now errors on unknown nodes in <code>cond_vars</code> or <code>marg_vars</code> instead of silently ignoring them.</p></li>
+<li><p><code><a href="../reference/condition_marginalize.html">condition_marginalize()</a></code> no longer errors when the resulting graph has no edges, e.g. for <code>X --&gt; Z &lt;-- Y</code> with <code>Z</code> marginalized.</p></li>
 <li><p><code>generate_graph(seed = )</code> and <code>simulate_data(seed = )</code> no longer reset the global random number state; the caller’s state is restored on exit.</p></li>
 <li><p><code><a href="../reference/generate_graph.html">generate_graph()</a></code> no longer overflows an integer for <code>n &gt;= 46342</code>.</p></li>
 <li><p><code><a href="../reference/as_caugi.html">as_caugi()</a></code> on an igraph with no vertices now gives a graph with no nodes instead of a single node <code>"V"</code>.</p></li>
