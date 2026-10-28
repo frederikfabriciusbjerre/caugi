@@ -122,8 +122,8 @@ settings.</p></li>
 <dd><p>List of tier box styling parameters. Tier boxes are shown
 when <code>boxes = TRUE</code> is set within this list. Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>fill</code>, <code>col</code> (border color), <code>lwd</code>,
 <code>lty</code>, <code>alpha</code></p></li>
-<li><p>Geometry: <code>padding</code> (padding around tier nodes as proportion of plot range,
-default 0.05)</p></li>
+<li><p>Geometry: <code>padding</code> (padding around tier nodes, a <code><a href="https://rdrr.io/r/grid/unit.html" class="external-link">grid::unit()</a></code> or a
+number in mm like node padding, default 4 mm)</p></li>
 <li><p>Labels: <code>labels</code> (logical or character vector). If <code>TRUE</code>, uses tier names
 from <code>tiers</code> argument. If a character vector, uses custom labels (one per
 tier). If <code>FALSE</code> or <code>NULL</code> (default), no labels are shown.</p></li>

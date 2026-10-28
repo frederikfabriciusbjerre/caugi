@@ -6,7 +6,7 @@ and default visual styles for nodes, edges, labels, and titles.
 ## Usage
 
 ``` r
-caugi_options(...)
+caugi_options(..., reset = FALSE)
 ```
 
 ## Arguments
@@ -18,11 +18,16 @@ caugi_options(...)
   options. To query all options, call without arguments. Attempting to
   access a non-existent option will raise an error.
 
+- reset:
+
+  If `TRUE`, reset all options to their defaults. Cannot be combined
+  with `...`.
+
 ## Value
 
 When setting, returns (invisibly) the previous values for the updated
-options. When getting (no arguments or unnamed character vector),
-returns the requested options.
+options; with `reset = TRUE`, all previous options. When getting (no
+arguments or unnamed character vector), returns the requested options.
 
 ## Details
 
@@ -94,7 +99,7 @@ caugi_options()
 #> 
 #> $plot
 #> $plot$spacing
-#> [1] 1lines
+#> [1] 2lines
 #> 
 #> $plot$node_style
 #> $plot$node_style$fill
@@ -169,7 +174,7 @@ caugi_options(use_open_graph_definition = FALSE)
 # Query specific option
 caugi_options("plot")
 #> $spacing
-#> [1] 1lines
+#> [1] 2lines
 #> 
 #> $node_style
 #> $node_style$fill
@@ -283,5 +288,5 @@ caugi_options(plot = list(
 ))
 
 # Reset to defaults
-caugi_options(caugi_default_options())
+caugi_options(reset = TRUE)
 ```

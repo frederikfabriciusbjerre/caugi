@@ -895,12 +895,11 @@ p1 + p2
 
 ![](visualization_files/figure-html/composition-spacing-1.png)
 
-To reset the default, you can call
-[`caugi_default_options()`](https://caugi.org/dev/reference/caugi_default_options.md):
+To reset the default, call `caugi_options(reset = TRUE)`:
 
 ``` r
 
-caugi_options(caugi_default_options())
+caugi_options(reset = TRUE)
 ```
 
 ## Global Plot Options
@@ -950,8 +949,8 @@ plot(cg,
 ``` r
 
 
-# Reset to defauls
-caugi_options(caugi_default_options())
+# Reset to defaults
+caugi_options(reset = TRUE)
 ```
 
 ### Available Options

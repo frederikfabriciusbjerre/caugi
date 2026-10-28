@@ -335,7 +335,5 @@
 
 ## Options
 
-- [`caugi_default_options()`](https://caugi.org/dev/reference/caugi_default_options.md)
-  : Default options for caugi
 - [`caugi_options()`](https://caugi.org/dev/reference/caugi_options.md)
   : Get or set global options for caugi

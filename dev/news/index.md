@@ -4,6 +4,13 @@
 
 ### New Features
 
+- `caugi_options(reset = TRUE)` resets all options to their defaults.
+  `caugi_options(caugi_default_options())` did not, since it only merges
+  into the current options and so keeps keys that are not in the
+  defaults.
+  [`caugi_default_options()`](https://caugi.org/dev/reference/caugi_default_options.md)
+  is therefore deprecated.
+
 - [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
   now accepts several treatments `X` and outcomes `Y` for every `type`.
   `type = "optimal"` returns the O-set of Henckel, Perković &
@@ -14,6 +21,28 @@
   itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
 ### Bug Fixes
+
+- `--o` edges now round-trip through dagitty:
+  [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) reads
+  dagitty’s `o--` code (written by
+  [`as_dagitty()`](https://caugi.org/dev/reference/as_dagitty.md) for
+  `--o`) instead of erroring.
+
+- [`as_dagitty()`](https://caugi.org/dev/reference/as_dagitty.md) now
+  quotes node names, so names with spaces or edge symbols
+  (e.g. `"my var"`, `"x->y"`) no longer turn into extra nodes or edges.
+  It errors on nodes named `node` or `graph`, which dagitty rejects.
+
+- [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) now reads a
+  numeric `tier_style` `padding` as mm, like node padding, instead of
+  erroring. The docs now give the correct default (4 mm).
+
+- Numeric node names in the DSL are no longer written in scientific
+  notation: `100000 %-->% B` now creates node `"100000"` instead of
+  `"1e+05"`.
+
+- [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) now accepts
+  a precomputed layout whose `name` column is a factor.
 
 - [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md)
   now errors on unknown nodes in `cond_vars` or `marg_vars` instead of
