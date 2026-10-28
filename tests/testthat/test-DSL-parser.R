@@ -108,6 +108,16 @@ test_that(".expand_nodes expands symbols, strings, numerics, +, c(), and ()", {
   expect_error(.expand_nodes(quote(A:B)))
 })
 
+test_that("numeric node names are not written in scientific notation", {
+  expect_setequal(caugi(100000 %-->% B)@nodes$name, c("100000", "B"))
+  expect_setequal(
+    caugi(B %-->% 200000 + 1.23456789)@nodes$name,
+    c("B", "200000", "1.23456789")
+  )
+  expect_equal((100000 %-->% 300000)$from, "100000")
+  expect_equal((100000 %-->% 300000)$to, "300000")
+})
+
 test_that(".split_plus and .combine_plus are consistent", {
   expr <- quote(A + (B + C) + D)
   parts <- .split_plus(expr)

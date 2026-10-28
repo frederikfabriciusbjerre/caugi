@@ -16,6 +16,9 @@
 
 ## Bug Fixes
 
+- Numeric node names in the DSL are no longer written in scientific notation:
+  `100000 %-->% B` now creates node `"100000"` instead of `"1e+05"`.
+
 - `plot()` now accepts a precomputed layout whose `name` column is a factor.
 
 - `condition_marginalize()` now errors on unknown nodes in `cond_vars` or
