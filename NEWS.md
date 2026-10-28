@@ -11,6 +11,10 @@
 
 ## Bug Fixes
 
+* `caugi_layout_sugiyama()` now places parents above their children, matching
+  the documented top-to-bottom flow. This also fixes automatic layouts and
+  plots of DAGs, including graphs with disconnected components (#421).
+
 - `is_valid_adjustment_admg()` and `all_adjustment_sets_admg()` no longer
   reject valid adjustment sets that contain a descendant of a treatment. The
   forbidden set counted every treatment that is an ancestor of `Y` as a node
