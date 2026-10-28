@@ -16,6 +16,10 @@
 
 ## Bug Fixes
 
+- `as_dagitty()` now quotes node names, so names with spaces or edge
+  symbols (e.g. `"my var"`, `"x->y"`) no longer turn into extra nodes or
+  edges. It errors on nodes named `node` or `graph`, which dagitty rejects.
+
 - `plot()` now reads a numeric `tier_style` `padding` as mm, like node
   padding, instead of erroring. The docs now give the correct default (4 mm).
 

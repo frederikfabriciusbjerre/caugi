@@ -293,6 +293,22 @@ test_that("as_dagitty preserves isolates for empty edge set", {
   expect_identical(nrow(as.data.frame(dagitty::edges(dg))), 0L)
 })
 
+test_that("as_dagitty quotes node names", {
+  testthat::skip_if_not_installed("dagitty")
+  cg <- caugi(
+    from = c("my var", "x->y"),
+    edge = c("-->", "---"),
+    to = c("x->y", 'a"b'),
+    class = "PDAG"
+  )
+  dg <- as_dagitty(cg)
+  expect_setequal(names(dg), c("my var", "x->y", 'a"b'))
+  expect_identical(nrow(as.data.frame(dagitty::edges(dg))), 2L)
+
+  expect_setequal(names(as_dagitty(caugi("my var", "z"))), c("my var", "z"))
+  expect_error(as_dagitty(caugi(node %-->% A)), "'node'")
+})
+
 test_that("as_dagitty picks dag type for only directed edges", {
   testthat::skip_if_not_installed("dagitty")
   cg <- caugi(A %-->% B, class = "DAG")

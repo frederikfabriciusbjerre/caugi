@@ -249,8 +249,21 @@ as_dagitty <- function(x) {
   nm <- nodes(x)$name
   e <- edges(x)
 
+  reserved <- intersect(nm, c("node", "graph"))
+  if (length(reserved) > 0L) {
+    stop(
+      "dagitty does not allow nodes named ",
+      paste0("'", reserved, "'", collapse = " or "),
+      ".",
+      call. = FALSE
+    )
+  }
+  # dagitty unescapes `\"` but keeps `\\` as two characters, so only `"` is
+  # escaped and backslashes are passed through as is.
+  quote_name <- function(s) sprintf('"%s"', gsub('"', '\\"', s, fixed = TRUE))
+
   if (nrow(e) == 0L) {
-    spec <- paste0("dag { ", paste(nm, collapse = " ; "), " }")
+    spec <- paste0("dag { ", paste(quote_name(nm), collapse = " ; "), " }")
     return(dagitty::dagitty(spec))
   }
 
@@ -294,10 +307,16 @@ as_dagitty <- function(x) {
     )
   }
 
-  es <- mapply(map_edge, e$edge, e$from, e$to, USE.NAMES = FALSE)
+  es <- mapply(
+    map_edge,
+    e$edge,
+    quote_name(e$from),
+    quote_name(e$to),
+    USE.NAMES = FALSE
+  )
   es <- unique(es)
 
-  decl <- paste(nm, collapse = " ; ")
+  decl <- paste(quote_name(nm), collapse = " ; ")
   body <- paste(c(decl, es), collapse = " ; ")
   dagitty::dagitty(sprintf("%s { %s }", type, body))
 }
