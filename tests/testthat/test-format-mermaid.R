@@ -12,10 +12,10 @@ test_that("to_mermaid works with simple DAG", {
   expect_equal(mmd@format, "mermaid")
   mmd_str <- as.character(mmd)
   expect_match(mmd_str, "flowchart TD")
-  expect_match(mmd_str, "A --> B")
-  expect_match(mmd_str, "A --> C")
-  expect_match(mmd_str, "B --> D")
-  expect_match(mmd_str, "C --> D")
+  expect_match(mmd_str, "n1 --> n2")
+  expect_match(mmd_str, "n1 --> n3")
+  expect_match(mmd_str, "n2 --> n4")
+  expect_match(mmd_str, "n3 --> n4")
 })
 
 test_that("to_mermaid handles different edge types", {
@@ -29,10 +29,10 @@ test_that("to_mermaid handles different edge types", {
   mmd <- to_mermaid(cg)
   mmd_str <- as.character(mmd)
 
-  expect_match(mmd_str, "A --> B")
-  expect_match(mmd_str, "B --- C")
-  expect_match(mmd_str, "C <--> D")
-  expect_match(mmd_str, "D o--> E")
+  expect_match(mmd_str, "n1 --> n2")
+  expect_match(mmd_str, "n2 --- n3")
+  expect_match(mmd_str, "n3 <--> n4")
+  expect_match(mmd_str, "n4 o--> n5")
 })
 
 test_that("to_mermaid accepts direction argument", {
@@ -75,7 +75,16 @@ test_that("to_mermaid escapes special characters", {
 
   expect_match(mmd_str, '"Node 1"')
   expect_match(mmd_str, '"Node-2"')
-  expect_match(mmd_str, "Node_3") # No quotes needed for valid identifier
+  expect_match(mmd_str, "Node_3")
+})
+
+test_that("to_mermaid keeps isolates and uses generated IDs (#413)", {
+  cg <- caugi(A %-->% B, end, 'say "x"', class = "DAG")
+  mmd_str <- as.character(to_mermaid(cg))
+
+  expect_match(mmd_str, 'n3["end"]', fixed = TRUE)
+  expect_match(mmd_str, 'n4["say #quot;x#quot;"]', fixed = TRUE)
+  expect_match(mmd_str, "n1 --> n2", fixed = TRUE)
 })
 
 test_that("to_mermaid works with single node", {
@@ -85,7 +94,7 @@ test_that("to_mermaid works with single node", {
   mmd_str <- as.character(mmd)
 
   expect_match(mmd_str, "flowchart TD")
-  expect_match(mmd_str, "\\s+A\\s*$", perl = TRUE) # Node alone on line
+  expect_match(mmd_str, 'n1\\["A"\\]\\s*$', perl = TRUE) # Node alone on line
 })
 
 test_that("to_mermaid works with empty graph", {
@@ -94,9 +103,9 @@ test_that("to_mermaid works with empty graph", {
   mmd <- to_mermaid(cg)
   mmd_str <- as.character(mmd)
 
-  expect_match(mmd_str, "\\s+A")
-  expect_match(mmd_str, "\\s+B")
-  expect_match(mmd_str, "\\s+C")
+  expect_match(mmd_str, 'n1["A"]', fixed = TRUE)
+  expect_match(mmd_str, 'n2["B"]', fixed = TRUE)
+  expect_match(mmd_str, 'n3["C"]', fixed = TRUE)
 })
 
 test_that("to_mermaid builds graph if needed", {
@@ -105,7 +114,7 @@ test_that("to_mermaid builds graph if needed", {
   mmd <- to_mermaid(cg)
 
   expect_s7_class(mmd, caugi_mermaid)
-  expect_match(as.character(mmd), "A --> B")
+  expect_match(as.character(mmd), "n1 --> n2")
 })
 
 test_that("write_mermaid creates file", {
@@ -118,7 +127,7 @@ test_that("write_mermaid creates file", {
   expect_equal(result, tmp)
 
   content <- readLines(tmp)
-  expect_match(paste(content, collapse = "\n"), "A --> B")
+  expect_match(paste(content, collapse = "\n"), "n1 --> n2")
 
   unlink(tmp)
 })
@@ -140,7 +149,7 @@ test_that("to_mermaid renders o-> as a circle tail with an arrow head", {
   # at the tail (from) and an arrow at the head (to), matching caugi's `o->`.
   cg <- caugi(A %o->% B, class = "UNKNOWN")
 
-  expect_match(as.character(to_mermaid(cg)), "A o--> B", fixed = TRUE)
+  expect_match(as.character(to_mermaid(cg)), "n1 o--> n2", fixed = TRUE)
 })
 
 test_that("to_mermaid handles o-o edges (#307)", {
@@ -153,7 +162,7 @@ test_that("to_mermaid handles o-o edges (#307)", {
   mmd <- to_mermaid(cg)
   mmd_str <- as.character(mmd)
 
-  expect_match(mmd_str, "A o--o B", fixed = TRUE)
+  expect_match(mmd_str, "n1 o--o n2", fixed = TRUE)
 })
 
 test_that("to_mermaid handles --o edges (#307)", {
@@ -166,6 +175,6 @@ test_that("to_mermaid handles --o edges (#307)", {
   mmd <- to_mermaid(cg)
   mmd_str <- as.character(mmd)
 
-  expect_match(mmd_str, "A --o B", fixed = TRUE)
-  expect_no_match(mmd_str, "A --> B", fixed = TRUE)
+  expect_match(mmd_str, "n1 --o n2", fixed = TRUE)
+  expect_no_match(mmd_str, "n1 --> n2", fixed = TRUE)
 })

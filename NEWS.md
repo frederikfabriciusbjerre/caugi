@@ -16,6 +16,11 @@
 
 ## Bug Fixes
 
+- `to_mermaid()` now writes every node as `nK["name"]` with a generated ID,
+  so isolated nodes are no longer dropped from graphs with edges, and names
+  with spaces or quotes (written as `#quot;`) or named `end` give valid
+  Mermaid.
+
 - `to_dot()` now quotes node names that are DOT keywords (`node`, `edge`,
   `graph`, `digraph`, `subgraph`, `strict`, in any case), and escapes `"` and
   `\\` in string attribute values.

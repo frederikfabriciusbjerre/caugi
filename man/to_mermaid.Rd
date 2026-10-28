@@ -32,7 +32,8 @@ The function handles different edge types:
 \item Partial edges (\code{o-o}) use \code{o--o} in Mermaid (circle both ends)
 }
 
-Node names are automatically escaped if they contain special characters.
+Each node is written with a generated ID (\code{n1}, \code{n2}, ...) and its name as
+a quoted label, so any node name works; \verb{"} is written as \verb{#quot;}.
 }
 \examples{
 cg <- caugi(
