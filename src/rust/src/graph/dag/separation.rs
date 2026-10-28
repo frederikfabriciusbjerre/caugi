@@ -50,7 +50,7 @@ impl Dag {
     /// References:
     /// - van der Zander & Liśkiewicz (2020), UAI
     /// - NetworkX _reachable() and _pass() functions
-    fn d_connected_restricted(
+    pub(super) fn d_connected_restricted(
         &self,
         start_set: &[u32],
         conditioning_set: &[u32],

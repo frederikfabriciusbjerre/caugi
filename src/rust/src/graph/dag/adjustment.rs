@@ -249,13 +249,19 @@ impl Dag {
     /// Validates `z` as an adjustment set for `Xs → Ys` by the generalized
     /// adjustment criterion: `z` avoids `forb(Xs,Ys) ∪ Ys`, and d-separates
     /// `Xs` from `Ys` in the proper backdoor graph.
+    ///
+    /// The separation test is a Bayes-ball traversal over the CSR, linear in
+    /// the graph size. `d_separated` would moralize, which builds a clique on
+    /// the parents of each node and is quadratic in the in-degree.
     pub fn is_valid_adjustment_set(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> bool {
         let forb = self.forbidden_set(xs, ys);
-        if z.iter().any(|v| forb[*v as usize] || ys.contains(v)) {
+        let y_mask = bitset::mask_from(ys, self.n());
+        if z.iter().any(|&v| forb[v as usize] || y_mask[v as usize]) {
             return false;
         }
         self.proper_backdoor_graph(xs, ys)
-            .map(|g| g.d_separated(xs, ys, z))
+            .and_then(|g| g.d_connected_restricted(xs, z, None))
+            .map(|reached| !reached.iter().any(|&v| y_mask[v as usize]))
             .unwrap_or(false)
     }
 
@@ -618,5 +624,71 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn dag_adjustment_validation_matches_moralized_separation() {
+        // Every DAG on 4 nodes with topological order 0 < 1 < 2 < 3, every
+        // disjoint X (1-2 nodes), Y (1 node) and Z: the Bayes-ball check must
+        // agree with forbidden-set + moralized d-separation in the proper
+        // backdoor graph.
+        let pairs: Vec<(u32, u32)> = (0..4)
+            .flat_map(|u| (u + 1..4).map(move |v| (u, v)))
+            .collect();
+        let xs_choices: Vec<Vec<u32>> = (0..4)
+            .map(|a| vec![a])
+            .chain((0..4).flat_map(|a| (a + 1..4).map(move |b| vec![a, b])))
+            .collect();
+        for mask in 0u32..(1 << pairs.len()) {
+            let edges: Vec<(u32, u32)> = pairs
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| mask & (1 << i) != 0)
+                .map(|(_, &e)| e)
+                .collect();
+            let g = dag_from(4, &edges);
+            for xs in &xs_choices {
+                for y in (0..4).filter(|v| !xs.contains(v)) {
+                    let rest: Vec<u32> = (0..4).filter(|v| !xs.contains(v) && *v != y).collect();
+                    let forb = g.forbidden_set(xs, &[y]);
+                    let pbg = g.proper_backdoor_graph(xs, &[y]).unwrap();
+                    for zmask in 0u32..(1 << rest.len()) {
+                        let z: Vec<u32> = rest
+                            .iter()
+                            .enumerate()
+                            .filter(|(i, _)| zmask & (1 << i) != 0)
+                            .map(|(_, &v)| v)
+                            .collect();
+                        let moralized =
+                            !z.iter().any(|&v| forb[v as usize]) && pbg.d_separated(xs, &[y], &z);
+                        assert_eq!(
+                            g.is_valid_adjustment_set(xs, &[y], &z),
+                            moralized,
+                            "edges {edges:?}, xs {xs:?}, y {y}, z {z:?}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn dag_adjustment_is_linear_in_the_in_degree() {
+        // U_i -> X for 20 000 parents, X -> Y. Moralizing would build a
+        // 20 000-clique (~2e8 edges); the Bayes-ball check stays linear.
+        let k = 20_000u32;
+        let (x, y) = (k, k + 1);
+        let mut edges: Vec<(u32, u32)> = (0..k).map(|u| (u, x)).collect();
+        edges.push((x, y));
+        let g = dag_from(k + 2, &edges);
+        assert!(g
+            .adjustment_set_optimal(&[x], &[y], false)
+            .unwrap()
+            .0
+            .is_empty());
+        assert_eq!(
+            g.adjustment_set_parents(&[x], &[y]).unwrap().len(),
+            k as usize
+        );
     }
 }
