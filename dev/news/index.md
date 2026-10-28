@@ -15,10 +15,12 @@
 
 ### Bug Fixes
 
+- `generate_graph(seed = )` and `simulate_data(seed = )` no longer reset
+  the global random number state; the caller’s state is restored on
+  exit.
+
 - [`generate_graph()`](https://caugi.org/dev/reference/generate_graph.md)
   no longer overflows an integer for `n >= 46342`.
-
-- 
 
 - [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) on an
   igraph with no vertices now gives a graph with no nodes instead of a

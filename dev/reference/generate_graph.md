@@ -33,7 +33,8 @@ generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"), seed = NULL)
 
 - seed:
 
-  Optional integer; random seed for reproducibility.
+  Optional integer; random seed for reproducibility. The caller's random
+  number state is restored on exit.
 
 ## Value
 

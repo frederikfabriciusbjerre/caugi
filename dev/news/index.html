@@ -50,9 +50,9 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li><p><code><a href="../reference/generate_graph.html">generate_graph()</a></code> no longer overflows an integer for <code>n &gt;= 46342</code>.</p></li>
-<li>
-</li><li><p><code><a href="../reference/as_caugi.html">as_caugi()</a></code> on an igraph with no vertices now gives a graph with no nodes instead of a single node <code>"V"</code>.</p></li>
+<ul><li><p><code>generate_graph(seed = )</code> and <code>simulate_data(seed = )</code> no longer reset the global random number state; the caller’s state is restored on exit.</p></li>
+<li><p><code><a href="../reference/generate_graph.html">generate_graph()</a></code> no longer overflows an integer for <code>n &gt;= 46342</code>.</p></li>
+<li><p><code><a href="../reference/as_caugi.html">as_caugi()</a></code> on an igraph with no vertices now gives a graph with no nodes instead of a single node <code>"V"</code>.</p></li>
 <li><p><code><a href="../reference/as_caugi.html">as_caugi()</a></code> on a matrix now errors when <code>rownames</code> and <code>colnames</code> are both set and differ, instead of silently using the <code>colnames</code>.</p></li>
 <li><p><code><a href="../reference/write_caugi.html">write_caugi()</a></code> and <code><a href="../reference/read_caugi.html">read_caugi()</a></code> now expand <code>~</code> in <code>path</code>.</p></li>
 <li><p><code><a href="../reference/caugi_layout_sugiyama.html">caugi_layout_sugiyama()</a></code> now places parents above their children, matching the documented top-to-bottom flow. This also fixes automatic layouts and plots of DAGs, including graphs with disconnected components (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/421" class="external-link">#421</a>).</p></li>

@@ -55,7 +55,8 @@ simulate_data(
 
 - seed:
 
-  Optional integer; random seed for reproducibility.
+  Optional integer; random seed for reproducibility. The caller's random
+  number state is restored on exit.
 
 ## Value
 
