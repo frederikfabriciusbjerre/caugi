@@ -16,6 +16,10 @@
 
 ## Bug Fixes
 
+- `read_graphml()` now reads edges without an `edge_type` as `---` when the
+  graph declares `edgedefault="undirected"`, as documented, instead of always
+  as `-->` (#415).
+
 - `read_graphml()` now reads self-closing `<edge .../>` elements, the usual
   way other tools write edges without data, instead of silently dropping them
   (#414).

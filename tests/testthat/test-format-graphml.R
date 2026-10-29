@@ -175,3 +175,21 @@ test_that("read_graphml reads self-closing <edge/> elements (#414)", {
     )
   )
 })
+
+test_that("read_graphml follows edgedefault=\"undirected\" (#415)", {
+  skip_if_not_installed("igraph")
+  f <- tempfile(fileext = ".graphml")
+  igraph::write_graph(igraph::make_graph(~ A - B), f, format = "graphml")
+  cg <- read_graphml(f)
+  expect_equal(edges(cg)$edge, "---")
+
+  # An explicit edge_type still wins.
+  cg <- caugi(A %-->% B, C %---% D, class = "PDAG")
+  g <- tempfile(fileext = ".graphml")
+  write_graphml(cg, g)
+  writeLines(
+    sub('edgedefault="directed"', 'edgedefault="undirected"', readLines(g)),
+    g
+  )
+  expect_equal(read_graphml(g)@edges, cg@edges)
+})
