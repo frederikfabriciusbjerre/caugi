@@ -408,3 +408,24 @@ test_that("simulate_data: collider structure", {
   expect_true(abs(r_ac) > 0.05)
   expect_true(abs(r_bc) > 0.05)
 })
+
+test_that("simulate_data keeps non-syntactic node names (#402)", {
+  cg <- caugi(
+    from = c("my var", "1x"),
+    edge = c("-->", "-->"),
+    to = c("y-z", "y-z"),
+    class = "DAG"
+  )
+  for (standardize in c(TRUE, FALSE)) {
+    df <- simulate_data(cg, n = 5, standardize = standardize, seed = 1)
+    expect_named(df, nodes(cg)$name)
+  }
+  df <- simulate_data(
+    cg,
+    n = 5,
+    `y-z` = `my var` + `1x`,
+    standardize = FALSE,
+    seed = 1
+  )
+  expect_equal(df[["y-z"]], df[["my var"]] + df[["1x"]])
+})
