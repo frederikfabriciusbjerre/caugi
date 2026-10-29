@@ -28,9 +28,9 @@
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
   accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
 
-- `read_graphml()` no longer trims whitespace inside edge glyphs, so a
-  registered glyph such as `" ~ "` round-trips. Whitespace-padded `<data>`
-  values from other tools still read (#416).
+- `register_caugi_edge()` now rejects glyphs that contain whitespace.
+  `read_graphml()` trims `<data>` text, so a glyph such as `" ~ "` could be
+  registered and written but not read back (#416).
 
 - `read_graphml()` now reads edges without an `edge_type` as `---` when the
   graph declares `edgedefault="undirected"`, as documented, instead of always
