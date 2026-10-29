@@ -17,7 +17,7 @@ is_valid_backdoor(
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{X, Y}{Single node names.}
+\item{X, Y}{Node names; one or more each, and disjoint.}
 
 \item{Z}{Optional node set for conditioning}
 
@@ -27,8 +27,27 @@ is_valid_backdoor(
 Logical value indicating if backdoor is valid or not.
 }
 \description{
-Checks whether \code{Z} is a valid backdoor adjustment set for
-\verb{X --> Y}.
+Checks whether \code{Z} satisfies the generalized back-door
+criterion relative to \code{X} and \code{Y} in a DAG. \code{X} and \code{Y} can each hold one
+or more nodes.
+}
+\details{
+\code{Z} satisfies the generalized back-door criterion (Maathuis & Colombo,
+2015, Def. 3.7) when
+\enumerate{
+\item \code{Z} contains no descendant of \code{X}, and
+\item for every node \eqn{X_i} in \code{X}, \eqn{Z \cup X \setminus \{X_i\}} blocks
+every back-door path (a path starting with an edge into \eqn{X_i}) from
+\eqn{X_i} to \code{Y}.
+}
+
+With one treatment and one outcome this is Pearl's back-door criterion.
+With several treatments it can accept sets that Pearl's set version
+rejects, since that version requires \code{Z} alone to block every back-door
+path of each treatment. Every set accepted here is a valid adjustment set,
+but a valid adjustment set may be rejected, for example one containing a
+descendant of \code{X} off the causal paths. A \code{Z} that contains a node of \code{X}
+or \code{Y} is never valid.
 }
 \examples{
 cg <- caugi(
@@ -48,6 +67,15 @@ is_valid_backdoor(cg, X = "X", Y = "Y", Z = NULL) # FALSE
 is_valid_backdoor(cg, X = "X", Y = "Y", Z = "K") # TRUE
 is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("A", "C")) # TRUE
 
+# Several treatments: X2 blocks X1 <-- X2 --> Y, so no adjustment is needed
+cg2 <- caugi(X2 \%-->\% X1 + Y, X1 \%-->\% Y, class = "DAG")
+is_valid_backdoor(cg2, X = c("X1", "X2"), Y = "Y", Z = NULL) # TRUE
+
+}
+\references{
+Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
+\emph{The Annals of Statistics}, 43(3), 1060--1088.
+\doi{10.1214/14-AOS1295}.
 }
 \seealso{
 Other adjustment:

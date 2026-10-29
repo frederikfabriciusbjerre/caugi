@@ -394,9 +394,27 @@ impl GraphSession {
     }
 
     pub fn set_simple(&mut self, simple: bool) {
-        if self.simple != simple {
-            self.simple = simple;
-            self.invalidate_core();
+        if self.simple == simple {
+            return;
+        }
+        self.simple = simple;
+        // A built core stays valid unless it must become simple but is not;
+        // keeping it avoids a rebuild after AUTO resolution. The CSR arrays
+        // are shared, so only the flag is copied.
+        let kept = self
+            .core
+            .get()
+            .filter(|core| !simple || core.check_simple().is_ok())
+            .map(|core| CaugiGraph {
+                simple,
+                ..(**core).clone()
+            });
+        match kept {
+            Some(core) => {
+                self.core.set(Arc::new(core));
+                self.view.clear();
+            }
+            None => self.invalidate_core(),
         }
     }
 
@@ -683,19 +701,26 @@ impl GraphSession {
         Ok(crate::graph::alg::directed_part_is_acyclic(core.as_ref()))
     }
 
+    /// The core if it is structurally simple, else `None`: simple-only
+    /// classes reject multi-edges the class validators do not look for.
+    fn simple_core(&mut self) -> Result<Option<Arc<CaugiGraph>>, String> {
+        let core = self.core()?;
+        Ok(core.check_simple().is_ok().then_some(core))
+    }
+
     /// Check if the graph is compatible with DAG.
     pub fn is_dag_type(&mut self) -> Result<bool, String> {
-        Ok(Dag::new(self.core()?).is_ok())
+        Ok(self.simple_core()?.is_some_and(|c| Dag::new(c).is_ok()))
     }
 
     /// Check if the graph is compatible with PDAG.
     pub fn is_pdag_type(&mut self) -> Result<bool, String> {
-        Ok(Pdag::new(self.core()?).is_ok())
+        Ok(self.simple_core()?.is_some_and(|c| Pdag::new(c).is_ok()))
     }
 
     /// Check if the graph is compatible with UG.
     pub fn is_ug_type(&mut self) -> Result<bool, String> {
-        Ok(Ug::new(self.core()?).is_ok())
+        Ok(self.simple_core()?.is_some_and(|c| Ug::new(c).is_ok()))
     }
 
     /// Check if the graph is compatible with ADMG.
@@ -705,22 +730,31 @@ impl GraphSession {
 
     /// Check if the graph is compatible with AG.
     pub fn is_ag_type(&mut self) -> Result<bool, String> {
-        Ok(Ag::new(self.core()?).is_ok())
+        Ok(self.simple_core()?.is_some_and(|c| Ag::new(c).is_ok()))
     }
 
     /// Check if the graph is a CPDAG (PDAG-only).
     pub fn is_cpdag(&mut self) -> Result<bool, String> {
-        Ok(Pdag::new(self.core()?).map_or(false, |p| Cpdag::try_new(p).is_ok()))
+        Ok(self
+            .simple_core()?
+            .and_then(|c| Pdag::new(c).ok())
+            .is_some_and(|p| Cpdag::try_new(p).is_ok()))
     }
 
     /// Check if the graph is an MPDAG (PDAG + Meek closure).
     pub fn is_mpdag(&mut self) -> Result<bool, String> {
-        Ok(Pdag::new(self.core()?).map_or(false, |p| Mpdag::try_new(p).is_ok()))
+        Ok(self
+            .simple_core()?
+            .and_then(|c| Pdag::new(c).ok())
+            .is_some_and(|p| Mpdag::try_new(p).is_ok()))
     }
 
     /// Check if the graph is a MAG (AG only).
     pub fn is_mag(&mut self) -> Result<bool, String> {
-        Ok(Ag::new(self.core()?).map_or(false, |ag| ag.is_mag()))
+        Ok(self
+            .simple_core()?
+            .and_then(|c| Ag::new(c).ok())
+            .is_some_and(|ag| ag.is_mag()))
     }
 
     /// Resolve a graph class given the current edges/core.
@@ -759,7 +793,14 @@ impl GraphSession {
             }
             GraphClass::Unknown => Ok(GraphClass::Unknown),
             GraphClass::Auto => {
-                if Dag::new(Arc::clone(&core)).is_ok() {
+                // Only ADMG and UNKNOWN admit parallel edges or self-loops.
+                if core.check_simple().is_err() {
+                    if Admg::new(Arc::clone(&core)).is_ok() {
+                        Ok(GraphClass::Admg)
+                    } else {
+                        Ok(GraphClass::Unknown)
+                    }
+                } else if Dag::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Dag)
                 } else if Ug::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Ug)
@@ -810,11 +851,8 @@ impl GraphSession {
         ys: &[u32],
         z: &[u32],
     ) -> Result<bool, String> {
-        if xs.len() != 1 || ys.len() != 1 {
-            return Err("is_valid_backdoor_set expects exactly one X and one Y".into());
-        }
         let view = self.view()?;
-        view.is_valid_backdoor_set(xs[0], ys[0], z)
+        view.is_valid_backdoor_set(xs, ys, z)
             .map_err(|e| self.map_error(e))
     }
 
@@ -826,11 +864,8 @@ impl GraphSession {
         minimal: bool,
         max_size: u32,
     ) -> Result<Vec<Vec<u32>>, String> {
-        if xs.len() != 1 || ys.len() != 1 {
-            return Err("all_backdoor_sets expects exactly one X and one Y".into());
-        }
         let view = self.view()?;
-        view.all_backdoor_sets(xs[0], ys[0], minimal, max_size)
+        view.all_backdoor_sets(xs, ys, minimal, max_size)
             .map_err(|e| self.map_error(e))
     }
 
@@ -1253,10 +1288,25 @@ mod tests {
         assert!(session.built_core().is_some());
         assert!(session.built_view().is_some());
 
+        // Loosening keeps the core (it is still valid) but drops the view.
         session.set_simple(false);
-        assert!(session.built_core().is_none());
+        assert!(session.built_core().is_some());
         assert!(session.built_view().is_none());
         assert!(!session.simple());
+        assert!(!session.core().unwrap().simple);
+
+        // Tightening keeps a core that is simple ...
+        session.set_simple(true);
+        assert!(session.built_core().is_some());
+        assert!(session.core().unwrap().simple);
+
+        // ... and drops one that is not.
+        session.set_simple(false);
+        session.set_edges_from_vecs(vec![0, 1], vec![1, 0], vec![d, d]);
+        session.core().unwrap();
+        session.set_simple(true);
+        assert!(session.built_core().is_none());
+        assert!(session.core().is_err());
 
         session.set_edges_from_vecs(vec![0], vec![1], vec![d]);
         assert_eq!(session.edge_buffer().from, vec![0]);
@@ -1473,8 +1523,11 @@ mod tests {
             Vec::<u32>::new()
         );
         assert!(session.adjustment_set_backdoor(&[0], &[2]).is_err());
-        assert!(session.is_valid_backdoor_set(&[0, 2], &[1], &[2]).is_err());
-        assert!(session.all_backdoor_sets(&[0, 2], &[1], true, 3).is_err());
+        assert!(session.is_valid_backdoor_set(&[0, 2], &[1], &[]).unwrap());
+        assert_eq!(
+            session.all_backdoor_sets(&[0, 2], &[1], true, 3).unwrap(),
+            vec![Vec::<u32>::new()]
+        );
     }
 
     #[test]
@@ -1709,6 +1762,44 @@ mod tests {
     }
 
     #[test]
+    fn admg_rejects_self_loops_and_simple_classes_reject_multi_edges() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+        let b = reg.code_of("<->").unwrap();
+        let u = reg.code_of("---").unwrap();
+
+        let mut bow = GraphSession::new(&reg, 2, false, GraphClass::Admg);
+        bow.set_edges_from_vecs(vec![0, 0], vec![1, 1], vec![d, b]);
+        assert!(bow.view().is_ok());
+        assert!(bow.core().unwrap().check_simple().is_err());
+        assert!(bow.is_admg_type().unwrap());
+        assert!(!bow.is_ag_type().unwrap());
+
+        let mut admg_loop = GraphSession::new(&reg, 2, false, GraphClass::Admg);
+        admg_loop.set_edges_from_vecs(vec![0], vec![0], vec![b]);
+        assert!(admg_loop.view().unwrap_err().contains("self-loop (node 0)"));
+
+        let mut auto_bow = GraphSession::new(&reg, 2, false, GraphClass::Auto);
+        auto_bow.set_edges_from_vecs(vec![0, 0], vec![1, 1], vec![d, b]);
+        assert_eq!(
+            auto_bow.resolve_class(GraphClass::Auto).unwrap(),
+            GraphClass::Admg
+        );
+
+        let mut auto_loop = GraphSession::new(&reg, 2, false, GraphClass::Auto);
+        auto_loop.set_edges_from_vecs(vec![0], vec![0], vec![b]);
+        assert_eq!(
+            auto_loop.resolve_class(GraphClass::Auto).unwrap(),
+            GraphClass::Unknown
+        );
+
+        let mut raw = GraphSession::new(&reg, 2, false, GraphClass::Unknown);
+        raw.set_edges_from_vecs(vec![0, 0], vec![1, 1], vec![d, u]);
+        assert!(!raw.is_pdag_type().unwrap());
+        assert!(!raw.is_mpdag().unwrap());
+    }
+
+    #[test]
     fn session_map_error_is_used_for_builder_failures() {
         let reg = make_registry();
         let d = reg.code_of("-->").unwrap();
@@ -1889,8 +1980,8 @@ mod tests {
         assert!(ug.parents_of(0).is_err());
         assert!(ug.children_of(0).is_err());
 
-        // m_separated on UG errors
-        assert!(ug.m_separated(&[0], &[2], &[1]).is_err());
+        // m_separated on a UG is graph separation
+        assert!(ug.m_separated(&[0], &[2], &[1]).is_ok());
 
         // is_valid_adjustment_set_admg on UG errors
         assert!(ug.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());
