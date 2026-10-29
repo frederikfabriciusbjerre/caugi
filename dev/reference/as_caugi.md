@@ -9,7 +9,7 @@ Convert an object to a `caugi`. The object can be a `graphNEL`,
 as_caugi(
   x,
   class = c("DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
-  simple = TRUE,
+  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -30,8 +30,8 @@ as_caugi(
 
 - simple:
 
-  logical. If `TRUE` (default) the graph will be simple (no multiple
-  edges or self-loops).
+  Deprecated; see [`caugi()`](https://caugi.org/dev/reference/caugi.md).
+  If omitted (recommended), it is derived from `class`.
 
 - collapse:
 

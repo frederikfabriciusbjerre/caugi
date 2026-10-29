@@ -63,9 +63,9 @@ no parallel edges).</p>
 
 
 <dt id="arg-force-check">force_check<a class="anchor" aria-label="anchor" href="#arg-force-check"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, force a check against the compiled
-graph representation. If <code>FALSE</code> (default), return the declared <code>simple</code>
-property.</p></dd>
+<dd><p>Ignored. Since caugi 1.4.0 the check always runs
+against the graph itself, since the deprecated <code>simple</code> flag no longer
+tells whether a graph has parallel edges or self-loops.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -119,8 +119,7 @@ property.</p></dd>
 <span class="r-in"><span><span class="va">cg_nonsimple</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>,</span></span>
 <span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%&lt;-&gt;%</a></span> <span class="va">B</span>,</span></span>
-<span class="r-in"><span>  class <span class="op">=</span> <span class="st">"UNKNOWN"</span>,</span></span>
-<span class="r-in"><span>  simple <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span>  class <span class="op">=</span> <span class="st">"UNKNOWN"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">is_simple</span><span class="op">(</span><span class="va">cg_nonsimple</span><span class="op">)</span> <span class="co"># FALSE</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>

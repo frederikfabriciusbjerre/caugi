@@ -30,7 +30,7 @@ caugi(
   to = NULL,
   nodes = NULL,
   edges_df = NULL,
-  simple = TRUE,
+  simple = NULL,
   build = NULL,
   class = c("AUTO", "DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "UNKNOWN"),
   state = NULL,
@@ -78,9 +78,15 @@ caugi(
 
 - simple:
 
-  Logical; if `TRUE` (default), the graph is a simple graph, and the
-  function will throw an error if the input contains parallel edges or
-  self-loops.
+  Deprecated in caugi 1.4.0 and to be removed in 2.0.0; the graph class
+  now decides whether multiple edges are allowed. If omitted
+  (recommended), it is derived from `class`: `FALSE` for `"UNKNOWN"` and
+  `"ADMG"` (so self-loops and parallel edges in `"UNKNOWN"`, and bows in
+  `"ADMG"`, are allowed) and `TRUE` for every other class. With
+  `"AUTO"`, it follows the class the graph resolves to. Supplying it
+  gives a deprecation warning but is still honoured: `TRUE` forbids
+  parallel edges and self-loops, and `FALSE` is only allowed for
+  `"UNKNOWN"`, `"ADMG"`, and `"AG"`.
 
 - build:
 
@@ -94,7 +100,9 @@ caugi(
   `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will
   automatically pick the appropriate class based on the first match in
   the order of `"DAG"`, `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, and
-  `"AG"`. It will default to `"UNKNOWN"` if no match is found.
+  `"AG"`. It will default to `"UNKNOWN"` if no match is found. A graph
+  with parallel edges or self-loops resolves to `"ADMG"` if it is a
+  valid ADMG (e.g. a bow) and to `"UNKNOWN"` otherwise.
 
 - state:
 
@@ -109,6 +117,14 @@ caugi(
 
 A `caugi` S7 object containing the nodes, edges, and a pointer to the
 underlying Rust graph structure.
+
+## Details
+
+The `@simple` property reports whether the graph forbids parallel edges
+and self-loops. It is deprecated together with the `simple` argument and
+will be removed in caugi 2.0.0; use
+[`is_simple()`](https://caugi.org/dev/reference/is_simple.md) to check
+the graph itself.
 
 ## Examples
 
@@ -137,16 +153,18 @@ cg3 <- caugi(
   class = "DAG"
 )
 
-# create a non-simple graph
+# create a graph with parallel edges (allowed for UNKNOWN)
 cg4 <- caugi(
   A %-->% B,
   B %-->% A,
-  class = "UNKNOWN",
-  simple = FALSE
+  class = "UNKNOWN"
 )
 
-cg4@simple # FALSE
+is_simple(cg4) # FALSE
 #> [1] FALSE
 cg4@graph_class # "UNKNOWN"
 #> [1] "UNKNOWN"
+
+# an ADMG may contain bows
+cg5 <- caugi(A %-->% B, A %<->% B, class = "ADMG")
 ```

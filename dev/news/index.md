@@ -249,14 +249,34 @@ CRAN release: 2026-10-27
   [`nodes()`](https://caugi.org/dev/reference/nodes.md) and
   [`edges()`](https://caugi.org/dev/reference/edges.md).
 
+### Improvements
+
+- [`is_simple()`](https://caugi.org/dev/reference/is_simple.md) now
+  always checks the graph itself instead of returning the declared
+  `simple` flag; `force_check` is ignored.
+- [`remove_edges()`](https://caugi.org/dev/reference/caugi_verbs.md)
+  without `edge` now only errors when the given pair actually holds
+  several edges, instead of whenever the graph allows multi-edges.
+
 ### Bug Fixes
 
-- [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md) no
-  longer forces `simple = TRUE` on every target class. A non-simple
-  graph converted to `"UNKNOWN"`, `"ADMG"` or `"AG"` keeps
-  `simple = FALSE`, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to
-  a valid ADMG instead of a simple graph with parallel edges that failed
-  on [`build()`](https://caugi.org/dev/reference/build.md) or any query.
+- `"ADMG"` graphs now reject self-loops; previously
+  `caugi(A %<->% A, class = "ADMG", simple = FALSE)` was accepted.
+
+- [`is_dag()`](https://caugi.org/dev/reference/is_dag.md),
+  [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+  [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),
+  [`is_ag()`](https://caugi.org/dev/reference/is_ag.md),
+  [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md),
+  [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md) and
+  [`is_mag()`](https://caugi.org/dev/reference/is_mag.md) now return
+  `FALSE` for graphs with parallel edges or self-loops.
+
+- [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md)
+  now gives the converted graph the target class’s multi-edge rule, so
+  e.g. a bow (`A %-->% B`, `A %<->% B`) converts to a valid ADMG instead
+  of a simple graph with parallel edges that failed on
+  [`build()`](https://caugi.org/dev/reference/build.md) or any query.
   The converted graph is now built eagerly, so invalid conversions fail
   immediately.
 
@@ -298,6 +318,22 @@ CRAN release: 2026-10-27
   used the current global registry instead, so they could compare edges
   wrongly, fail with `Invalid edge code`, or write the wrong glyphs.
   Adding an edge type the graph was not built with is now an error.
+
+### Deprecations
+
+- The `simple` argument of
+  [`caugi()`](https://caugi.org/dev/reference/caugi.md) and
+  [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md), and the
+  `@simple` property, are deprecated and will be removed in caugi 2.0.0.
+  The graph class now determines whether multiple edges are allowed:
+  when `simple` is omitted it is `FALSE` for `"UNKNOWN"` and `"ADMG"`
+  and `TRUE` for every other class. Bows (`A %-->% B`, `A %<->% B`)
+  therefore build as an ADMG, and parallel edges or self-loops build as
+  `"UNKNOWN"`, without `simple = FALSE`. With the default
+  `class = "AUTO"`, such graphs now resolve to `"ADMG"` (if valid) or
+  `"UNKNOWN"` instead of erroring, and a graph that resolves to a simple
+  class gets that class’s rule. Supplying `simple` still works but
+  warns.
 
 ## caugi 1.3.0
 

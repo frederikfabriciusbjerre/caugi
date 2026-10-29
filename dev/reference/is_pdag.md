@@ -79,8 +79,7 @@ cg_cyclic <- caugi(
   B %-->% C,
   C %-->% A,
   D %---% A,
-  class = "UNKNOWN",
-  simple = FALSE
+  class = "UNKNOWN"
 )
 is_pdag(cg_cyclic) # FALSE
 #> [1] FALSE

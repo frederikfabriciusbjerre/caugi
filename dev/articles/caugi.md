@@ -24,7 +24,7 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x590c5406c850>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x61989df94360>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, A-->C, B-->C, B-->D
@@ -44,7 +44,7 @@ other *properties*. Let’s check the other properties.
 ``` r
 
 cg@session
-#> <pointer: 0x590c5406c850>
+#> <pointer: 0x61989df94360>
 ```
 
 This is the session pointer to the Rust graph object that `caugi`
@@ -59,19 +59,28 @@ cg@simple
 #> [1] TRUE
 ```
 
-This indicates whether the graph is *simple* or not. Let’s try to create
-a non-simple graph:
+This indicates whether the graph forbids parallel edges and self-loops.
+The graph class decides this: only `UNKNOWN` (anything goes) and `ADMG`
+(bows such as `A %-->% B` with `A %<->% B`, but no self-loops) allow
+several edges between a pair of nodes. Every other class must be simple:
 
 ``` r
 
-caugi(A %-->% B, B %-->% A)
+caugi(A %-->% B, B %-->% A, class = "DAG")
 #> Error in `rs_resolve_class()`:
 #> ! Parallel edges not allowed in simple graphs (A -> B)
+caugi(A %-->% B, B %-->% A, class = "UNKNOWN")
+#> <caugi object; 2 nodes, 2 edges; simple: FALSE; session=0x61989dc6e980>
+#>   graph_class: UNKNOWN
+#>   nodes: A, B
+#>   edges: A-->B, B-->A
 ```
 
-This cannot be done unless you initialize the graph with
-`simple = FALSE`. Note that, currently, all of the supported graph
-classes only support `simple = TRUE` unless the class is `UNKNOWN`.
+The `@simple` property and the `simple` argument of
+[`caugi()`](https://caugi.org/dev/reference/caugi.md) are deprecated and
+will be removed in caugi 2.0.0. Use
+[`is_simple()`](https://caugi.org/dev/reference/is_simple.md) to check
+whether a graph actually contains parallel edges or self-loops.
 
 #### `graph_class`
 
@@ -121,7 +130,7 @@ cg_modified <- cg |>
   remove_edges(A %-->% B, B %-->% C + D) |>
   add_edges(B %-->% A, D %-->% C)
 cg_modified
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x590c55c5a250>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x6198a10b2200>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->C, B-->A, D-->C
@@ -172,7 +181,7 @@ to do with `caugi`.
 ``` r
 
 cg@session
-#> <pointer: 0x590c5406c850>
+#> <pointer: 0x61989df94360>
 ```
 
 This is the Rust GraphSession pointer that holds the canonical graph
