@@ -223,6 +223,56 @@ print.caugi <- function(
 }
 S7::method(print, caugi) <- print.caugi
 
+#' Summarize a `caugi`
+#'
+#' @description Summarizes a graph by its class, size and the number of edges
+#' of each type.
+#'
+#' @param object A `caugi` object.
+#' @param x A `caugi_summary` object.
+#' @param ... Not used.
+#'
+#' @returns `summary()` returns a `caugi_summary` object: a list with
+#'   `graph_class`, `n_nodes`, `n_edges` and `edge_types` (a table of edge
+#'   counts by glyph). `print()` returns its input invisibly.
+#'
+#' @examples
+#' cg <- caugi(A %-->% B + C, B %---% C, class = "PDAG")
+#' summary(cg)
+#'
+#' @family caugi methods
+#' @concept methods
+#'
+#' @export
+summary.caugi <- function(object, ...) {
+  edges <- object@edges
+  structure(
+    list(
+      graph_class = object@graph_class,
+      n_nodes = length(object),
+      n_edges = nrow(edges),
+      edge_types = table(edges$edge, dnn = NULL)
+    ),
+    class = "caugi_summary"
+  )
+}
+S7::method(summary, caugi) <- summary.caugi
+
+#' @rdname summary.caugi
+#' @export
+print.caugi_summary <- function(x, ...) {
+  cat(sprintf(
+    "<caugi %s: %d nodes, %d edges>\n",
+    x$graph_class,
+    x$n_nodes,
+    x$n_edges
+  ))
+  for (glyph in names(x$edge_types)) {
+    cat(sprintf("  %s  %d\n", glyph, x$edge_types[[glyph]]))
+  }
+  invisible(x)
+}
+
 #' @title Fit items on a line
 #'
 #' @description Helper function to determine how many items can fit on a line

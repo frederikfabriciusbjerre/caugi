@@ -256,3 +256,15 @@ test_that("asymmetric edges stay direction-sensitive", {
     caugi(A %o->% B, class = "UNKNOWN") == caugi(B %o->% A, class = "UNKNOWN")
   )
 })
+
+test_that("summary() counts nodes and edges by type (#445)", {
+  cg <- caugi(A %-->% B + C, B %---% C, D, class = "PDAG")
+  s <- summary(cg)
+  expect_s3_class(s, "caugi_summary")
+  expect_equal(s$graph_class, "PDAG")
+  expect_equal(s$n_nodes, 4L)
+  expect_equal(s$n_edges, 3L)
+  expect_equal(as.integer(s$edge_types[c("-->", "---")]), c(2L, 1L))
+  expect_output(print(s), "<caugi PDAG: 4 nodes, 3 edges>")
+  expect_output(print(summary(caugi(A, B))), "0 edges")
+})
