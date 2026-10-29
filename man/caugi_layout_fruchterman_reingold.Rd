@@ -9,10 +9,10 @@ force-directed placement. Software: Practice and Experience, 21(11),
 1129-1164. \doi{10.1002/spe.4380211102}
 }
 \usage{
-caugi_layout_fruchterman_reingold(x, packing_ratio = 1.618034, ...)
+caugi_layout_fruchterman_reingold(cg, packing_ratio = 1.618034, ...)
 }
 \arguments{
-\item{x}{A \code{caugi} object.}
+\item{cg}{A \code{caugi} object.}
 
 \item{packing_ratio}{Aspect ratio for packing disconnected components
 (width/height). Default is the golden ratio (1.618) which works well with

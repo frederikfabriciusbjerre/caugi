@@ -4,10 +4,14 @@
 \alias{caugi_layout_bipartite}
 \title{Bipartite Graph Layout}
 \usage{
-caugi_layout_bipartite(x, partition = NULL, orientation = c("columns", "rows"))
+caugi_layout_bipartite(
+  cg,
+  partition = NULL,
+  orientation = c("columns", "rows")
+)
 }
 \arguments{
-\item{x}{A \code{caugi} object.}
+\item{cg}{A \code{caugi} object.}
 
 \item{partition}{Optional logical vector indicating node partitions.
 Nodes with \code{TRUE} are placed in one partition and nodes with \code{FALSE}

@@ -1,5 +1,14 @@
 # caugi (development version)
 
+## Breaking Changes
+
+* The graph argument of `caugi_layout()`, `caugi_layout_sugiyama()`,
+  `caugi_layout_fruchterman_reingold()`, `caugi_layout_kamada_kawai()`,
+  `caugi_layout_bipartite()`, `caugi_layout_tiered()` and
+  `caugi_layout_circle()` is renamed from `x` to `cg`, as in the rest of the
+  package. Positional calls are unaffected; write `caugi_layout(cg = cg)`
+  instead of `caugi_layout(x = cg)` (#363).
+
 ## New Features
 
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a

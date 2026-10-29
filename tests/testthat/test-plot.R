@@ -16,6 +16,23 @@ test_that("caugi_layout works with simple DAG", {
   expect_type(layout$y, "double")
 })
 
+test_that("layout functions take the graph as `cg`", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+
+  expect_equal(caugi_layout(cg = cg), caugi_layout(cg))
+  for (fn in list(
+    caugi_layout,
+    caugi_layout_sugiyama,
+    caugi_layout_fruchterman_reingold,
+    caugi_layout_kamada_kawai,
+    caugi_layout_bipartite,
+    caugi_layout_tiered,
+    caugi_layout_circle
+  )) {
+    expect_identical(names(formals(fn))[1], "cg")
+  }
+})
+
 test_that("caugi_layout works with single node", {
   cg <- caugi(A, class = "DAG")
 

@@ -4,10 +4,10 @@
 \alias{caugi_layout_circle}
 \title{Circle Layout}
 \usage{
-caugi_layout_circle(x, ...)
+caugi_layout_circle(cg, ...)
 }
 \arguments{
-\item{x}{A \code{caugi} object.}
+\item{cg}{A \code{caugi} object.}
 
 \item{...}{Ignored. For future extensibility.}
 }

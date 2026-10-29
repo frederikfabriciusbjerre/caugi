@@ -4,10 +4,10 @@
 \alias{caugi_layout_tiered}
 \title{Tiered Graph Layout}
 \usage{
-caugi_layout_tiered(x, tiers, orientation = c("columns", "rows"))
+caugi_layout_tiered(cg, tiers, orientation = c("columns", "rows"))
 }
 \arguments{
-\item{x}{A \code{caugi} object.}
+\item{cg}{A \code{caugi} object.}
 
 \item{tiers}{Tier assignments specifying which tier each node belongs to.
 Can be provided in multiple formats:

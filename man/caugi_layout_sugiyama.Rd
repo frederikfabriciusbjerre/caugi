@@ -10,10 +10,10 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 \doi{10.1109/TSMC.1981.4308636}
 }
 \usage{
-caugi_layout_sugiyama(x, packing_ratio = 1.618034, ...)
+caugi_layout_sugiyama(cg, packing_ratio = 1.618034, ...)
 }
 \arguments{
-\item{x}{A \code{caugi} object. Must contain only directed edges.}
+\item{cg}{A \code{caugi} object. Must contain only directed edges.}
 
 \item{packing_ratio}{Aspect ratio for packing disconnected components
 (width/height). Default is the golden ratio (1.618) which works well with
