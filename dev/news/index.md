@@ -22,6 +22,36 @@
 
 ### Bug Fixes
 
+- [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md)
+  now reads self-closing `<edge .../>` elements, the usual way other
+  tools write edges without data, instead of silently dropping them
+  ([\#414](https://github.com/frederikfabriciusbjerre/caugi/issues/414)).
+
+- [`simulate_data()`](https://caugi.org/dev/reference/simulate_data.md)
+  now errors when a custom equation references a graph node that is not
+  a parent of the node, instead of silently reading a variable of that
+  name from the calling environment
+  ([\#403](https://github.com/frederikfabriciusbjerre/caugi/issues/403)).
+
+- [`simulate_data()`](https://caugi.org/dev/reference/simulate_data.md)
+  now keeps non-syntactic node names such as `"my var"` in the output
+  instead of failing with “undefined columns selected”
+  ([\#402](https://github.com/frederikfabriciusbjerre/caugi/issues/402)).
+
+- [`exogenous()`](https://caugi.org/dev/reference/exogenous.md) on a UG
+  now honours `undirected_as_parents`: by default undirected edges are
+  ignored, so every node is exogenous, as for PDAGs. Query `index`
+  arguments now reject `NaN` and non-whole values instead of silently
+  using node 1, and out-of-range errors report the 1-based index
+  ([\#386](https://github.com/frederikfabriciusbjerre/caugi/issues/386)).
+
+- [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md)
+  on ADMGs and AGs now returns every node joined by a collider path.
+  ADMGs missed children and AGs missed the districts of children, so the
+  same graph had a different blanket depending on its class. DAGs, ADMGs
+  and AGs now share one implementation
+  ([\#384](https://github.com/frederikfabriciusbjerre/caugi/issues/384)).
+
 - [`anteriors()`](https://caugi.org/dev/reference/anteriors.md) and
   [`posteriors()`](https://caugi.org/dev/reference/posteriors.md) now
   work on ADMGs (where they equal ancestors and descendants) and UGs
