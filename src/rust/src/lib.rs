@@ -1838,6 +1838,20 @@ fn rs_normalize_latent_structure(
     ExternalPtr::new(session_from_view(view, names))
 }
 
+/// Removing nodes can break CPDAG strong protection, so re-check the class of
+/// an induced subgraph and keep the strongest one it still satisfies.
+fn downgrade_subgraph_class(mut out: GraphSession) -> ExternalPtr<GraphSession> {
+    let candidates: &[GraphClass] = match out.class() {
+        GraphClass::Cpdag => &[GraphClass::Cpdag, GraphClass::Mpdag, GraphClass::Pdag],
+        GraphClass::Mpdag => &[GraphClass::Mpdag, GraphClass::Pdag],
+        _ => &[],
+    };
+    if let Some(&c) = candidates.iter().find(|&&c| out.resolve_class(c).is_ok()) {
+        out.set_class(c);
+    }
+    ExternalPtr::new(out)
+}
+
 fn induced_subgraph_session_from_keep(
     session: &mut ExternalPtr<GraphSession>,
     keep_u: &[u32],
@@ -1870,7 +1884,7 @@ fn induced_subgraph_session_from_keep(
             sub_core,
             names,
         );
-        return ExternalPtr::new(out);
+        return downgrade_subgraph_class(out);
     }
 
     // Slow path: scan edge buffer when CSR is not yet built.
@@ -1910,7 +1924,7 @@ fn induced_subgraph_session_from_keep(
         kept_edges,
         names,
     );
-    ExternalPtr::new(out)
+    downgrade_subgraph_class(out)
 }
 
 #[extendr]

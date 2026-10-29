@@ -764,6 +764,22 @@ test_that("subgraph with an empty character vector gives an empty graph", {
   expect_equal(length(sg), 0L)
 })
 
+test_that("subgraph re-checks the CPDAG class (#382)", {
+  # A single A -> C is not a CPDAG (the arrow is not protected) but is an MPDAG.
+  for (built in c(FALSE, TRUE)) {
+    cg <- caugi(A %-->% C, B %-->% C, class = "CPDAG")
+    if (built) {
+      build(cg)
+    }
+    s <- subgraph(cg, c("A", "C"))
+    expect_equal(s@graph_class, "MPDAG")
+    expect_equal(parents(s, "C"), "A")
+  }
+  # A v-structure survives intact.
+  cg <- caugi(A %-->% C, B %-->% C, D %---% E, class = "CPDAG")
+  expect_equal(subgraph(cg, c("A", "B", "C"))@graph_class, "CPDAG")
+})
+
 test_that("subgraph errors on invalid arg combos", {
   g <- caugi(
     from = character(),

@@ -16,6 +16,10 @@
 
 ## Bug Fixes
 
+- `subgraph()` now re-checks the class of a CPDAG or MPDAG and downgrades it
+  to the strongest class the subgraph still satisfies, instead of copying the
+  label and failing on every later query (#382).
+
 - `count_dags()` and `enumerate_dags()` now return 0 and an empty list for
   PDAGs with no consistent DAG extension, instead of DAGs with new
   v-structures (#381).
