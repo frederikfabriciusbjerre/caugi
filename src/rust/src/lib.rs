@@ -2293,7 +2293,7 @@ fn rs_is_valid_adjustment_set_admg(
 }
 
 #[extendr]
-fn rs_all_adjustment_sets_admg(
+fn rs_all_adjustment_sets(
     mut session: ExternalPtr<GraphSession>,
     xs: Integers,
     ys: Integers,
@@ -2305,7 +2305,7 @@ fn rs_all_adjustment_sets_admg(
     let max_size = rint_to_u32(Rint::from(max_size), "max_size");
     let sets = session
         .as_mut()
-        .all_adjustment_sets_admg(&xs_u, &ys_u, rbool_to_bool(minimal, "minimal"), max_size)
+        .all_adjustment_sets(&xs_u, &ys_u, rbool_to_bool(minimal, "minimal"), max_size)
         .unwrap_or_else(|e| throw_r_error(e));
     let robjs: Vec<Robj> = sets
         .into_iter()
@@ -2396,7 +2396,7 @@ extendr_module! {
     fn rs_is_valid_backdoor_set;
     fn rs_all_backdoor_sets;
     fn rs_is_valid_adjustment_set_admg;
-    fn rs_all_adjustment_sets_admg;
+    fn rs_all_adjustment_sets;
     fn rs_shd;
     fn rs_hd;
     fn rs_ancestor_aid;

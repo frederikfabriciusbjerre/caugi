@@ -159,7 +159,7 @@ rs_all_backdoor_sets <- function(session, xs, ys, minimal, max_size) .Call(wrap_
 
 rs_is_valid_adjustment_set_admg <- function(session, xs, ys, z) .Call(wrap__rs_is_valid_adjustment_set_admg, session, xs, ys, z)
 
-rs_all_adjustment_sets_admg <- function(session, xs, ys, minimal, max_size) .Call(wrap__rs_all_adjustment_sets_admg, session, xs, ys, minimal, max_size)
+rs_all_adjustment_sets <- function(session, xs, ys, minimal, max_size) .Call(wrap__rs_all_adjustment_sets, session, xs, ys, minimal, max_size)
 
 rs_shd <- function(s1, s2) .Call(wrap__rs_shd, s1, s2)
 

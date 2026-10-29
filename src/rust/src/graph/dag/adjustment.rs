@@ -97,10 +97,7 @@ impl Dag {
     /// `X1 -> L -> X2`, `L -> Y` only `L` blocks `X2 <- L -> Y`, but it lies on
     /// `X1 -> L -> Y`.
     pub fn adjustment_set_backdoor(&self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
-        let forb = self.forbidden_set(xs, ys);
-        let restrict: Vec<u32> = (0..self.n())
-            .filter(|v| !forb[*v as usize] && !ys.contains(v))
-            .collect();
+        let restrict = self.adjustment_universe(xs, ys);
 
         // The proper backdoor graph removes the first edge of every proper
         // causal path, so a d-separator there blocks exactly the backdoor paths.
@@ -249,17 +246,39 @@ impl Dag {
         max_size: u32,
     ) -> Vec<Vec<u32>> {
         let u = self.backdoor_universe(xs, ys);
-        let mut acc = Vec::new();
-        let mut cur = Vec::new();
-        let max_size = max_size as usize;
-        for k in 0..=max_size.min(u.len()) {
-            subsets::k_subsets(&u, k, 0, &mut cur, &mut acc);
-        }
-        acc.retain(|z| self.is_valid_backdoor_set(xs, ys, z));
-        if minimal {
-            subsets::prune_minimal(&mut acc);
-        }
-        acc
+        valid_subsets(&u, minimal, max_size, |z| {
+            self.is_valid_backdoor_set(xs, ys, z)
+        })
+    }
+
+    /// Universe of candidates for adjustment wrt. `(Xs, Ys)`:
+    /// `V \ (forb(Xs,Ys) ∪ Ys)` (the forbidden set already contains `Xs`).
+    fn adjustment_universe(&self, xs: &[u32], ys: &[u32]) -> Vec<u32> {
+        let forb = self.forbidden_set(xs, ys);
+        (0..self.n())
+            .filter(|v| !forb[*v as usize] && !ys.contains(v))
+            .collect()
+    }
+
+    /// Enumerate all valid adjustment sets (generalized adjustment criterion,
+    /// see [`is_valid_adjustment_set`](Self::is_valid_adjustment_set)) up to
+    /// size `max_size`. If `minimal` is true, return only inclusion-minimal
+    /// sets.
+    ///
+    /// Unlike [`all_backdoor_sets`](Self::all_backdoor_sets), this includes
+    /// sets with descendants of `Xs` off the proper causal paths, so it finds
+    /// every valid adjustment set up to `max_size`.
+    pub fn all_adjustment_sets(
+        &self,
+        xs: &[u32],
+        ys: &[u32],
+        minimal: bool,
+        max_size: u32,
+    ) -> Vec<Vec<u32>> {
+        let u = self.adjustment_universe(xs, ys);
+        valid_subsets(&u, minimal, max_size, |z| {
+            self.is_valid_adjustment_set(xs, ys, z)
+        })
     }
 
     /// Build the proper backdoor graph for `Xs → Ys` by removing the
@@ -296,10 +315,31 @@ impl Dag {
     }
 }
 
+/// Subsets of `u` with at most `max_size` nodes that satisfy `valid`. If
+/// `minimal` is true, only the inclusion-minimal ones are kept.
+fn valid_subsets(
+    u: &[u32],
+    minimal: bool,
+    max_size: u32,
+    valid: impl Fn(&[u32]) -> bool,
+) -> Vec<Vec<u32>> {
+    let mut acc = Vec::new();
+    let mut cur = Vec::new();
+    for k in 0..=(max_size as usize).min(u.len()) {
+        subsets::k_subsets(u, k, 0, &mut cur, &mut acc);
+    }
+    acc.retain(|z| valid(z));
+    if minimal {
+        subsets::prune_minimal(&mut acc);
+    }
+    acc
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::edges::EdgeRegistry;
+    use crate::graph::admg::Admg;
     use crate::graph::builder::GraphBuilder;
 
     #[test]
@@ -491,6 +531,60 @@ mod tests {
         let mut sets = dag.all_backdoor_sets(&[2], &[3], true, 20);
         sets.sort();
         assert_eq!(sets, vec![vec![0, 1]]);
+    }
+
+    #[test]
+    fn dag_all_adjustment_sets_include_descendants_of_x_off_causal_paths() {
+        // X=0 -> Y=1, X -> W=2: {W} is a valid adjustment set but not a
+        // back-door set, since W is a descendant of X.
+        let g = dag_from(3, &[(0, 1), (0, 2)]);
+        assert_eq!(
+            g.all_adjustment_sets(&[0], &[1], false, 3),
+            vec![vec![], vec![2]]
+        );
+        assert_eq!(
+            g.all_adjustment_sets(&[0], &[1], true, 3),
+            vec![Vec::<u32>::new()]
+        );
+        assert_eq!(
+            g.all_backdoor_sets(&[0], &[1], false, 3),
+            vec![Vec::<u32>::new()]
+        );
+    }
+
+    #[test]
+    fn dag_all_adjustment_sets_match_admg_on_every_four_node_dag() {
+        // Every DAG on 4 nodes with topological order 0 < 1 < 2 < 3, read as
+        // an ADMG without bidirected edges, gives the same sets for every X
+        // (1-2 nodes) and Y (1 node).
+        let pairs: Vec<(u32, u32)> = (0..4)
+            .flat_map(|u| (u + 1..4).map(move |v| (u, v)))
+            .collect();
+        let xs_choices: Vec<Vec<u32>> = (0..4)
+            .map(|a| vec![a])
+            .chain((0..4).flat_map(|a| (a + 1..4).map(move |b| vec![a, b])))
+            .collect();
+        for mask in 0u32..(1 << pairs.len()) {
+            let edges: Vec<(u32, u32)> = pairs
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| mask & (1 << i) != 0)
+                .map(|(_, &e)| e)
+                .collect();
+            let g = dag_from(4, &edges);
+            let admg = Admg::new(Arc::new(g.core_ref().clone())).unwrap();
+            for xs in &xs_choices {
+                for y in (0..4).filter(|v| !xs.contains(v)) {
+                    for minimal in [false, true] {
+                        assert_eq!(
+                            g.all_adjustment_sets(xs, &[y], minimal, 4),
+                            admg.all_adjustment_sets(xs, &[y], minimal, 4),
+                            "edges {edges:?}, xs {xs:?}, y {y}, minimal {minimal}"
+                        );
+                    }
+                }
+            }
+        }
     }
 
     #[test]

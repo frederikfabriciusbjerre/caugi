@@ -31,6 +31,15 @@
   single-pair results are unchanged. `is_valid_backdoor()` is now linear in
   the graph size; it was cubic in the number of parents of `X`.
 
+* `all_adjustment_sets()` enumerates the adjustment sets of at most
+  `max_size` nodes for the effect of `X` on `Y`. `type = "adjustment"` (the
+  default) uses the generalized adjustment criterion of Perković et al. (2018)
+  on DAGs and ADMGs and returns every valid adjustment set; on DAGs this is
+  new. `type = "backdoor"` uses the generalized back-door criterion of Maathuis
+  & Colombo (2015) on DAGs, which leaves out sets that hold a descendant of
+  `X`: for `X --> Y, X --> W`, `{W}` is an adjustment set but not a back-door
+  set (#354).
+
 ## Bug Fixes
 
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
@@ -208,6 +217,14 @@
   valid set exists, and `type = "optimal"` when `Y` is not a descendant of
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
+
+## Deprecations
+
+* `all_backdoor_sets()` and `all_adjustment_sets_admg()` are deprecated in
+  favour of `all_adjustment_sets()`. Write
+  `all_adjustment_sets(cg, X, Y, type = "backdoor")` instead of
+  `all_backdoor_sets(cg, X, Y)`, and `all_adjustment_sets(cg, X, Y)` instead
+  of `all_adjustment_sets_admg(cg, X, Y)` (#354).
 
 # caugi 1.4.0
 
