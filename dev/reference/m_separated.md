@@ -4,6 +4,8 @@ Test whether two sets of nodes are m-separated given a conditioning set
 in an ancestral graph (AG) or an ADMG.
 
 M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs.
+On a UG it reduces to plain graph separation: every path from `X` to `Y`
+passes through `Z`.
 
 ## Usage
 
@@ -23,7 +25,7 @@ m_separated(
 
 - cg:
 
-  A `caugi` object of class AG, ADMG, or DAG.
+  A `caugi` object of class AG, ADMG, DAG, or UG.
 
 - X, Y, Z:
 
