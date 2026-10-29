@@ -22,6 +22,12 @@
 
 ### Bug Fixes
 
+- [`subgraph()`](https://caugi.org/dev/reference/subgraph.md) now
+  re-checks the class of a CPDAG or MPDAG and downgrades it to the
+  strongest class the subgraph still satisfies, instead of copying the
+  label and failing on every later query
+  ([\#382](https://github.com/frederikfabriciusbjerre/caugi/issues/382)).
+
 - [`count_dags()`](https://caugi.org/dev/reference/count_dags.md) and
   [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md)
   now return 0 and an empty list for PDAGs with no consistent DAG
