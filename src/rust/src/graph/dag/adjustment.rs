@@ -190,49 +190,72 @@ impl Dag {
         !reachability::reachable_to_any(&adj, &mask, xs, &blocked, ys)
     }
 
-    /// Validates a proposed backdoor set `z` for pair `(x, y)`.
+    /// Validates `z` for `Xs → Ys` by the generalized back-door criterion
+    /// (Maathuis & Colombo, 2015, Def. 3.7), which for one `x` and one `y` is
+    /// Pearl's back-door criterion:
+    /// 1) `z` contains no descendant of `Xs`.
+    /// 2) For every `x ∈ Xs`, `z ∪ Xs \ {x}` blocks every back-door path from
+    ///    `x` to `Ys`.
     ///
-    /// Conditions:
-    /// 1) `z` must not contain descendants of `x`.
-    /// 2) Each parent `p` of `x` must be d-separated from `y` given `z ∪ {x}`.
-    pub fn is_valid_backdoor_set(&self, x: u32, y: u32, z: &[u32]) -> bool {
-        let de_mask = bitset::descendants_mask(&[x], |u| self.children_of(u), self.n());
-        for &v in z {
-            if de_mask[v as usize] {
-                return false;
-            }
+    /// `z` must also avoid `Ys`, as the criterion takes `Xs`, `Ys` and `z`
+    /// pairwise disjoint (`De(Xs)` already covers `Xs`).
+    ///
+    /// Condition 2 is checked in one pass as `Pa(Xs) ⊥ Ys | z ∪ Xs`:
+    /// conditioning on `x` blocks the paths out of it and leaves exactly the
+    /// back-door paths through its parents. Parents in `Xs` are conditioned
+    /// non-colliders on those paths, so they are dropped as start nodes. The
+    /// test is a Bayes-ball traversal, linear in the graph size, rather than
+    /// `d_separated`, which moralizes and is quadratic in the in-degree.
+    pub fn is_valid_backdoor_set(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> bool {
+        let de_mask = self.descendants_mask(xs);
+        let y_mask = bitset::mask_from(ys, self.n());
+        if z.iter().any(|&v| de_mask[v as usize] || y_mask[v as usize]) {
+            return false;
         }
 
-        let mut obs = Vec::with_capacity(z.len() + 1);
-        obs.extend_from_slice(z);
-        obs.push(x);
-        for &p in self.parents_of(x) {
-            if !self.d_separated(&[p], &[y], &obs) {
-                return false;
-            }
+        let mut obs = z.to_vec();
+        obs.extend_from_slice(xs);
+        let obs_mask = bitset::mask_from(&obs, self.n());
+        let pa: Vec<u32> = xs
+            .iter()
+            .flat_map(|&x| self.parents_of(x))
+            .copied()
+            .filter(|&p| !obs_mask[p as usize])
+            .collect();
+        if pa.iter().any(|&p| y_mask[p as usize]) {
+            return false;
         }
-        true
+        self.d_connected_restricted(&pa, &obs, None)
+            .map(|reached| !reached.iter().any(|&v| y_mask[v as usize]))
+            .unwrap_or(false)
     }
 
-    /// Universe of candidates for backdoor adjustment wrt. `(x, y)`.
-    fn backdoor_universe(&self, x: u32, y: u32) -> Vec<u32> {
-        let de_mask = bitset::descendants_mask(&[x], |u| self.children_of(u), self.n());
+    /// Universe of candidates for backdoor adjustment wrt. `(Xs, Ys)`.
+    fn backdoor_universe(&self, xs: &[u32], ys: &[u32]) -> Vec<u32> {
+        // De(Xs) contains Xs.
+        let de_mask = self.descendants_mask(xs);
         (0..self.n())
-            .filter(|&v| v != x && v != y && !de_mask[v as usize])
+            .filter(|v| !de_mask[*v as usize] && !ys.contains(v))
             .collect()
     }
 
     /// Enumerate all valid backdoor sets up to size `max_size`.
     /// If `minimal` is true, return only inclusion-minimal sets.
-    pub fn all_backdoor_sets(&self, x: u32, y: u32, minimal: bool, max_size: u32) -> Vec<Vec<u32>> {
-        let u = self.backdoor_universe(x, y);
+    pub fn all_backdoor_sets(
+        &self,
+        xs: &[u32],
+        ys: &[u32],
+        minimal: bool,
+        max_size: u32,
+    ) -> Vec<Vec<u32>> {
+        let u = self.backdoor_universe(xs, ys);
         let mut acc = Vec::new();
         let mut cur = Vec::new();
         let max_size = max_size as usize;
         for k in 0..=max_size.min(u.len()) {
             subsets::k_subsets(&u, k, 0, &mut cur, &mut acc);
         }
-        acc.retain(|z| self.is_valid_backdoor_set(x, y, z));
+        acc.retain(|z| self.is_valid_backdoor_set(xs, ys, z));
         if minimal {
             subsets::prune_minimal(&mut acc);
         }
@@ -369,11 +392,11 @@ mod tests {
         b.add_edge(0, 2, d).unwrap();
 
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        assert!(!g.is_valid_backdoor_set(1, 2, &[]));
-        assert!(g.is_valid_backdoor_set(1, 2, &[0]));
-        assert!(!g.is_valid_backdoor_set(0, 2, &[1])); // 1 is a descendant of 0
+        assert!(!g.is_valid_backdoor_set(&[1], &[2], &[]));
+        assert!(g.is_valid_backdoor_set(&[1], &[2], &[0]));
+        assert!(!g.is_valid_backdoor_set(&[0], &[2], &[1])); // 1 is a descendant of 0
 
-        let mut sets = g.all_backdoor_sets(1, 2, true, 20);
+        let mut sets = g.all_backdoor_sets(&[1], &[2], true, 20);
         sets.sort();
         assert_eq!(sets, vec![vec![0]]);
     }
@@ -426,7 +449,7 @@ mod tests {
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
         let z = g.adjustment_set_backdoor(&[1], &[2]).unwrap();
         assert!(z.is_empty());
-        assert!(g.is_valid_backdoor_set(1, 2, &z));
+        assert!(g.is_valid_backdoor_set(&[1], &[2], &z));
     }
 
     #[test]
@@ -448,7 +471,7 @@ mod tests {
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
         let z = g.adjustment_set_backdoor(&[2], &[3]).unwrap();
         assert_eq!(z, vec![1]); // {B}
-        assert!(g.is_valid_backdoor_set(2, 3, &z));
+        assert!(g.is_valid_backdoor_set(&[2], &[3], &z));
     }
 
     #[test]
@@ -465,7 +488,7 @@ mod tests {
         b.add_edge(1, 3, d).unwrap();
 
         let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        let mut sets = dag.all_backdoor_sets(2, 3, true, 20);
+        let mut sets = dag.all_backdoor_sets(&[2], &[3], true, 20);
         sets.sort();
         assert_eq!(sets, vec![vec![0, 1]]);
     }
@@ -549,6 +572,30 @@ mod tests {
             .0
             .is_empty());
         assert!(g.is_valid_adjustment_set(&[0, 2], &[3], &[1]));
+    }
+
+    #[test]
+    fn dag_backdoor_several_treatments_conditions_on_the_others() {
+        // X2=1 -> X1=0, X2 -> Y=2, X1 -> Y: X2 blocks X1 <- X2 -> Y, so the
+        // empty set is valid (Pearl's pairwise set version rejects every set).
+        let g = dag_from(3, &[(1, 0), (1, 2), (0, 2)]);
+        assert!(g.is_valid_backdoor_set(&[0, 1], &[2], &[]));
+
+        // X=1 <- U=0 -> Y=2: Y is no descendant of X, but adjusting for the
+        // outcome itself is never valid.
+        let g = dag_from(3, &[(0, 1), (0, 2)]);
+        assert!(g.is_valid_backdoor_set(&[1], &[2], &[0]));
+        assert!(!g.is_valid_backdoor_set(&[1], &[2], &[2]));
+        assert!(!g.is_valid_backdoor_set(&[1], &[2], &[0, 2]));
+
+        // U=0 -> X1=2, U -> X2=3, V=1 -> X2, V -> Y=4, X1 -> Y, X2 -> Y:
+        // conditioning on the collider X2 opens X1 <- U -> X2 <- V -> Y, and
+        // V also confounds X2, so every valid set holds V.
+        let g = dag_from(5, &[(0, 2), (0, 3), (1, 3), (1, 4), (2, 4), (3, 4)]);
+        assert!(!g.is_valid_backdoor_set(&[2, 3], &[4], &[]));
+        assert!(!g.is_valid_backdoor_set(&[2, 3], &[4], &[0]));
+        assert!(g.is_valid_backdoor_set(&[2, 3], &[4], &[1]));
+        assert_eq!(g.all_backdoor_sets(&[2, 3], &[4], true, 3), vec![vec![1]]);
     }
 
     #[test]
@@ -673,6 +720,53 @@ mod tests {
     }
 
     #[test]
+    fn dag_backdoor_validation_matches_moralized_separation() {
+        // Every DAG on 4 nodes with topological order 0 < 1 < 2 < 3, every
+        // disjoint X (1-2 nodes), Y (1 node) and Z: the Bayes-ball check must
+        // agree with no-descendant + moralized `Pa(X) ⊥ Y | Z ∪ X`.
+        let pairs: Vec<(u32, u32)> = (0..4)
+            .flat_map(|u| (u + 1..4).map(move |v| (u, v)))
+            .collect();
+        let xs_choices: Vec<Vec<u32>> = (0..4)
+            .map(|a| vec![a])
+            .chain((0..4).flat_map(|a| (a + 1..4).map(move |b| vec![a, b])))
+            .collect();
+        for mask in 0u32..(1 << pairs.len()) {
+            let edges: Vec<(u32, u32)> = pairs
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| mask & (1 << i) != 0)
+                .map(|(_, &e)| e)
+                .collect();
+            let g = dag_from(4, &edges);
+            for xs in &xs_choices {
+                let de = g.descendants_mask(xs);
+                let pa: Vec<u32> = xs.iter().flat_map(|&x| g.parents_of(x)).copied().collect();
+                for y in (0..4).filter(|v| !xs.contains(v)) {
+                    let rest: Vec<u32> = (0..4).filter(|v| !xs.contains(v) && *v != y).collect();
+                    for zmask in 0u32..(1 << rest.len()) {
+                        let z: Vec<u32> = rest
+                            .iter()
+                            .enumerate()
+                            .filter(|(i, _)| zmask & (1 << i) != 0)
+                            .map(|(_, &v)| v)
+                            .collect();
+                        let mut obs = z.clone();
+                        obs.extend_from_slice(xs);
+                        let moralized =
+                            !z.iter().any(|&v| de[v as usize]) && g.d_separated(&pa, &[y], &obs);
+                        assert_eq!(
+                            g.is_valid_backdoor_set(xs, &[y], &z),
+                            moralized,
+                            "edges {edges:?}, xs {xs:?}, y {y}, z {z:?}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn dag_adjustment_is_linear_in_the_in_degree() {
         // U_i -> X for 20 000 parents, X -> Y. Moralizing would build a
         // 20 000-clique (~2e8 edges); the Bayes-ball check stays linear.
@@ -690,5 +784,6 @@ mod tests {
             g.adjustment_set_parents(&[x], &[y]).unwrap().len(),
             k as usize
         );
+        assert!(g.is_valid_backdoor_set(&[x], &[y], &[]));
     }
 }

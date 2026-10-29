@@ -136,7 +136,7 @@ test_that("compare_proxy and all.equal branches are covered", {
   expect_match(eq_fun(cg, list()), "current is not a caugi object")
 
   cg_simple <- caugi(A %-->% B, class = "DAG")
-  cg_non_simple <- caugi(A %-->% B, class = "UNKNOWN", simple = FALSE)
+  cg_non_simple <- caugi(A %-->% B, class = "UNKNOWN")
   diff_simple <- eq_fun(cg_simple, cg_non_simple)
   expect_true(any(grepl("^simple:", diff_simple)))
   expect_true(any(grepl("^graph_class:", diff_simple)))
@@ -202,8 +202,7 @@ test_that("== and != compare caugi objects by graph content", {
 
   # Different `simple` flag.
   expect_false(
-    caugi(A %-->% B, class = "DAG") ==
-      caugi(A %-->% B, class = "UNKNOWN", simple = FALSE)
+    caugi(A %-->% B, class = "DAG") == caugi(A %-->% B, class = "UNKNOWN")
   )
 
   # Non-caugi other operand falls back to FALSE / TRUE.
@@ -269,12 +268,37 @@ test_that("summary() counts nodes and edges by type (#445)", {
   expect_output(print(summary(caugi(A, B))), "0 edges")
 })
 
-test_that("as.data.frame() returns the edge list (#446)", {
+test_that("as.data.frame() returns edges and isolated nodes (#446)", {
   cg <- caugi(A %-->% B + C, B %---% C, D, class = "PDAG")
   df <- as.data.frame(cg)
   expect_s3_class(df, "data.frame")
   expect_false(inherits(df, "data.table"))
-  expect_equal(df, as.data.frame(edges(cg)))
-  expect_named(df, c("from", "edge", "to"))
-  expect_equal(nrow(as.data.frame(caugi(A, B))), 0L)
+  expect_equal(
+    df,
+    data.frame(
+      from = c("A", "A", "B", "D"),
+      edge = c("-->", "-->", "---", NA),
+      to = c("B", "C", "C", NA)
+    )
+  )
+  expect_true(caugi(edges_df = df, class = "PDAG") == cg)
+
+  isolates <- caugi(A, B)
+  expect_equal(as.data.frame(isolates)$from, c("A", "B"))
+  expect_true(caugi(edges_df = as.data.frame(isolates)) == isolates)
+  expect_equal(nrow(as.data.frame(caugi())), 0L)
+})
+
+test_that("caugi() reads rows with an NA edge as isolated nodes (#446)", {
+  cg <- caugi(from = c("A", "D"), edge = c("-->", NA), to = c("B", NA))
+  expect_equal(nodes(cg)$name, c("A", "B", "D"))
+  expect_equal(nrow(edges(cg)), 1L)
+  expect_error(
+    caugi(from = "A", edge = NA_character_, to = "B"),
+    "must have a `from` node and `to = NA`"
+  )
+  expect_error(
+    caugi(from = NA_character_, edge = NA_character_, to = NA_character_),
+    "must have a `from` node"
+  )
 })

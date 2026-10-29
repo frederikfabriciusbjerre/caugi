@@ -15,10 +15,15 @@ A logical value indicating whether the graph is an MPDAG.
 \description{
 Checks if the given \code{caugi} graph is a
 Maximally oriented Partially Directed Acyclic Graph
-(MPDAG), i.e. a PDAG where no additional edge orientations
-are implied by Meek's rules (R1--R4).
+(MPDAG), i.e. a PDAG that has a consistent DAG extension and where no
+additional edge orientations are implied by Meek's rules (R1--R4).
 }
 \details{
+A consistent DAG extension orients every undirected edge without creating a
+directed cycle or a new v-structure. A PDAG without one, such as
+\verb{A --> B --- C <-- D} or an undirected chordless 4-cycle, represents no DAG
+and is not an MPDAG.
+
 If the graph is not PDAG-compatible, the function returns \code{FALSE}.
 }
 \examples{
@@ -35,6 +40,9 @@ is_mpdag(cg_not_mpdag) # FALSE
 C. Meek (1995). Causal inference and causal explanation with background
 knowledge. In \emph{Proceedings of the Eleventh Conference on Uncertainty in
 Artificial Intelligence (UAI-95)}, pp. 403--411. Morgan Kaufmann.
+
+Dor, D., & Tarsi, M. (1992). "A simple algorithm to construct a consistent
+extension of a partially directed acyclic graph".
 }
 \seealso{
 Other queries:
