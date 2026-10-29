@@ -11,6 +11,7 @@ enumerate_dags(cg)
 }
 \value{
 A list of \code{caugi} objects of class \code{"DAG"}, one per DAG in the MEC.
+Empty if \code{cg} has no consistent DAG extension.
 }
 \description{
 Given a PDAG, enumerate every Directed Acyclic Graph (DAG) in its

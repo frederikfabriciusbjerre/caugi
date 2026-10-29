@@ -14,7 +14,19 @@
   dropped with a warning, since the total effect on them is zero. A dropped
   node can itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
+* `is_valid_backdoor()`, `all_backdoor_sets()` and `d_separated()` now accept
+  several treatments `X` and outcomes `Y` on DAGs. The back-door functions use
+  the generalized back-door criterion of Maathuis & Colombo (2015, Def. 3.7):
+  `Z` contains no descendant of `X`, and for each treatment `Xi`, `Z` together
+  with the other treatments blocks every back-door path from `Xi` to `Y`. With
+  one treatment and one outcome this is Pearl's back-door criterion, so
+  single-pair results are unchanged. `is_valid_backdoor()` is now linear in
+  the graph size; it was cubic in the number of parents of `X`.
+
 ## Bug Fixes
+
+- `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
+  accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
 
 - `read_graphml()` now reads edges without an `edge_type` as `---` when the
   graph declares `edgedefault="undirected"`, as documented, instead of always
@@ -45,9 +57,11 @@
 - `anteriors()` and `posteriors()` now work on ADMGs (where they equal
   ancestors and descendants) and UGs (the connected component), and
   `ancestors()`/`descendants()` return nothing on a UG instead of erroring. On
-  UNKNOWN graphs all four follow `-->` and `---` from the edge marks and only
-  error on circle edges. This also lets `condition_marginalize()` run on ADMG
-  and UG input (#383).
+  UNKNOWN graphs all four follow directed and undirected edges by edge class,
+  so custom registry edges work, and only error on partially directed edges.
+  `m_separated()` now also accepts UGs (plain graph separation). Together
+  these let `condition_marginalize()` run on ADMG and UG input; DAG input
+  keeps using d-separation (#383).
 
 - `subgraph()` now re-checks the class of a CPDAG or MPDAG and downgrades it
   to the strongest class the subgraph still satisfies, instead of copying the
@@ -58,9 +72,11 @@
   v-structures (#381).
 
 - `is_mpdag()`, `is_cpdag()`, `class = "MPDAG"`/`"CPDAG"` and AUTO no longer
-  accept PDAGs with no consistent DAG extension, such as `G --> K --- X <-- Z`
-  or an undirected chordless 4-cycle. `meek_closure()` now errors on such
-  PDAGs instead of returning a graph with a new v-structure (#380).
+  accept PDAGs with no consistent DAG extension, such as `G --> K --- X <-- Z`.
+  `is_mpdag()` and `class = "MPDAG"` also reject an undirected chordless
+  4-cycle, and AUTO labels a mixed graph containing one `"PDAG"` rather than
+  `"MPDAG"`. `meek_closure()` now errors on such PDAGs instead of returning a
+  graph with a new v-structure (#380).
 
 - `meek_closure()` now applies Meek's rule R4, and `is_mpdag()`,
   `class = "MPDAG"` and AUTO no longer accept graphs where R4 still orients an
@@ -164,11 +180,24 @@
 - Node and edge tables use faster constructors, reducing overhead when building
   graphs and retrieving `nodes()` and `edges()`.
 
+## Improvements
+
+* `is_simple()` now always checks the graph itself instead of returning the
+  declared `simple` flag; `force_check` is ignored.
+* `remove_edges()` without `edge` now only errors when the given pair actually
+  holds several edges, instead of whenever the graph allows multi-edges.
+
 ## Bug Fixes
 
-- `mutate_caugi()` no longer forces `simple = TRUE` on every target class. A
-  non-simple graph converted to `"UNKNOWN"`, `"ADMG"` or `"AG"` keeps
-  `simple = FALSE`, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to a
+- `"ADMG"` graphs now reject self-loops; previously
+  `caugi(A %<->% A, class = "ADMG", simple = FALSE)` was accepted.
+
+- `is_dag()`, `is_pdag()`, `is_ug()`, `is_ag()`, `is_cpdag()`, `is_mpdag()`
+  and `is_mag()` now return `FALSE` for graphs with parallel edges or
+  self-loops.
+
+- `mutate_caugi()` now gives the converted graph the target class's
+  multi-edge rule, so e.g. a bow (`A %-->% B`, `A %<->% B`) converts to a
   valid ADMG instead of a simple graph with parallel edges that failed on
   `build()` or any query. The converted graph is now built eagerly, so invalid
   conversions fail immediately.
@@ -199,6 +228,18 @@ direction-sensitive. testthat's `expect_equal()` now agrees with `==`.
 `to_graphml()` used the current global registry instead, so they could
 compare edges wrongly, fail with `Invalid edge code`, or write the wrong
 glyphs. Adding an edge type the graph was not built with is now an error.
+
+## Deprecations
+
+* The `simple` argument of `caugi()` and `as_caugi()`, and the `@simple`
+  property, are deprecated and will be removed in caugi 2.0.0. The graph class
+  now determines whether multiple edges are allowed: when `simple` is omitted
+  it is `FALSE` for `"UNKNOWN"` and `"ADMG"` and `TRUE` for every other class.
+  Bows (`A %-->% B`, `A %<->% B`) therefore build as an ADMG, and parallel
+  edges or self-loops build as `"UNKNOWN"`, without `simple = FALSE`. With the
+  default `class = "AUTO"`, such graphs now resolve to `"ADMG"` (if valid) or
+  `"UNKNOWN"` instead of erroring, and a graph that resolves to a simple class
+  gets that class's rule. Supplying `simple` still works but warns.
 
 # caugi 1.3.0
 

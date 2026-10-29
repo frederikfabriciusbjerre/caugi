@@ -52,13 +52,14 @@ This is the session pointer to the Rust graph object that `caugi` utilizes for p
 cg@simple
 ```
 
-This indicates whether the graph is _simple_ or not. Let's try to create a non-simple graph:
+This indicates whether the graph forbids parallel edges and self-loops. The graph class decides this: only `UNKNOWN` (anything goes) and `ADMG` (bows such as `A %-->% B` with `A %<->% B`, but no self-loops) allow several edges between a pair of nodes. Every other class must be simple:
 
 ```{r, error=TRUE}
-caugi(A %-->% B, B %-->% A)
+caugi(A %-->% B, B %-->% A, class = "DAG")
+caugi(A %-->% B, B %-->% A, class = "UNKNOWN")
 ```
 
-This cannot be done unless you initialize the graph with `simple = FALSE`. Note that, currently, all of the supported graph classes only support `simple = TRUE` unless the class is `UNKNOWN`. 
+The `@simple` property and the `simple` argument of `caugi()` are deprecated and will be removed in caugi 2.0.0. Use `is_simple()` to check whether a graph actually contains parallel edges or self-loops.
 
 #### `graph_class`
 

@@ -10,7 +10,8 @@ count_dags(cg)
 \item{cg}{A \code{caugi} object of class \code{"PDAG"} or \code{"MPDAG"}.}
 }
 \value{
-A single numeric value, the cardinality of the MEC. Counts above
+A single numeric value, the cardinality of the MEC, or 0 if \code{cg}
+has no consistent DAG extension. Counts above
 \code{2^53} lose integer precision; in practice no realistic PDAG yields a
 MEC anywhere near that size.
 }
