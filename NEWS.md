@@ -21,9 +21,11 @@
   v-structures (#381).
 
 - `is_mpdag()`, `is_cpdag()`, `class = "MPDAG"`/`"CPDAG"` and AUTO no longer
-  accept PDAGs with no consistent DAG extension, such as `G --> K --- X <-- Z`
-  or an undirected chordless 4-cycle. `meek_closure()` now errors on such
-  PDAGs instead of returning a graph with a new v-structure (#380).
+  accept PDAGs with no consistent DAG extension, such as `G --> K --- X <-- Z`.
+  `is_mpdag()` and `class = "MPDAG"` also reject an undirected chordless
+  4-cycle, and AUTO labels a mixed graph containing one `"PDAG"` rather than
+  `"MPDAG"`. `meek_closure()` now errors on such PDAGs instead of returning a
+  graph with a new v-structure (#380).
 
 - `meek_closure()` now applies Meek's rule R4, and `is_mpdag()`,
   `class = "MPDAG"` and AUTO no longer accept graphs where R4 still orients an

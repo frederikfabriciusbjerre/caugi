@@ -72,7 +72,10 @@ skeleton <- function(cg) {
 #' @param cg A `caugi` object. Must be PDAG-compatible.
 #'
 #' @returns A `caugi` object closed under Meek's rules. Class `"MPDAG"` in
-#'   general, or `"DAG"` if the closure orients every edge.
+#'   general, or `"DAG"` if the closure orients every edge. Errors if `cg` has
+#'   no consistent DAG extension (e.g. `A --> B --- C <-- D`, where either
+#'   orientation of `B --- C` adds a v-structure), since such a PDAG
+#'   represents no DAG; see [is_mpdag()].
 #'
 #' @references
 #' C. Meek (1995). Causal inference and causal explanation with background
@@ -722,6 +725,7 @@ dag_from_pdag <- function(cg, PDAG) {
 #' @param cg A `caugi` object of class `"PDAG"` or `"MPDAG"`.
 #'
 #' @returns A list of `caugi` objects of class `"DAG"`, one per DAG in the MEC.
+#'   Empty if `cg` has no consistent DAG extension.
 #'
 #' @examples
 #' pdag <- caugi(
@@ -764,7 +768,8 @@ enumerate_dags <- function(cg) {
 #'
 #' @param cg A `caugi` object of class `"PDAG"` or `"MPDAG"`.
 #'
-#' @returns A single numeric value, the cardinality of the MEC. Counts above
+#' @returns A single numeric value, the cardinality of the MEC, or 0 if `cg`
+#'   has no consistent DAG extension. Counts above
 #'   `2^53` lose integer precision; in practice no realistic PDAG yields a
 #'   MEC anywhere near that size.
 #'
