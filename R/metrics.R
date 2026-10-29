@@ -19,6 +19,8 @@
 #' @param truth A `caugi` object.
 #' @param guess A `caugi` object.
 #' @param normalized Logical; if `TRUE`, returns the normalized SHD.
+#' @param cg1,cg2 Deprecated names for `truth` and `guess`. Supplying them
+#' gives a deprecation warning.
 #'
 #' @returns An integer representing the Hamming Distance between the two graphs,
 #' if `normalized = FALSE`, or a numeric between 0 and 1 if `normalized = TRUE`.
@@ -32,7 +34,12 @@
 #' @concept metrics
 #'
 #' @export
-shd <- function(truth, guess, normalized = FALSE) {
+shd <- function(truth, guess, normalized = FALSE, cg1, cg2) {
+  if (!missing(cg1) || !missing(cg2)) {
+    graphs <- .resolve_deprecated_graph_args("shd", truth, guess, cg1, cg2)
+    truth <- graphs$truth
+    guess <- graphs$guess
+  }
   is_caugi(truth, throw_error = TRUE)
   is_caugi(guess, throw_error = TRUE)
   same_nodes(truth, guess, throw_error = TRUE)
@@ -53,6 +60,8 @@ shd <- function(truth, guess, normalized = FALSE) {
 #' @param guess A `caugi` object.
 #' @param normalized Logical; if `TRUE`, returns the normalized Hamming
 #' Distance.
+#' @param cg1,cg2 Deprecated names for `truth` and `guess`. Supplying them
+#' gives a deprecation warning.
 #'
 #' @returns An integer representing the Hamming Distance between the two graphs,
 #' if `normalized = FALSE`, or a numeric between 0 and 1 if `normalized = TRUE`.
@@ -66,13 +75,65 @@ shd <- function(truth, guess, normalized = FALSE) {
 #' @concept metrics
 #'
 #' @export
-hd <- function(truth, guess, normalized = FALSE) {
+hd <- function(truth, guess, normalized = FALSE, cg1, cg2) {
+  if (!missing(cg1) || !missing(cg2)) {
+    graphs <- .resolve_deprecated_graph_args("hd", truth, guess, cg1, cg2)
+    truth <- graphs$truth
+    guess <- graphs$guess
+  }
   is_caugi(truth, throw_error = TRUE)
   is_caugi(guess, throw_error = TRUE)
   same_nodes(truth, guess, throw_error = TRUE)
   out_lst <- rs_hd(truth@session, guess@session)
   out <- if (normalized) out_lst$normalized else out_lst$count
   out
+}
+
+#' @title Resolve the deprecated `cg1` and `cg2` arguments
+#'
+#' @description Used by [shd()] and [hd()]. Signals a warning of class
+#' `caugi_deprecated_cg_args` (and `deprecatedWarning`) and returns the graphs,
+#' taking `truth` from `cg1` and `guess` from `cg2` when those are supplied.
+#' Errors if a graph is supplied under both its old and its new name.
+#'
+#' @param fun Name of the calling function, for the messages.
+#' @param truth,guess,cg1,cg2 The arguments of the calling function; any of
+#' them may be missing.
+#'
+#' @returns A list with elements `truth` and `guess`.
+#'
+#' @keywords internal
+.resolve_deprecated_graph_args <- function(fun, truth, guess, cg1, cg2) {
+  warning(structure(
+    class = c(
+      "caugi_deprecated_cg_args",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "The `cg1` and `cg2` arguments of `",
+        fun,
+        "()` are deprecated; ",
+        "use `truth` and `guess` instead."
+      ),
+      call = NULL
+    )
+  ))
+  if (!missing(cg1)) {
+    if (!missing(truth)) {
+      stop("Supply only one of `truth` and `cg1`.", call. = FALSE)
+    }
+    truth <- cg1
+  }
+  if (!missing(cg2)) {
+    if (!missing(guess)) {
+      stop("Supply only one of `guess` and `cg2`.", call. = FALSE)
+    }
+    guess <- cg2
+  }
+  list(truth = truth, guess = guess)
 }
 
 #' @title Adjustment Identification Distance

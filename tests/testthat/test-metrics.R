@@ -237,3 +237,27 @@ test_that("shd() and hd() take truth and guess and are symmetric (#362)", {
     )
   }
 })
+
+test_that("shd() and hd() accept the deprecated cg1 and cg2 (#362)", {
+  truth <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+  guess <- caugi(A %---% B, C %-->% B, A %-->% C, D %---% C, class = "PDAG")
+
+  for (f in list(shd, hd)) {
+    expect_warning(
+      res <- f(cg1 = truth, cg2 = guess, normalized = TRUE),
+      class = "deprecatedWarning"
+    )
+    expect_equal(res, f(truth, guess, normalized = TRUE))
+    expect_warning(res <- f(truth, cg2 = guess), class = "deprecatedWarning")
+    expect_equal(res, f(truth, guess))
+
+    expect_error(
+      suppressWarnings(f(truth = truth, cg1 = truth, cg2 = guess)),
+      "Supply only one of `truth` and `cg1`"
+    )
+    expect_error(
+      suppressWarnings(f(truth, guess, cg2 = guess)),
+      "Supply only one of `guess` and `cg2`"
+    )
+  }
+})

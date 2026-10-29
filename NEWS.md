@@ -1,12 +1,5 @@
 # caugi (development version)
 
-## Breaking Changes
-
-* `shd()` and `hd()` now name their graph arguments `truth` and `guess`, as
-  `aid()` does, instead of `cg1` and `cg2`. Positional calls are unaffected;
-  write `shd(truth = , guess = )` instead of `shd(cg1 = , cg2 = )`, and the
-  same for `hd()` (#362).
-
 ## New Features
 
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a
@@ -215,6 +208,11 @@
   valid set exists, and `type = "optimal"` when `Y` is not a descendant of
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
+
+## Deprecations
+
+* The `cg1` and `cg2` arguments of `shd()` and `hd()` are deprecated in favour
+  of `truth` and `guess`, the names `aid()` uses (#362).
 
 # caugi 1.4.0
 

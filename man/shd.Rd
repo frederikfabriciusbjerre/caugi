@@ -4,7 +4,7 @@
 \alias{shd}
 \title{Structural Hamming Distance}
 \usage{
-shd(truth, guess, normalized = FALSE)
+shd(truth, guess, normalized = FALSE, cg1, cg2)
 }
 \arguments{
 \item{truth}{A \code{caugi} object.}
@@ -12,6 +12,9 @@ shd(truth, guess, normalized = FALSE)
 \item{guess}{A \code{caugi} object.}
 
 \item{normalized}{Logical; if \code{TRUE}, returns the normalized SHD.}
+
+\item{cg1, cg2}{Deprecated names for \code{truth} and \code{guess}. Supplying them
+gives a deprecation warning.}
 }
 \value{
 An integer representing the Hamming Distance between the two graphs,

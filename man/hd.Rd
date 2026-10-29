@@ -4,7 +4,7 @@
 \alias{hd}
 \title{Hamming Distance}
 \usage{
-hd(truth, guess, normalized = FALSE)
+hd(truth, guess, normalized = FALSE, cg1, cg2)
 }
 \arguments{
 \item{truth}{A \code{caugi} object.}
@@ -13,6 +13,9 @@ hd(truth, guess, normalized = FALSE)
 
 \item{normalized}{Logical; if \code{TRUE}, returns the normalized Hamming
 Distance.}
+
+\item{cg1, cg2}{Deprecated names for \code{truth} and \code{guess}. Supplying them
+gives a deprecation warning.}
 }
 \value{
 An integer representing the Hamming Distance between the two graphs,
