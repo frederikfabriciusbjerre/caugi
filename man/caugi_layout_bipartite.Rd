@@ -7,7 +7,8 @@
 caugi_layout_bipartite(
   cg,
   partition = NULL,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  x
 )
 }
 \arguments{
@@ -27,6 +28,9 @@ second partition on left (x=0).
 \item \code{"rows"}: Two horizontal rows. First partition on top (y=1),
 second partition on bottom (y=0).
 }}
+
+\item{x}{Deprecated; use \code{cg} instead. Supplying it gives a deprecation
+warning.}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node

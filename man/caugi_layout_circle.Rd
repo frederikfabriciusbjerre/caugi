@@ -4,12 +4,15 @@
 \alias{caugi_layout_circle}
 \title{Circle Layout}
 \usage{
-caugi_layout_circle(cg, ...)
+caugi_layout_circle(cg, ..., x)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
 \item{...}{Ignored. For future extensibility.}
+
+\item{x}{Deprecated; use \code{cg} instead. Supplying it gives a deprecation
+warning.}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node

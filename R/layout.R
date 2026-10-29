@@ -61,6 +61,8 @@
 #'   (`"columns"` or `"rows"`).
 #'   For tiered layouts, use `tiers` (list, named vector, or data.frame) and
 #'   `orientation` (`"rows"` or `"columns"`).
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -154,8 +156,12 @@ caugi_layout <- function(
     "circle"
   ),
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 ) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout")
+  }
   is_caugi(cg, throw_error = TRUE)
 
   method <- match.arg(method)
@@ -204,6 +210,46 @@ caugi_layout <- function(
   }
 }
 
+#' @title Handle the deprecated `x` argument of the layout functions
+#'
+#' @description Signals a warning of class `caugi_deprecated_layout_x` (and
+#' `deprecatedWarning`) and returns `x` as the graph. Errors if `cg` was
+#' supplied too.
+#'
+#' @param x The deprecated `x` argument.
+#' @param cg_missing Logical; whether `cg` was missing.
+#' @param fn Name of the calling layout function.
+#'
+#' @returns `x`.
+#'
+#' @keywords internal
+#' @noRd
+.layout_x_deprecated <- function(x, cg_missing, fn) {
+  if (!cg_missing) {
+    stop(
+      "Supply the graph as `cg` only; `x` is a deprecated name for it.",
+      call. = FALSE
+    )
+  }
+  warning(structure(
+    class = c(
+      "caugi_deprecated_layout_x",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "The `x` argument of `",
+        fn,
+        "()` is deprecated; use `cg` instead."
+      ),
+      call = NULL
+    )
+  ))
+  x
+}
+
 #' Bipartite Graph Layout
 #'
 #' Computes node coordinates for bipartite graphs, placing nodes in two
@@ -223,6 +269,8 @@ caugi_layout <- function(
 #'     second partition on left (x=0).
 #'   * `"rows"`: Two horizontal rows. First partition on top (y=1),
 #'     second partition on bottom (y=0).
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -245,8 +293,12 @@ caugi_layout <- function(
 caugi_layout_bipartite <- function(
   cg,
   partition = NULL,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  x
 ) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_bipartite")
+  }
   is_caugi(cg, throw_error = TRUE)
 
   orientation <- match.arg(orientation)
@@ -406,6 +458,8 @@ caugi_layout_bipartite <- function(
 #'     subsequent tiers to the right, last tier at right (x=1).
 #'   * `"rows"`: Horizontal tiers. First tier at top (y=1),
 #'     subsequent tiers below, last tier at bottom (y=0).
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, `y`, and `tier` containing
 #'   node names, their coordinates, and tier assignments (0-indexed). The
@@ -451,8 +505,12 @@ caugi_layout_bipartite <- function(
 caugi_layout_tiered <- function(
   cg,
   tiers,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  x
 ) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_tiered")
+  }
   is_caugi(cg, throw_error = TRUE)
 
   orientation <- match.arg(orientation)
@@ -543,7 +601,10 @@ caugi_layout_tiered <- function(
 #' \doi{10.1109/TSMC.1981.4308636}
 #'
 #' @export
-caugi_layout_sugiyama <- function(cg, packing_ratio = 1.618034, ...) {
+caugi_layout_sugiyama <- function(cg, packing_ratio = 1.618034, ..., x) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_sugiyama")
+  }
   is_caugi(cg, throw_error = TRUE)
 
   edge_types <- unique(edges(cg)[["edge"]])
@@ -605,8 +666,16 @@ caugi_layout_sugiyama <- function(cg, packing_ratio = 1.618034, ...) {
 caugi_layout_fruchterman_reingold <- function(
   cg,
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 ) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(
+      x,
+      missing(cg),
+      "caugi_layout_fruchterman_reingold"
+    )
+  }
   is_caugi(cg, throw_error = TRUE)
 
   coords <- rs_compute_layout(cg@session, "fruchterman-reingold", packing_ratio)
@@ -651,7 +720,10 @@ caugi_layout_fruchterman_reingold <- function(
 #' \doi{10.1016/0020-0190(89)90102-6}
 #'
 #' @export
-caugi_layout_kamada_kawai <- function(cg, packing_ratio = 1.618034, ...) {
+caugi_layout_kamada_kawai <- function(cg, packing_ratio = 1.618034, ..., x) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_kamada_kawai")
+  }
   is_caugi(cg, throw_error = TRUE)
 
   coords <- rs_compute_layout(cg@session, "kamada-kawai", packing_ratio)
@@ -673,6 +745,8 @@ caugi_layout_kamada_kawai <- function(cg, packing_ratio = 1.618034, ...) {
 #'
 #' @param cg A `caugi` object.
 #' @param ... Ignored. For future extensibility.
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -690,7 +764,10 @@ caugi_layout_kamada_kawai <- function(cg, packing_ratio = 1.618034, ...) {
 #' @concept plotting
 #'
 #' @export
-caugi_layout_circle <- function(cg, ...) {
+caugi_layout_circle <- function(cg, ..., x) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_circle")
+  }
   is_caugi(cg, throw_error = TRUE)
 
   coords <- rs_compute_layout(cg@session, "circle", 1.0)

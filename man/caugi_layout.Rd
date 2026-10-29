@@ -23,7 +23,8 @@ caugi_layout(
   method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite",
     "tiered", "circle"),
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 )
 }
 \arguments{
@@ -59,6 +60,9 @@ For bipartite layouts, use \code{partition} (logical vector) and \code{orientati
 (\code{"columns"} or \code{"rows"}).
 For tiered layouts, use \code{tiers} (list, named vector, or data.frame) and
 \code{orientation} (\code{"rows"} or \code{"columns"}).}
+
+\item{x}{Deprecated; use \code{cg} instead. Supplying it gives a deprecation
+warning.}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node

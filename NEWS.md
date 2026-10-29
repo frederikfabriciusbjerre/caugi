@@ -1,14 +1,5 @@
 # caugi (development version)
 
-## Breaking Changes
-
-* The graph argument of `caugi_layout()`, `caugi_layout_sugiyama()`,
-  `caugi_layout_fruchterman_reingold()`, `caugi_layout_kamada_kawai()`,
-  `caugi_layout_bipartite()`, `caugi_layout_tiered()` and
-  `caugi_layout_circle()` is renamed from `x` to `cg`, as in the rest of the
-  package. Positional calls are unaffected; write `caugi_layout(cg = cg)`
-  instead of `caugi_layout(x = cg)` (#363).
-
 ## New Features
 
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a
@@ -217,6 +208,16 @@
   valid set exists, and `type = "optimal"` when `Y` is not a descendant of
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
+
+## Deprecations
+
+* The graph argument of `caugi_layout()`, `caugi_layout_sugiyama()`,
+  `caugi_layout_fruchterman_reingold()`, `caugi_layout_kamada_kawai()`,
+  `caugi_layout_bipartite()`, `caugi_layout_tiered()` and
+  `caugi_layout_circle()` is now `cg`, as in the rest of the package. The old
+  name `x` still works but gives a deprecation warning; write
+  `caugi_layout(cg = cg)` instead of `caugi_layout(x = cg)`. Positional calls
+  are unaffected (#363).
 
 # caugi 1.4.0
 

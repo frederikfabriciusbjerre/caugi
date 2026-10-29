@@ -33,6 +33,44 @@ test_that("layout functions take the graph as `cg`", {
   }
 })
 
+test_that("`x` is a deprecated name for `cg` in the layout functions", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  extra_args <- list(
+    caugi_layout = list(),
+    caugi_layout_sugiyama = list(),
+    caugi_layout_fruchterman_reingold = list(),
+    caugi_layout_kamada_kawai = list(),
+    caugi_layout_bipartite = list(),
+    caugi_layout_tiered = list(tiers = list("A", "B", "C")),
+    caugi_layout_circle = list()
+  )
+  for (fn in names(extra_args)) {
+    args <- extra_args[[fn]]
+    expect_warning(
+      layout <- do.call(fn, c(list(x = cg), args)),
+      paste0("The `x` argument of `", fn, "()` is deprecated"),
+      fixed = TRUE,
+      class = "deprecatedWarning"
+    )
+    expect_equal(layout, do.call(fn, c(list(cg), args)))
+    expect_error(do.call(fn, c(list(cg, x = cg), args)), "`cg` only")
+  }
+})
+
+test_that("plot() does not trigger the deprecated `x` of the layouts", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_no_warning(plot(cg))
+  expect_no_warning(plot(cg, layout = "kamada-kawai"))
+  expect_no_warning(plot(cg, layout = caugi_layout_sugiyama))
+  expect_no_warning(
+    plot(cg, layout = caugi_layout_tiered, tiers = list("A", "B", "C"))
+  )
+})
+
 test_that("caugi_layout works with single node", {
   cg <- caugi(A, class = "DAG")
 

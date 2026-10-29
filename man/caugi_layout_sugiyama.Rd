@@ -10,7 +10,7 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 \doi{10.1109/TSMC.1981.4308636}
 }
 \usage{
-caugi_layout_sugiyama(cg, packing_ratio = 1.618034, ...)
+caugi_layout_sugiyama(cg, packing_ratio = 1.618034, ..., x)
 }
 \arguments{
 \item{cg}{A \code{caugi} object. Must contain only directed edges.}
@@ -21,6 +21,9 @@ widescreen displays. Use \code{1.0} for square grid, \code{2.0} for wider layout
 \code{0.5} for taller layouts, \code{Inf} for single row, or \code{0.0} for single column.}
 
 \item{...}{Ignored. For future extensibility.}
+
+\item{x}{Deprecated; use \code{cg} instead. Supplying it gives a deprecation
+warning.}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node

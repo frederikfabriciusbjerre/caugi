@@ -4,7 +4,7 @@
 \alias{caugi_layout_tiered}
 \title{Tiered Graph Layout}
 \usage{
-caugi_layout_tiered(cg, tiers, orientation = c("columns", "rows"))
+caugi_layout_tiered(cg, tiers, orientation = c("columns", "rows"), x)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
@@ -31,6 +31,9 @@ subsequent tiers to the right, last tier at right (x=1).
 \item \code{"rows"}: Horizontal tiers. First tier at top (y=1),
 subsequent tiers below, last tier at bottom (y=0).
 }}
+
+\item{x}{Deprecated; use \code{cg} instead. Supplying it gives a deprecation
+warning.}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, \code{y}, and \code{tier} containing
