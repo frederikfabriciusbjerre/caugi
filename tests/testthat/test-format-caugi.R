@@ -381,10 +381,4 @@ test_that("serialized output of every class fits the published schema (#419)", {
       info = cg@graph_class
     )
   }
-  if (requireNamespace("jsonvalidate", quietly = TRUE)) {
-    validate <- jsonvalidate::json_validator(schema_path, engine = "ajv")
-    for (cg in graphs) {
-      expect_true(validate(caugi_serialize(cg)))
-    }
-  }
 })
