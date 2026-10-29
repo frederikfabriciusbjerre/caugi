@@ -720,6 +720,53 @@ mod tests {
     }
 
     #[test]
+    fn dag_backdoor_validation_matches_moralized_separation() {
+        // Every DAG on 4 nodes with topological order 0 < 1 < 2 < 3, every
+        // disjoint X (1-2 nodes), Y (1 node) and Z: the Bayes-ball check must
+        // agree with no-descendant + moralized `Pa(X) ⊥ Y | Z ∪ X`.
+        let pairs: Vec<(u32, u32)> = (0..4)
+            .flat_map(|u| (u + 1..4).map(move |v| (u, v)))
+            .collect();
+        let xs_choices: Vec<Vec<u32>> = (0..4)
+            .map(|a| vec![a])
+            .chain((0..4).flat_map(|a| (a + 1..4).map(move |b| vec![a, b])))
+            .collect();
+        for mask in 0u32..(1 << pairs.len()) {
+            let edges: Vec<(u32, u32)> = pairs
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| mask & (1 << i) != 0)
+                .map(|(_, &e)| e)
+                .collect();
+            let g = dag_from(4, &edges);
+            for xs in &xs_choices {
+                let de = g.descendants_mask(xs);
+                let pa: Vec<u32> = xs.iter().flat_map(|&x| g.parents_of(x)).copied().collect();
+                for y in (0..4).filter(|v| !xs.contains(v)) {
+                    let rest: Vec<u32> = (0..4).filter(|v| !xs.contains(v) && *v != y).collect();
+                    for zmask in 0u32..(1 << rest.len()) {
+                        let z: Vec<u32> = rest
+                            .iter()
+                            .enumerate()
+                            .filter(|(i, _)| zmask & (1 << i) != 0)
+                            .map(|(_, &v)| v)
+                            .collect();
+                        let mut obs = z.clone();
+                        obs.extend_from_slice(xs);
+                        let moralized =
+                            !z.iter().any(|&v| de[v as usize]) && g.d_separated(&pa, &[y], &obs);
+                        assert_eq!(
+                            g.is_valid_backdoor_set(xs, &[y], &z),
+                            moralized,
+                            "edges {edges:?}, xs {xs:?}, y {y}, z {z:?}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn dag_adjustment_is_linear_in_the_in_degree() {
         // U_i -> X for 20 000 parents, X -> Y. Moralizing would build a
         // 20 000-clique (~2e8 edges); the Bayes-ball check stays linear.
