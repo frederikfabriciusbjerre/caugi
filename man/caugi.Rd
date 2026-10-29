@@ -28,7 +28,9 @@ and \code{C}. Nodes can also be grouped using \code{c(...)} or parentheses.}
 Optional; mutually exclusive with \code{...}.}
 
 \item{edge}{Character vector of edge types.
-Optional; mutually exclusive with \code{...}.}
+Optional; mutually exclusive with \code{...}. An \code{NA} edge, with \code{to} also \code{NA},
+declares \code{from} as an isolated node, which is how \code{\link[=as.data.frame]{as.data.frame()}} writes
+isolated nodes.}
 
 \item{to}{Character vector of target node names.
 Optional; mutually exclusive with \code{...}.}
@@ -41,7 +43,9 @@ order of nodes in the graph will follow the order in \code{nodes}.}
 \item{edges_df}{Optional data.frame or data.table with columns
 \code{from}, \code{edge}, and \code{to} to specify edges. Mutually exclusive with \code{...}
 and \code{from}, \code{edge}, \code{to}. Can be used to create graphs using \code{edges(cg)}
-from another \code{caugi} object, \code{cg}.}
+from another \code{caugi} object, \code{cg}. Rows with an \code{NA} edge declare isolated
+nodes, so \code{caugi(edges_df = as.data.frame(cg))} keeps the isolated nodes of
+\code{cg}.}
 
 \item{simple}{Logical; if \code{TRUE} (default), the graph is a simple graph, and
 the function will throw an error if the input contains parallel edges or

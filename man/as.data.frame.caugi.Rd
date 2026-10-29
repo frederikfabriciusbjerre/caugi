@@ -17,13 +17,16 @@
 A \code{data.frame} with columns \code{from}, \code{edge} and \code{to}.
 }
 \description{
-Returns the edge list as a plain \code{data.frame} with columns
-\code{from}, \code{edge} and \code{to}, one row per edge. Isolated nodes have no row; use
-\code{\link[=nodes]{nodes()}} for the full node set.
+Returns the graph as a plain \code{data.frame} with columns \code{from},
+\code{edge} and \code{to}: one row per edge, then one row per isolated node with the
+node in \code{from} and \code{NA} in \code{edge} and \code{to}. \code{\link[=caugi]{caugi()}} reads such rows back
+as isolated nodes, so \code{caugi(edges_df = as.data.frame(cg))} keeps every
+node. Use \code{\link[=edges]{edges()}} for the edges alone.
 }
 \examples{
-cg <- caugi(A \%-->\% B + C, B \%---\% C, class = "PDAG")
-as.data.frame(cg)
+cg <- caugi(A \%-->\% B + C, B \%---\% C, D, class = "PDAG")
+df <- as.data.frame(cg) # D has a row with edge = NA
+caugi(edges_df = df, class = "PDAG") == cg # TRUE
 
 }
 \seealso{

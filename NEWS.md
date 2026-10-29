@@ -3,7 +3,9 @@
 ## New Features
 
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a
-  plain data.frame (#446).
+  plain data.frame with one extra row per isolated node (`edge` and `to` are
+  `NA`). `caugi()` reads such rows back as isolated nodes, so
+  `caugi(edges_df = as.data.frame(cg))` keeps every node (#446).
 
 * `summary()` method for `caugi` objects, giving the class, the number of
   nodes and edges, and edge counts by type (#445).
