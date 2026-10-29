@@ -7,7 +7,7 @@
 caugi_serialize(x, comment = NULL, tags = NULL)
 }
 \arguments{
-\item{x}{A \code{caugi} object or an object coercible to \code{caugi}.}
+\item{x}{A \code{caugi} object.}
 
 \item{comment}{Optional character string with a comment about the graph.}
 

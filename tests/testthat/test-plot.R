@@ -378,6 +378,28 @@ test_that("kamada-kawai layout works with simple DAG", {
   expect_true(all(is.finite(layout$y)))
 })
 
+test_that("kamada-kawai lays out a cycle the same for every edge type (#420)", {
+  # A 6-cycle should come out as a regular hexagon: opposite nodes equally far.
+  nm <- paste0("N", 0:5)
+  for (ty in c("-->", "---", "<->", "o-o")) {
+    cg <- caugi(
+      from = nm,
+      edge = rep(ty, 6),
+      to = nm[c(2:6, 1)],
+      nodes = nm,
+      class = "UNKNOWN"
+    )
+    d <- as.matrix(stats::dist(caugi_layout(cg, "kamada-kawai")[, c("x", "y")]))
+    opposite <- c(d[1, 4], d[2, 5], d[3, 6])
+    expect_equal(
+      opposite / max(opposite),
+      rep(1, 3),
+      tolerance = 1e-3,
+      info = ty
+    )
+  }
+})
+
 test_that("kamada-kawai layout is deterministic", {
   cg <- caugi(
     A %-->% B + C,
@@ -1033,4 +1055,30 @@ test_that("plot handles coincident coordinates and a single node", {
     expect_equal(vp$yscale, c(6, 8))
     expect_no_error(grid::grid.draw(p@grob))
   }
+})
+
+test_that("a layout function may return rows in any order (#427)", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  f <- function(x, ...) {
+    data.frame(name = c("C", "B", "A"), x = c(0, 0.5, 1), y = c(0, 0.5, 1))
+  }
+  node_gtree <- plot(cg, layout = f)@grob$children[["caugi.graph"]]$children[[
+    "node_gtree"
+  ]]
+  texts <- Filter(function(g) inherits(g, "text"), node_gtree$children)
+  label_x <- stats::setNames(
+    vapply(
+      texts,
+      function(g) grid::convertX(g$x, "native", valueOnly = TRUE),
+      numeric(1)
+    ),
+    vapply(texts, function(g) g$label, character(1))
+  )
+  expect_equal(label_x[c("A", "B", "C")], c(A = 1, B = 0.5, C = 0))
+
+  missing_c <- function(x, ...) data.frame(name = c("A", "B"), x = 0:1, y = 0:1)
+  expect_error(
+    plot(cg, layout = missing_c),
+    "Layout has 2 rows but graph has 3 nodes"
+  )
 })

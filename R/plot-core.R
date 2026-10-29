@@ -9,8 +9,8 @@
 #'   layout.
 #' @param layout Specifies the graph layout method. Can be:
 #'   * A character string: `"auto"` (default), `"sugiyama"`,
-#'     `"fruchterman-reingold"`, `"kamada-kawai"`, `"bipartite"`.
-#'     See [caugi_layout()] for details.
+#'     `"fruchterman-reingold"`, `"kamada-kawai"`, `"bipartite"`, `"tiered"`,
+#'     `"circle"`. See [caugi_layout()] for details.
 #'   * A layout function: e.g., `caugi_layout_sugiyama`,
 #'     `caugi_layout_bipartite`, etc. The function will be called with `x` and
 #'     any additional arguments passed via `...`.
@@ -45,15 +45,17 @@
 #' @param label_style List of label styling parameters. Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
 #'     `fontfamily`, `cex`
-#' @param tier_style List of tier box styling parameters. Tier boxes are shown
-#'   when `boxes = TRUE` is set within this list. Supports:
+#' @param tier_style List of tier box styling parameters, used when `tiers` is
+#'   given. Supports:
+#'   * Display: `boxes` (draw a box around each tier, default `TRUE`) and
+#'     `labels` (see below)
 #'   * Appearance (passed to `gpar()`): `fill`, `col` (border color), `lwd`,
 #'     `lty`, `alpha`
 #'   * Geometry: `padding` (padding around tier nodes, a [grid::unit()] or a
 #'     number in mm like node padding, default 4 mm)
 #'   * Labels: `labels` (logical or character vector). If `TRUE`, uses tier names
 #'     from `tiers` argument. If a character vector, uses custom labels (one per
-#'     tier). If `FALSE` or `NULL` (default), no labels are shown.
+#'     tier). If `FALSE` or `NULL`, no labels are shown. Default `TRUE`.
 #'   * Label styling: `label_style` (list with `col`, `fontsize`, `fontface`, etc.)
 #'   * Values can be scalars (applied to all tiers) or vectors (auto-expanded to
 #'     each tier in order)
@@ -169,15 +171,14 @@ plot.caugi <- function(
 
   dots <- list(...)
 
-  # Compute layout coordinates
+  # Compute layout coordinates; every source is validated and matched to the
+  # nodes by name below, so a layout function may return rows in any order.
   if (is.character(layout)) {
-    # String method name - pass through to caugi_layout
-    coords <- caugi_layout(x, method = layout, ...)
+    layout <- caugi_layout(x, method = layout, ...)
   } else if (is.function(layout)) {
-    # Layout function - call directly with ...
-    coords <- layout(x, ...)
-  } else if (is.data.frame(layout)) {
-    # Pre-computed layout - validate thoroughly
+    layout <- layout(x, ...)
+  }
+  if (is.data.frame(layout)) {
     required_cols <- c("name", "x", "y")
     missing_cols <- setdiff(required_cols, names(layout))
 
@@ -252,7 +253,6 @@ plot.caugi <- function(
       )
     }
 
-    graph_nodes <- nodes(x)[["name"]]
     coords <- layout[match(graph_nodes, layout$name), , drop = FALSE]
 
     # Extract tier information from layout if present
@@ -268,7 +268,7 @@ plot.caugi <- function(
     }
   } else {
     stop(
-      "layout must be a character string, function, or data.frame",
+      "layout must be a character string, function, or data.frame (a layout function must return a data.frame)",
       call. = FALSE
     )
   }

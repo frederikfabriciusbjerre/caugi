@@ -223,6 +223,93 @@ print.caugi <- function(
 }
 S7::method(print, caugi) <- print.caugi
 
+#' Summarize a `caugi`
+#'
+#' @description Summarizes a graph by its class, size and the number of edges
+#' of each type.
+#'
+#' @param object A `caugi` object.
+#' @param x A `caugi_summary` object.
+#' @param ... Not used.
+#'
+#' @returns `summary()` returns a `caugi_summary` object: a list with
+#'   `graph_class`, `n_nodes`, `n_edges` and `edge_types` (a table of edge
+#'   counts by glyph). `print()` returns its input invisibly.
+#'
+#' @examples
+#' cg <- caugi(A %-->% B + C, B %---% C, class = "PDAG")
+#' summary(cg)
+#'
+#' @family caugi methods
+#' @concept methods
+#'
+#' @export
+summary.caugi <- function(object, ...) {
+  edges <- object@edges
+  structure(
+    list(
+      graph_class = object@graph_class,
+      n_nodes = length(object),
+      n_edges = nrow(edges),
+      edge_types = table(edges$edge, dnn = NULL)
+    ),
+    class = "caugi_summary"
+  )
+}
+S7::method(summary, caugi) <- summary.caugi
+
+#' Convert a `caugi` to a data.frame
+#'
+#' @description Returns the graph as a plain `data.frame` with columns `from`,
+#' `edge` and `to`: one row per edge, then one row per isolated node with the
+#' node in `from` and `NA` in `edge` and `to`. [caugi()] reads such rows back
+#' as isolated nodes, so `caugi(edges_df = as.data.frame(cg))` keeps every
+#' node. Use [edges()] for the edges alone.
+#'
+#' @param x A `caugi` object.
+#' @param row.names,optional Passed to [base::as.data.frame()].
+#' @param ... Passed to [base::as.data.frame()].
+#'
+#' @returns A `data.frame` with columns `from`, `edge` and `to`.
+#'
+#' @examples
+#' cg <- caugi(A %-->% B + C, B %---% C, D, class = "PDAG")
+#' df <- as.data.frame(cg) # D has a row with edge = NA
+#' caugi(edges_df = df, class = "PDAG") == cg # TRUE
+#'
+#' @family caugi methods
+#' @concept methods
+#'
+#' @export
+as.data.frame.caugi <- function(x, row.names = NULL, optional = FALSE, ...) {
+  e <- x@edges
+  iso <- setdiff(x@nodes$name, c(e$from, e$to))
+  na <- rep(NA_character_, length(iso))
+  as.data.frame(
+    list(from = c(e$from, iso), edge = c(e$edge, na), to = c(e$to, na)),
+    row.names = row.names,
+    optional = optional,
+    stringsAsFactors = FALSE,
+    ...
+  )
+}
+S7::method(as.data.frame, caugi) <- as.data.frame.caugi
+
+#' @rdname summary.caugi
+#' @export
+print.caugi_summary <- function(x, ...) {
+  cat(sprintf(
+    "<caugi %s: %d nodes, %d edges>\n",
+    x$graph_class,
+    x$n_nodes,
+    x$n_edges
+  ))
+  for (glyph in names(x$edge_types)) {
+    cat(sprintf("  %s  %d\n", glyph, x$edge_types[[glyph]]))
+  }
+  invisible(x)
+}
+
 #' @title Fit items on a line
 #'
 #' @description Helper function to determine how many items can fit on a line

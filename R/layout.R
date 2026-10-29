@@ -299,6 +299,88 @@ caugi_layout_bipartite <- function(
   )
 }
 
+#' @title Normalize a `tiers` argument
+#'
+#' @description Turns a named list, named numeric vector or data.frame of
+#' tiers into one integer tier per node, in node order. Errors on unknown
+#' nodes, nodes in more than one tier, non-whole or `NA` tiers, and nodes
+#' without a tier.
+#'
+#' @param tiers The `tiers` argument.
+#' @param node_names Character vector of the graph's node names.
+#'
+#' @returns A named integer vector, named and ordered by `node_names`.
+#'
+#' @keywords internal
+#' @noRd
+.tier_assignments <- function(tiers, node_names) {
+  if (is.list(tiers) && !is.data.frame(tiers)) {
+    if (!all(vapply(tiers, is.character, logical(1)))) {
+      stop(
+        "Each tier in the list must be a character vector of node names",
+        call. = FALSE
+      )
+    }
+    nm <- unlist(tiers, use.names = FALSE)
+    tier <- rep(seq_along(tiers) - 1, lengths(tiers))
+    where <- paste("tier", tier + 1)
+  } else if (is.numeric(tiers) && !is.null(names(tiers))) {
+    nm <- names(tiers)
+    tier <- unname(tiers)
+    where <- rep("tiers", length(nm))
+  } else if (is.data.frame(tiers)) {
+    if (!all(c("name", "tier") %in% colnames(tiers))) {
+      stop("Data.frame must have columns 'name' and 'tier'", call. = FALSE)
+    }
+    nm <- as.character(tiers$name)
+    tier <- tiers$tier
+    where <- rep("tiers data.frame", length(nm))
+  } else {
+    stop(
+      "tiers must be a named list, named numeric vector, or data.frame ",
+      "with 'name' and 'tier' columns",
+      call. = FALSE
+    )
+  }
+
+  unknown <- which(!nm %in% node_names)
+  if (length(unknown) > 0L) {
+    k <- unknown[1L]
+    stop(
+      "Node '",
+      nm[k],
+      "' in ",
+      where[k],
+      " is not in the graph",
+      call. = FALSE
+    )
+  }
+  dup <- unique(nm[duplicated(nm)])
+  if (length(dup) > 0L) {
+    stop(
+      "Nodes assigned to more than one tier: ",
+      paste(dup, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  # An NA tier counts as unassigned.
+  missing <- setdiff(node_names, nm[!is.na(tier)])
+  if (length(missing) > 0L) {
+    stop(
+      "Missing tier assignments for nodes: ",
+      paste(missing, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  if (any(tier != round(tier))) {
+    stop("Tier indices must be whole numbers", call. = FALSE)
+  }
+
+  out <- as.integer(tier)[match(node_names, nm)]
+  names(out) <- node_names
+  out
+}
+
 #' Tiered Graph Layout
 #'
 #' Computes node coordinates for graphs with multiple tiers (layers), placing
@@ -376,89 +458,8 @@ caugi_layout_tiered <- function(
   orientation <- match.arg(orientation)
 
   node_names <- nodes(x)[["name"]]
-  n_nodes <- length(node_names)
 
-  # Normalize tiers to a named integer vector (node name -> tier index)
-  tier_assignments <- NULL
-
-  if (is.list(tiers) && !is.data.frame(tiers)) {
-    # Named list format: list(tier1 = c("A", "B"), tier2 = c("C"))
-    tier_assignments <- integer(n_nodes)
-    names(tier_assignments) <- node_names
-
-    for (tier_idx in seq_along(tiers)) {
-      tier_nodes <- tiers[[tier_idx]]
-      if (!is.character(tier_nodes)) {
-        stop(
-          "Each tier in the list must be a character vector of node names",
-          call. = FALSE
-        )
-      }
-      for (node_name in tier_nodes) {
-        if (!(node_name %in% node_names)) {
-          stop(
-            "Node '",
-            node_name,
-            "' in tier ",
-            tier_idx,
-            " is not in the graph",
-            call. = FALSE
-          )
-        }
-        tier_assignments[node_name] <- tier_idx - 1 # 0-indexed
-      }
-    }
-  } else if (is.numeric(tiers) && !is.null(names(tiers))) {
-    # Named numeric vector format: c(A = 0, B = 0, C = 1)
-    tier_assignments <- as.integer(tiers)
-    names(tier_assignments) <- names(tiers)
-
-    # Check all nodes are present
-    if (!all(node_names %in% names(tier_assignments))) {
-      missing <- setdiff(node_names, names(tier_assignments))
-      stop(
-        "Missing tier assignments for nodes: ",
-        paste(missing, collapse = ", "),
-        call. = FALSE
-      )
-    }
-
-    # Reorder to match node order
-    tier_assignments <- tier_assignments[node_names]
-  } else if (is.data.frame(tiers)) {
-    # Data.frame format with columns 'name' and 'tier'
-    if (!all(c("name", "tier") %in% colnames(tiers))) {
-      stop(
-        "Data.frame must have columns 'name' and 'tier'",
-        call. = FALSE
-      )
-    }
-
-    tier_assignments <- integer(n_nodes)
-    names(tier_assignments) <- node_names
-
-    for (i in seq_len(nrow(tiers))) {
-      node_name <- as.character(tiers$name[i])
-      tier_idx <- as.integer(tiers$tier[i])
-
-      if (!(node_name %in% node_names)) {
-        stop(
-          "Node '",
-          node_name,
-          "' in tiers data.frame is not in the graph",
-          call. = FALSE
-        )
-      }
-
-      tier_assignments[node_name] <- tier_idx
-    }
-  } else {
-    stop(
-      "tiers must be a named list, named numeric vector, or data.frame ",
-      "with 'name' and 'tier' columns",
-      call. = FALSE
-    )
-  }
+  tier_assignments <- .tier_assignments(tiers, node_names)
 
   # Normalize tier indices to start from 0
   min_tier <- min(tier_assignments)
@@ -469,16 +470,7 @@ caugi_layout_tiered <- function(
     tier_assignments <- as.integer(tier_assignments - min_tier)
   }
 
-  # Validate: all nodes assigned, tiers are consecutive
-  if (anyNA(tier_assignments)) {
-    unassigned <- node_names[is.na(tier_assignments)]
-    stop(
-      "Nodes without tier assignments: ",
-      paste(unassigned, collapse = ", "),
-      call. = FALSE
-    )
-  }
-
+  # Validate: tiers are consecutive
   unique_tiers <- sort(unique(tier_assignments))
   num_tiers <- length(unique_tiers)
   expected_tiers <- seq(from = unique_tiers[1], length.out = num_tiers)

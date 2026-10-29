@@ -24,7 +24,9 @@
 #' @param from Character vector of source node names.
 #' Optional; mutually exclusive with `...`.
 #' @param edge Character vector of edge types.
-#' Optional; mutually exclusive with `...`.
+#' Optional; mutually exclusive with `...`. An `NA` edge, with `to` also `NA`,
+#' declares `from` as an isolated node, which is how [as.data.frame()] writes
+#' isolated nodes.
 #' @param to Character vector of target node names.
 #' Optional; mutually exclusive with `...`.
 #' @param nodes Character vector of node names to declare as isolated nodes.
@@ -34,7 +36,9 @@
 #' @param edges_df Optional data.frame or data.table with columns
 #' `from`, `edge`, and `to` to specify edges. Mutually exclusive with `...`
 #' and `from`, `edge`, `to`. Can be used to create graphs using `edges(cg)`
-#' from another `caugi` object, `cg`.
+#' from another `caugi` object, `cg`. Rows with an `NA` edge declare isolated
+#' nodes, so `caugi(edges_df = as.data.frame(cg))` keeps the isolated nodes of
+#' `cg`.
 #' @param simple Deprecated in caugi 1.4.0 and
 #' to be removed in 2.0.0; the graph class now decides whether multiple edges
 #' are allowed. If omitted (recommended), it is derived from `class`: `FALSE`
@@ -392,6 +396,21 @@ caugi <- S7::new_class(
           )
         }
       }
+    }
+
+    if (has_vec && anyNA(edge)) {
+      # A row with no edge declares an isolated node, as in as.data.frame().
+      iso <- is.na(edge)
+      if (anyNA(from[iso]) || !all(is.na(to[iso]))) {
+        stop(
+          "A row with `edge = NA` must have a `from` node and `to = NA`.",
+          call. = FALSE
+        )
+      }
+      nodes <- unique(c(nodes, from[iso]))
+      from <- from[!iso]
+      edge <- edge[!iso]
+      to <- to[!iso]
     }
 
     if (

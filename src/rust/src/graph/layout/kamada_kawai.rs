@@ -78,19 +78,11 @@ fn compute_shortest_paths(graph: &CaugiGraph, n: usize) -> Vec<f64> {
         while let Some(u) = queue.pop_front() {
             let range = graph.row_range(u as u32);
             for idx in range {
+                // Every edge counts, in either direction, for graph distances.
                 let v = graph.col_index[idx] as usize;
-                let etype = graph.etype[idx];
-
-                // Consider all edges (treat as undirected for distance purposes)
-                let spec = &graph.registry.specs[etype as usize];
 
                 // Skip if already visited
                 if visited[v] {
-                    continue;
-                }
-
-                // For symmetric edges, only process once per pair
-                if spec.symmetric && u > v {
                     continue;
                 }
 

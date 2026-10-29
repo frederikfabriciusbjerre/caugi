@@ -7,7 +7,7 @@
 generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"), seed = NULL)
 }
 \arguments{
-\item{n}{Integer >= 0. Number of nodes in the graph.}
+\item{n}{Integer >= 1. Number of nodes in the graph.}
 
 \item{m}{Integer in \verb{0, n*(n-1)/2}. Number of edges in the graph. Exactly one
 of \code{m} or \code{p} must be supplied.}

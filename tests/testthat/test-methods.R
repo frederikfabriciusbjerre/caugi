@@ -255,3 +255,50 @@ test_that("asymmetric edges stay direction-sensitive", {
     caugi(A %o->% B, class = "UNKNOWN") == caugi(B %o->% A, class = "UNKNOWN")
   )
 })
+
+test_that("summary() counts nodes and edges by type (#445)", {
+  cg <- caugi(A %-->% B + C, B %---% C, D, class = "PDAG")
+  s <- summary(cg)
+  expect_s3_class(s, "caugi_summary")
+  expect_equal(s$graph_class, "PDAG")
+  expect_equal(s$n_nodes, 4L)
+  expect_equal(s$n_edges, 3L)
+  expect_equal(as.integer(s$edge_types[c("-->", "---")]), c(2L, 1L))
+  expect_output(print(s), "<caugi PDAG: 4 nodes, 3 edges>")
+  expect_output(print(summary(caugi(A, B))), "0 edges")
+})
+
+test_that("as.data.frame() returns edges and isolated nodes (#446)", {
+  cg <- caugi(A %-->% B + C, B %---% C, D, class = "PDAG")
+  df <- as.data.frame(cg)
+  expect_s3_class(df, "data.frame")
+  expect_false(inherits(df, "data.table"))
+  expect_equal(
+    df,
+    data.frame(
+      from = c("A", "A", "B", "D"),
+      edge = c("-->", "-->", "---", NA),
+      to = c("B", "C", "C", NA)
+    )
+  )
+  expect_true(caugi(edges_df = df, class = "PDAG") == cg)
+
+  isolates <- caugi(A, B)
+  expect_equal(as.data.frame(isolates)$from, c("A", "B"))
+  expect_true(caugi(edges_df = as.data.frame(isolates)) == isolates)
+  expect_equal(nrow(as.data.frame(caugi())), 0L)
+})
+
+test_that("caugi() reads rows with an NA edge as isolated nodes (#446)", {
+  cg <- caugi(from = c("A", "D"), edge = c("-->", NA), to = c("B", NA))
+  expect_equal(nodes(cg)$name, c("A", "B", "D"))
+  expect_equal(nrow(edges(cg)), 1L)
+  expect_error(
+    caugi(from = "A", edge = NA_character_, to = "B"),
+    "must have a `from` node and `to = NA`"
+  )
+  expect_error(
+    caugi(from = NA_character_, edge = NA_character_, to = NA_character_),
+    "must have a `from` node"
+  )
+})

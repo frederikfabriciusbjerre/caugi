@@ -237,16 +237,29 @@ pub fn deserialize_graphml(
         Ok((from, to))
     }
 
-    let default_edge = "-->";
-    if registry.code_of(default_edge).is_err() {
-        return Err(format!("Unknown default edge type: {}", default_edge));
-    }
+    // Edges without edge_type data follow <graph edgedefault="...">.
+    let mut default_edge = "-->";
 
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(e)) => match e.name().as_ref() {
                 b"graph" => {
                     graph_depth += 1;
+                    if graph_depth == 1 {
+                        for attr in e.attributes() {
+                            let attr = attr.map_err(|e| e.to_string())?;
+                            if attr.key.as_ref() == b"edgedefault" {
+                                default_edge = if attr.value.as_ref() == b"undirected" {
+                                    "---"
+                                } else {
+                                    "-->"
+                                };
+                            }
+                        }
+                        if registry.code_of(default_edge).is_err() {
+                            return Err(format!("Unknown default edge type: {}", default_edge));
+                        }
+                    }
                 }
 
                 b"node" if graph_depth == 1 => {

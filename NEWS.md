@@ -2,6 +2,14 @@
 
 ## New Features
 
+* `as.data.frame()` method for `caugi` objects, returning the edge list as a
+  plain data.frame with one extra row per isolated node (`edge` and `to` are
+  `NA`). `caugi()` reads such rows back as isolated nodes, so
+  `caugi(edges_df = as.data.frame(cg))` keeps every node (#446).
+
+* `summary()` method for `caugi` objects, giving the class, the number of
+  nodes and edges, and edge counts by type (#445).
+
 * `caugi_options(reset = TRUE)` resets all options to their defaults.
   `caugi_options(caugi_default_options())` did not, since it only merges into
   the current options and so keeps keys that are not in the defaults.
@@ -27,6 +35,48 @@
 
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
   accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
+
+- caugi's JSON output now validates against its published schema: the schema
+  allows the top-level `$schema` key that every file has, and its class list
+  includes MPDAG, CPDAG and AG (#419).
+
+- Removed doc claims of support that does not exist: `minimal_separator()` no
+  longer lists CPDAG and RCG, `write_caugi()`/`caugi_serialize()` take a
+  `caugi` object (not anything coercible to one), and the serialization
+  vignette no longer lists circle edges as valid in a PDAG (#457).
+
+- Fixed wrong defaults in the docs: the `plot()` layout list now includes
+  `"tiered"` and `"circle"`, `tier_style` documents that boxes and labels are
+  shown by default, and `generate_graph()` documents `n >= 1` (#454).
+
+- Fixed doc examples whose stated output was wrong: `is_cpdag()` (the triangle
+  is not a CPDAG), `aid()` and the `minimal_separator()` ADMG example (#456).
+
+- The tiered layout and `plot(tiers = )` now error on nodes without a tier
+  instead of silently putting them in tier 0. Unknown nodes, nodes in more
+  than one tier, `NA` and non-whole tiers are checked the same way for every
+  `tiers` format (#428).
+
+- `plot()` now matches the output of a custom layout function to the nodes by
+  name, so a function that returns rows in a different order no longer
+  mislabels the nodes (and reverses arrows). Its output gets the same checks
+  as a precomputed layout (#427).
+
+- The Sugiyama layout, and so the default `plot()`, no longer panics on graphs
+  with self-loops; self-loops are left out of the layering (#422).
+
+- The Kamada-Kawai layout now uses correct graph distances for symmetric edges
+  (`---`, `<->`, `o-o`). Its distance search skipped symmetric edges from a
+  higher- to a lower-index node, which distorted every layout of a UG, CPDAG
+  or ADMG (#420).
+
+- `register_caugi_edge()` now rejects glyphs that contain whitespace.
+  `read_graphml()` trims `<data>` text, so a glyph such as `" ~ "` could be
+  registered and written but not read back (#416).
+
+- `read_graphml()` now reads edges without an `edge_type` as `---` when the
+  graph declares `edgedefault="undirected"`, as documented, instead of always
+  as `-->` (#415).
 
 - `read_graphml()` now reads self-closing `<edge .../>` elements, the usual
   way other tools write edges without data, instead of silently dropping them

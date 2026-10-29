@@ -33,8 +33,10 @@ length(cg2) # 5
 }
 \seealso{
 Other caugi methods:
+\code{\link[=as.data.frame.caugi]{as.data.frame.caugi()}},
 \code{\link{caugi-equality}},
-\code{\link[=print.caugi]{print.caugi()}}
+\code{\link[=print.caugi]{print.caugi()}},
+\code{\link[=summary.caugi]{summary.caugi()}}
 }
 \concept{caugi methods}
 \concept{methods}

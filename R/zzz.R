@@ -75,6 +75,12 @@
     `!=.caugi::caugi`,
     envir = asNamespace("base")
   )
+  registerS3method(
+    "print",
+    "caugi_summary",
+    print.caugi_summary,
+    envir = asNamespace("base")
+  )
 }
 
 # nocov end
