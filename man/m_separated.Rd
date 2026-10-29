@@ -15,7 +15,7 @@ m_separated(
 )
 }
 \arguments{
-\item{cg}{A \code{caugi} object of class AG, ADMG, or DAG.}
+\item{cg}{A \code{caugi} object of class AG, ADMG, DAG, or UG.}
 
 \item{X, Y, Z}{Character vectors of node names, or \code{NULL}. Use \verb{*_index} to
 pass 1-based indices. If \code{Z} is \code{NULL} or missing, no nodes are conditioned
@@ -32,6 +32,8 @@ Test whether two sets of nodes are m-separated given a
 conditioning set in an ancestral graph (AG) or an ADMG.
 
 M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs.
+On a UG it reduces to plain graph separation: every path from \code{X} to \code{Y}
+passes through \code{Z}.
 }
 \examples{
 # Classic confounding example

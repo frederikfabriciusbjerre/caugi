@@ -139,12 +139,6 @@ remove_edges <- function(
   }
 
   if (has_vec && is.null(edge)) {
-    if (!cg@simple) {
-      stop(
-        "When removing edges without specifying `edge`, `cg` must be simple.",
-        call. = FALSE
-      )
-    }
     if (is.null(from) || is.null(to)) {
       stop(
         "`from` and `to` must be supplied when `edge` is omitted.",

@@ -817,8 +817,7 @@ test_that("plot handles self-loop edges for circle rendering", {
   # Create a graph with a self-loop (zero-length edge case)
   cg <- caugi(
     A %o->% A,
-    class = "UNKNOWN",
-    simple = FALSE
+    class = "UNKNOWN"
   )
 
   pdf(NULL)

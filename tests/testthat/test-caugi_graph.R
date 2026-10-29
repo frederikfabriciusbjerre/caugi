@@ -115,83 +115,119 @@ test_that("nodes does not drop isolates declared in the DSL", {
 # ─────────────────────────── Simple / non-simple ──────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that("building graph with simple = FALSE needs class = UNKNOWN", {
-  expect_error(
-    caugi(
-      A %-->% B,
-      B %---% C,
-      class = "DAG",
-      simple = FALSE
+test_that("explicit `simple` is deprecated but still honoured", {
+  expect_warning(
+    cg <- caugi(A %-->% B, class = "UNKNOWN", simple = TRUE),
+    class = "caugi_deprecated_simple"
+  )
+  expect_true(cg@simple)
+  expect_warning(
+    caugi(A %-->% B, class = "DAG", simple = TRUE),
+    "deprecated and will be removed in caugi 2.0.0"
+  )
+  m <- matrix(c(0L, 1L, 0L, 0L), 2, dimnames = list(c("A", "B"), c("A", "B")))
+  expect_warning(
+    as_caugi(m, class = "UNKNOWN", simple = FALSE),
+    class = "caugi_deprecated_simple"
+  )
+  expect_no_warning(caugi(A %-->% B, class = "UNKNOWN"))
+  expect_no_warning(as_caugi(m, class = "DAG"))
+
+  # simple = FALSE still needs UNKNOWN, ADMG or AG
+  for (cls in c("DAG", "PDAG")) {
+    expect_error(
+      suppressWarnings(caugi(
+        A %-->% B,
+        B %---% C,
+        class = cls,
+        simple = FALSE
+      )),
+      "If simple = FALSE, class must be"
     )
+  }
+  expect_false(
+    suppressWarnings(caugi(A %-->% B, class = "AG", simple = FALSE))@simple
   )
+
+  # simple = TRUE still forbids multi-edges in UNKNOWN and ADMG
   expect_error(
-    caugi(
-      A %-->% B,
-      B %---% C,
-      class = "PDAG",
-      simple = FALSE
-    )
-  )
-  expect_s7_class(
-    caugi(
-      A %-->% B,
-      B %---% C,
-      class = "UNKNOWN",
-      simple = FALSE
-    ),
-    caugi
-  )
-})
-
-test_that("non-simple graphs allows self loops and parallel edges", {
-  expect_s7_class(
-    caugi(
-      A %-->% A,
-      B %---% C,
-      class = "UNKNOWN",
-      simple = FALSE
-    ),
-    caugi
-  )
-  expect_s7_class(
-    caugi(
-      A %-->% B,
-      A %<->% B,
-      class = "UNKNOWN",
-      simple = FALSE
-    ),
-    caugi
-  )
-
-  expect_s7_class(
-    caugi(
-      A %-->% B,
-      A %o->% A,
-      class = "UNKNOWN",
-      simple = FALSE
-    ),
-    caugi
-  )
-})
-
-test_that("building graph with simple = TRUE disallows parallel edges", {
-  expect_error(
-    caugi(
+    suppressWarnings(caugi(
       A %-->% B,
       A %---% B,
       class = "UNKNOWN",
       simple = TRUE
-    )
+    )),
+    "Parallel edges"
   )
-  expect_s7_class(
-    caugi(
+  expect_error(
+    suppressWarnings(caugi(
       A %-->% B,
-      B %---% C,
-      class = "UNKNOWN",
+      A %<->% B,
+      class = "ADMG",
       simple = TRUE
-    ),
-    caugi
+    )),
+    "Parallel edges"
   )
+})
+
+test_that("the class decides the default for multi-edges and self-loops", {
+  # UNKNOWN: anything goes
+  cg <- caugi(A %-->% A, B %---% C, class = "UNKNOWN")
+  expect_false(cg@simple)
+  expect_false(is_simple(cg))
+  expect_s7_class(caugi(A %-->% B, A %<->% B, class = "UNKNOWN"), caugi)
+  expect_s7_class(caugi(A %-->% B, A %o->% A, class = "UNKNOWN"), caugi)
+  expect_s7_class(caugi(A %-->% B, B %-->% A, class = "UNKNOWN"), caugi)
+  expect_error(
+    caugi(
+      from = c("A", "A"),
+      edge = c("-->", "-->"),
+      to = c("B", "B"),
+      class = "UNKNOWN"
+    ),
+    "Duplicate edge"
+  )
+
+  # ADMG: bows are fine, self-loops are not
+  bow <- caugi(A %-->% B, A %<->% B, class = "ADMG")
+  expect_false(bow@simple)
+  expect_false(is_simple(bow))
+  expect_error(caugi(A %<->% A, class = "ADMG"), "self-loop")
+  expect_error(caugi(A %-->% A, class = "ADMG"), "self-loop|directed cycle")
+
+  # everything else is simple
+  expect_true(caugi(A %-->% B, class = "AG")@simple)
+  expect_error(caugi(A %-->% B, A %---% B, class = "PDAG"), "Parallel edges")
+  expect_error(caugi(A %-->% B, A %<->% B, class = "AG"), "Parallel edges")
+  expect_error(caugi(A %---% B, A %-->% B, class = "UG"), "Parallel edges")
+  expect_error(caugi(A %-->% B, B %-->% A, class = "DAG"), "Parallel edges")
+  expect_error(caugi(A %-->% A, class = "DAG"), "Self-loops")
+})
+
+test_that("AUTO resolves graphs with multi-edges to ADMG or UNKNOWN", {
+  bow <- caugi(A %-->% B, A %<->% B)
+  expect_identical(bow@graph_class, "ADMG")
+  expect_false(bow@simple)
+  expect_equal(spouses(bow, "A"), "B")
+
+  for (cg in list(
+    caugi(A %-->% B, A %---% B),
+    caugi(A %<->% A),
+    caugi(A %-->% B, B %-->% A)
+  )) {
+    expect_identical(cg@graph_class, "UNKNOWN")
+    expect_false(cg@simple)
+    expect_false(is_simple(cg))
+  }
+
+  # simple graphs take the default of the class they resolve to
+  dag <- caugi(A %-->% B, B %-->% C)
+  expect_identical(dag@graph_class, "DAG")
+  expect_true(dag@simple)
+  expect_true(is_simple(dag))
+  expect_error(add_edges(dag, A %<->% B), "Parallel edges")
+  expect_false(caugi(A %-->% B, C %<->% B)@simple) # ADMG
+  expect_false(caugi()@simple) # empty -> UNKNOWN
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -466,14 +502,13 @@ test_that("caugi(vector mode) respects class and simple rules", {
     )
   )
 
-  # simple = TRUE disallows parallel edges under UNKNOWN
+  # parallel edges are rejected for simple classes
   expect_error(
     caugi(
       from = c("A", "A"),
       edge = c("-->", "<->"),
       to = c("B", "B"),
-      class = "UNKNOWN",
-      simple = TRUE
+      class = "AG"
     )
   )
 })
@@ -1005,19 +1040,21 @@ test_that("deprecated property setters warn then error", {
 
 test_that("validator catches simple=FALSE for non-ADMG/AG classes", {
   expect_error(
-    caugi(A %-->% B, class = "DAG", simple = FALSE),
+    suppressWarnings(caugi(A %-->% B, class = "DAG", simple = FALSE)),
     "If simple = FALSE, class must be"
   )
   expect_error(
-    caugi(A %-->% B, class = "PDAG", simple = FALSE),
+    suppressWarnings(caugi(A %-->% B, class = "PDAG", simple = FALSE)),
     "If simple = FALSE, class must be"
   )
 })
 
 test_that("ADMG and AG allow simple=FALSE", {
-  expect_s7_class(caugi(A %-->% B, class = "ADMG", simple = FALSE), caugi)
-  expect_s7_class(caugi(A %-->% B, class = "AG", simple = FALSE), caugi)
-  expect_s7_class(caugi(A %-->% B, class = "UNKNOWN", simple = FALSE), caugi)
+  suppressWarnings({
+    expect_s7_class(caugi(A %-->% B, class = "ADMG", simple = FALSE), caugi)
+    expect_s7_class(caugi(A %-->% B, class = "AG", simple = FALSE), caugi)
+    expect_s7_class(caugi(A %-->% B, class = "UNKNOWN", simple = FALSE), caugi)
+  })
 })
 
 test_that("validator branch for non-simple DAG is covered", {

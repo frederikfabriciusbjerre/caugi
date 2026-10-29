@@ -9,9 +9,9 @@ is_simple(cg, force_check = FALSE)
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{force_check}{Logical; if \code{TRUE}, force a check against the compiled
-graph representation. If \code{FALSE} (default), return the declared \code{simple}
-property.}
+\item{force_check}{Ignored. Since caugi 1.4.0 the check always runs
+against the graph itself, since the deprecated \code{simple} flag no longer
+tells whether a graph has parallel edges or self-loops.}
 }
 \value{
 A logical value indicating whether the graph is simple.
@@ -30,8 +30,7 @@ is_simple(cg_simple) # TRUE
 cg_nonsimple <- caugi(
   A \%-->\% B,
   A \%<->\% B,
-  class = "UNKNOWN",
-  simple = FALSE
+  class = "UNKNOWN"
 )
 is_simple(cg_nonsimple) # FALSE
 
