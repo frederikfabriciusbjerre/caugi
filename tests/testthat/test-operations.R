@@ -928,6 +928,50 @@ test_that("meek_closure applies Meek's rule R4 (#379)", {
   )
 })
 
+test_that("PDAGs with no DAG extension are not MPDAGs or CPDAGs (#380)", {
+  # R1 forces K -> X, which adds the v-structure K -> X <- Z.
+  g <- caugi(G %-->% K, K %---% X, Z %-->% X, class = "PDAG")
+  expect_false(is_mpdag(g))
+  expect_false(is_cpdag(g))
+  expect_error(
+    caugi(G %-->% K, K %---% X, Z %-->% X, class = "MPDAG"),
+    "not MPDAG"
+  )
+  expect_equal(caugi(G %-->% K, K %---% X, Z %-->% X)@graph_class, "PDAG")
+  expect_error(meek_closure(g), "no consistent DAG extension")
+
+  c2 <- caugi(
+    A %-->% K,
+    B %-->% K,
+    K %---% X,
+    C %-->% X,
+    D %-->% X,
+    class = "PDAG"
+  )
+  expect_false(is_cpdag(c2))
+
+  # count_dags()/enumerate_dags() return nothing for such PDAGs (#381).
+  pd <- caugi(
+    Z %-->% X,
+    X %---% D,
+    D %---% O,
+    O %---% Z,
+    X %---% Y,
+    Y %---% Z,
+    class = "PDAG"
+  )
+  expect_equal(count_dags(pd), 0)
+  expect_length(enumerate_dags(pd), 0L)
+
+  # A chordless 4-cycle has no directed edge for R1 to catch.
+  cyc <- caugi(A %---% B, B %---% C, C %---% D, D %---% A, class = "PDAG")
+  expect_false(is_mpdag(cyc))
+  expect_error(
+    caugi(A %---% B, B %---% C, C %---% D, D %---% A, class = "MPDAG"),
+    "no consistent DAG extension"
+  )
+})
+
 test_that("meek_closure is idempotent and preserves node names", {
   g <- caugi(
     B %---% A,
@@ -1092,13 +1136,10 @@ test_that("pgmpy Meek fixtures: meek_closure on PDAG applies Meek closure", {
     edge_set(caugi(A %-->% B, B %-->% C, C %-->% D, class = "PDAG"))
   )
 
-  # Case 3 (pgmpy fixture): keep B-C undirected.
+  # Case 3 (pgmpy fixture): either orientation of B-C adds a v-structure,
+  # so no DAG extends this PDAG. pgmpy keeps B-C undirected; caugi errors.
   pdag3 <- caugi(A %-->% B, D %-->% C, B %---% C, class = "PDAG")
-  cpdag3 <- cpdag_from_pdag(pdag3)
-  expect_setequal(
-    edge_set(cpdag3),
-    edge_set(pdag3)
-  )
+  expect_error(cpdag_from_pdag(pdag3), "no consistent DAG extension")
 
   # Case 4 (pgmpy fixture): extra parent evidence orients B->C.
   pdag4 <- caugi(
