@@ -209,6 +209,16 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+## Deprecations
+
+* The `force_check` argument of `is_acyclic()`, `is_simple()`, `is_dag()`,
+  `is_pdag()`, `is_ug()`, `is_admg()`, `is_ag()` and `is_mag()` is deprecated
+  and warns when passed. Drop it; nothing replaces it, since the graph class
+  is already checked when the graph is built. The predicates also now answer
+  from every class that implies the answer, e.g. `is_pdag()` on a DAG or UG,
+  `is_admg()` on a DAG, and `is_mag()` on a DAG or UG, which skips the
+  exponential MAG search; the results are unchanged (#304).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.
