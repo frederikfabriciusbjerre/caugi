@@ -9,6 +9,8 @@ single value, while `.resolve_idx0_mget` can return multiple values.
 ``` r
 .resolve_idx0_get(session, node_name = NULL, node_index = NULL)
 
+.resolve_idx0_xy(session, node_name, node_index, arg)
+
 .resolve_idx0_mget(session, node_name = NULL, node_index = NULL)
 ```
 

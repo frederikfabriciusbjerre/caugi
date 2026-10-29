@@ -403,7 +403,7 @@ pipeline (`task all`) and per-language details.
 
 ## Session Info
 
-    #> R version 4.6.1 (2026-06-24)
+    #> R version 4.6.2 (2026-10-29)
     #> Platform: x86_64-pc-linux-gnu
     #> Running under: Ubuntu 26.04.1 LTS
     #> 
@@ -431,10 +431,10 @@ pipeline (`task all`) and per-language details.
     #>  [5] xfun_0.62          otel_0.2.0         generics_0.1.4     S7_0.2.2          
     #>  [9] textshaping_1.0.5  jsonlite_2.0.0     glue_1.8.1         htmltools_0.5.9   
     #> [13] ragg_1.5.2         sass_0.4.10        scales_1.4.0       rmarkdown_2.32    
-    #> [17] grid_4.6.1         tibble_3.3.1       evaluate_1.0.5     jquerylib_0.1.4   
-    #> [21] fastmap_1.2.0      yaml_2.3.12        lifecycle_1.0.5    compiler_4.6.1    
+    #> [17] grid_4.6.2         tibble_3.3.1       evaluate_1.0.5     jquerylib_0.1.4   
+    #> [21] fastmap_1.2.0      yaml_2.3.12        lifecycle_1.0.5    compiler_4.6.2    
     #> [25] dplyr_1.2.1        RColorBrewer_1.1-3 fs_2.1.0           pkgconfig_2.0.3   
     #> [29] htmlwidgets_1.6.4  farver_2.1.2       systemfonts_1.3.2  digest_0.6.39     
     #> [33] R6_2.6.1           tidyselect_1.2.1   pillar_1.11.1      magrittr_2.0.5    
-    #> [37] bslib_0.12.0       withr_3.0.3        tools_4.6.1        gtable_0.3.6      
+    #> [37] bslib_0.12.0       withr_3.0.3        tools_4.6.2        gtable_0.3.6      
     #> [41] pkgdown_2.2.1      cachem_1.1.0       desc_1.4.3

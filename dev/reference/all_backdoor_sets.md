@@ -1,7 +1,9 @@
 # Get all backdoor sets up to a certain size.
 
 This function returns the backdoor sets up to size `max_size`, which per
-default is set to 10.
+default is set to 3. A set is a backdoor set when
+[`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
+accepts it, i.e. it satisfies the generalized back-door criterion.
 
 ## Usage
 
@@ -25,7 +27,7 @@ all_backdoor_sets(
 
 - X, Y:
 
-  Single node name.
+  Node names; one or more each, and disjoint.
 
 - X_index, Y_index:
 

@@ -20,7 +20,25 @@
   warning, since the total effect on them is zero. A dropped node can
   itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
+- [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md),
+  [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
+  and [`d_separated()`](https://caugi.org/dev/reference/d_separated.md)
+  now accept several treatments `X` and outcomes `Y` on DAGs. The
+  back-door functions use the generalized back-door criterion of
+  Maathuis & Colombo (2015, Def. 3.7): `Z` contains no descendant of
+  `X`, and for each treatment `Xi`, `Z` together with the other
+  treatments blocks every back-door path from `Xi` to `Y`. With one
+  treatment and one outcome this is Pearl’s back-door criterion, so
+  single-pair results are unchanged.
+  [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
+  is now linear in the graph size; it was cubic in the number of parents
+  of `X`.
+
 ### Bug Fixes
+
+- [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
+  now rejects a `Z` that contains a node of `Y`. It accepted, for
+  example, `Z = "Y"` for `X <-- U --> Y`.
 
 - [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md)
   now reads self-closing `<edge .../>` elements, the usual way other

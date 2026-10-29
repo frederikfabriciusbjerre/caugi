@@ -68,4 +68,6 @@ d_separated(cg, "X", "Y", Z = c("A", "D")) # TRUE
 #> [1] TRUE
 d_separated(cg, "X", "Y", Z = NULL) # FALSE
 #> [1] FALSE
+d_separated(cg, c("C", "X"), c("K", "Y"), Z = c("A", "D")) # TRUE
+#> [1] TRUE
 ```

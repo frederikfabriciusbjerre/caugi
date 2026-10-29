@@ -1,6 +1,8 @@
 # Is a backdoor set valid?
 
-Checks whether `Z` is a valid backdoor adjustment set for `X --> Y`.
+Checks whether `Z` satisfies the generalized back-door criterion
+relative to `X` and `Y` in a DAG. `X` and `Y` can each hold one or more
+nodes.
 
 ## Usage
 
@@ -24,7 +26,7 @@ is_valid_backdoor(
 
 - X, Y:
 
-  Single node names.
+  Node names; one or more each, and disjoint.
 
 - Z:
 
@@ -37,6 +39,31 @@ is_valid_backdoor(
 ## Value
 
 Logical value indicating if backdoor is valid or not.
+
+## Details
+
+`Z` satisfies the generalized back-door criterion (Maathuis & Colombo,
+2015, Def. 3.7) when
+
+1.  `Z` contains no descendant of `X`, and
+
+2.  for every node \\X_i\\ in `X`, \\Z \cup X \setminus \\X_i\\\\ blocks
+    every back-door path (a path starting with an edge into \\X_i\\)
+    from \\X_i\\ to `Y`.
+
+With one treatment and one outcome this is Pearl's back-door criterion.
+With several treatments it can accept sets that Pearl's set version
+rejects, since that version requires `Z` alone to block every back-door
+path of each treatment. Every set accepted here is a valid adjustment
+set, but a valid adjustment set may be rejected, for example one
+containing a descendant of `X` off the causal paths. A `Z` that contains
+a node of `X` or `Y` is never valid.
+
+## References
+
+Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
+*The Annals of Statistics*, 43(3), 1060–1088.
+[doi:10.1214/14-AOS1295](https://doi.org/10.1214/14-AOS1295) .
 
 ## See also
 
@@ -69,5 +96,10 @@ is_valid_backdoor(cg, X = "X", Y = "Y", Z = NULL) # FALSE
 is_valid_backdoor(cg, X = "X", Y = "Y", Z = "K") # TRUE
 #> [1] TRUE
 is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("A", "C")) # TRUE
+#> [1] TRUE
+
+# Several treatments: X2 blocks X1 <-- X2 --> Y, so no adjustment is needed
+cg2 <- caugi(X2 %-->% X1 + Y, X1 %-->% Y, class = "DAG")
+is_valid_backdoor(cg2, X = c("X1", "X2"), Y = "Y", Z = NULL) # TRUE
 #> [1] TRUE
 ```
