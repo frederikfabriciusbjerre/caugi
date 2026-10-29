@@ -268,3 +268,13 @@ test_that("summary() counts nodes and edges by type (#445)", {
   expect_output(print(s), "<caugi PDAG: 4 nodes, 3 edges>")
   expect_output(print(summary(caugi(A, B))), "0 edges")
 })
+
+test_that("as.data.frame() returns the edge list (#446)", {
+  cg <- caugi(A %-->% B + C, B %---% C, D, class = "PDAG")
+  df <- as.data.frame(cg)
+  expect_s3_class(df, "data.frame")
+  expect_false(inherits(df, "data.table"))
+  expect_equal(df, as.data.frame(edges(cg)))
+  expect_named(df, c("from", "edge", "to"))
+  expect_equal(nrow(as.data.frame(caugi(A, B))), 0L)
+})

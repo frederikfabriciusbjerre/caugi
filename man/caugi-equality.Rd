@@ -45,6 +45,7 @@ caugi(A \%-->\% B, class = "DAG") == caugi(B \%-->\% A, class = "DAG") # FALSE
 }
 \seealso{
 Other caugi methods:
+\code{\link[=as.data.frame.caugi]{as.data.frame.caugi()}},
 \code{\link[=length.caugi]{length.caugi()}},
 \code{\link[=print.caugi]{print.caugi()}},
 \code{\link[=summary.caugi]{summary.caugi()}}

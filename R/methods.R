@@ -258,6 +258,37 @@ summary.caugi <- function(object, ...) {
 }
 S7::method(summary, caugi) <- summary.caugi
 
+#' Convert a `caugi` to a data.frame
+#'
+#' @description Returns the edge list as a plain `data.frame` with columns
+#' `from`, `edge` and `to`, one row per edge. Isolated nodes have no row; use
+#' [nodes()] for the full node set.
+#'
+#' @param x A `caugi` object.
+#' @param row.names,optional Passed to [base::as.data.frame()].
+#' @param ... Passed to [base::as.data.frame()].
+#'
+#' @returns A `data.frame` with columns `from`, `edge` and `to`.
+#'
+#' @examples
+#' cg <- caugi(A %-->% B + C, B %---% C, class = "PDAG")
+#' as.data.frame(cg)
+#'
+#' @family caugi methods
+#' @concept methods
+#'
+#' @export
+as.data.frame.caugi <- function(x, row.names = NULL, optional = FALSE, ...) {
+  as.data.frame(
+    as.list(x@edges),
+    row.names = row.names,
+    optional = optional,
+    stringsAsFactors = FALSE,
+    ...
+  )
+}
+S7::method(as.data.frame, caugi) <- as.data.frame.caugi
+
 #' @rdname summary.caugi
 #' @export
 print.caugi_summary <- function(x, ...) {

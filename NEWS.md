@@ -2,6 +2,9 @@
 
 ## New Features
 
+* `as.data.frame()` method for `caugi` objects, returning the edge list as a
+  plain data.frame (#446).
+
 * `summary()` method for `caugi` objects, giving the class, the number of
   nodes and edges, and edge counts by type (#445).
 
