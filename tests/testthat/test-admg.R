@@ -475,7 +475,7 @@ test_that("ancestors and descendants work for ADMG", {
   expect_equal(sort(descendants(admg, "A")), c("B", "C"))
 })
 
-test_that("markov_blanket uses district-based definition", {
+test_that("markov_blanket includes children and district members", {
   admg <- caugi(
     L %-->% X,
     X %-->% Y,
@@ -485,15 +485,8 @@ test_that("markov_blanket uses district-based definition", {
 
   mb_x <- markov_blanket(admg, "X")
 
-  # MB(X) = Pa(Dis(X)) U (Dis(X) \ {X})
-  # Dis(X) = {X, Z} (nodes connected via bidirected edges)
-
-  # Pa(Dis(X)) = Pa(X) U Pa(Z) = {L} U {} = {L}
-  # Dis(X) \ {X} = {Z}
-  # MB(X) = {L, Z}
-  expect_true("L" %in% mb_x) # Parent of X
-  expect_true("Z" %in% mb_x) # Spouse (district member)
-  expect_false("Y" %in% mb_x) # Child is NOT in MB under district-based definition
+  # Every node joined to X by a collider path: parent L, child Y, spouse Z.
+  expect_setequal(mb_x, c("L", "Y", "Z"))
 })
 
 test_that("markov_blanket includes parents of district members", {
