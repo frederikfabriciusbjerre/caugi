@@ -856,7 +856,9 @@ neighbours <- neighbors
 #' @param open Logical. If `TRUE` (the default), use the open definition: a
 #'   node is not its own ancestor, so the queried node is left out of the
 #'   result. If `FALSE`, use the closed definition: a node is its own
-#'   ancestor, so the queried node is included in the result.
+#'   ancestor, so the queried node is included in the result. The deprecated
+#'   `use_open_graph_definition` option of [caugi_options()] still sets the
+#'   default.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -888,7 +890,7 @@ formals(ancestors) <- alist(
   cg = ,
   nodes = NULL,
   index = NULL,
-  open = TRUE
+  open = .open_default()
 )
 
 #' @title Get descendants of nodes in a `caugi`
@@ -897,7 +899,9 @@ formals(ancestors) <- alist(
 #' @param open Logical. If `TRUE` (the default), use the open definition: a
 #'   node is not its own descendant, so the queried node is left out of the
 #'   result. If `FALSE`, use the closed definition: a node is its own
-#'   descendant, so the queried node is included in the result.
+#'   descendant, so the queried node is included in the result. The deprecated
+#'   `use_open_graph_definition` option of [caugi_options()] still sets the
+#'   default.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -929,7 +933,7 @@ formals(descendants) <- alist(
   cg = ,
   nodes = NULL,
   index = NULL,
-  open = TRUE
+  open = .open_default()
 )
 
 #' @title Get anteriors of nodes in a `caugi`
@@ -948,7 +952,9 @@ formals(descendants) <- alist(
 #' @param open Logical. If `TRUE` (the default), use the open definition: a
 #'   node is not its own anterior, so the queried node is left out of the
 #'   result. If `FALSE`, use the closed definition: a node is its own
-#'   anterior, so the queried node is included in the result.
+#'   anterior, so the queried node is included in the result. The deprecated
+#'   `use_open_graph_definition` option of [caugi_options()] still sets the
+#'   default.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -986,7 +992,7 @@ formals(anteriors) <- alist(
   cg = ,
   nodes = NULL,
   index = NULL,
-  open = TRUE
+  open = .open_default()
 )
 
 #' @title Get posteriors of nodes in a `caugi`
@@ -1006,7 +1012,9 @@ formals(anteriors) <- alist(
 #' @param open Logical. If `TRUE` (the default), use the open definition: a
 #'   node is not its own posterior, so the queried node is left out of the
 #'   result. If `FALSE`, use the closed definition: a node is its own
-#'   posterior, so the queried node is included in the result.
+#'   posterior, so the queried node is included in the result. The deprecated
+#'   `use_open_graph_definition` option of [caugi_options()] still sets the
+#'   default.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #'   requested) or a list of character vectors (if multiple nodes are requested).
@@ -1041,7 +1049,7 @@ formals(posteriors) <- alist(
   cg = ,
   nodes = NULL,
   index = NULL,
-  open = TRUE
+  open = .open_default()
 )
 
 #' @title Get Markov blanket of nodes in a `caugi`

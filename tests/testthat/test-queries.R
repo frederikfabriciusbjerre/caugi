@@ -1613,6 +1613,33 @@ test_that("ancestors, anteriors, descendants, posteriors default to open = TRUE"
   expect_equal(posteriors(cg, "A"), c("B", "C", "D"))
 })
 
+test_that("setting use_open_graph_definition warns and still sets the open default", {
+  on.exit(caugi_options(reset = TRUE), add = TRUE)
+  cg <- caugi(
+    A %-->% B %---% C,
+    B %-->% D,
+    class = "PDAG"
+  )
+
+  expect_warning(
+    caugi_options(use_open_graph_definition = FALSE),
+    class = "deprecatedWarning"
+  )
+  expect_no_warning(
+    expect_false(caugi_options("use_open_graph_definition"))
+  )
+  # Restoring all options does not warn
+  expect_no_warning(caugi_options(caugi_options()))
+
+  expect_equal(ancestors(cg, "B"), c("B", "A"))
+  expect_equal(anteriors(cg, "C"), c("C", "A", "B"))
+  expect_equal(descendants(cg, "A"), c("A", "B", "D"))
+  expect_equal(posteriors(cg, "A"), c("A", "B", "C", "D"))
+
+  # An explicit `open` overrides the option
+  expect_equal(ancestors(cg, "B", open = TRUE), "A")
+})
+
 test_that("getter and districts branches are covered", {
   cg <- caugi(
     A %-->% B,

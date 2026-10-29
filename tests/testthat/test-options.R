@@ -46,18 +46,6 @@ test_that("caugi_options errors for non-existent nested keys", {
   )
 })
 
-test_that("caugi_options points the removed use_open_graph_definition to `open`", {
-  expect_error(
-    caugi_options(use_open_graph_definition = FALSE),
-    "option has been removed. Use the `open` argument"
-  )
-  expect_error(
-    caugi_options("use_open_graph_definition"),
-    "option has been removed. Use the `open` argument"
-  )
-  expect_false("use_open_graph_definition" %in% names(caugi_options()))
-})
-
 test_that("caugi_options errors when drilling into non-list values", {
   expect_error(
     caugi_options("plot", "node_style", "fill", "something"),

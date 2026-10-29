@@ -4,7 +4,7 @@
 \alias{ancestors}
 \title{Get ancestors of nodes in a \code{caugi}}
 \usage{
-ancestors(cg, nodes = NULL, index = NULL, open = TRUE)
+ancestors(cg, nodes = NULL, index = NULL, open = .open_default())
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
@@ -16,7 +16,9 @@ ancestors(cg, nodes = NULL, index = NULL, open = TRUE)
 \item{open}{Logical. If \code{TRUE} (the default), use the open definition: a
 node is not its own ancestor, so the queried node is left out of the
 result. If \code{FALSE}, use the closed definition: a node is its own
-ancestor, so the queried node is included in the result.}
+ancestor, so the queried node is included in the result. The deprecated
+\code{use_open_graph_definition} option of \code{\link[=caugi_options]{caugi_options()}} still sets the
+default.}
 }
 \value{
 Either a character vector of node names (if a single node is
