@@ -32,6 +32,11 @@ impl Pdag {
     /// knowledge) orientations and need not have chordal chain components.
     /// For a true CPDAG, start from a `Dag` and call `Dag::to_cpdag`.
     pub fn to_mpdag(&self) -> Result<Mpdag, String> {
+        if !self.is_extendable() {
+            return Err(
+                "this PDAG has no consistent DAG extension, so it has no Meek closure".into(),
+            );
+        }
         let n = self.n() as usize;
 
         let mut pa: Vec<HashSet<u32>> = vec![HashSet::new(); n];
@@ -214,12 +219,15 @@ mod tests {
 
     #[test]
     fn pdag_meek_closure_orients_r4() {
+        // 0--3 makes the PDAG extendable: without it, 0->1 would add the
+        // v-structure 0->1<-3 and 1->0 would close a cycle.
         let (reg, d, u) = setup();
         let mut b = GraphBuilder::new_with_registry(4, true, &reg);
         b.add_edge(0, 1, u).unwrap();
         b.add_edge(0, 2, d).unwrap();
         b.add_edge(2, 3, d).unwrap();
         b.add_edge(3, 1, d).unwrap();
+        b.add_edge(0, 3, u).unwrap();
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
 
         let m = p.meek_closure().unwrap();
@@ -236,6 +244,7 @@ mod tests {
         b.add_edge(0, 2, d).unwrap();
         b.add_edge(2, 3, d).unwrap();
         b.add_edge(3, 1, d).unwrap();
+        b.add_edge(0, 3, u).unwrap();
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
 
         let m1 = p.meek_closure().unwrap();
@@ -279,8 +288,10 @@ mod tests {
             b.add_edge(a, c, u).unwrap();
         }
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        let m = p.meek_closure().unwrap();
-        assert!(m.is_meek_closed(), "closure result must be meek-closed");
+        // R1 forces 2->1 and 4->1 (6->2, 6->4, 6 !~ 1), and 2 !~ 4, so no DAG
+        // extends this PDAG: the closure must error, not panic.
+        assert!(!p.is_extendable());
+        assert!(p.meek_closure().is_err());
     }
 
     // ── Tests derived from pgmpy, pcalg, and Perkovic (2017) ──────────────
@@ -323,28 +334,9 @@ mod tests {
 
     #[test]
     fn meek_closure_pgmpy_case3_no_rule_fires() {
-        // pgmpy case 3: directed=[A->B, D->C], undirected=[B--C]
-        // No rule fires: B--C stays undirected.
-        // R1 check: A->B, B--C, A adj C? No. So R1 WOULD fire for B->C.
-        //   BUT also D->C, C--B, D adj B? No. So R1 would also fire for C->B.
-        // Both directions would be oriented, conflict: try_orient prevents cycle.
-        // Actually: R1 first orients B->C (from A->B), then D->C is already directed.
-        // Wait, this depends on iteration order. Let me think again.
-        //
-        // R1: for b=1 (B): parents={A}, und={C}. A not adj C => orient B->C.
-        // Now B->C and D->C. No undirected edges left. Done.
-        //
-        // Actually pgmpy says B--C stays undirected. That's because pgmpy's
-        // apply_meeks_rules starts from a PDAG and the expected output has
-        // both (B,C) and (C,B) in directed_edges, meaning B--C stays undirected
-        // in their representation. But our R1 would fire since A->B, B--C, A!~C.
-        //
-        // pgmpy's test expects the edge to remain undirected because both
-        // A->B and D->C each trigger R1 in opposite directions. The pgmpy
-        // implementation apparently checks both and leaves it undirected.
-        // Our implementation orients B->C first (R1 from A->B side).
-        // This is a valid Meek closure—the result is still acyclic.
-        // Let's just test that the closure is valid (meek closed + acyclic).
+        // pgmpy case 3: directed=[A->B, D->C], undirected=[B--C].
+        // B->C adds the v-structure B->C<-D and C->B adds A->B<-C, so no DAG
+        // extends this PDAG. pgmpy leaves B--C undirected; we error.
         let (reg, d, u) = setup();
         let mut b = GraphBuilder::new_with_registry(4, true, &reg);
         b.add_edge(0, 1, d).unwrap(); // A->B
@@ -352,12 +344,8 @@ mod tests {
         b.add_edge(1, 2, u).unwrap(); // B--C
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
 
-        let m = p.meek_closure().unwrap();
-        assert!(m.is_meek_closed());
-        // B--C should be oriented in some direction
-        let bc_directed = m.children_of(1).contains(&2) || m.children_of(2).contains(&1);
-        let bc_undirected = m.undirected_of(1).contains(&2);
-        assert!(bc_directed || bc_undirected);
+        assert!(!p.is_meek_closed());
+        assert!(p.meek_closure().is_err());
     }
 
     #[test]

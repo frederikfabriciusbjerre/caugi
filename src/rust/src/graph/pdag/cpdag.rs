@@ -51,6 +51,11 @@ impl Pdag {
         self.meeks_rules_blocked()
     }
 
+    /// True if the PDAG has a consistent DAG extension (Dor & Tarsi 1992).
+    pub fn is_extendable(&self) -> bool {
+        self.dag_extension().is_ok()
+    }
+
     /// DFS over undirected edges to get chain components.
     pub(crate) fn chain_components(&self) -> (Vec<usize>, usize) {
         let n = self.n() as usize;
@@ -224,29 +229,14 @@ impl Pdag {
 
     /// No Meeks rule applies (R1..R4).
     fn meeks_rules_blocked(&self) -> bool {
-        // R1: u->v, v--w, u !~ w  =>  v->w (if safe)
+        // R1: u->v, v--w, u !~ w  =>  v->w. The orientation is forced, so if it
+        // would create a cycle or a new collider the PDAG has no extension at
+        // all; either way the graph is not closed.
         for v in 0..self.n() {
             let pa = self.parents_of(v);
-            if pa.is_empty() {
-                continue;
-            }
             for &w in self.undirected_of(v) {
-                for &u in pa {
-                    if self.adjacent(u, w) {
-                        continue;
-                    }
-                    // Mirror meek_closure() safeguards: skip orientations that would
-                    // create a directed cycle or a new unshielded collider at w.
-                    if self.has_dir_path(w, v) {
-                        continue;
-                    }
-                    let creates_collider = self
-                        .parents_of(w)
-                        .iter()
-                        .any(|&p| p != v && !self.adjacent(v, p));
-                    if !creates_collider {
-                        return false;
-                    }
+                if pa.iter().any(|&u| !self.adjacent(u, w)) {
+                    return false;
                 }
             }
         }

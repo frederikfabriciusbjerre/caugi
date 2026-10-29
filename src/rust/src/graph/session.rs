@@ -764,7 +764,7 @@ impl GraphSession {
                 } else if Ug::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Ug)
                 } else if let Ok(pdag) = Pdag::new(Arc::clone(&core)) {
-                    if pdag.is_meek_closed() {
+                    if pdag.is_meek_closed() && pdag.is_extendable() {
                         Ok(GraphClass::Mpdag)
                     } else {
                         Ok(GraphClass::Pdag)
