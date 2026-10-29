@@ -27,7 +27,6 @@ caugi_default_options <- function() {
 #' @noRd
 .caugi_default_options <- function() {
   list(
-    use_open_graph_definition = TRUE,
     plot = list(
       spacing = grid::unit(1, "lines"),
       node_style = list(
@@ -78,14 +77,6 @@ caugi_default_options <- function() {
 #'   the requested options.
 #'
 #' @details
-#' The `use_open_graph_definition` option (`TRUE`/`FALSE`, default `TRUE`)
-#' controls how graph queries interpret reachability relations.
-#' When `TRUE` (open definition), queries such as `ancestors()`,
-#' `descendants()`, `posteriors()`,and `anteriors()`
-#' exclude the queried node itself.
-#' When `FALSE` (closed definition), the queried node is included in the
-#' results.
-#'
 #' The plot options are nested under the `plot` key:
 #'
 #' - `spacing`: A [grid::unit()] controlling space between composed plots
@@ -117,9 +108,6 @@ caugi_default_options <- function() {
 #' @examples
 #' # Query all options
 #' caugi_options()
-#'
-#' # Use closed graph definition
-#' caugi_options(use_open_graph_definition = FALSE)
 #'
 #' # Query specific option
 #' caugi_options("plot")
@@ -155,9 +143,6 @@ caugi_options <- function(..., reset = FALSE) {
     }
     out <- get0("options", .caugi_env, ifnotfound = .caugi_default_options())
     .caugi_env$options <- .caugi_default_options()
-    .caugi_env$open_graph_def <- isTRUE(
-      .caugi_env$options$use_open_graph_definition
-    )
     return(invisible(out))
   }
 
@@ -173,10 +158,18 @@ caugi_options <- function(..., reset = FALSE) {
   }
 
   nm <- names(new)
+  keys <- if (is.null(nm)) unlist(new) else nm
+
+  if ("use_open_graph_definition" %in% keys) {
+    stop(
+      "The `use_open_graph_definition` option has been removed. Use the ",
+      "`open` argument of `ancestors()`, `descendants()`, `anteriors()` and ",
+      "`posteriors()` instead.",
+      call. = FALSE
+    )
+  }
 
   if (is.null(nm)) {
-    keys <- unlist(new)
-
     # Fast path for single key access (most common case)
     if (length(keys) == 1L) {
       if (!keys %in% names(old)) {
@@ -215,8 +208,5 @@ caugi_options <- function(..., reset = FALSE) {
   names(out) <- nm
 
   .caugi_env$options <- utils::modifyList(old, new)
-  .caugi_env$open_graph_def <- isTRUE(
-    .caugi_env$options$use_open_graph_definition
-  )
   invisible(out)
 }

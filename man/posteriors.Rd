@@ -4,12 +4,7 @@
 \alias{posteriors}
 \title{Get posteriors of nodes in a \code{caugi}}
 \usage{
-posteriors(
-  cg,
-  nodes = NULL,
-  index = NULL,
-  open = caugi_options("use_open_graph_definition")
-)
+posteriors(cg, nodes = NULL, index = NULL, open = TRUE)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class DAG, PDAG, or AG.}
@@ -18,9 +13,10 @@ posteriors(
 
 \item{index}{A vector of node indexes.}
 
-\item{open}{Boolean. Determines how the graph is interpreted when retrieving posteriors.
-Default is taken from \code{caugi_options("use_open_graph_definition")},
-which by default is TRUE.}
+\item{open}{Logical. If \code{TRUE} (the default), use the open definition: a
+node is not its own posterior, so the queried node is left out of the
+result. If \code{FALSE}, use the closed definition: a node is its own
+posterior, so the queried node is included in the result.}
 }
 \value{
 Either a character vector of node names (if a single node is

@@ -25,14 +25,6 @@ Configure global defaults for caugi, including plot composition spacing and
 default visual styles for nodes, edges, labels, and titles.
 }
 \details{
-The \code{use_open_graph_definition} option (\code{TRUE}/\code{FALSE}, default \code{TRUE})
-controls how graph queries interpret reachability relations.
-When \code{TRUE} (open definition), queries such as \code{ancestors()},
-\code{descendants()}, \code{posteriors()},and \code{anteriors()}
-exclude the queried node itself.
-When \code{FALSE} (closed definition), the queried node is included in the
-results.
-
 The plot options are nested under the \code{plot} key:
 \itemize{
 \item \code{spacing}: A \code{\link[grid:unit]{grid::unit()}} controlling space between composed plots
@@ -66,9 +58,6 @@ overridden by arguments to \code{\link[=plot.caugi]{plot.caugi()}}.
 \examples{
 # Query all options
 caugi_options()
-
-# Use closed graph definition
-caugi_options(use_open_graph_definition = FALSE)
 
 # Query specific option
 caugi_options("plot")

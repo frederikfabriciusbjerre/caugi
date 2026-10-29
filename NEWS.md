@@ -1,5 +1,13 @@
 # caugi (development version)
 
+## Breaking Changes
+
+* The `use_open_graph_definition` option has been removed from
+  `caugi_options()`; setting or getting it is an error. `ancestors()`,
+  `descendants()`, `anteriors()` and `posteriors()` now always default to
+  `open = TRUE`. Instead of `caugi_options(use_open_graph_definition = FALSE)`,
+  pass `open = FALSE` to each query (#364).
+
 ## New Features
 
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a
