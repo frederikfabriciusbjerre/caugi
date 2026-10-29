@@ -220,6 +220,28 @@ pub fn deserialize_graphml(
         Ok(())
     }
 
+    fn edge_endpoints(e: &BytesStart) -> Result<(String, String), String> {
+        let (mut from, mut to) = (String::new(), String::new());
+        for attr in e.attributes() {
+            let attr = attr.map_err(|e| e.to_string())?;
+            let slot = match attr.key.as_ref() {
+                b"source" => &mut from,
+                b"target" => &mut to,
+                _ => continue,
+            };
+            *slot = attr
+                .normalized_value(XmlVersion::Implicit1_0)
+                .map_err(|e| e.to_string())?
+                .into_owned();
+        }
+        Ok((from, to))
+    }
+
+    let default_edge = "-->";
+    if registry.code_of(default_edge).is_err() {
+        return Err(format!("Unknown default edge type: {}", default_edge));
+    }
+
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(e)) => match e.name().as_ref() {
@@ -234,27 +256,7 @@ pub fn deserialize_graphml(
                 b"edge" if graph_depth == 1 => {
                     in_edge = true;
                     edge_type_seen = false;
-                    current_edge_from.clear();
-                    current_edge_to.clear();
-
-                    for attr in e.attributes() {
-                        let attr = attr.map_err(|e| e.to_string())?;
-                        match attr.key.as_ref() {
-                            b"source" => {
-                                let v = attr
-                                    .normalized_value(XmlVersion::Implicit1_0)
-                                    .map_err(|e| e.to_string())?;
-                                current_edge_from = v.into_owned();
-                            }
-                            b"target" => {
-                                let v = attr
-                                    .normalized_value(XmlVersion::Implicit1_0)
-                                    .map_err(|e| e.to_string())?;
-                                current_edge_to = v.into_owned();
-                            }
-                            _ => {}
-                        }
-                    }
+                    (current_edge_from, current_edge_to) = edge_endpoints(&e)?;
                 }
 
                 b"data" if graph_depth == 1 => {
@@ -279,6 +281,13 @@ pub fn deserialize_graphml(
             Ok(Event::Empty(e)) => match e.name().as_ref() {
                 b"node" if graph_depth == 1 => {
                     push_node_from_attrs(&mut nodes, &e)?;
+                }
+                // A self-closing <edge/> has no <data>, so it gets the default type.
+                b"edge" if graph_depth == 1 => {
+                    let (from, to) = edge_endpoints(&e)?;
+                    edges_from.push(from);
+                    edges_to.push(to);
+                    edges_type.push(default_edge.to_string());
                 }
                 _ => {}
             },
@@ -335,13 +344,9 @@ pub fn deserialize_graphml(
 
                 b"edge" => {
                     if in_edge && !edge_type_seen {
-                        let default = "-->";
-                        if registry.code_of(default).is_err() {
-                            return Err(format!("Unknown default edge type: {}", default));
-                        }
                         edges_from.push(current_edge_from.clone());
                         edges_to.push(current_edge_to.clone());
-                        edges_type.push(default.to_string());
+                        edges_type.push(default_edge.to_string());
                     }
 
                     in_edge = false;

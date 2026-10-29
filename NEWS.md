@@ -16,6 +16,10 @@
 
 ## Bug Fixes
 
+- `read_graphml()` now reads self-closing `<edge .../>` elements, the usual
+  way other tools write edges without data, instead of silently dropping them
+  (#414).
+
 - `simulate_data()` now errors when a custom equation references a graph node
   that is not a parent of the node, instead of silently reading a variable of
   that name from the calling environment (#403).
