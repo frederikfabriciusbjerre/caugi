@@ -22,6 +22,10 @@
 
 ## Bug Fixes
 
+- Fixed wrong defaults in the docs: the `plot()` layout list now includes
+  `"tiered"` and `"circle"`, `tier_style` documents that boxes and labels are
+  shown by default, and `generate_graph()` documents `n >= 1` (#454).
+
 - Fixed doc examples whose stated output was wrong: `is_cpdag()` (the triangle
   is not a CPDAG), `aid()` and the `minimal_separator()` ADMG example (#456).
 

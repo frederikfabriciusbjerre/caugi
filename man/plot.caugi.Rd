@@ -17,8 +17,8 @@ layout.}
 \item{layout}{Specifies the graph layout method. Can be:
 \itemize{
 \item A character string: \code{"auto"} (default), \code{"sugiyama"},
-\code{"fruchterman-reingold"}, \code{"kamada-kawai"}, \code{"bipartite"}.
-See \code{\link[=caugi_layout]{caugi_layout()}} for details.
+\code{"fruchterman-reingold"}, \code{"kamada-kawai"}, \code{"bipartite"}, \code{"tiered"},
+\code{"circle"}. See \code{\link[=caugi_layout]{caugi_layout()}} for details.
 \item A layout function: e.g., \code{caugi_layout_sugiyama},
 \code{caugi_layout_bipartite}, etc. The function will be called with \code{x} and
 any additional arguments passed via \code{...}.
@@ -63,16 +63,18 @@ settings.
 \code{fontfamily}, \code{cex}
 }}
 
-\item{tier_style}{List of tier box styling parameters. Tier boxes are shown
-when \code{boxes = TRUE} is set within this list. Supports:
+\item{tier_style}{List of tier box styling parameters, used when \code{tiers} is
+given. Supports:
 \itemize{
+\item Display: \code{boxes} (draw a box around each tier, default \code{TRUE}) and
+\code{labels} (see below)
 \item Appearance (passed to \code{gpar()}): \code{fill}, \code{col} (border color), \code{lwd},
 \code{lty}, \code{alpha}
 \item Geometry: \code{padding} (padding around tier nodes, a \code{\link[grid:unit]{grid::unit()}} or a
 number in mm like node padding, default 4 mm)
 \item Labels: \code{labels} (logical or character vector). If \code{TRUE}, uses tier names
 from \code{tiers} argument. If a character vector, uses custom labels (one per
-tier). If \code{FALSE} or \code{NULL} (default), no labels are shown.
+tier). If \code{FALSE} or \code{NULL}, no labels are shown. Default \code{TRUE}.
 \item Label styling: \code{label_style} (list with \code{col}, \code{fontsize}, \code{fontface}, etc.)
 \item Values can be scalars (applied to all tiers) or vectors (auto-expanded to
 each tier in order)

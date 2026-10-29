@@ -3,7 +3,7 @@
 #' @description Sample a random DAG or CPDAG using
 #' Erdős-Rényi for random graph generation.
 #'
-#' @param n Integer >= 0. Number of nodes in the graph.
+#' @param n Integer >= 1. Number of nodes in the graph.
 #' @param m Integer in `0, n*(n-1)/2`. Number of edges in the graph. Exactly one
 #' of `m` or `p` must be supplied.
 #' @param p Numeric in `[0,1]`. Probability of edge creation. Exactly one of
