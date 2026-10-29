@@ -22,6 +22,25 @@
 
 ### Bug Fixes
 
+- [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
+  now applies Meek’s rule R4, and
+  [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md),
+  `class = "MPDAG"` and AUTO no longer accept graphs where R4 still
+  orients an edge. The rule labelled R4 before was a different (sound)
+  rule that orients along an existing directed path; it is kept
+  ([\#379](https://github.com/frederikfabriciusbjerre/caugi/issues/379)).
+
+- [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md) and
+  `class = "CPDAG"` no longer accept undirected components that are not
+  chordal. The perfect-elimination check pivoted on the farthest instead
+  of the nearest later neighbour
+  ([\#378](https://github.com/frederikfabriciusbjerre/caugi/issues/378)).
+
+- Passing an empty character vector to Rust no longer aborts the R
+  session, e.g. `subgraph(cg, character(0))` or
+  `caugi_serialize(cg, tags = character(0))`
+  ([\#396](https://github.com/frederikfabriciusbjerre/caugi/issues/396)).
+
 - [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) now uses a
   common coordinate range for both axes, so floating-point noise in
   nearly horizontal or vertical layouts is no longer stretched to fill
