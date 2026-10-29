@@ -61,6 +61,12 @@ test_that("glyph validation", {
     register_caugi_edge("%->", "tail", "arrow", "directed", FALSE),
     "must not contain '%'"
   )
+  for (glyph in c(" ~ ", "-\t>", "--\n>")) {
+    expect_error(
+      register_caugi_edge(glyph, "tail", "tail", "undirected", TRUE),
+      "must not contain whitespace"
+    )
+  }
   expect_error(
     register_caugi_edge(c("-->", "<--"), "tail", "arrow", "directed", FALSE),
     "single string"

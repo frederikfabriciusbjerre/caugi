@@ -166,9 +166,7 @@ pub fn deserialize_graphml(
     registry: &EdgeRegistry,
 ) -> Result<DeserializedGraph, String> {
     let mut reader = Reader::from_str(xml);
-    // Don't trim text: whitespace inside a glyph is part of it. Whitespace
-    // between elements is never inside <data>, so it is ignored anyway.
-    reader.config_mut().trim_text(false);
+    reader.config_mut().trim_text(true);
 
     let mut nodes: Vec<String> = Vec::new();
     let mut edges_from: Vec<String> = Vec::new();
@@ -333,15 +331,9 @@ pub fn deserialize_graphml(
 
                         // Interpret the full <data> payload here (after Text+GeneralRef accumulation)
                         if data_key == "graph_class" && !in_edge {
-                            graph_class = data_value.trim().to_string();
+                            graph_class = data_value.clone();
                         } else if data_key == "edge_type" && in_edge {
-                            // Keep the glyph as written; fall back to the trimmed
-                            // text for files that pad <data> with whitespace.
-                            let value = if registry.code_of(&data_value).is_ok() {
-                                data_value.clone()
-                            } else {
-                                data_value.trim().to_string()
-                            };
+                            let value = data_value.clone();
 
                             if registry.code_of(&value).is_err() {
                                 return Err(format!("Unknown edge type: {}", value));
