@@ -72,7 +72,10 @@ skeleton <- function(cg) {
 #' @param cg A `caugi` object. Must be PDAG-compatible.
 #'
 #' @returns A `caugi` object closed under Meek's rules. Class `"MPDAG"` in
-#'   general, or `"DAG"` if the closure orients every edge.
+#'   general, or `"DAG"` if the closure orients every edge. Errors if `cg` has
+#'   no consistent DAG extension (e.g. `A --> B --- C <-- D`, where either
+#'   orientation of `B --- C` adds a v-structure), since such a PDAG
+#'   represents no DAG; see [is_mpdag()].
 #'
 #' @references
 #' C. Meek (1995). Causal inference and causal explanation with background
@@ -257,11 +260,8 @@ mutate_caugi <- function(cg, class) {
   } else {
     # Clone the session so the graph keeps its own edge registry.
     session <- rs_clone(cg@session)
-    # Only UNKNOWN, ADMG, and AG may be non-simple (cf. the caugi validator).
-    rs_set_simple(
-      session,
-      cg@simple || !class %in% c("UNKNOWN", "ADMG", "AG")
-    )
+    # The target class decides whether multi-edges are allowed.
+    rs_set_simple(session, .default_simple(class))
     rs_set_class(session, class)
     # Validate eagerly: class checks ignore multiplicity, so parallel edges in
     # a non-simple source surface here rather than on first query.
@@ -469,9 +469,10 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
       call. = FALSE
     )
   }
-  # A DAG, ADMG or UG that passes is_ag() is an AG; label it so the
-  # m-separation and anterior queries below accept it.
-  if (!identical(cg@graph_class, "AG")) {
+  # m_separated() handles DAG, ADMG, AG and UG directly; relabel any other
+  # graph that passes is_ag() (e.g. UNKNOWN) as AG. Relabelling a DAG would
+  # swap d-separation for the AG m-separation, which needs O(n^2) memory.
+  if (!cg@graph_class %in% c("DAG", "ADMG", "AG", "UG")) {
     cg <- mutate_caugi(cg, "AG")
   }
 
@@ -727,6 +728,7 @@ dag_from_pdag <- function(cg, PDAG) {
 #' @param cg A `caugi` object of class `"PDAG"` or `"MPDAG"`.
 #'
 #' @returns A list of `caugi` objects of class `"DAG"`, one per DAG in the MEC.
+#'   Empty if `cg` has no consistent DAG extension.
 #'
 #' @examples
 #' pdag <- caugi(
@@ -769,7 +771,8 @@ enumerate_dags <- function(cg) {
 #'
 #' @param cg A `caugi` object of class `"PDAG"` or `"MPDAG"`.
 #'
-#' @returns A single numeric value, the cardinality of the MEC. Counts above
+#' @returns A single numeric value, the cardinality of the MEC, or 0 if `cg`
+#'   has no consistent DAG extension. Counts above
 #'   `2^53` lose integer precision; in practice no realistic PDAG yields a
 #'   MEC anywhere near that size.
 #'

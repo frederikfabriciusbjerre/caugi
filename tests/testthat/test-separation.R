@@ -565,8 +565,7 @@ test_that("minimal_separator recognizes collider opening on bidirected path", {
     X %-->% M,
     M %-->% Y,
     M %<->% Y,
-    class = "ADMG",
-    simple = FALSE
+    class = "ADMG"
   )
   expect_null(minimal_separator(cg, "X", "Y", R = "M"))
 })

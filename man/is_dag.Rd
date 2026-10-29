@@ -35,8 +35,7 @@ cg_cyclic <- caugi(
   A \%-->\% B,
   B \%-->\% C,
   C \%-->\% A,
-  class = "UNKNOWN",
-  simple = FALSE
+  class = "UNKNOWN"
 )
 is_dag(cg_cyclic) # FALSE
 

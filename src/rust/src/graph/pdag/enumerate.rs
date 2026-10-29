@@ -23,7 +23,7 @@ impl Pdag {
         if !self.is_extendable() {
             return Ok(Vec::new());
         }
-        let closed = self.meek_closure()?;
+        let closed = self.closure_of_extendable()?;
         let (pa, ch, und) = closed.snapshot_sets();
         let input_pa = pa.clone();
         let skeleton = build_skeleton(&pa, &ch, &und);
@@ -43,7 +43,7 @@ impl Pdag {
         if !self.is_extendable() {
             return Ok(0);
         }
-        let closed = self.meek_closure()?;
+        let closed = self.closure_of_extendable()?;
         let (pa, ch, und) = closed.snapshot_sets();
         let input_pa = pa.clone();
         let skeleton = build_skeleton(&pa, &ch, &und);

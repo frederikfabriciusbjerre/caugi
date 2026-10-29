@@ -178,9 +178,9 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' no parallel edges).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, force a check against the compiled
-#' graph representation. If `FALSE` (default), return the declared `simple`
-#' property.
+#' @param force_check Ignored. Since caugi 1.4.0 the check always runs
+#' against the graph itself, since the deprecated `simple` flag no longer
+#' tells whether a graph has parallel edges or self-loops.
 #'
 #' @returns A logical value indicating whether the graph is simple.
 #'
@@ -194,8 +194,7 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' cg_nonsimple <- caugi(
 #'   A %-->% B,
 #'   A %<->% B,
-#'   class = "UNKNOWN",
-#'   simple = FALSE
+#'   class = "UNKNOWN"
 #' )
 #' is_simple(cg_nonsimple) # FALSE
 #'
@@ -205,12 +204,7 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' @export
 is_simple <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-
-  if (force_check) {
-    return(rs_is_simple(cg@session))
-  }
-
-  cg@simple
+  rs_is_simple(cg@session)
 }
 
 #' @title Is the `caugi` graph a DAG?
@@ -240,8 +234,7 @@ is_simple <- function(cg, force_check = FALSE) {
 #'   A %-->% B,
 #'   B %-->% C,
 #'   C %-->% A,
-#'   class = "UNKNOWN",
-#'   simple = FALSE
+#'   class = "UNKNOWN"
 #' )
 #' is_dag(cg_cyclic) # FALSE
 #'
@@ -294,8 +287,7 @@ is_dag <- function(cg, force_check = FALSE) {
 #'   B %-->% C,
 #'   C %-->% A,
 #'   D %---% A,
-#'   class = "UNKNOWN",
-#'   simple = FALSE
+#'   class = "UNKNOWN"
 #' )
 #' is_pdag(cg_cyclic) # FALSE
 #'
@@ -380,10 +372,15 @@ is_cpdag <- function(cg) {
 #'
 #' @description Checks if the given `caugi` graph is a
 #' Maximally oriented Partially Directed Acyclic Graph
-#' (MPDAG), i.e. a PDAG where no additional edge orientations
-#' are implied by Meek's rules (R1--R4).
+#' (MPDAG), i.e. a PDAG that has a consistent DAG extension and where no
+#' additional edge orientations are implied by Meek's rules (R1--R4).
 #'
 #' @details
+#' A consistent DAG extension orients every undirected edge without creating a
+#' directed cycle or a new v-structure. A PDAG without one, such as
+#' `A --> B --- C <-- D` or an undirected chordless 4-cycle, represents no DAG
+#' and is not an MPDAG.
+#'
 #' If the graph is not PDAG-compatible, the function returns `FALSE`.
 #'
 #' @param cg A `caugi` object.
@@ -403,6 +400,9 @@ is_cpdag <- function(cg) {
 #' C. Meek (1995). Causal inference and causal explanation with background
 #' knowledge. In \emph{Proceedings of the Eleventh Conference on Uncertainty in
 #' Artificial Intelligence (UAI-95)}, pp. 403--411. Morgan Kaufmann.
+#'
+#' Dor, D., & Tarsi, M. (1992). "A simple algorithm to construct a consistent
+#' extension of a partially directed acyclic graph".
 #'
 #' @family queries
 #' @concept queries
@@ -1262,8 +1262,10 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
 #' conditioning set in an ancestral graph (AG) or an ADMG.
 #'
 #' M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs.
+#' On a UG it reduces to plain graph separation: every path from `X` to `Y`
+#' passes through `Z`.
 #'
-#' @param cg A `caugi` object of class AG, ADMG, or DAG.
+#' @param cg A `caugi` object of class AG, ADMG, DAG, or UG.
 #' @param X,Y,Z Character vectors of node names, or `NULL`. Use `*_index` to
 #'   pass 1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
 #'   on.

@@ -21,7 +21,7 @@ test_that("caugi objects have session after construction", {
 })
 
 test_that("verbs error when breaking simple graph assumptions", {
-  cg <- caugi()
+  cg <- caugi(class = "DAG")
   # Error now thrown at add_edges time (eager validation)
   expect_error(
     add_edges(
@@ -33,7 +33,7 @@ test_that("verbs error when breaking simple graph assumptions", {
     "Parallel edges not allowed"
   )
 
-  cg <- caugi()
+  cg <- caugi(class = "DAG")
   expect_error(
     add_edges(
       cg,
@@ -167,7 +167,6 @@ test_that("edge removal preserves bows, directions, nodes, and its input", {
       edge = c("<->", "-->", "-->"),
       to = c("A", "B", "A"),
       nodes = c("isolated", "B", "A"),
-      simple = FALSE,
       class = "UNKNOWN"
     )
     if (built) {
@@ -241,7 +240,7 @@ test_that("edge removal uses the graph's registered edge types", {
 
 test_that("set_edges replaces any existing edges for pairs", {
   # Use simple=FALSE to allow parallel edges for this test
-  cg <- caugi(simple = FALSE, class = "UNKNOWN")
+  cg <- caugi(class = "UNKNOWN")
   cg <- add_edges(
     cg,
     from = c("A", "A"),
@@ -269,7 +268,7 @@ test_that("set_edges removes both directions in simple graphs", {
 
 test_that("set_edges errors whwn both vector and expr paths are given", {
   # Use simple=FALSE to allow parallel edges for this test
-  cg <- caugi(simple = FALSE, class = "UNKNOWN")
+  cg <- caugi(class = "UNKNOWN")
   cg <- add_edges(
     cg,
     from = c("A", "A"),
@@ -610,17 +609,36 @@ test_that(".update_caugi add/remove paths and validations", {
 # ─────────────────────────── Additional Coverage ──────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that("remove_edges errors when cg is not simple and edge is NULL", {
+test_that("remove_edges without edge errors only when the pair has several edges", {
   cg <- caugi(
     A %-->% B,
     A %<->% B,
-    class = "ADMG",
-    simple = FALSE
+    C %-->% B,
+    class = "ADMG"
   )
   expect_error(
     remove_edges(cg, from = "A", to = "B"),
-    "When removing edges without specifying `edge`, `cg` must be simple"
+    "Nodes A and B share several edges; specify `edge`"
   )
+  expect_error(
+    remove_edges(cg, from = c("C", "B"), to = c("B", "A")),
+    "Nodes A and B share several edges"
+  )
+
+  # a single edge on the pair is unambiguous, even in a multi-edge graph
+  out <- remove_edges(cg, from = "B", to = "C")
+  expect_equal(
+    edges(out),
+    data.table::data.table(
+      from = c("A", "A"),
+      edge = c("-->", "<->"),
+      to = c("B", "B")
+    )
+  )
+  cg_unknown <- caugi(A %-->% B, B %-->% A, C %-->% C, class = "UNKNOWN")
+  out <- remove_edges(cg_unknown, from = "C", to = "C")
+  expect_equal(nrow(edges(out)), 2L)
+  expect_error(remove_edges(cg_unknown, from = "A", to = "B"), "share several")
 })
 
 test_that("remove_edges errors when from/to missing with NULL edge", {
@@ -663,19 +681,19 @@ test_that("node order does not matter when setting edges", {
 })
 
 test_that("set_edges should not replace other edges when non-symmetric edge added", {
-  cg <- caugi(A %-->% B, simple = FALSE, class = "UNKNOWN")
+  cg <- caugi(A %-->% B, class = "UNKNOWN")
   cg_new <- set_edges(cg, B %-->% A)
 
-  cg_correct <- caugi(A %-->% B, B %-->% A, simple = FALSE, class = "UNKNOWN")
+  cg_correct <- caugi(A %-->% B, B %-->% A, class = "UNKNOWN")
 
   expect_equivalent(cg_new, cg_correct)
 })
 
 test_that("set_edges preserves opposite-direction edges in non-simple graphs", {
-  cg <- caugi(A %-->% B, B %<->% A, simple = FALSE, class = "UNKNOWN")
+  cg <- caugi(A %-->% B, B %<->% A, class = "UNKNOWN")
   cg_new <- set_edges(cg, A %o->% B)
 
-  cg_correct <- caugi(A %o->% B, B %<->% A, simple = FALSE, class = "UNKNOWN")
+  cg_correct <- caugi(A %o->% B, B %<->% A, class = "UNKNOWN")
 
   expect_equivalent(cg_new, cg_correct)
 })
