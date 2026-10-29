@@ -2,6 +2,9 @@
 
 ## New Features
 
+* `summary()` method for `caugi` objects, giving the class, the number of
+  nodes and edges, and edge counts by type (#445).
+
 * `caugi_options(reset = TRUE)` resets all options to their defaults.
   `caugi_options(caugi_default_options())` did not, since it only merges into
   the current options and so keeps keys that are not in the defaults.
