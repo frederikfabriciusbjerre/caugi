@@ -18,7 +18,11 @@ meek_closure(cg)
 ## Value
 
 A `caugi` object closed under Meek's rules. Class `"MPDAG"` in general,
-or `"DAG"` if the closure orients every edge.
+or `"DAG"` if the closure orients every edge. Errors if `cg` has no
+consistent DAG extension (e.g. `A --> B --- C <-- D`, where either
+orientation of `B --- C` adds a v-structure), since such a PDAG
+represents no DAG; see
+[`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md).
 
 ## References
 

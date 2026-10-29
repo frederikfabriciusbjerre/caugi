@@ -19,9 +19,9 @@ count_dags(cg)
 
 ## Value
 
-A single numeric value, the cardinality of the MEC. Counts above `2^53`
-lose integer precision; in practice no realistic PDAG yields a MEC
-anywhere near that size.
+A single numeric value, the cardinality of the MEC, or 0 if `cg` has no
+consistent DAG extension. Counts above `2^53` lose integer precision; in
+practice no realistic PDAG yields a MEC anywhere near that size.
 
 ## References
 

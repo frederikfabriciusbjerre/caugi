@@ -22,6 +22,25 @@
 
 ### Bug Fixes
 
+- [`count_dags()`](https://caugi.org/dev/reference/count_dags.md) and
+  [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md)
+  now return 0 and an empty list for PDAGs with no consistent DAG
+  extension, instead of DAGs with new v-structures
+  ([\#381](https://github.com/frederikfabriciusbjerre/caugi/issues/381)).
+
+- [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md),
+  [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md),
+  `class = "MPDAG"`/`"CPDAG"` and AUTO no longer accept PDAGs with no
+  consistent DAG extension, such as `G --> K --- X <-- Z`.
+  [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md) and
+  `class = "MPDAG"` also reject an undirected chordless 4-cycle, and
+  AUTO labels a mixed graph containing one `"PDAG"` rather than
+  `"MPDAG"`.
+  [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
+  now errors on such PDAGs instead of returning a graph with a new
+  v-structure
+  ([\#380](https://github.com/frederikfabriciusbjerre/caugi/issues/380)).
+
 - [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md)
   now applies Meek’s rule R4, and
   [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md),

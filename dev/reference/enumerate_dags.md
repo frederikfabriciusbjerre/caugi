@@ -19,6 +19,7 @@ enumerate_dags(cg)
 ## Value
 
 A list of `caugi` objects of class `"DAG"`, one per DAG in the MEC.
+Empty if `cg` has no consistent DAG extension.
 
 ## Details
 

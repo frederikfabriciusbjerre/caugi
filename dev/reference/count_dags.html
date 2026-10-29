@@ -67,7 +67,8 @@ calling <code><a href="enumerate_dags.html">enumerate_dags()</a></code>.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A single numeric value, the cardinality of the MEC. Counts above
+    <p>A single numeric value, the cardinality of the MEC, or 0 if <code>cg</code>
+has no consistent DAG extension. Counts above
 <code>2^53</code> lose integer precision; in practice no realistic PDAG yields a
 MEC anywhere near that size.</p>
     </div>
