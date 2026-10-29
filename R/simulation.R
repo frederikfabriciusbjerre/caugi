@@ -217,20 +217,29 @@ simulate_data <- function(
         env[[p]] <- data[[p]]
       }
 
-      # validate that all parents are referenced in the equation
-      if (length(pa) > 0L) {
-        eq_vars <- all.vars(equations[[node]])
-        missing_parents <- setdiff(pa, eq_vars)
-        if (length(missing_parents) > 0L) {
-          stop(
-            sprintf(
-              "Equation for '%s' must reference all parent nodes. Missing: %s",
-              node,
-              paste(missing_parents, collapse = ", ")
-            ),
-            call. = FALSE
-          )
-        }
+      # validate that the equation references all parents and no other node
+      eq_vars <- all.vars(equations[[node]])
+      missing_parents <- setdiff(pa, eq_vars)
+      if (length(missing_parents) > 0L) {
+        stop(
+          sprintf(
+            "Equation for '%s' must reference all parent nodes. Missing: %s",
+            node,
+            paste(missing_parents, collapse = ", ")
+          ),
+          call. = FALSE
+        )
+      }
+      non_parents <- setdiff(intersect(eq_vars, node_names), pa)
+      if (length(non_parents) > 0L) {
+        stop(
+          sprintf(
+            "Equation for '%s' may only reference its parents. Not parents: %s",
+            node,
+            paste(non_parents, collapse = ", ")
+          ),
+          call. = FALSE
+        )
       }
 
       data[[node]] <- eval(equations[[node]], envir = env)
@@ -260,13 +269,11 @@ simulate_data <- function(
     }
   }
 
-  # build data.frame in original node order
-  out <- as.data.frame(data)[, node_names, drop = FALSE]
+  # build data.frame in original node order, keeping non-syntactic names
+  out <- as.data.frame(data, check.names = FALSE)[, node_names, drop = FALSE]
 
   if (standardize) {
-    out <- as.data.frame(lapply(out, function(x) {
-      (x - mean(x)) / stats::sd(x)
-    }))
+    out[] <- lapply(out, function(x) (x - mean(x)) / stats::sd(x))
   }
 
   out

@@ -255,48 +255,17 @@ impl Ag {
         )
     }
 
-    /// Markov blanket of `i` in an AG.
-    /// For nodes with only directed/bidirected edges (like ADMG): Pa(Dis(i)) ∪ (Dis(i) \ {i})
-    /// For nodes with undirected edges: includes undirected neighbors as well.
+    /// Markov blanket of `i`: nodes joined to it by a collider path.
     #[inline]
     pub fn markov_blanket_of(&self, i: u32) -> Vec<u32> {
-        let n = self.n() as usize;
-        let mut m = vec![false; n];
-
-        // Parents
-        for &p in self.parents_of(i) {
-            m[p as usize] = true;
-        }
-
-        // Children
-        for &c in self.children_of(i) {
-            m[c as usize] = true;
-            // Co-parents of children
-            for &p in self.parents_of(c) {
-                if p != i {
-                    m[p as usize] = true;
-                }
-            }
-        }
-
-        // Spouses (bidirected neighbors) and their parents (district-based)
-        let district = self.district_of(i);
-        for &d in &district {
-            if d != i {
-                m[d as usize] = true;
-            }
-            for &p in self.parents_of(d) {
-                m[p as usize] = true;
-            }
-        }
-
-        // Undirected neighbors
-        for &u in self.undirected_of(i) {
-            m[u as usize] = true;
-        }
-
-        m[i as usize] = false; // ensure self is excluded
-        bitset::collect_from_mask(&m)
+        traversal::collider_connected(
+            self.n(),
+            i,
+            |u| self.parents_of(u),
+            |u| self.children_of(u),
+            |u| self.spouses_of(u),
+            |u| self.undirected_of(u),
+        )
     }
 
     /// District (c-component) containing node `i`.

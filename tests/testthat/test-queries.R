@@ -645,6 +645,59 @@ test_that("markov_blanket works on DAGs (parents, children, spouses)", {
   expect_setequal(mb_idx, c("B", "C", "D"))
 })
 
+test_that("markov_blanket on ADMGs and AGs follows collider paths (#384)", {
+  # Children are in the blanket, whatever the class label.
+  expect_equal(
+    markov_blanket(caugi(A %-->% B, B %-->% C, class = "ADMG"), "A"),
+    "B"
+  )
+  expect_setequal(
+    markov_blanket(caugi(A %-->% B, B %-->% C, class = "ADMG"), "B"),
+    c("A", "C")
+  )
+  # S is reached through the collider path N -> R <-> S.
+  ag <- caugi(A %-->% R + S, N %-->% R, R %<->% S, class = "AG")
+  mb <- markov_blanket(ag, "N")
+  expect_setequal(mb, c("A", "R", "S"))
+})
+
+test_that("markov_blanket on ADMGs matches brute-force m-separation (#384)", {
+  # The Markov boundary of v is {w : v and w are m-connected given all other nodes}.
+  oracle <- function(cg, v) {
+    V <- nodes(cg)$name
+    Filter(
+      function(w) !m_separated(cg, v, w, Z = setdiff(V, c(v, w))),
+      setdiff(V, v)
+    )
+  }
+  set.seed(384)
+  for (k in 1:30) {
+    nm <- LETTERS[1:5]
+    ord <- sample(nm)
+    pairs <- utils::combn(5, 2)
+    type <- sample(
+      c("", "-->", "<->"),
+      ncol(pairs),
+      replace = TRUE,
+      prob = c(0.4, 0.35, 0.25)
+    )
+    keep <- type != ""
+    cg <- caugi(
+      from = ord[pairs[1, keep]],
+      edge = type[keep],
+      to = ord[pairs[2, keep]],
+      nodes = nm,
+      class = "ADMG"
+    )
+    for (v in nm) {
+      expect_identical(
+        sort(as.character(markov_blanket(cg, v))),
+        sort(oracle(cg, v))
+      )
+    }
+  }
+})
+
 test_that("markov_blanket includes undirected neighbors in PDAGs", {
   cg <- caugi(
     A %-->% B,

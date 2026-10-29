@@ -839,7 +839,21 @@ test_that("UG graph exogenous function works", {
     nodes = c("A", "B", "C", "D", "E"),
     class = "UG"
   )
-  expect_equal(sort(exogenous(cg)), c("D", "E"))
+  # Undirected edges are ignored by default, as for PDAGs (#386).
+  expect_equal(sort(exogenous(cg)), c("A", "B", "C", "D", "E"))
+  expect_equal(sort(exogenous(cg, undirected_as_parents = TRUE)), c("D", "E"))
+  expect_equal(
+    sort(exogenous(cg)),
+    sort(exogenous(caugi(A %---% B, B %---% C, D, E, class = "PDAG")))
+  )
+})
+
+test_that("index rejects NaN and non-whole values and reports 1-based indices", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_error(children(cg, index = NaN), "NA values")
+  expect_error(children(cg, index = 1.5), "whole numbers")
+  expect_error(parents(cg, index = 4), "Index 4 is out of bounds")
+  expect_error(parents(cg, index = c(1, 4)), "Index 4 is out of bounds")
 })
 
 test_that("UG graph with only isolated nodes", {

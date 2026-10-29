@@ -151,3 +151,27 @@ test_that("read_graphml can override class", {
 test_that("read_graphml missing file branch is covered", {
   expect_error(read_graphml("definitely-not-a-file.graphml"), "File not found")
 })
+
+test_that("read_graphml reads self-closing <edge/> elements (#414)", {
+  f <- tempfile(fileext = ".graphml")
+  writeLines(
+    c(
+      '<graphml xmlns="http://graphml.graphdrawing.org/xmlns">',
+      '<graph id="G" edgedefault="directed">',
+      '<node id="A"/><node id="B"/><node id="C"/>',
+      '<edge source="A" target="B"/>',
+      '<edge source="B" target="C"></edge>',
+      "</graph></graphml>"
+    ),
+    f
+  )
+  cg <- read_graphml(f)
+  expect_equal(
+    edges(cg),
+    data.table::data.table(
+      from = c("A", "B"),
+      edge = c("-->", "-->"),
+      to = c("B", "C")
+    )
+  )
+})

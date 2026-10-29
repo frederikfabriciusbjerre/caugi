@@ -126,10 +126,13 @@ fn parse_parent_index0(index: Robj) -> Vec<i32> {
             .unwrap_or_else(|_| throw_r_error("`index` must be numeric."));
         let mut out = Vec::with_capacity(idx_num.len());
         for x in idx_num.iter() {
-            if x.is_na() {
+            if x.is_na() || x.0.is_nan() {
                 throw_r_error("`index` cannot contain NA values.");
             }
-            out.push((x.0 - 1.0).trunc() as i32);
+            if !x.0.is_finite() || x.0.fract() != 0.0 {
+                throw_r_error("`index` must contain whole numbers.");
+            }
+            out.push((x.0 - 1.0) as i32);
         }
         return out;
     }
@@ -330,7 +333,7 @@ where
         }
         let i = rint_to_u32(Rint::from(idx0[0]), scalar_field);
         if i >= session.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
+            throw_r_error(format!("Index {} is out of bounds", i + 1));
         }
         let v = query(session, i).unwrap_or_else(|e| throw_r_error(e));
         return indices_to_names_or_null(&v, session.as_ref().names());
@@ -341,7 +344,7 @@ where
     for ii in idx0 {
         let i = rint_to_u32(Rint::from(ii), vector_field);
         if i >= session.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
+            throw_r_error(format!("Index {} is out of bounds", i + 1));
         }
         out_names.push(session.as_ref().names()[i as usize].clone());
         let v = query(session, i).unwrap_or_else(|e| throw_r_error(e));

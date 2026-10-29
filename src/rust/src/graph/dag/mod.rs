@@ -144,7 +144,14 @@ impl Dag {
     /// Markov blanket of `i`: `Pa(i) ∪ Ch(i) ∪ (⋃ Pa(c) \ {i : c∈Ch(i)})`.
     #[inline]
     pub fn markov_blanket_of(&self, i: u32) -> Vec<u32> {
-        traversal::markov_blanket_dag(self.n(), i, |u| self.parents_of(u), |u| self.children_of(u))
+        traversal::collider_connected(
+            self.n(),
+            i,
+            |u| self.parents_of(u),
+            |u| self.children_of(u),
+            |_| &[],
+            |_| &[],
+        )
     }
 
     /// Nodes with no parents.
