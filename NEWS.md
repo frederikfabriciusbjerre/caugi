@@ -16,6 +16,11 @@
 
 ## Bug Fixes
 
+- The Kamada-Kawai layout now uses correct graph distances for symmetric edges
+  (`---`, `<->`, `o-o`). Its distance search skipped symmetric edges from a
+  higher- to a lower-index node, which distorted every layout of a UG, CPDAG
+  or ADMG (#420).
+
 - `read_graphml()` no longer trims whitespace inside edge glyphs, so a
   registered glyph such as `" ~ "` round-trips. Whitespace-padded `<data>`
   values from other tools still read (#416).

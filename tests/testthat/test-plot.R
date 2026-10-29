@@ -378,6 +378,28 @@ test_that("kamada-kawai layout works with simple DAG", {
   expect_true(all(is.finite(layout$y)))
 })
 
+test_that("kamada-kawai lays out a cycle the same for every edge type (#420)", {
+  # A 6-cycle should come out as a regular hexagon: opposite nodes equally far.
+  nm <- paste0("N", 0:5)
+  for (ty in c("-->", "---", "<->", "o-o")) {
+    cg <- caugi(
+      from = nm,
+      edge = rep(ty, 6),
+      to = nm[c(2:6, 1)],
+      nodes = nm,
+      class = "UNKNOWN"
+    )
+    d <- as.matrix(stats::dist(caugi_layout(cg, "kamada-kawai")[, c("x", "y")]))
+    opposite <- c(d[1, 4], d[2, 5], d[3, 6])
+    expect_equal(
+      opposite / max(opposite),
+      rep(1, 3),
+      tolerance = 1e-3,
+      info = ty
+    )
+  }
+})
+
 test_that("kamada-kawai layout is deterministic", {
   cg <- caugi(
     A %-->% B + C,
