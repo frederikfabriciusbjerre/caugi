@@ -22,6 +22,9 @@
 
 ## Bug Fixes
 
+- Fixed doc examples whose stated output was wrong: `is_cpdag()` (the triangle
+  is not a CPDAG), `aid()` and the `minimal_separator()` ADMG example (#456).
+
 - The tiered layout and `plot(tiers = )` now error on nodes without a tier
   instead of silently putting them in tier 0. Unknown nodes, nodes in more
   than one tier, `NA` and non-whole tiers are checked the same way for every

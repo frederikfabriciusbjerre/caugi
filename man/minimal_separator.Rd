@@ -91,12 +91,14 @@ minimal_separator(cg, "X", "Y", R = c("A", "M"))
 
 # Works on ADMGs (returns a minimal m-separator)
 admg <- caugi(
-  X \%-->\% Y,
   L \%-->\% X,
   L \%-->\% Y,
   class = "ADMG"
 )
-minimal_separator(admg, "X", "Y")
+minimal_separator(admg, "X", "Y") # "L"
+
+# Adjacent nodes cannot be separated
+minimal_separator(add_edges(admg, X \%-->\% Y), "X", "Y") # NULL
 
 }
 \references{
