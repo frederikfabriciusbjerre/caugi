@@ -130,6 +130,7 @@ seal_caugi_registry <- function() {
 #' @title Register a new edge type in the global registry.
 #'
 #' @param glyph A string representing the edge glyph (e.g., `"-->"`, `"<->"`).
+#'   It must not contain `%` or whitespace.
 #' @param tail_mark One of "arrow", "tail", "circle", "other".
 #' @param head_mark One of "arrow", "tail", "circle", "other".
 #' @param class One of "directed","undirected","bidirected","partial".
@@ -174,6 +175,9 @@ register_caugi_edge <- function(
   }
   if (grepl("%", glyph)) {
     stop("glyph must not contain '%'")
+  }
+  if (grepl("[[:space:]]", glyph)) {
+    stop("glyph must not contain whitespace")
   }
   if (
     class %in%
