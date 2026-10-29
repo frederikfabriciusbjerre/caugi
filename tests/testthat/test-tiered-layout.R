@@ -679,13 +679,38 @@ test_that("tiered layout validation branches are covered", {
   )
 
   cg3 <- caugi(A %-->% B %-->% C, class = "DAG")
-  tiered_with_fixed_min <- caugi_layout_tiered
-  environment(tiered_with_fixed_min) <- list2env(
-    list(min = function(...) 0L),
-    parent = environment(caugi_layout_tiered)
+  expect_error(
+    caugi_layout_tiered(cg3, tiers = c(A = 0, B = 1, C = NA)),
+    "Missing tier assignments for nodes: C"
+  )
+})
+
+test_that("tiers are validated the same way in every format (#428)", {
+  cg <- caugi(X %-->% M, M %-->% Y, class = "DAG")
+  # Unassigned nodes no longer land in tier 0.
+  expect_error(
+    caugi_layout_tiered(cg, list("X", "M")),
+    "Missing tier assignments for nodes: Y"
   )
   expect_error(
-    tiered_with_fixed_min(cg3, tiers = c(A = 0, B = 1, C = NA)),
-    "Nodes without tier assignments: C"
+    caugi_layout_tiered(cg, data.frame(name = c("X", "M"), tier = 1:2)),
+    "Missing tier assignments for nodes: Y"
+  )
+  expect_error(
+    plot(cg, tiers = list("X", "M")),
+    "Missing tier assignments for nodes: Y"
+  )
+  # Unknown nodes, duplicates and non-whole tiers error for every format.
+  expect_error(
+    caugi_layout_tiered(cg, c(X = 0, M = 1, Y = 2, Z = 3)),
+    "Node 'Z' in tiers is not in the graph"
+  )
+  expect_error(
+    caugi_layout_tiered(cg, list("X", c("M", "X"), "Y")),
+    "more than one tier: X"
+  )
+  expect_error(
+    caugi_layout_tiered(cg, c(X = 0, M = 0.9, Y = 2)),
+    "whole numbers"
   )
 })

@@ -16,6 +16,11 @@
 
 ## Bug Fixes
 
+- The tiered layout and `plot(tiers = )` now error on nodes without a tier
+  instead of silently putting them in tier 0. Unknown nodes, nodes in more
+  than one tier, `NA` and non-whole tiers are checked the same way for every
+  `tiers` format (#428).
+
 - `plot()` now matches the output of a custom layout function to the nodes by
   name, so a function that returns rows in a different order no longer
   mislabels the nodes (and reverses arrows). Its output gets the same checks

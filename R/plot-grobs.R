@@ -30,29 +30,7 @@ make_tiers <- function(
 ) {
   # Reconstruct tier assignments from tiers_arg
   node_names <- coords$name
-  n_nodes <- length(node_names)
-  assignments <- integer(n_nodes)
-  names(assignments) <- node_names
-
-  if (is.list(tiers) && !is.data.frame(tiers)) {
-    # Named list format
-    for (tier_idx in seq_along(tiers)) {
-      tier_nodes <- tiers[[tier_idx]]
-      for (node_name in tier_nodes) {
-        assignments[node_name] <- tier_idx - 1 # 0-indexed
-      }
-    }
-  } else if (is.numeric(tiers) && !is.null(names(tiers))) {
-    # Named numeric vector
-    assignments <- as.integer(tiers[node_names])
-  } else if (is.data.frame(tiers)) {
-    # Data.frame format
-    for (i in seq_len(nrow(tiers))) {
-      node_name <- as.character(tiers$name[i])
-      tier_idx <- as.integer(tiers$tier[i])
-      assignments[node_name] <- tier_idx
-    }
-  }
+  assignments <- .tier_assignments(tiers, node_names)
 
   # Normalize to 0-indexed
   if (length(assignments) > 0) {
