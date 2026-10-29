@@ -293,8 +293,7 @@ test_that("M-bias collider at confounder admits no adjustment set (#277)", {
     X %-->% Y,
     C %<->% X,
     C %<->% Y,
-    class = "ADMG",
-    simple = FALSE
+    class = "ADMG"
   )
 
   # X <-> C <-> Y has a collider at C; conditioning on C opens it,

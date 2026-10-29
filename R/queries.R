@@ -178,9 +178,9 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' no parallel edges).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, force a check against the compiled
-#' graph representation. If `FALSE` (default), return the declared `simple`
-#' property.
+#' @param force_check Ignored. Since caugi 1.4.0 the check always runs
+#' against the graph itself, since the deprecated `simple` flag no longer
+#' tells whether a graph has parallel edges or self-loops.
 #'
 #' @returns A logical value indicating whether the graph is simple.
 #'
@@ -194,8 +194,7 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' cg_nonsimple <- caugi(
 #'   A %-->% B,
 #'   A %<->% B,
-#'   class = "UNKNOWN",
-#'   simple = FALSE
+#'   class = "UNKNOWN"
 #' )
 #' is_simple(cg_nonsimple) # FALSE
 #'
@@ -205,12 +204,7 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' @export
 is_simple <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
-
-  if (force_check) {
-    return(rs_is_simple(cg@session))
-  }
-
-  cg@simple
+  rs_is_simple(cg@session)
 }
 
 #' @title Is the `caugi` graph a DAG?
@@ -240,8 +234,7 @@ is_simple <- function(cg, force_check = FALSE) {
 #'   A %-->% B,
 #'   B %-->% C,
 #'   C %-->% A,
-#'   class = "UNKNOWN",
-#'   simple = FALSE
+#'   class = "UNKNOWN"
 #' )
 #' is_dag(cg_cyclic) # FALSE
 #'
@@ -294,8 +287,7 @@ is_dag <- function(cg, force_check = FALSE) {
 #'   B %-->% C,
 #'   C %-->% A,
 #'   D %---% A,
-#'   class = "UNKNOWN",
-#'   simple = FALSE
+#'   class = "UNKNOWN"
 #' )
 #' is_pdag(cg_cyclic) # FALSE
 #'

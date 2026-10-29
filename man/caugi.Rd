@@ -11,7 +11,7 @@ caugi(
   to = NULL,
   nodes = NULL,
   edges_df = NULL,
-  simple = TRUE,
+  simple = NULL,
   build = NULL,
   class = c("AUTO", "DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "UNKNOWN"),
   state = NULL,
@@ -43,9 +43,14 @@ order of nodes in the graph will follow the order in \code{nodes}.}
 and \code{from}, \code{edge}, \code{to}. Can be used to create graphs using \code{edges(cg)}
 from another \code{caugi} object, \code{cg}.}
 
-\item{simple}{Logical; if \code{TRUE} (default), the graph is a simple graph, and
-the function will throw an error if the input contains parallel edges or
-self-loops.}
+\item{simple}{Deprecated in caugi 1.4.0 and
+to be removed in 2.0.0; the graph class now decides whether multiple edges
+are allowed. If omitted (recommended), it is derived from \code{class}: \code{FALSE}
+for \code{"UNKNOWN"} and \code{"ADMG"} (so self-loops and parallel edges in
+\code{"UNKNOWN"}, and bows in \code{"ADMG"}, are allowed) and \code{TRUE} for every other
+class. With \code{"AUTO"}, it follows the class the graph resolves to. Supplying it gives a deprecation warning but is still honoured:
+\code{TRUE} forbids parallel edges and self-loops, and \code{FALSE} is only allowed
+for \code{"UNKNOWN"}, \code{"ADMG"}, and \code{"AG"}.}
 
 \item{build}{DEPRECATED. The graph is always built lazily, so this argument is ignored.
 Can use \code{\link[=build]{build()}} to force lazy compilation if desired.}
@@ -54,7 +59,9 @@ Can use \code{\link[=build]{build()}} to force lazy compilation if desired.}
 \code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"AUTO"} will automatically pick
 the appropriate class based on the first match in the order of \code{"DAG"},
 \code{"UG"}, \code{"MPDAG"}, \code{"PDAG"}, \code{"ADMG"}, and \code{"AG"}.
-It will default to \code{"UNKNOWN"} if no match is found.}
+It will default to \code{"UNKNOWN"} if no match is found. A graph with parallel
+edges or self-loops resolves to \code{"ADMG"} if it is a valid ADMG (e.g. a bow)
+and to \code{"UNKNOWN"} otherwise.}
 
 \item{state}{DEPRECATED. Replaced by \code{.session}.}
 
@@ -81,6 +88,11 @@ The following edge operators are supported by default:
 
 You can register additional edge types using \code{\link[=register_caugi_edge]{register_caugi_edge()}}.
 }
+\details{
+The \verb{@simple} property reports whether the graph forbids parallel edges and
+self-loops. It is deprecated together with the \code{simple} argument and will
+be removed in caugi 2.0.0; use \code{\link[=is_simple]{is_simple()}} to check the graph itself.
+}
 \examples{
 # create a simple DAG (using NSE)
 cg <- caugi(
@@ -106,16 +118,18 @@ cg3 <- caugi(
   class = "DAG"
 )
 
-# create a non-simple graph
+# create a graph with parallel edges (allowed for UNKNOWN)
 cg4 <- caugi(
   A \%-->\% B,
   B \%-->\% A,
-  class = "UNKNOWN",
-  simple = FALSE
+  class = "UNKNOWN"
 )
 
-cg4@simple # FALSE
+is_simple(cg4) # FALSE
 cg4@graph_class # "UNKNOWN"
+
+# an ADMG may contain bows
+cg5 <- caugi(A \%-->\% B, A \%<->\% B, class = "ADMG")
 
 }
 \concept{caugi}
