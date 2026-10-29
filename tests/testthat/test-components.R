@@ -90,8 +90,7 @@ test_that("components handles self-loops and parallel edge types", {
     A %<->% B,
     B %-->% A,
     C,
-    class = "UNKNOWN",
-    simple = FALSE
+    class = "UNKNOWN"
   )
   for (mode in c("weak", "strong")) {
     expect_identical(components(cg, mode), list(c("A", "B"), "C"))
@@ -129,8 +128,7 @@ test_that("directed component partitions agree with igraph", {
         edge = rep("-->", nrow(edge_index)),
         to = node_names[edge_index[, 2]],
         nodes = node_names,
-        class = "UNKNOWN",
-        simple = FALSE
+        class = "UNKNOWN"
       )
       ig <- igraph::graph_from_adjacency_matrix(adj, mode = "directed")
       for (mode in c("weak", "strong")) {
