@@ -16,6 +16,10 @@
 
 ## Bug Fixes
 
+- `simulate_data()` now errors when a custom equation references a graph node
+  that is not a parent of the node, instead of silently reading a variable of
+  that name from the calling environment (#403).
+
 - `simulate_data()` now keeps non-syntactic node names such as `"my var"` in
   the output instead of failing with "undefined columns selected" (#402).
 

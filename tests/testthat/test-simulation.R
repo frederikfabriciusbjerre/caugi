@@ -429,3 +429,20 @@ test_that("simulate_data keeps non-syntactic node names (#402)", {
   )
   expect_equal(df[["y-z"]], df[["my var"]] + df[["1x"]])
 })
+
+test_that("simulate_data equations may only reference parents (#403)", {
+  D <- 100
+  cg <- caugi(A %-->% B, B %-->% D, class = "DAG")
+  expect_error(
+    simulate_data(cg, n = 3, B = A + D, seed = 1),
+    "may only reference its parents. Not parents: D"
+  )
+  expect_error(
+    simulate_data(cg, n = 3, B = A + B, seed = 1),
+    "Not parents: B"
+  )
+  # Variables that are not graph nodes are still fine.
+  k <- 2
+  df <- simulate_data(cg, n = 3, B = k * A, standardize = FALSE, seed = 1)
+  expect_equal(df$B, 2 * df$A)
+})
