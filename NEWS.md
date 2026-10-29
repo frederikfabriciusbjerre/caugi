@@ -16,6 +16,10 @@
 
 ## Bug Fixes
 
+- `read_graphml()` no longer trims whitespace inside edge glyphs, so a
+  registered glyph such as `" ~ "` round-trips. Whitespace-padded `<data>`
+  values from other tools still read (#416).
+
 - `read_graphml()` now reads edges without an `edge_type` as `---` when the
   graph declares `edgedefault="undirected"`, as documented, instead of always
   as `-->` (#415).

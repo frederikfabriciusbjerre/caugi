@@ -193,3 +193,22 @@ test_that("read_graphml follows edgedefault=\"undirected\" (#415)", {
   )
   expect_equal(read_graphml(g)@edges, cg@edges)
 })
+
+test_that("read_graphml keeps whitespace inside glyphs (#416)", {
+  reset_caugi_registry()
+  on.exit(reset_caugi_registry(), add = TRUE)
+  register_caugi_edge(" ~ ", "tail", "tail", "undirected", symmetric = TRUE)
+  cg <- caugi(from = "A", edge = " ~ ", to = "B", class = "UNKNOWN")
+  f <- tempfile(fileext = ".graphml")
+  write_graphml(cg, f)
+  expect_equal(read_graphml(f)@edges$edge, " ~ ")
+
+  # Whitespace-padded <data> from other tools still reads.
+  g <- tempfile(fileext = ".graphml")
+  write_graphml(caugi(A %-->% B, class = "DAG"), g)
+  x <- readLines(g)
+  padded <- sub(">--&gt;<", ">\n  --&gt;\n<", x, fixed = TRUE)
+  expect_false(identical(padded, x))
+  writeLines(padded, g)
+  expect_equal(read_graphml(g)@edges$edge, "-->")
+})
