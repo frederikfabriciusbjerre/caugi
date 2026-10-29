@@ -98,11 +98,12 @@
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/load_all.html" class="external-link">load_all</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </li>
 <li>
-<p><strong>Build Rust code</strong> (if needed):</p>
+<p><strong>Regenerate documentation</strong> (after changing R or Rust APIs):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">rextendr</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">document</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </li>
-</ol><p>The Rust compilation happens automatically via <code>rextendr</code> when you load or build the package.</p>
+</ol><p>Package compilation regenerates <code>R/extendr-wrappers.R</code> automatically. Use <code><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">devtools::document()</a></code> to update the Roxygen documentation as well. To force a rebuild and regenerate the wrappers, use <code>devtools::load_all(recompile = TRUE)</code>. You do not need <code>rextendr::document()</code> or <code>rextendr::use_extendr()</code> during routine development.</p>
+<p>The build configuration follows rextendr 0.5.0. When updating its scaffolding, generate a temporary package with <code>rextendr::use_extendr()</code> and merge the changes into this repository. Running it here with <code>overwrite = TRUE</code> replaces the Rust manifest and library source, including our dependencies and license metadata. Keep the offline vendor configuration, Windows linker settings, and WebR flags. After changing <code>src/rust/Cargo.lock</code>, run <code>rextendr::vendor_crates(overwrite = TRUE)</code> followed by <code>Rscript tools/prune-vendor.R</code>, and commit the refreshed vendor files.</p>
 </div>
 <div class="section level2">
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a></h2>

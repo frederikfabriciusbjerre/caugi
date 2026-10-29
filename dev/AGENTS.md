@@ -103,7 +103,7 @@ the user-facing API.
 7.  **Re-vendor Rust deps**: Whenever `src/rust/Cargo.lock` changes
     (added, removed, or bumped Rust dependency), regenerate the
     offline-build cache by running
-    `rextendr::vendor_pkgs(overwrite = TRUE)` from the package root.
+    `rextendr::vendor_crates(overwrite = TRUE)` from the package root.
     This refreshes `src/rust/vendor.tar.xz` and
     `src/rust/vendor-config.toml`. Then run
     `Rscript tools/prune-vendor.R` to strip non-build files (`tests/`,
