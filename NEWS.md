@@ -22,6 +22,10 @@
 
 ## Bug Fixes
 
+- caugi's JSON output now validates against its published schema: the schema
+  allows the top-level `$schema` key that every file has, and its class list
+  includes MPDAG, CPDAG and AG (#419).
+
 - Removed doc claims of support that does not exist: `minimal_separator()` no
   longer lists CPDAG and RCG, `write_caugi()`/`caugi_serialize()` take a
   `caugi` object (not anything coercible to one), and the serialization

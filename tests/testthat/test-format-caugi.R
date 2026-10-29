@@ -348,3 +348,37 @@ test_that("deprecated lazy warnings are covered", {
     "deprecated"
   )
 })
+
+test_that("serialized output of every class fits the published schema (#419)", {
+  schema_path <- test_path("../../pkgdown/assets/schemas/caugi-v1.schema.json")
+  skip_if_not(file.exists(schema_path), "schema file not available")
+  schema <- jsonlite::fromJSON(schema_path, simplifyVector = FALSE)
+  props <- schema$properties
+  graph_props <- props$graph$properties
+  graphs <- list(
+    caugi(A %-->% B, class = "DAG"),
+    caugi(A %---% B, B %-->% C, class = "PDAG"),
+    caugi(A %-->% C, B %-->% C, class = "MPDAG"),
+    caugi(A %-->% C, B %-->% C, class = "CPDAG"),
+    caugi(A %---% B, class = "UG"),
+    caugi(A %-->% B, B %<->% C, class = "ADMG"),
+    caugi(A %-->% B, C %---% D, class = "AG"),
+    caugi(A %o->% B, class = "UNKNOWN")
+  )
+  for (cg in graphs) {
+    out <- jsonlite::fromJSON(
+      caugi_serialize(cg, comment = "c", tags = "t"),
+      simplifyVector = FALSE
+    )
+    expect_true(all(names(out) %in% names(props)), info = cg@graph_class)
+    expect_true(
+      all(names(out$graph) %in% names(graph_props)),
+      info = cg@graph_class
+    )
+    expect_true(all(names(out$meta) %in% names(props$meta$properties)))
+    expect_true(
+      out$graph$class %in% unlist(graph_props$class$enum),
+      info = cg@graph_class
+    )
+  }
+})
