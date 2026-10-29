@@ -12,7 +12,8 @@ register_caugi_edge(glyph, tail_mark, head_mark, class, symmetric = FALSE)
 
 - glyph:
 
-  A string representing the edge glyph (e.g., `"-->"`, `"<->"`).
+  A string representing the edge glyph (e.g., `"-->"`, `"<->"`). It must
+  not contain `%` or whitespace.
 
 - tail_mark:
 

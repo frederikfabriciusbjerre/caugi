@@ -4,6 +4,19 @@
 
 ### New Features
 
+- [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) method
+  for `caugi` objects, returning the edge list as a plain data.frame
+  with one extra row per isolated node (`edge` and `to` are `NA`).
+  [`caugi()`](https://caugi.org/dev/reference/caugi.md) reads such rows
+  back as isolated nodes, so `caugi(edges_df = as.data.frame(cg))` keeps
+  every node
+  ([\#446](https://github.com/frederikfabriciusbjerre/caugi/issues/446)).
+
+- [`summary()`](https://rdrr.io/r/base/summary.html) method for `caugi`
+  objects, giving the class, the number of nodes and edges, and edge
+  counts by type
+  ([\#445](https://github.com/frederikfabriciusbjerre/caugi/issues/445)).
+
 - `caugi_options(reset = TRUE)` resets all options to their defaults.
   `caugi_options(caugi_default_options())` did not, since it only merges
   into the current options and so keeps keys that are not in the
@@ -39,6 +52,73 @@
 - [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
   now rejects a `Z` that contains a node of `Y`. It accepted, for
   example, `Z = "Y"` for `X <-- U --> Y`.
+
+- caugi’s JSON output now validates against its published schema: the
+  schema allows the top-level `$schema` key that every file has, and its
+  class list includes MPDAG, CPDAG and AG
+  ([\#419](https://github.com/frederikfabriciusbjerre/caugi/issues/419)).
+
+- Removed doc claims of support that does not exist:
+  [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
+  no longer lists CPDAG and RCG,
+  [`write_caugi()`](https://caugi.org/dev/reference/write_caugi.md)/[`caugi_serialize()`](https://caugi.org/dev/reference/caugi_serialize.md)
+  take a `caugi` object (not anything coercible to one), and the
+  serialization vignette no longer lists circle edges as valid in a PDAG
+  ([\#457](https://github.com/frederikfabriciusbjerre/caugi/issues/457)).
+
+- Fixed wrong defaults in the docs: the
+  [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) layout list
+  now includes `"tiered"` and `"circle"`, `tier_style` documents that
+  boxes and labels are shown by default, and
+  [`generate_graph()`](https://caugi.org/dev/reference/generate_graph.md)
+  documents `n >= 1`
+  ([\#454](https://github.com/frederikfabriciusbjerre/caugi/issues/454)).
+
+- Fixed doc examples whose stated output was wrong:
+  [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md) (the
+  triangle is not a CPDAG),
+  [`aid()`](https://caugi.org/dev/reference/aid.md) and the
+  [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
+  ADMG example
+  ([\#456](https://github.com/frederikfabriciusbjerre/caugi/issues/456)).
+
+- The tiered layout and `plot(tiers = )` now error on nodes without a
+  tier instead of silently putting them in tier 0. Unknown nodes, nodes
+  in more than one tier, `NA` and non-whole tiers are checked the same
+  way for every `tiers` format
+  ([\#428](https://github.com/frederikfabriciusbjerre/caugi/issues/428)).
+
+- [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) now matches
+  the output of a custom layout function to the nodes by name, so a
+  function that returns rows in a different order no longer mislabels
+  the nodes (and reverses arrows). Its output gets the same checks as a
+  precomputed layout
+  ([\#427](https://github.com/frederikfabriciusbjerre/caugi/issues/427)).
+
+- The Sugiyama layout, and so the default
+  [`plot()`](https://caugi.org/dev/reference/plot.caugi.md), no longer
+  panics on graphs with self-loops; self-loops are left out of the
+  layering
+  ([\#422](https://github.com/frederikfabriciusbjerre/caugi/issues/422)).
+
+- The Kamada-Kawai layout now uses correct graph distances for symmetric
+  edges (`---`, `<->`, `o-o`). Its distance search skipped symmetric
+  edges from a higher- to a lower-index node, which distorted every
+  layout of a UG, CPDAG or ADMG
+  ([\#420](https://github.com/frederikfabriciusbjerre/caugi/issues/420)).
+
+- [`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+  now rejects glyphs that contain whitespace.
+  [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md)
+  trims `<data>` text, so a glyph such as `" ~ "` could be registered
+  and written but not read back
+  ([\#416](https://github.com/frederikfabriciusbjerre/caugi/issues/416)).
+
+- [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md)
+  now reads edges without an `edge_type` as `---` when the graph
+  declares `edgedefault="undirected"`, as documented, instead of always
+  as `-->`
+  ([\#415](https://github.com/frederikfabriciusbjerre/caugi/issues/415)).
 
 - [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md)
   now reads self-closing `<edge .../>` elements, the usual way other

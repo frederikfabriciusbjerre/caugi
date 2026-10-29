@@ -75,8 +75,8 @@ layout.</p></dd>
 
 <dt id="arg-layout">layout<a class="anchor" aria-label="anchor" href="#arg-layout"></a></dt>
 <dd><p>Specifies the graph layout method. Can be:</p><ul><li><p>A character string: <code>"auto"</code> (default), <code>"sugiyama"</code>,
-<code>"fruchterman-reingold"</code>, <code>"kamada-kawai"</code>, <code>"bipartite"</code>.
-See <code><a href="caugi_layout.html">caugi_layout()</a></code> for details.</p></li>
+<code>"fruchterman-reingold"</code>, <code>"kamada-kawai"</code>, <code>"bipartite"</code>, <code>"tiered"</code>,
+<code>"circle"</code>. See <code><a href="caugi_layout.html">caugi_layout()</a></code> for details.</p></li>
 <li><p>A layout function: e.g., <code>caugi_layout_sugiyama</code>,
 <code>caugi_layout_bipartite</code>, etc. The function will be called with <code>x</code> and
 any additional arguments passed via <code>...</code>.</p></li>
@@ -119,14 +119,16 @@ settings.</p></li>
 
 
 <dt id="arg-tier-style">tier_style<a class="anchor" aria-label="anchor" href="#arg-tier-style"></a></dt>
-<dd><p>List of tier box styling parameters. Tier boxes are shown
-when <code>boxes = TRUE</code> is set within this list. Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>fill</code>, <code>col</code> (border color), <code>lwd</code>,
+<dd><p>List of tier box styling parameters, used when <code>tiers</code> is
+given. Supports:</p><ul><li><p>Display: <code>boxes</code> (draw a box around each tier, default <code>TRUE</code>) and
+<code>labels</code> (see below)</p></li>
+<li><p>Appearance (passed to <code>gpar()</code>): <code>fill</code>, <code>col</code> (border color), <code>lwd</code>,
 <code>lty</code>, <code>alpha</code></p></li>
 <li><p>Geometry: <code>padding</code> (padding around tier nodes, a <code><a href="https://rdrr.io/r/grid/unit.html" class="external-link">grid::unit()</a></code> or a
 number in mm like node padding, default 4 mm)</p></li>
 <li><p>Labels: <code>labels</code> (logical or character vector). If <code>TRUE</code>, uses tier names
 from <code>tiers</code> argument. If a character vector, uses custom labels (one per
-tier). If <code>FALSE</code> or <code>NULL</code> (default), no labels are shown.</p></li>
+tier). If <code>FALSE</code> or <code>NULL</code>, no labels are shown. Default <code>TRUE</code>.</p></li>
 <li><p>Label styling: <code>label_style</code> (list with <code>col</code>, <code>fontsize</code>, <code>fontface</code>, etc.)</p></li>
 <li><p>Values can be scalars (applied to all tiers) or vectors (auto-expanded to
 each tier in order)</p></li>

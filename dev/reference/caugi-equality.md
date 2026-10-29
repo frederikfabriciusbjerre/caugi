@@ -37,8 +37,10 @@ match the original. Asymmetric glyphs are direction-sensitive, so
 ## See also
 
 Other caugi methods:
+[`as.data.frame.caugi()`](https://caugi.org/dev/reference/as.data.frame.caugi.md),
 [`length.caugi()`](https://caugi.org/dev/reference/length.caugi.md),
-[`print.caugi()`](https://caugi.org/dev/reference/print.caugi.md)
+[`print.caugi()`](https://caugi.org/dev/reference/print.caugi.md),
+[`summary.caugi()`](https://caugi.org/dev/reference/summary.caugi.md)
 
 ## Examples
 

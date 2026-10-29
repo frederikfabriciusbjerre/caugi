@@ -62,18 +62,20 @@ Other queries:
 ## Examples
 
 ``` r
+# A v-structure: both arrows are compelled.
 cg_cpdag <- caugi(
-  A %---% B,
   A %-->% C,
   B %-->% C,
   class = "PDAG"
 )
 is_cpdag(cg_cpdag) # TRUE
-#> [1] FALSE
+#> [1] TRUE
 
+# A and B are adjacent, so A -> C <- B is not a v-structure and no arrow in
+# the triangle is compelled: its CPDAG is fully undirected.
 cg_not_cpdag <- caugi(
   A %---% B,
-  A %---% C,
+  A %-->% C,
   B %-->% C,
   class = "PDAG"
 )

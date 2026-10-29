@@ -119,9 +119,9 @@ The format supports all caugi edge types using their DSL operators:
 | `-->`    | Directed edge          | DAG, PDAG, ADMG, UNKNOWN |
 | `---`    | Undirected edge        | UG, PDAG, UNKNOWN        |
 | `<->`    | Bidirected edge        | ADMG, UNKNOWN            |
-| `o->`    | Partially directed     | PDAG, UNKNOWN            |
-| `--o`    | Partially undirected   | PDAG, UNKNOWN            |
-| `o-o`    | Partial (both circles) | PDAG, UNKNOWN            |
+| `o->`    | Partially directed     | UNKNOWN                  |
+| `--o`    | Partially undirected   | UNKNOWN                  |
+| `o-o`    | Partial (both circles) | UNKNOWN                  |
 
 ## Working with the Format
 

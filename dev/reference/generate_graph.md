@@ -13,7 +13,7 @@ generate_graph(n, m = NULL, p = NULL, class = c("DAG", "CPDAG"), seed = NULL)
 
 - n:
 
-  Integer \>= 0. Number of nodes in the graph.
+  Integer \>= 1. Number of nodes in the graph.
 
 - m:
 

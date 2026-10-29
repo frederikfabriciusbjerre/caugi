@@ -39,15 +39,17 @@ The input `caugi` object, invisibly.
 ## See also
 
 Other caugi methods:
+[`as.data.frame.caugi()`](https://caugi.org/dev/reference/as.data.frame.caugi.md),
 [`caugi-equality`](https://caugi.org/dev/reference/caugi-equality.md),
-[`length.caugi()`](https://caugi.org/dev/reference/length.caugi.md)
+[`length.caugi()`](https://caugi.org/dev/reference/length.caugi.md),
+[`summary.caugi()`](https://caugi.org/dev/reference/summary.caugi.md)
 
 ## Examples
 
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 print(cg)
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x648f22baf8b0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x5b67c5938a90>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: A-->B

@@ -14,7 +14,7 @@ write_caugi(x, path, comment = NULL, tags = NULL)
 
 - x:
 
-  A `caugi` object or an object coercible to `caugi`.
+  A `caugi` object.
 
 - path:
 

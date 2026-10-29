@@ -111,7 +111,9 @@ Optional; mutually exclusive with <code>...</code>.</p></dd>
 
 <dt id="arg-edge">edge<a class="anchor" aria-label="anchor" href="#arg-edge"></a></dt>
 <dd><p>Character vector of edge types.
-Optional; mutually exclusive with <code>...</code>.</p></dd>
+Optional; mutually exclusive with <code>...</code>. An <code>NA</code> edge, with <code>to</code> also <code>NA</code>,
+declares <code>from</code> as an isolated node, which is how <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> writes
+isolated nodes.</p></dd>
 
 
 <dt id="arg-to">to<a class="anchor" aria-label="anchor" href="#arg-to"></a></dt>
@@ -130,7 +132,9 @@ order of nodes in the graph will follow the order in <code>nodes</code>.</p></dd
 <dd><p>Optional data.frame or data.table with columns
 <code>from</code>, <code>edge</code>, and <code>to</code> to specify edges. Mutually exclusive with <code>...</code>
 and <code>from</code>, <code>edge</code>, <code>to</code>. Can be used to create graphs using <code>edges(cg)</code>
-from another <code>caugi</code> object, <code>cg</code>.</p></dd>
+from another <code>caugi</code> object, <code>cg</code>. Rows with an <code>NA</code> edge declare isolated
+nodes, so <code>caugi(edges_df = as.data.frame(cg))</code> keeps the isolated nodes of
+<code>cg</code>.</p></dd>
 
 
 <dt id="arg-simple">simple<a class="anchor" aria-label="anchor" href="#arg-simple"></a></dt>

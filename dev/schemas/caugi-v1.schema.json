@@ -10,6 +10,10 @@
     "graph"
   ],
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL of this schema"
+    },
     "format": {
       "type": "string",
       "const": "caugi",
@@ -33,7 +37,10 @@
           "enum": [
             "DAG",
             "PDAG",
+            "MPDAG",
+            "CPDAG",
             "ADMG",
+            "AG",
             "UG",
             "UNKNOWN"
           ],

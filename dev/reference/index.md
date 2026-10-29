@@ -198,6 +198,11 @@
 
 ## Methods
 
+- [`as.data.frame(`*`<caugi>`*`)`](https://caugi.org/dev/reference/as.data.frame.caugi.md)
+  :
+
+  Convert a `caugi` to a data.frame
+
 - [`length(`*`<caugi>`*`)`](https://caugi.org/dev/reference/length.caugi.md)
   :
 
@@ -207,6 +212,12 @@
   :
 
   Print a `caugi`
+
+- [`summary(`*`<caugi>`*`)`](https://caugi.org/dev/reference/summary.caugi.md)
+  [`print(`*`<caugi_summary>`*`)`](https://caugi.org/dev/reference/summary.caugi.md)
+  :
+
+  Summarize a `caugi`
 
 ## Conversions
 

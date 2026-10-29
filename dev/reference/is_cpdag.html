@@ -109,18 +109,20 @@ Artificial Intelligence (UAI-95)</em>, pp. 403–411. Morgan Kaufmann.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cg_cpdag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%---%</a></span> <span class="va">B</span>,</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A v-structure: both arrows are compelled.</span></span></span>
+<span class="r-in"><span><span class="va">cg_cpdag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>,</span></span>
 <span class="r-in"><span>  <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>,</span></span>
 <span class="r-in"><span>  class <span class="op">=</span> <span class="st">"PDAG"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">is_cpdag</span><span class="op">(</span><span class="va">cg_cpdag</span><span class="op">)</span> <span class="co"># TRUE</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A and B are adjacent, so A -&gt; C &lt;- B is not a v-structure and no arrow in</span></span></span>
+<span class="r-in"><span><span class="co"># the triangle is compelled: its CPDAG is fully undirected.</span></span></span>
 <span class="r-in"><span><span class="va">cg_not_cpdag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%---%</a></span> <span class="va">B</span>,</span></span>
-<span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%---%</a></span> <span class="va">C</span>,</span></span>
+<span class="r-in"><span>  <span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>,</span></span>
 <span class="r-in"><span>  <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>,</span></span>
 <span class="r-in"><span>  class <span class="op">=</span> <span class="st">"PDAG"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>

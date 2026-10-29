@@ -23,6 +23,7 @@
 <url><loc>https://caugi.org/dev/reference/all_backdoor_sets.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/ancestors.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/anteriors.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/as.data.frame.caugi.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/as_adjacency.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/as_bnlearn.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/as_caugi.html</loc></url>
@@ -151,6 +152,7 @@
 <url><loc>https://caugi.org/dev/reference/skeleton.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/spouses.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/subgraph.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/summary.caugi.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/to_dot.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/to_graphml.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/to_mermaid.html</loc></url>

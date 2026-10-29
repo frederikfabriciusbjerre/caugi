@@ -22,8 +22,10 @@ An integer representing the number of nodes.
 ## See also
 
 Other caugi methods:
+[`as.data.frame.caugi()`](https://caugi.org/dev/reference/as.data.frame.caugi.md),
 [`caugi-equality`](https://caugi.org/dev/reference/caugi-equality.md),
-[`print.caugi()`](https://caugi.org/dev/reference/print.caugi.md)
+[`print.caugi()`](https://caugi.org/dev/reference/print.caugi.md),
+[`summary.caugi()`](https://caugi.org/dev/reference/summary.caugi.md)
 
 ## Examples
 

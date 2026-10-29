@@ -48,6 +48,6 @@ Other metrics: [`hd()`](https://caugi.org/dev/reference/hd.md),
 set.seed(1)
 truth <- generate_graph(n = 100, m = 200, class = "DAG")
 guess <- generate_graph(n = 100, m = 200, class = "DAG")
-aid(truth, guess) # 0.0187
+aid(truth, guess) # 0.109
 #> [1] 0.1086869
 ```

@@ -55,7 +55,10 @@ caugi(
 - edge:
 
   Character vector of edge types. Optional; mutually exclusive with
-  `...`.
+  `...`. An `NA` edge, with `to` also `NA`, declares `from` as an
+  isolated node, which is how
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) writes
+  isolated nodes.
 
 - to:
 
@@ -74,7 +77,9 @@ caugi(
   Optional data.frame or data.table with columns `from`, `edge`, and
   `to` to specify edges. Mutually exclusive with `...` and `from`,
   `edge`, `to`. Can be used to create graphs using `edges(cg)` from
-  another `caugi` object, `cg`.
+  another `caugi` object, `cg`. Rows with an `NA` edge declare isolated
+  nodes, so `caugi(edges_df = as.data.frame(cg))` keeps the isolated
+  nodes of `cg`.
 
 - simple:
 
