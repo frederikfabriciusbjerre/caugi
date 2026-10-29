@@ -56,3 +56,23 @@ test_that("Sugiyama layout handles empty graphs and isolated nodes", {
   expect_true(all(is.finite(isolated$x)))
   expect_true(all(is.finite(isolated$y)))
 })
+
+test_that("sugiyama layout ignores self-loops instead of panicking (#422)", {
+  cg <- caugi(
+    A %-->% A,
+    A %-->% B,
+    B %-->% C,
+    class = "UNKNOWN",
+    simple = FALSE
+  )
+  layout <- caugi_layout(cg, method = "sugiyama")
+  expect_equal(layout$name, c("A", "B", "C"))
+  expect_true(all(is.finite(layout$x)) && all(is.finite(layout$y)))
+  expect_equal(
+    layout,
+    caugi_layout(
+      caugi(A %-->% B, B %-->% C, class = "DAG"),
+      method = "sugiyama"
+    )
+  )
+})

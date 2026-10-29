@@ -19,8 +19,12 @@ pub fn sugiyama_layout(graph: &CaugiGraph) -> Result<Vec<(f64, f64)>, String> {
             let spec = graph.spec(idx);
 
             // Only include directed edges, emitting once from source node
-            // is_outgoing_arrow(idx) = Arrow points FROM me toward neighbor = i -> j
-            if spec.class == crate::edges::EdgeClass::Directed && graph.is_outgoing_arrow(idx) {
+            // is_outgoing_arrow(idx) = Arrow points FROM me toward neighbor = i -> j.
+            // Self-loops don't affect layering, and rust-sugiyama panics on them.
+            if i != j
+                && spec.class == crate::edges::EdgeClass::Directed
+                && graph.is_outgoing_arrow(idx)
+            {
                 edges.push((i as u32, j as u32));
             }
         }

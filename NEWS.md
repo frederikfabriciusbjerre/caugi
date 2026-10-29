@@ -16,6 +16,9 @@
 
 ## Bug Fixes
 
+- The Sugiyama layout, and so the default `plot()`, no longer panics on graphs
+  with self-loops; self-loops are left out of the layering (#422).
+
 - The Kamada-Kawai layout now uses correct graph distances for symmetric edges
   (`---`, `<->`, `o-o`). Its distance search skipped symmetric edges from a
   higher- to a lower-index node, which distorted every layout of a UG, CPDAG
