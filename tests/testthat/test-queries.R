@@ -1237,22 +1237,42 @@ test_that("anteriors works for PDAG with undirected cycle", {
   expect_equal(sort(anteriors(cg, "C")), c("A", "B"))
 })
 
-test_that("anteriors not defined for UG", {
-  cg <- caugi(
-    A %---% B,
-    B %---% C,
-    class = "UG"
-  )
-  expect_error(anteriors(cg, "B"), "not defined for UG")
+test_that("anteriors and posteriors on a UG are the connected component (#383)", {
+  cg <- caugi(A %---% B, B %---% C, D, class = "UG")
+  expect_setequal(anteriors(cg, "B"), c("A", "C"))
+  expect_setequal(posteriors(cg, "A"), c("B", "C"))
+  expect_length(anteriors(cg, "D"), 0L)
 })
 
-test_that("anteriors not defined for ADMG", {
-  cg <- caugi(
-    A %-->% B,
-    A %<->% C,
-    class = "ADMG"
+test_that("anteriors and posteriors on an ADMG skip <-> (#383)", {
+  cg <- caugi(A %-->% B, B %-->% C, A %<->% D, class = "ADMG")
+  expect_setequal(anteriors(cg, "C"), c("A", "B"))
+  expect_setequal(posteriors(cg, "A"), c("B", "C"))
+  expect_length(anteriors(cg, "D"), 0L)
+})
+
+test_that("ancestral queries on UNKNOWN work from the edge marks (#383)", {
+  cg <- caugi(A %-->% B, B %---% C, C %<->% D, class = "UNKNOWN")
+  expect_equal(ancestors(cg, "B"), "A")
+  expect_setequal(anteriors(cg, "C"), c("A", "B"))
+  expect_setequal(posteriors(cg, "A"), c("B", "C"))
+  expect_error(
+    ancestors(caugi(A %o->% B, class = "UNKNOWN"), "B"),
+    "circle marks"
   )
-  expect_error(anteriors(cg, "B"), "not defined for ADMG")
+})
+
+test_that("condition_marginalize works on ADMG and UG input (#383)", {
+  adm <- caugi(A %-->% B, B %-->% C, class = "ADMG")
+  expect_equal(
+    edges(condition_marginalize(adm, marg_vars = "B")),
+    edges(caugi(A %-->% C))
+  )
+  ug <- caugi(A %---% B, B %---% C, class = "UG")
+  expect_equal(
+    edges(condition_marginalize(ug, marg_vars = "B")),
+    edges(caugi(A %---% C))
+  )
 })
 
 test_that("anteriors returns list for multiple nodes", {
@@ -1312,24 +1332,6 @@ test_that("posteriors works for PDAG with undirected cycle", {
   expect_equal(sort(posteriors(cg, "A")), c("B", "C"))
   expect_equal(sort(posteriors(cg, "B")), c("A", "C"))
   expect_equal(sort(posteriors(cg, "C")), c("A", "B"))
-})
-
-test_that("posteriors not defined for UG", {
-  cg <- caugi(
-    A %---% B,
-    B %---% C,
-    class = "UG"
-  )
-  expect_error(posteriors(cg, "B"), "not defined for UG")
-})
-
-test_that("posteriors not defined for ADMG", {
-  cg <- caugi(
-    A %-->% B,
-    A %<->% C,
-    class = "ADMG"
-  )
-  expect_error(posteriors(cg, "B"), "not defined for ADMG")
 })
 
 test_that("posteriors returns list for multiple nodes", {

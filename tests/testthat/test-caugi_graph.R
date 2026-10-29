@@ -811,14 +811,14 @@ test_that("UG graph parents_of and children_of are not defined", {
   expect_error(children(cg, "B"), "not defined for UG")
 })
 
-test_that("UG graph ancestors_of and descendants_of are not defined", {
+test_that("UG graph has no ancestors or descendants", {
   cg <- caugi(
     A %---% B,
     B %---% C,
     class = "UG"
   )
-  expect_error(ancestors(cg, "B"), "not defined for UG")
-  expect_error(descendants(cg, "B"), "not defined for UG")
+  expect_length(ancestors(cg, "B"), 0L)
+  expect_length(descendants(cg, "B"), 0L)
 })
 
 test_that("UG graph markov_blanket_of returns neighbors", {

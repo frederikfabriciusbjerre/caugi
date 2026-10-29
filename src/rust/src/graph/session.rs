@@ -1822,13 +1822,9 @@ mod tests {
         // collider 1 opens the path, so 0 is m-connected to 2 given {1}.
         assert!(!admg.m_separated(&[0], &[2], &[1]).unwrap());
 
-        // anteriors_of errors on ADMG (not supported)
-        let err = admg.anteriors_of(0).unwrap_err();
-        assert!(err.contains("not defined for ADMG"));
-
-        // posteriors_of errors on ADMG
-        let err = admg.posteriors_of(0).unwrap_err();
-        assert!(err.contains("not defined for ADMG"));
+        // anteriors/posteriors on an ADMG are ancestors/descendants
+        assert!(admg.anteriors_of(0).unwrap().is_empty());
+        assert_eq!(admg.posteriors_of(0).unwrap(), vec![1]);
 
         // topological_sort errors on ADMG
         let err = admg.topological_sort().unwrap_err();
@@ -1884,11 +1880,11 @@ mod tests {
         // Error: spouses_of on UG (bidirected mode not valid)
         assert!(ug.spouses_of(0).is_err());
 
-        // Error: ancestors_of on UG
-        assert!(ug.ancestors_of(0).is_err());
-        assert!(ug.descendants_of(0).is_err());
-        assert!(ug.anteriors_of(0).is_err());
-        assert!(ug.posteriors_of(0).is_err());
+        // A UG has no ancestors; its anteriors are the connected component
+        assert!(ug.ancestors_of(0).unwrap().is_empty());
+        assert!(ug.descendants_of(0).unwrap().is_empty());
+        assert!(!ug.anteriors_of(0).unwrap().is_empty());
+        assert!(!ug.posteriors_of(0).unwrap().is_empty());
         assert!(ug.parents_of(0).is_err());
         assert!(ug.children_of(0).is_err());
 

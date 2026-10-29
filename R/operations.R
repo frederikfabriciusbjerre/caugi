@@ -469,6 +469,11 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
       call. = FALSE
     )
   }
+  # A DAG, ADMG or UG that passes is_ag() is an AG; label it so the
+  # m-separation and anterior queries below accept it.
+  if (!identical(cg@graph_class, "AG")) {
+    cg <- mutate_caugi(cg, "AG")
+  }
 
   cond_vars_valid <- is.character(cond_vars) && length(cond_vars) > 0L
   marg_vars_valid <- is.character(marg_vars) && length(marg_vars) > 0L

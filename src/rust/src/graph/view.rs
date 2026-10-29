@@ -227,6 +227,47 @@ impl GraphView {
         }
     }
 
+    /// Nodes reachable from `i` by following `-->` backwards (`back`) or
+    /// forwards, plus `---` either way when `undirected`; `<->` is never
+    /// followed. Works from the edge marks, so it needs no typed class.
+    /// Excludes `i` itself.
+    fn reach_by_marks(&self, i: u32, back: bool, undirected: bool) -> Result<Vec<u32>, String> {
+        use crate::edges::Mark;
+
+        let core = self.core();
+        let mut seen = vec![false; core.n() as usize];
+        seen[i as usize] = true;
+        let mut stack = vec![i];
+        while let Some(u) = stack.pop() {
+            for k in core.row_range(u) {
+                let spec = &core.registry.specs[core.etype[k] as usize];
+                let (mine, theirs) = if core.side[k] == 0 {
+                    (spec.tail, spec.head)
+                } else {
+                    (spec.head, spec.tail)
+                };
+                let step = match (mine, theirs) {
+                    (Mark::Tail, Mark::Tail) => undirected,
+                    (Mark::Arrow, Mark::Tail) => back,
+                    (Mark::Tail, Mark::Arrow) => !back,
+                    (Mark::Arrow, Mark::Arrow) => false,
+                    _ => {
+                        return Err(
+                            "ancestral relations are not defined for edges with circle marks"
+                                .into(),
+                        )
+                    }
+                };
+                let v = core.col_index[k];
+                if step && !std::mem::replace(&mut seen[v as usize], true) {
+                    stack.push(v);
+                }
+            }
+        }
+        seen[i as usize] = false;
+        Ok((0..core.n()).filter(|&v| seen[v as usize]).collect())
+    }
+
     /// Generic implementation for Raw graphs - iterates CSR and filters by edge class.
     fn neighbors_mode_of_raw(&self, i: u32, mode: NeighborMode) -> Result<Vec<u32>, String> {
         use crate::edges::{EdgeClass, Mark};
@@ -296,8 +337,8 @@ impl GraphView {
             GraphView::Cpdag(c) => Ok(c.as_pdag().ancestors_of(i)),
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.ancestors_of(i)),
-            GraphView::Ug(_) => Err("ancestors_of not defined for UG".into()),
-            GraphView::Raw(_) => Err("ancestors_of not implemented for UNKNOWN class".into()),
+            GraphView::Ug(_) => Ok(Vec::new()),
+            GraphView::Raw(_) => self.reach_by_marks(i, true, false),
         }
     }
     pub fn descendants_of(&self, i: u32) -> Result<Vec<u32>, String> {
@@ -308,8 +349,8 @@ impl GraphView {
             GraphView::Cpdag(c) => Ok(c.as_pdag().descendants_of(i)),
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.descendants_of(i)),
-            GraphView::Ug(_) => Err("descendants_of not defined for UG".into()),
-            GraphView::Raw(_) => Err("descendants_of not implemented for UNKNOWN class".into()),
+            GraphView::Ug(_) => Ok(Vec::new()),
+            GraphView::Raw(_) => self.reach_by_marks(i, false, false),
         }
     }
     pub fn anteriors_of(&self, i: u32) -> Result<Vec<u32>, String> {
@@ -318,10 +359,9 @@ impl GraphView {
             GraphView::Pdag(g) => Ok(g.anteriors_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().anteriors_of(i)),
             GraphView::Cpdag(c) => Ok(c.as_pdag().anteriors_of(i)),
-            GraphView::Admg(_) => Err("anteriors_of not defined for ADMG".into()),
+            GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.anteriors_of(i)),
-            GraphView::Ug(_) => Err("anteriors_of not defined for UG".into()),
-            GraphView::Raw(_) => Err("anteriors_of not implemented for UNKNOWN class".into()),
+            GraphView::Ug(_) | GraphView::Raw(_) => self.reach_by_marks(i, true, true),
         }
     }
     pub fn posteriors_of(&self, i: u32) -> Result<Vec<u32>, String> {
@@ -330,10 +370,9 @@ impl GraphView {
             GraphView::Pdag(g) => Ok(g.posteriors_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().posteriors_of(i)),
             GraphView::Cpdag(c) => Ok(c.as_pdag().posteriors_of(i)),
-            GraphView::Admg(_) => Err("posteriors_of not defined for ADMG".into()),
+            GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.posteriors_of(i)),
-            GraphView::Ug(_) => Err("posteriors_of not defined for UG".into()),
-            GraphView::Raw(_) => Err("posteriors_of not implemented for UNKNOWN class".into()),
+            GraphView::Ug(_) | GraphView::Raw(_) => self.reach_by_marks(i, false, true),
         }
     }
     pub fn markov_blanket_of(&self, i: u32) -> Result<Vec<u32>, String> {
@@ -1085,50 +1124,21 @@ mod tests {
         assert_eq!(v_admg.descendants_of(0).unwrap(), vec![1, 2]);
         assert_eq!(v_ag.ancestors_of(2).unwrap(), vec![0, 1]);
         assert_eq!(v_ag.descendants_of(0).unwrap(), vec![1, 2]);
-        assert_eq!(
-            v_ug.ancestors_of(0).unwrap_err(),
-            "ancestors_of not defined for UG"
-        );
-        assert_eq!(
-            v_ug.descendants_of(0).unwrap_err(),
-            "descendants_of not defined for UG"
-        );
-        assert_eq!(
-            v_raw.ancestors_of(0).unwrap_err(),
-            "ancestors_of not implemented for UNKNOWN class"
-        );
-        assert_eq!(
-            v_raw.descendants_of(0).unwrap_err(),
-            "descendants_of not implemented for UNKNOWN class"
-        );
+        assert!(v_ug.ancestors_of(0).unwrap().is_empty());
+        assert!(v_ug.descendants_of(0).unwrap().is_empty());
+        assert_eq!(v_raw.ancestors_of(2).unwrap(), vec![0, 1]);
+        assert_eq!(v_raw.descendants_of(0).unwrap(), vec![1, 2]);
 
-        // anteriors/posteriors dispatch
-        assert_eq!(
-            v_admg.anteriors_of(0).unwrap_err(),
-            "anteriors_of not defined for ADMG"
-        );
-        assert_eq!(
-            v_admg.posteriors_of(0).unwrap_err(),
-            "posteriors_of not defined for ADMG"
-        );
+        // anteriors/posteriors dispatch: ADMG gives ancestors/descendants,
+        // UG the connected component, Raw works from the edge marks.
+        assert!(v_admg.anteriors_of(0).unwrap().is_empty());
+        assert_eq!(v_admg.posteriors_of(0).unwrap(), vec![1, 2]);
         assert_eq!(v_ag.anteriors_of(2).unwrap(), vec![0, 1]);
         assert_eq!(v_ag.posteriors_of(0).unwrap(), vec![1, 2]);
-        assert_eq!(
-            v_ug.anteriors_of(0).unwrap_err(),
-            "anteriors_of not defined for UG"
-        );
-        assert_eq!(
-            v_ug.posteriors_of(0).unwrap_err(),
-            "posteriors_of not defined for UG"
-        );
-        assert_eq!(
-            v_raw.anteriors_of(0).unwrap_err(),
-            "anteriors_of not implemented for UNKNOWN class"
-        );
-        assert_eq!(
-            v_raw.posteriors_of(0).unwrap_err(),
-            "posteriors_of not implemented for UNKNOWN class"
-        );
+        assert_eq!(v_ug.anteriors_of(0).unwrap(), vec![1, 2]);
+        assert_eq!(v_ug.posteriors_of(2).unwrap(), vec![0, 1]);
+        assert_eq!(v_raw.anteriors_of(4).unwrap(), vec![3]);
+        assert_eq!(v_raw.posteriors_of(0).unwrap(), vec![1, 2]);
 
         // markov blanket and neighbors all-mode dispatch
         assert_eq!(v_ug.markov_blanket_of(1).unwrap(), vec![0, 2]);
