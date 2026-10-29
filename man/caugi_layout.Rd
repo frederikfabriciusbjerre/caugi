@@ -2,6 +2,12 @@
 % Please edit documentation in R/layout.R
 \name{caugi_layout}
 \alias{caugi_layout}
+\alias{caugi_layout_sugiyama}
+\alias{caugi_layout_fruchterman_reingold}
+\alias{caugi_layout_kamada_kawai}
+\alias{caugi_layout_bipartite}
+\alias{caugi_layout_tiered}
+\alias{caugi_layout_circle}
 \title{Compute Graph Layout}
 \source{
 Fruchterman, T. M. J., & Reingold, E. M. (1991). Graph drawing by
@@ -25,6 +31,22 @@ caugi_layout(
   packing_ratio = 1.618034,
   ...
 )
+
+caugi_layout_sugiyama(cg, packing_ratio = 1.618034, ...)
+
+caugi_layout_fruchterman_reingold(cg, packing_ratio = 1.618034, ...)
+
+caugi_layout_kamada_kawai(cg, packing_ratio = 1.618034, ...)
+
+caugi_layout_bipartite(
+  cg,
+  partition = NULL,
+  orientation = c("columns", "rows")
+)
+
+caugi_layout_tiered(cg, tiers, orientation = c("columns", "rows"))
+
+caugi_layout_circle(cg, ...)
 }
 \arguments{
 \item{cg}{A \code{caugi} object. Must contain only directed edges for Sugiyama
@@ -44,30 +66,77 @@ layout.}
 edge types)
 \item \code{"kamada-kawai"}: High-quality stress minimization (works with all edge
 types)
-\item \code{"bipartite"}: Bipartite layout (requires \code{partition} parameter)
-\item \code{"tiered"}: Multi-tier layout (requires \code{tiers} parameter)
+\item \code{"bipartite"}: Bipartite layout (optional \code{partition} and \code{orientation})
+\item \code{"tiered"}: Multi-tier layout (requires \code{tiers}, optional \code{orientation})
 \item \code{"circle"}: Place nodes evenly along a circle
 }}
 
 \item{packing_ratio}{Aspect ratio for packing disconnected components
-(width/height). Default is the golden ratio (1.618) which works well with
-widescreen displays. Use \code{1.0} for square grid, \code{2.0} for wider layouts,
-\code{0.5} for taller layouts, \code{Inf} for single row, or \code{0.0} for single column.}
+(width/height) in the \code{"sugiyama"}, \code{"fruchterman-reingold"} and
+\code{"kamada-kawai"} layouts. Default is the golden ratio (1.618) which works
+well with widescreen displays. Use \code{1.0} for square grid, \code{2.0} for wider
+layouts, \code{0.5} for taller layouts, \code{Inf} for single row, or \code{0.0} for
+single column.}
 
-\item{...}{Additional arguments passed to the specific layout function.
-For bipartite layouts, use \code{partition} (logical vector) and \code{orientation}
-(\code{"columns"} or \code{"rows"}).
-For tiered layouts, use \code{tiers} (list, named vector, or data.frame) and
-\code{orientation} (\code{"rows"} or \code{"columns"}).}
+\item{...}{Options of the chosen layout: \code{partition} and \code{orientation} for
+\code{"bipartite"}, and \code{tiers} and \code{orientation} for \code{"tiered"}. The other
+layouts take none. Options a layout ignores give a warning: anything in
+\code{...} for layouts other than \code{"bipartite"} and \code{"tiered"}, and
+\code{packing_ratio} for \code{"bipartite"}, \code{"tiered"} and \code{"circle"}.}
+
+\item{partition}{For \code{"bipartite"}: optional logical vector indicating node
+partitions. Nodes with \code{TRUE} are placed in one partition and nodes with
+\code{FALSE} in the other. Length must equal the number of nodes. Both
+partitions must be non-empty. If \code{NULL} (default), attempts to detect
+bipartite structure automatically by assigning nodes without incoming
+edges to one partition and others to the second partition.}
+
+\item{orientation}{For \code{"bipartite"} and \code{"tiered"}: character string
+specifying the layout orientation:
+\itemize{
+\item \code{"columns"} (default): Vertical lines of nodes. The bipartite layout
+puts the \code{TRUE} partition on the right (x=1) and the \code{FALSE} partition
+on the left (x=0). The tiered layout puts the first tier at the left
+(x=0) and the last tier at the right (x=1).
+\item \code{"rows"}: Horizontal lines of nodes. The bipartite layout puts the
+\code{TRUE} partition on top (y=1) and the \code{FALSE} partition at the bottom
+(y=0). The tiered layout puts the first tier at the top (y=1) and the
+last tier at the bottom (y=0).
+}}
+
+\item{tiers}{For \code{"tiered"}: tier assignments specifying which tier each
+node belongs to. Can be provided in multiple formats:
+\itemize{
+\item \strong{Named list}: List where each element is a character vector of node
+names belonging to that tier. Element names are ignored; tier order is
+determined by list order (first element = tier 0, etc.).
+\item \strong{Named numeric vector}: Vector where names are node names and values
+are tier indices (starting from 0 or 1).
+\item \strong{Data.frame}: Must contain columns \code{name} (node names) and \code{tier}
+(tier indices).
+}
+
+All nodes must be assigned to a tier, all tiers must be non-empty, and
+tier indices must be consecutive starting from 0 or 1.}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node
-names and their coordinates.
+names and their coordinates. The tiered layout adds a \code{tier} column with
+the (0-indexed) tier of each node and stores the orientation in an
+\code{orientation} attribute. When passed to \code{plot()}, tier information is
+automatically extracted, so you don't need to specify \code{tiers} again.
 }
 \description{
 Computes node coordinates for graph visualization using
 specified layout algorithm. If the graph has not been built yet, it will
 be built automatically before computing the layout.
+}
+\details{
+\code{caugi_layout_sugiyama()}, \code{caugi_layout_fruchterman_reingold()},
+\code{caugi_layout_kamada_kawai()}, \code{caugi_layout_bipartite()},
+\code{caugi_layout_tiered()} and \code{caugi_layout_circle()} are deprecated. Call
+\code{caugi_layout()} with the matching \code{method} instead, e.g.
+\code{caugi_layout(cg, method = "tiered", tiers = tiers)}.
 }
 \section{Layout Algorithms}{
 
@@ -94,6 +163,17 @@ preserves the global structure and path lengths compared to
 Fruchterman-Reingold. Ideal for publication-quality visualizations where
 accurate distance representation matters. Works with all edge types and
 produces deterministic results.
+
+\strong{Bipartite}
+
+Places nodes in two parallel rows or columns based on a \code{partition}, e.g.
+causes and effects. Without a \code{partition}, nodes without incoming edges
+form one group and all other nodes the other.
+
+\strong{Tiered}
+
+Places nodes in several parallel rows or columns based on \code{tiers}, e.g.
+exposures, mediators and outcomes. Nodes within a tier are spaced evenly.
 
 \strong{Circle}
 
@@ -148,14 +228,18 @@ layout_bp_cols <- caugi_layout(
   orientation = "columns"
 )
 
-# Tiered layout with three tiers
+# Tiered layout with three tiers, given as a named list
 cg_tiered <- caugi(
   X1 \%-->\% M1 + M2,
   X2 \%-->\% M1 + M2,
   M1 \%-->\% Y,
   M2 \%-->\% Y
 )
-tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
+tiers <- list(
+  exposures = c("X1", "X2"),
+  mediators = c("M1", "M2"),
+  outcome = "Y"
+)
 layout_tiered <- caugi_layout(
   cg_tiered,
   method = "tiered",
@@ -163,16 +247,18 @@ layout_tiered <- caugi_layout(
   orientation = "rows"
 )
 
+# The same tiers as a named numeric vector or a data.frame
+tiers_vec <- c(X1 = 1, X2 = 1, M1 = 2, M2 = 2, Y = 3)
+tiers_df <- data.frame(name = names(tiers_vec), tier = tiers_vec)
+layout_tiered <- caugi_layout(cg_tiered, method = "tiered", tiers = tiers_df)
+
+# The layout includes tier information, so plot() works without passing tiers
+plot(cg_tiered, layout = layout_tiered)
+
 }
 \seealso{
 Other plotting:
 \code{\link{add-caugi_plot-caugi_plot}},
-\code{\link[=caugi_layout_bipartite]{caugi_layout_bipartite()}},
-\code{\link[=caugi_layout_circle]{caugi_layout_circle()}},
-\code{\link[=caugi_layout_fruchterman_reingold]{caugi_layout_fruchterman_reingold()}},
-\code{\link[=caugi_layout_kamada_kawai]{caugi_layout_kamada_kawai()}},
-\code{\link[=caugi_layout_sugiyama]{caugi_layout_sugiyama()}},
-\code{\link[=caugi_layout_tiered]{caugi_layout_tiered()}},
 \code{\link[=caugi_plot]{caugi_plot()}},
 \code{\link{divide-caugi_plot-caugi_plot}},
 \code{\link[=plot.caugi]{plot.caugi()}}

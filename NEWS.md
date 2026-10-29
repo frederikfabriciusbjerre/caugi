@@ -218,6 +218,19 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+## Deprecations
+
+* `caugi_layout_sugiyama()`, `caugi_layout_fruchterman_reingold()`,
+  `caugi_layout_kamada_kawai()`, `caugi_layout_bipartite()`,
+  `caugi_layout_tiered()` and `caugi_layout_circle()` are deprecated. Call
+  `caugi_layout()` with the matching `method` instead, e.g.
+  `caugi_layout(cg, method = "tiered", tiers = tiers)` instead of
+  `caugi_layout_tiered(cg, tiers)`. All their options are documented in
+  `?caugi_layout`. `caugi_layout()` now warns about an option the chosen
+  method ignores, such as `tiers` with `method = "sugiyama"` or
+  `packing_ratio` with `method = "circle"`, instead of dropping it silently
+  (#367).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.
