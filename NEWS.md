@@ -16,6 +16,9 @@
 
 ## Bug Fixes
 
+- `simulate_data()` now keeps non-syntactic node names such as `"my var"` in
+  the output instead of failing with "undefined columns selected" (#402).
+
 - `exogenous()` on a UG now honours `undirected_as_parents`: by default
   undirected edges are ignored, so every node is exogenous, as for PDAGs.
   Query `index` arguments now reject `NaN` and non-whole values instead of

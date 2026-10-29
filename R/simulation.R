@@ -260,13 +260,11 @@ simulate_data <- function(
     }
   }
 
-  # build data.frame in original node order
-  out <- as.data.frame(data)[, node_names, drop = FALSE]
+  # build data.frame in original node order, keeping non-syntactic names
+  out <- as.data.frame(data, check.names = FALSE)[, node_names, drop = FALSE]
 
   if (standardize) {
-    out <- as.data.frame(lapply(out, function(x) {
-      (x - mean(x)) / stats::sd(x)
-    }))
+    out[] <- lapply(out, function(x) (x - mean(x)) / stats::sd(x))
   }
 
   out
