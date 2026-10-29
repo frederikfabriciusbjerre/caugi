@@ -52,13 +52,26 @@ If you don't have Rust installed, visit [rustup.rs](https://rustup.rs/) for inst
    ```r
    devtools::load_all()
    ```
-3. **Build Rust code** (if needed):
+3. **Regenerate documentation** (after changing R or Rust APIs):
 
    ```r
-   rextendr::document()
+   devtools::document()
    ```
 
-The Rust compilation happens automatically via `rextendr` when you load or build the package.
+Package compilation regenerates `R/extendr-wrappers.R` automatically.
+Use `devtools::document()` to update the Roxygen documentation as well.
+To force a rebuild and regenerate the wrappers, use
+`devtools::load_all(recompile = TRUE)`. You do not need `rextendr::document()`
+or `rextendr::use_extendr()` during routine development.
+
+The build configuration follows rextendr 0.5.0. When updating its scaffolding,
+generate a temporary package with `rextendr::use_extendr()` and merge the changes
+into this repository. Running it here with `overwrite = TRUE` replaces the Rust
+manifest and library source, including our dependencies and license metadata.
+Keep the offline vendor configuration, Windows linker settings, and WebR flags.
+After changing `src/rust/Cargo.lock`, run
+`rextendr::vendor_crates(overwrite = TRUE)` followed by
+`Rscript tools/prune-vendor.R`, and commit the refreshed vendor files.
 
 ## Architecture
 

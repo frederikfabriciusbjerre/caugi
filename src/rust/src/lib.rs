@@ -448,14 +448,14 @@ fn edge_registry_new() -> ExternalPtr<EdgeRegistry> {
     ExternalPtr::new(EdgeRegistry::new())
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn edge_registry_register_builtins(mut reg: ExternalPtr<EdgeRegistry>) {
     if let Err(e) = reg.as_mut().register_builtins() {
         throw_r_error(e.to_string());
     }
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn edge_registry_seal(mut reg: ExternalPtr<EdgeRegistry>) {
     reg.as_mut().seal();
 }
@@ -539,7 +539,7 @@ fn graph_builder_new(
     }
     ExternalPtr::new(GraphBuilder::new(n as u32, simple.is_true(), reg.as_ref()))
 }
-#[extendr]
+#[extendr(invisible)]
 fn graph_builder_add_edges(
     mut b: ExternalPtr<GraphBuilder>,
     from: Integers,
@@ -784,7 +784,7 @@ fn rs_parent_aid(
 
 // ── Serialization ──────────────────────────────────────────────────────────────
 
-#[extendr]
+#[extendr(invisible)]
 fn rs_write_caugi_file(
     mut session: ExternalPtr<GraphSession>,
     graph_class: &str,
@@ -924,7 +924,7 @@ fn rs_clone(session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
     ExternalPtr::new(session.as_ref().clone_for_cow())
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn rs_set_edges(
     mut session: ExternalPtr<GraphSession>,
     from: Integers,
@@ -944,7 +944,7 @@ fn rs_set_edges(
     session.as_mut().set_edges(edges);
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn rs_replace_edges(
     mut session: ExternalPtr<GraphSession>,
     from: Integers,
@@ -1040,7 +1040,7 @@ fn rs_remove_edges(
     )
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn rs_set_n(mut session: ExternalPtr<GraphSession>, n: i32) {
     if n < 0 {
         throw_r_error("n must be >= 0");
@@ -1048,12 +1048,12 @@ fn rs_set_n(mut session: ExternalPtr<GraphSession>, n: i32) {
     session.as_mut().set_n(n as u32);
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn rs_set_simple(mut session: ExternalPtr<GraphSession>, simple: Rbool) {
     session.as_mut().set_simple(simple.is_true());
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn rs_set_class(mut session: ExternalPtr<GraphSession>, class: &str) {
     let graph_class = GraphClass::from_str(class).unwrap_or_else(|e| throw_r_error(e));
     session.as_mut().set_class(graph_class);
@@ -1069,7 +1069,7 @@ fn rs_resolve_class(mut session: ExternalPtr<GraphSession>, class: &str) -> Stri
     resolved.as_str().to_string()
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn rs_set_names(mut session: ExternalPtr<GraphSession>, names: Strings) {
     let name_vec: Vec<String> = rstrs(&names).map(|s| s.to_string()).collect();
     session.as_mut().set_names(name_vec);
@@ -1257,8 +1257,6 @@ fn rs_edges_df(session: ExternalPtr<GraphSession>) -> Robj {
     list!(from0 = from0, to0 = to0, code = code, glyph = glyph).into_robj()
 }
 
-/// Codes of `glyphs` in this session's own registry snapshot, so edges added
-/// to an existing graph keep the meaning they had when it was built.
 #[extendr]
 fn rs_codes_of(session: ExternalPtr<GraphSession>, glyphs: Strings) -> Vec<i32> {
     let specs = &session.as_ref().registry().specs;
@@ -1278,10 +1276,6 @@ fn rs_codes_of(session: ExternalPtr<GraphSession>, glyphs: Strings) -> Vec<i32> 
         .collect()
 }
 
-/// Edges in canonical form for comparing graphs: symmetric edges are oriented
-/// by node name and rows are sorted. Each row carries its full spec from this
-/// session's registry, so glyphs that mean different things never compare
-/// equal.
 #[extendr]
 fn rs_canonical_edges(session: ExternalPtr<GraphSession>) -> Robj {
     let s = session.as_ref();
@@ -1316,7 +1310,7 @@ fn rs_is_valid(session: ExternalPtr<GraphSession>) -> Robj {
     .into_robj()
 }
 
-#[extendr]
+#[extendr(invisible)]
 fn rs_build(mut session: ExternalPtr<GraphSession>) {
     session.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
 }

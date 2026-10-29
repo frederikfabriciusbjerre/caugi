@@ -2,7 +2,7 @@
 
 # Prune non-build files from the vendored Rust crates in vendor.tar.xz.
 #
-# `cargo vendor` (run via `rextendr::vendor_pkgs()`) copies each dependency
+# `cargo vendor` (run via `rextendr::vendor_crates()`) copies each dependency
 # wholesale, including directories that cargo never compiles into a
 # dependency's library: `tests/`, `examples/`, and trybuild-style fixture trees
 # such as `zerocopy-derive/src/output_tests/`. Besides being dead weight, some
@@ -15,7 +15,7 @@
 # checksum verification still passes (cargo only checks files listed under
 # `files`), and repacks the tarball deterministically.
 #
-# Run it from the package root after `rextendr::vendor_pkgs(overwrite = TRUE)`
+# Run it from the package root after `rextendr::vendor_crates(overwrite = TRUE)`
 # and commit the updated `src/rust/vendor.tar.xz`:
 #
 #     Rscript tools/prune-vendor.R
@@ -44,7 +44,7 @@ if (!file.exists(tarball)) {
 if (file.size(tarball) == 0) {
   stop(
     tarball,
-    " is empty.\nRe-create it with rextendr::vendor_pkgs() before pruning.",
+    " is empty.\nRe-create it with rextendr::vendor_crates() before pruning.",
     call. = FALSE
   )
 }

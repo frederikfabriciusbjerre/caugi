@@ -57,5 +57,5 @@ tasks:
     cmds:
       - rm -rf src/.cargo src/vendor
       - cargo update --manifest-path src/rust/Cargo.toml
-      - Rscript -e 'rextendr::vendor_pkgs()'
+      - Rscript -e 'rextendr::vendor_crates()'
       - task: prune-vendor
