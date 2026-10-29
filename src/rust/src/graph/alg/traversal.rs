@@ -144,42 +144,58 @@ where
     bitset::collect_from_mask(&seen)
 }
 
-/// Compute DAG-style Markov blanket of a single node.
+/// Markov blanket of `i` in a DAG, ADMG or AG: every node joined to `i` by a
+/// path whose inner nodes are all colliders (Richardson 2003; Pellet &
+/// Elisseeff 2008). In a DAG that is parents, children and the children's
+/// other parents; bidirected edges add districts and their parents.
 ///
-/// The Markov blanket consists of: Pa(i) ∪ Ch(i) ∪ (⋃ Pa(c) \ {i} : c∈Ch(i))
+/// A path can only pass through a node it entered by an arrowhead and leave
+/// by another arrowhead, i.e. via a parent edge (`p -> w`) or a spouse edge
+/// (`w <-> s`), and it can only continue past a spouse or a child.
 ///
-/// # Arguments
-/// * `n` - Total number of nodes in the graph
-/// * `i` - The node to find the Markov blanket of
-/// * `parents_of` - Function returning parents of a given node
-/// * `children_of` - Function returning children of a given node
-///
-/// Returns a sorted vector of node indices in the Markov blanket (not including `i` itself).
-pub fn markov_blanket_dag<'a, F, G>(n: u32, i: u32, parents_of: F, children_of: G) -> Vec<u32>
+/// Returns a sorted vector of node indices (not including `i` itself).
+pub fn collider_connected<'a, P, C, S, U>(
+    n: u32,
+    i: u32,
+    parents_of: P,
+    children_of: C,
+    spouses_of: S,
+    undirected_of: U,
+) -> Vec<u32>
 where
-    F: Fn(u32) -> &'a [u32],
-    G: Fn(u32) -> &'a [u32],
+    P: Fn(u32) -> &'a [u32],
+    C: Fn(u32) -> &'a [u32],
+    S: Fn(u32) -> &'a [u32],
+    U: Fn(u32) -> &'a [u32],
 {
-    let n = n as usize;
-    let mut m = vec![false; n];
+    let mut m = vec![false; n as usize];
+    let mut expanded = vec![false; n as usize];
+    expanded[i as usize] = true;
 
-    // Parents
-    for &p in parents_of(i) {
-        m[p as usize] = true;
+    // Neighbours of i are all in; those entered by an arrowhead can be passed.
+    let mut stack: Vec<u32> = Vec::new();
+    for &v in parents_of(i).iter().chain(undirected_of(i)) {
+        m[v as usize] = true;
+    }
+    for &v in children_of(i).iter().chain(spouses_of(i)) {
+        m[v as usize] = true;
+        stack.push(v);
     }
 
-    // Children
-    for &c in children_of(i) {
-        m[c as usize] = true;
-        // Co-parents of children
-        for &p in parents_of(c) {
-            if p != i {
-                m[p as usize] = true;
-            }
+    while let Some(w) = stack.pop() {
+        if std::mem::replace(&mut expanded[w as usize], true) {
+            continue;
+        }
+        for &p in parents_of(w) {
+            m[p as usize] = true;
+        }
+        for &s in spouses_of(w) {
+            m[s as usize] = true;
+            stack.push(s);
         }
     }
 
-    m[i as usize] = false; // exclude self
+    m[i as usize] = false;
     bitset::collect_from_mask(&m)
 }
 
@@ -220,8 +236,9 @@ mod tests {
     }
 
     #[test]
-    fn markov_blanket_dag_v_structure() {
+    fn collider_connected_dag_v_structure() {
         // Graph: 2 -> 1 <- 0 -> 3
+        let none = |_: u32| -> &[u32] { &[] };
         let p1 = [0, 2];
         let parents_of = |n: u32| -> &[u32] {
             match n {
@@ -241,14 +258,17 @@ mod tests {
 
         // MB(0) = pa(0)=∅, ch(0)={1,3}, spouses via 1={2}
         assert_eq!(
-            markov_blanket_dag(4, 0, parents_of, children_of),
+            collider_connected(4, 0, parents_of, children_of, none, none),
             vec![1, 2, 3]
         );
         assert_eq!(
-            markov_blanket_dag(4, 2, parents_of, children_of),
+            collider_connected(4, 2, parents_of, children_of, none, none),
             vec![0, 1]
         );
-        assert_eq!(markov_blanket_dag(4, 3, parents_of, children_of), vec![0]);
+        assert_eq!(
+            collider_connected(4, 3, parents_of, children_of, none, none),
+            vec![0]
+        );
     }
 
     #[test]

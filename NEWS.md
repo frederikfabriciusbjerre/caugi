@@ -16,6 +16,11 @@
 
 ## Bug Fixes
 
+- `markov_blanket()` on ADMGs and AGs now returns every node joined by a
+  collider path. ADMGs missed children and AGs missed the districts of
+  children, so the same graph had a different blanket depending on its class.
+  DAGs, ADMGs and AGs now share one implementation (#384).
+
 - `anteriors()` and `posteriors()` now work on ADMGs (where they equal
   ancestors and descendants) and UGs (the connected component), and
   `ancestors()`/`descendants()` return nothing on a UG instead of erroring. On

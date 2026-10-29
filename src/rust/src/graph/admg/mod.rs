@@ -15,7 +15,6 @@ use super::error::AdmgError;
 use super::packed::{PackedBuckets, PackedBucketsBuilder};
 use super::CaugiGraph;
 use crate::edges::EdgeClass;
-use crate::graph::alg::bitset;
 use crate::graph::alg::directed_part_is_acyclic;
 use crate::graph::alg::traversal;
 use std::sync::Arc;
@@ -149,31 +148,17 @@ impl Admg {
         traversal::descendants_of(self.n(), i, |u| self.children_of(u))
     }
 
-    /// Markov blanket of `i` in an ADMG:
-    /// `Pa(Dis(i)) ∪ (Dis(i) \ {i})`
-    ///
-    /// Where Dis(i) is the district (c-component) containing i.
+    /// Markov blanket of `i`: nodes joined to it by a collider path.
     #[inline]
     pub fn markov_blanket_of(&self, i: u32) -> Vec<u32> {
-        let n = self.n() as usize;
-        let mut m = vec![false; n];
-
-        // Get the district of i
-        let district = self.district_of(i);
-
-        // Add all district members (except i) and all parents of district members
-        for &d in &district {
-            if d != i {
-                m[d as usize] = true;
-            }
-            // Add parents of each district member
-            for &p in self.parents_of(d) {
-                m[p as usize] = true;
-            }
-        }
-
-        m[i as usize] = false; // ensure self is excluded
-        bitset::collect_from_mask(&m)
+        traversal::collider_connected(
+            self.n(),
+            i,
+            |u| self.parents_of(u),
+            |u| self.children_of(u),
+            |u| self.spouses_of(u),
+            |_| &[],
+        )
     }
 
     /// Nodes with no parents (exogenous in directed sense).
@@ -316,12 +301,9 @@ mod tests {
 
         let admg = Admg::new(Arc::new(b.finalize().unwrap())).unwrap();
 
-        // MB(1) = Pa(Dis(1)) ∪ (Dis(1) \ {1})
-        // Dis(1) = {1, 4} (nodes connected via bidirected edges)
-        // Pa(Dis(1)) = Pa(1) ∪ Pa(4) = {0, 2} ∪ {} = {0, 2}
-        // Dis(1) \ {1} = {4}
-        // MB(1) = {0, 2, 4}
-        assert_eq!(admg.markov_blanket_of(1), vec![0, 2, 4]);
+        // Parents 0, 2, child 3 and spouse 4. (Pa(Dis(1)) ∪ Dis(1) alone
+        // misses the child.)
+        assert_eq!(admg.markov_blanket_of(1), vec![0, 2, 3, 4]);
     }
 
     #[test]
@@ -346,12 +328,8 @@ mod tests {
         // MB(1) = {0, 2, 3}
         assert_eq!(admg.markov_blanket_of(1), vec![0, 2, 3]);
 
-        // MB(2) = Pa(Dis(2)) ∪ (Dis(2) \ {2})
-        // Dis(2) = {1, 2}
-        // Pa(Dis(2)) = {0, 3}
-        // Dis(2) \ {2} = {1}
-        // MB(2) = {0, 1, 3}
-        assert_eq!(admg.markov_blanket_of(2), vec![0, 1, 3]);
+        // MB(2) also has 2's child 4.
+        assert_eq!(admg.markov_blanket_of(2), vec![0, 1, 3, 4]);
     }
 
     #[test]
@@ -365,17 +343,9 @@ mod tests {
 
         let admg = Admg::new(Arc::new(b.finalize().unwrap())).unwrap();
 
-        // MB(1) = Pa(Dis(1)) ∪ (Dis(1) \ {1})
-        // Dis(1) = {1} (singleton, no spouses)
-        // Pa(Dis(1)) = Pa(1) = {0}
-        // Dis(1) \ {1} = {}
-        // MB(1) = {0}
-        assert_eq!(admg.markov_blanket_of(1), vec![0]);
-
-        // MB(0) = Pa(Dis(0)) ∪ (Dis(0) \ {0})
-        // Dis(0) = {0}, Pa(0) = {}
-        // MB(0) = {}
-        assert!(admg.markov_blanket_of(0).is_empty());
+        // Without bidirected edges the blanket is the DAG one.
+        assert_eq!(admg.markov_blanket_of(1), vec![0, 2]);
+        assert_eq!(admg.markov_blanket_of(0), vec![1]);
     }
 
     #[test]
