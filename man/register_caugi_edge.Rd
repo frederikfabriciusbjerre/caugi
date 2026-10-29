@@ -7,7 +7,8 @@
 register_caugi_edge(glyph, tail_mark, head_mark, class, symmetric = FALSE)
 }
 \arguments{
-\item{glyph}{A string representing the edge glyph (e.g., \code{"-->"}, \code{"<->"}).}
+\item{glyph}{A string representing the edge glyph (e.g., \code{"-->"}, \code{"<->"}).
+It must not contain \verb{\%} or whitespace.}
 
 \item{tail_mark}{One of "arrow", "tail", "circle", "other".}
 
