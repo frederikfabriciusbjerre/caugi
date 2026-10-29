@@ -16,6 +16,11 @@
 
 ## Bug Fixes
 
+- `plot()` now matches the output of a custom layout function to the nodes by
+  name, so a function that returns rows in a different order no longer
+  mislabels the nodes (and reverses arrows). Its output gets the same checks
+  as a precomputed layout (#427).
+
 - The Sugiyama layout, and so the default `plot()`, no longer panics on graphs
   with self-loops; self-loops are left out of the layering (#422).
 

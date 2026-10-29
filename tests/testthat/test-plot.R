@@ -1057,3 +1057,29 @@ test_that("plot handles coincident coordinates and a single node", {
     expect_no_error(grid::grid.draw(p@grob))
   }
 })
+
+test_that("a layout function may return rows in any order (#427)", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  f <- function(x, ...) {
+    data.frame(name = c("C", "B", "A"), x = c(0, 0.5, 1), y = c(0, 0.5, 1))
+  }
+  node_gtree <- plot(cg, layout = f)@grob$children[["caugi.graph"]]$children[[
+    "node_gtree"
+  ]]
+  texts <- Filter(function(g) inherits(g, "text"), node_gtree$children)
+  label_x <- stats::setNames(
+    vapply(
+      texts,
+      function(g) grid::convertX(g$x, "native", valueOnly = TRUE),
+      numeric(1)
+    ),
+    vapply(texts, function(g) g$label, character(1))
+  )
+  expect_equal(label_x[c("A", "B", "C")], c(A = 1, B = 0.5, C = 0))
+
+  missing_c <- function(x, ...) data.frame(name = c("A", "B"), x = 0:1, y = 0:1)
+  expect_error(
+    plot(cg, layout = missing_c),
+    "Layout has 2 rows but graph has 3 nodes"
+  )
+})

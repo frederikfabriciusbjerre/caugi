@@ -169,15 +169,14 @@ plot.caugi <- function(
 
   dots <- list(...)
 
-  # Compute layout coordinates
+  # Compute layout coordinates; every source is validated and matched to the
+  # nodes by name below, so a layout function may return rows in any order.
   if (is.character(layout)) {
-    # String method name - pass through to caugi_layout
-    coords <- caugi_layout(x, method = layout, ...)
+    layout <- caugi_layout(x, method = layout, ...)
   } else if (is.function(layout)) {
-    # Layout function - call directly with ...
-    coords <- layout(x, ...)
-  } else if (is.data.frame(layout)) {
-    # Pre-computed layout - validate thoroughly
+    layout <- layout(x, ...)
+  }
+  if (is.data.frame(layout)) {
     required_cols <- c("name", "x", "y")
     missing_cols <- setdiff(required_cols, names(layout))
 
@@ -252,7 +251,6 @@ plot.caugi <- function(
       )
     }
 
-    graph_nodes <- nodes(x)[["name"]]
     coords <- layout[match(graph_nodes, layout$name), , drop = FALSE]
 
     # Extract tier information from layout if present
@@ -268,7 +266,7 @@ plot.caugi <- function(
     }
   } else {
     stop(
-      "layout must be a character string, function, or data.frame",
+      "layout must be a character string, function, or data.frame (a layout function must return a data.frame)",
       call. = FALSE
     )
   }
