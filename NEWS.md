@@ -1,5 +1,12 @@
 # caugi (development version)
 
+## Breaking Changes
+
+* `shd()` and `hd()` now name their graph arguments `truth` and `guess`, as
+  `aid()` does, instead of `cg1` and `cg2`. Positional calls are unaffected;
+  write `shd(truth = , guess = )` instead of `shd(cg1 = , cg2 = )`, and the
+  same for `hd()` (#362).
+
 ## New Features
 
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a

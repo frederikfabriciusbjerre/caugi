@@ -207,3 +207,33 @@ test_that("HD: does not depend on node declaration order (#323)", {
   expect_equal(hd(dag, pdag2), 0)
   expect_equal(hd(dag, pdag), hd(dag, pdag2))
 })
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────── Argument names (#362) ────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("shd() and hd() take truth and guess and are symmetric (#362)", {
+  truth <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+  guess <- caugi(
+    A %---% B,
+    C %-->% B,
+    A %-->% C,
+    D %---% C,
+    nodes = c("D", "C", "B", "A"),
+    class = "PDAG"
+  )
+
+  expect_equal(shd(guess = guess, truth = truth), 4)
+  expect_equal(hd(guess = guess, truth = truth), 1)
+
+  for (normalized in c(FALSE, TRUE)) {
+    expect_equal(
+      shd(truth, guess, normalized = normalized),
+      shd(guess, truth, normalized = normalized)
+    )
+    expect_equal(
+      hd(truth, guess, normalized = normalized),
+      hd(guess, truth, normalized = normalized)
+    )
+  }
+})
