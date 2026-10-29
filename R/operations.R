@@ -72,7 +72,10 @@ skeleton <- function(cg) {
 #' @param cg A `caugi` object. Must be PDAG-compatible.
 #'
 #' @returns A `caugi` object closed under Meek's rules. Class `"MPDAG"` in
-#'   general, or `"DAG"` if the closure orients every edge.
+#'   general, or `"DAG"` if the closure orients every edge. Errors if `cg` has
+#'   no consistent DAG extension (e.g. `A --> B --- C <-- D`, where either
+#'   orientation of `B --- C` adds a v-structure), since such a PDAG
+#'   represents no DAG; see [is_mpdag()].
 #'
 #' @references
 #' C. Meek (1995). Causal inference and causal explanation with background
@@ -469,6 +472,12 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
       call. = FALSE
     )
   }
+  # m_separated() handles DAG, ADMG, AG and UG directly; relabel any other
+  # graph that passes is_ag() (e.g. UNKNOWN) as AG. Relabelling a DAG would
+  # swap d-separation for the AG m-separation, which needs O(n^2) memory.
+  if (!cg@graph_class %in% c("DAG", "ADMG", "AG", "UG")) {
+    cg <- mutate_caugi(cg, "AG")
+  }
 
   cond_vars_valid <- is.character(cond_vars) && length(cond_vars) > 0L
   marg_vars_valid <- is.character(marg_vars) && length(marg_vars) > 0L
@@ -487,6 +496,14 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 
   # Compute remaining nodes after removing conditioned and marginalized vars
   all_node_names <- nodes(cg)$name
+  unknown <- setdiff(c(cond_vars, marg_vars), all_node_names)
+  if (length(unknown) > 0L) {
+    stop(
+      "Unknown node(s): ",
+      paste(unknown, collapse = ", "),
+      call. = FALSE
+    )
+  }
   removed_vars <- union(cond_vars, marg_vars)
   remaining_nodes <- setdiff(all_node_names, removed_vars)
   n_remaining <- length(remaining_nodes)
@@ -543,6 +560,9 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 
   # Combine edges efficiently using data.table
   non_null <- !vapply(edge_list, is.null, logical(1L))
+  if (!any(non_null)) {
+    return(caugi(nodes = remaining_nodes, class = "AG"))
+  }
   edges_df <- data.table::rbindlist(edge_list[non_null])
 
   caugi(edges_df = edges_df, nodes = remaining_nodes, class = "AG")
@@ -711,6 +731,7 @@ dag_from_pdag <- function(cg, PDAG) {
 #' @param cg A `caugi` object of class `"PDAG"` or `"MPDAG"`.
 #'
 #' @returns A list of `caugi` objects of class `"DAG"`, one per DAG in the MEC.
+#'   Empty if `cg` has no consistent DAG extension.
 #'
 #' @examples
 #' pdag <- caugi(
@@ -753,7 +774,8 @@ enumerate_dags <- function(cg) {
 #'
 #' @param cg A `caugi` object of class `"PDAG"` or `"MPDAG"`.
 #'
-#' @returns A single numeric value, the cardinality of the MEC. Counts above
+#' @returns A single numeric value, the cardinality of the MEC, or 0 if `cg`
+#'   has no consistent DAG extension. Counts above
 #'   `2^53` lose integer precision; in practice no realistic PDAG yields a
 #'   MEC anywhere near that size.
 #'

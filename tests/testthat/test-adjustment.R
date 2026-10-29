@@ -189,6 +189,20 @@ test_that("adjust functions fails with faulty input", {
     adjustment_set(adjustment_set_cg, X = c("X", "Y"), Y = "Y"),
     "X and Y must be disjoint"
   )
+  for (type in c("optimal", "parents", "backdoor")) {
+    expect_error(
+      adjustment_set(adjustment_set_cg, X = character(0), Y = "Y", type = type),
+      "`X` must name at least one node"
+    )
+    expect_error(
+      adjustment_set(adjustment_set_cg, X = "X", Y = character(0), type = type),
+      "`Y` must name at least one node"
+    )
+  }
+  expect_error(
+    adjustment_set(adjustment_set_cg, X = "X", Y_index = integer(0)),
+    "`Y` must name at least one node"
+  )
   expect_error(
     adjustment_set(
       adjustment_set_cg,

@@ -764,7 +764,7 @@ impl GraphSession {
                 } else if Ug::new(Arc::clone(&core)).is_ok() {
                     Ok(GraphClass::Ug)
                 } else if let Ok(pdag) = Pdag::new(Arc::clone(&core)) {
-                    if pdag.is_meek_closed() {
+                    if pdag.is_meek_closed() && pdag.is_extendable() {
                         Ok(GraphClass::Mpdag)
                     } else {
                         Ok(GraphClass::Pdag)
@@ -1819,13 +1819,9 @@ mod tests {
         // collider 1 opens the path, so 0 is m-connected to 2 given {1}.
         assert!(!admg.m_separated(&[0], &[2], &[1]).unwrap());
 
-        // anteriors_of errors on ADMG (not supported)
-        let err = admg.anteriors_of(0).unwrap_err();
-        assert!(err.contains("not defined for ADMG"));
-
-        // posteriors_of errors on ADMG
-        let err = admg.posteriors_of(0).unwrap_err();
-        assert!(err.contains("not defined for ADMG"));
+        // anteriors/posteriors on an ADMG are ancestors/descendants
+        assert!(admg.anteriors_of(0).unwrap().is_empty());
+        assert_eq!(admg.posteriors_of(0).unwrap(), vec![1]);
 
         // topological_sort errors on ADMG
         let err = admg.topological_sort().unwrap_err();
@@ -1861,8 +1857,9 @@ mod tests {
         assert!(mb.contains(&1));
 
         // exogenous_nodes through UG
-        let exo = ug.exogenous_nodes(false).unwrap();
-        assert!(exo.is_empty()); // all nodes have undirected neighbors
+        // undirected edges are ignored unless undirected_as_parents = true
+        assert_eq!(ug.exogenous_nodes(false).unwrap().len() as u32, ug.n());
+        assert!(ug.exogenous_nodes(true).unwrap().is_empty());
 
         // Type checks through UG
         assert!(!ug.is_dag_type().unwrap());
@@ -1881,16 +1878,16 @@ mod tests {
         // Error: spouses_of on UG (bidirected mode not valid)
         assert!(ug.spouses_of(0).is_err());
 
-        // Error: ancestors_of on UG
-        assert!(ug.ancestors_of(0).is_err());
-        assert!(ug.descendants_of(0).is_err());
-        assert!(ug.anteriors_of(0).is_err());
-        assert!(ug.posteriors_of(0).is_err());
+        // A UG has no ancestors; its anteriors are the connected component
+        assert!(ug.ancestors_of(0).unwrap().is_empty());
+        assert!(ug.descendants_of(0).unwrap().is_empty());
+        assert!(!ug.anteriors_of(0).unwrap().is_empty());
+        assert!(!ug.posteriors_of(0).unwrap().is_empty());
         assert!(ug.parents_of(0).is_err());
         assert!(ug.children_of(0).is_err());
 
-        // m_separated on UG errors
-        assert!(ug.m_separated(&[0], &[2], &[1]).is_err());
+        // m_separated on a UG is graph separation
+        assert!(ug.m_separated(&[0], &[2], &[1]).is_ok());
 
         // is_valid_adjustment_set_admg on UG errors
         assert!(ug.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());

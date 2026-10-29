@@ -36,7 +36,7 @@ A \code{caugi} object.
 }
 \description{
 Convert an object to a \code{caugi}. The object can be a
-\code{graphNEL}, \code{matrix}, \code{tidygraph}, \code{daggity}, \code{bn}, or \code{igraph}.
+\code{graphNEL}, \code{matrix}, \code{tidygraph}, \code{dagitty}, \code{bn}, or \code{igraph}.
 }
 \details{
 For matrices, \code{as_caugi} assumes that the rows are the \code{from} nodes

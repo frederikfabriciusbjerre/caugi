@@ -77,6 +77,17 @@ test_that("to_dot escapes special characters", {
   expect_match(as.character(dot), "Node_3") # No quotes needed for valid identifier
 })
 
+test_that("to_dot quotes keywords and escapes attribute values", {
+  dot <- as.character(to_dot(caugi(Node %-->% graph + B)))
+  expect_match(dot, '"Node" -> "graph";', fixed = TRUE)
+  expect_match(dot, '"Node" -> B;', fixed = TRUE)
+
+  dot <- as.character(
+    to_dot(caugi(A %-->% B), node_attrs = list(label = 'say "hi" \\ bye'))
+  )
+  expect_match(dot, 'label="say \\"hi\\" \\\\ bye"', fixed = TRUE)
+})
+
 test_that("to_dot accepts graph attributes", {
   cg <- caugi(A %-->% B, class = "DAG")
 

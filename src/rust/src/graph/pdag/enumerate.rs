@@ -20,7 +20,10 @@ impl Pdag {
     /// The input is normalized via [`Pdag::meek_closure`] first, so partial
     /// PDAGs (e.g. with background-knowledge orientations) are accepted.
     pub fn enumerate_mec(&self) -> Result<Vec<Dag>, String> {
-        let closed = self.meek_closure()?;
+        if !self.is_extendable() {
+            return Ok(Vec::new());
+        }
+        let closed = self.closure_of_extendable()?;
         let (pa, ch, und) = closed.snapshot_sets();
         let input_pa = pa.clone();
         let skeleton = build_skeleton(&pa, &ch, &und);
@@ -37,7 +40,10 @@ impl Pdag {
 
     /// Count DAGs in the MEC without materializing them.
     pub fn count_mec(&self) -> Result<u64, String> {
-        let closed = self.meek_closure()?;
+        if !self.is_extendable() {
+            return Ok(0);
+        }
+        let closed = self.closure_of_extendable()?;
         let (pa, ch, und) = closed.snapshot_sets();
         let input_pa = pa.clone();
         let skeleton = build_skeleton(&pa, &ch, &und);

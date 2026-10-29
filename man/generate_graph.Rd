@@ -19,7 +19,8 @@ of \code{m} or \code{p} must be supplied.}
 (essential graph) of the sampled DAG's Markov equivalence class, returned
 with class \code{"CPDAG"}.}
 
-\item{seed}{Optional integer; random seed for reproducibility.}
+\item{seed}{Optional integer; random seed for reproducibility. The caller's
+random number state is restored on exit.}
 }
 \value{
 The sampled \code{caugi} object. \code{class = "DAG"} returns a \code{"DAG"};

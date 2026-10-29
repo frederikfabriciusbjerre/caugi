@@ -186,11 +186,9 @@ test_that("as_adjacency returns 0-matrix for nodes-only graph", {
 })
 
 test_that("as_adjacency errors on unsupported glyphs", {
-  # Bidirected edges are now supported (for ADMG)
+  # Bidirected edges would be indistinguishable from undirected ones
   cg1 <- caugi(A %<->% B, class = "UNKNOWN")
-  adj1 <- as_adjacency(cg1)
-  expect_equal(adj1["A", "B"], 1L)
-  expect_equal(adj1["B", "A"], 1L) # symmetric
+  expect_error(as_adjacency(cg1), "Unsupported edge glyphs.*<->")
 
   # Partial edges (o->) are not supported
   cg2 <- caugi(A %o->% B, class = "UNKNOWN")
@@ -256,9 +254,10 @@ test_that("cg --> dagitty --> cg --> dagitty round-trip", {
     D %---% E,
     F %o->% G,
     H %o-o% I,
+    K %--o% L,
     J, # isolated
     class = "UNKNOWN",
-    nodes = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
+    nodes = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")
   )
 
   dg <- as_dagitty(cg)
@@ -277,7 +276,9 @@ test_that("cg --> dagitty --> cg --> dagitty round-trip", {
 
   # Also check caugi equality
   expect_equal(nodes(cg), nodes(cg2))
-  expect_equal(nodes(cg), nodes(cg2))
+  e2 <- edges(cg2)
+  expect_equal(e2[e2$from == "K" | e2$to == "K", ]$edge, "--o")
+  expect_equal(e2[e2$from == "K" | e2$to == "K", ]$from, "K")
 })
 
 test_that("as_dagitty errors on non-caugi input", {
@@ -291,6 +292,22 @@ test_that("as_dagitty preserves isolates for empty edge set", {
   dg <- as_dagitty(cg)
   expect_setequal(names(dg), c("A", "B", "C"))
   expect_identical(nrow(as.data.frame(dagitty::edges(dg))), 0L)
+})
+
+test_that("as_dagitty quotes node names", {
+  testthat::skip_if_not_installed("dagitty")
+  cg <- caugi(
+    from = c("my var", "x->y"),
+    edge = c("-->", "---"),
+    to = c("x->y", 'a"b'),
+    class = "PDAG"
+  )
+  dg <- as_dagitty(cg)
+  expect_setequal(names(dg), c("my var", "x->y", 'a"b'))
+  expect_identical(nrow(as.data.frame(dagitty::edges(dg))), 2L)
+
+  expect_setequal(names(as_dagitty(caugi("my var", "z"))), c("my var", "z"))
+  expect_error(as_dagitty(caugi(node %-->% A)), "'node'")
 })
 
 test_that("as_dagitty picks dag type for only directed edges", {

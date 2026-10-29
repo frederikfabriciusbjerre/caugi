@@ -68,8 +68,8 @@ when \code{boxes = TRUE} is set within this list. Supports:
 \itemize{
 \item Appearance (passed to \code{gpar()}): \code{fill}, \code{col} (border color), \code{lwd},
 \code{lty}, \code{alpha}
-\item Geometry: \code{padding} (padding around tier nodes as proportion of plot range,
-default 0.05)
+\item Geometry: \code{padding} (padding around tier nodes, a \code{\link[grid:unit]{grid::unit()}} or a
+number in mm like node padding, default 4 mm)
 \item Labels: \code{labels} (logical or character vector). If \code{TRUE}, uses tier names
 from \code{tiers} argument. If a character vector, uses custom labels (one per
 tier). If \code{FALSE} or \code{NULL} (default), no labels are shown.
@@ -92,7 +92,7 @@ no title is displayed.}
 }}
 
 \item{asp}{Numeric value for the y/x aspect ratio. If \code{NA} or \code{NULL} (default),
-the aspect ratio is automatically determined to fill the available space.
+both axes use a common coordinate range within the available space.
 Use \code{asp = 1} to ensure that one unit on the x-axis equals one unit on
 the y-axis, which respects the layout coordinates. Values other than 1
 will stretch the plot accordingly (e.g., \code{asp = 2} makes the y-axis

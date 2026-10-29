@@ -19,6 +19,9 @@ impl Mpdag {
         if !pdag.is_meek_closed() {
             return Err("graph is not MPDAG (not closed under Meek rules)".into());
         }
+        if !pdag.is_extendable() {
+            return Err("graph is not MPDAG (it has no consistent DAG extension)".into());
+        }
         Ok(Self { inner: pdag })
     }
 

@@ -52,6 +52,11 @@ your graph type. For graphs with only directed edges, it uses the Sugiyama
 hierarchical layout. For graphs with other edge types, it uses the
 Fruchterman-Reingold force-directed layout.
 
+Both axes use a common coordinate range, so nearly horizontal or vertical
+layouts retain their shape without amplifying floating-point noise. Narrow
+layouts can therefore leave empty space in the panel. Use `asp = 1` for equal
+axis scaling.
+
 ## Layout Algorithms
 
 The `caugi` package provides several layout algorithms, each optimized for
@@ -860,12 +865,12 @@ caugi_options(plot = list(spacing = grid::unit(2, "lines")))
 p1 + p2
 ```
 
-To reset the default, you can call `caugi_default_options()`:
+To reset the default, call `caugi_options(reset = TRUE)`:
 
 ```{r}
 #| label: reset-global-options
 
-caugi_options(caugi_default_options())
+caugi_options(reset = TRUE)
 ```
 
 ## Global Plot Options
@@ -907,8 +912,8 @@ plot(cg,
   node_style = list(fill = "pink")
 )
 
-# Reset to defauls
-caugi_options(caugi_default_options())
+# Reset to defaults
+caugi_options(reset = TRUE)
 ```
 
 ### Available Options

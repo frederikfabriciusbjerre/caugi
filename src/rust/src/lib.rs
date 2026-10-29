@@ -71,6 +71,12 @@ fn named_list(values: Vec<Robj>, names: Vec<String>) -> Robj {
     out.into_robj()
 }
 
+/// Iterate a `Strings` by index. `Strings::iter()` builds a slice from the
+/// data pointer, which is not valid for a zero-length vector and aborts R.
+fn rstrs(s: &Strings) -> impl Iterator<Item = Rstr> + '_ {
+    (0..s.len()).map(move |i| s.elt(i))
+}
+
 fn session_ptr_from_cg(cg: &Robj) -> ExternalPtr<GraphSession> {
     let session = cg
         .get_attrib(sym!(session))
@@ -120,10 +126,13 @@ fn parse_parent_index0(index: Robj) -> Vec<i32> {
             .unwrap_or_else(|_| throw_r_error("`index` must be numeric."));
         let mut out = Vec::with_capacity(idx_num.len());
         for x in idx_num.iter() {
-            if x.is_na() {
+            if x.is_na() || x.0.is_nan() {
                 throw_r_error("`index` cannot contain NA values.");
             }
-            out.push((x.0 - 1.0).trunc() as i32);
+            if !x.0.is_finite() || x.0.fract() != 0.0 {
+                throw_r_error("`index` must contain whole numbers.");
+            }
+            out.push((x.0 - 1.0) as i32);
         }
         return out;
     }
@@ -324,7 +333,7 @@ where
         }
         let i = rint_to_u32(Rint::from(idx0[0]), scalar_field);
         if i >= session.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
+            throw_r_error(format!("Index {} is out of bounds", i + 1));
         }
         let v = query(session, i).unwrap_or_else(|e| throw_r_error(e));
         return indices_to_names_or_null(&v, session.as_ref().names());
@@ -335,7 +344,7 @@ where
     for ii in idx0 {
         let i = rint_to_u32(Rint::from(ii), vector_field);
         if i >= session.as_ref().n() {
-            throw_r_error(format!("Index {} is out of bounds", i));
+            throw_r_error(format!("Index {} is out of bounds", i + 1));
         }
         out_names.push(session.as_ref().names()[i as usize].clone());
         let v = query(session, i).unwrap_or_else(|e| throw_r_error(e));
@@ -489,7 +498,7 @@ fn edge_registry_register(
 #[extendr]
 fn edge_registry_code_of(reg: ExternalPtr<EdgeRegistry>, glyphs: Strings) -> Robj {
     let mut out: Vec<i32> = Vec::with_capacity(glyphs.len());
-    for g in glyphs.iter() {
+    for g in rstrs(&glyphs) {
         let code = reg
             .as_ref()
             .code_of(g.as_ref())
@@ -789,7 +798,7 @@ fn rs_write_caugi_file(
     };
     let tags_opt = tags
         .into_option()
-        .map(|strs| strs.iter().map(|s| s.to_string()).collect::<Vec<_>>());
+        .map(|strs| rstrs(&strs).map(|s| s.to_string()).collect::<Vec<_>>());
 
     let view = session.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
 
@@ -818,7 +827,7 @@ fn rs_serialize_caugi(
     };
     let tags_opt = tags
         .into_option()
-        .map(|strs| strs.iter().map(|s| s.to_string()).collect::<Vec<_>>());
+        .map(|strs| rstrs(&strs).map(|s| s.to_string()).collect::<Vec<_>>());
 
     let view = session.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
 
@@ -1041,12 +1050,7 @@ fn rs_resolve_class(mut session: ExternalPtr<GraphSession>, class: &str) -> Stri
 
 #[extendr]
 fn rs_set_names(mut session: ExternalPtr<GraphSession>, names: Strings) {
-    // Handle empty names vector safely - extendr can have issues with empty Strings
-    let name_vec: Vec<String> = if names.len() == 0 {
-        Vec::new()
-    } else {
-        names.iter().map(|s| s.to_string()).collect()
-    };
+    let name_vec: Vec<String> = rstrs(&names).map(|s| s.to_string()).collect();
     session.as_mut().set_names(name_vec);
 }
 
@@ -1237,8 +1241,7 @@ fn rs_edges_df(session: ExternalPtr<GraphSession>) -> Robj {
 #[extendr]
 fn rs_codes_of(session: ExternalPtr<GraphSession>, glyphs: Strings) -> Vec<i32> {
     let specs = &session.as_ref().registry().specs;
-    glyphs
-        .iter()
+    rstrs(&glyphs)
         .map(|g| {
             specs
                 .iter()
@@ -1838,6 +1841,20 @@ fn rs_normalize_latent_structure(
     ExternalPtr::new(session_from_view(view, names))
 }
 
+/// Removing nodes can break CPDAG strong protection, so re-check the class of
+/// an induced subgraph and keep the strongest one it still satisfies.
+fn downgrade_subgraph_class(mut out: GraphSession) -> ExternalPtr<GraphSession> {
+    let candidates: &[GraphClass] = match out.class() {
+        GraphClass::Cpdag => &[GraphClass::Cpdag, GraphClass::Mpdag, GraphClass::Pdag],
+        GraphClass::Mpdag => &[GraphClass::Mpdag, GraphClass::Pdag],
+        _ => &[],
+    };
+    if let Some(&c) = candidates.iter().find(|&&c| out.resolve_class(c).is_ok()) {
+        out.set_class(c);
+    }
+    ExternalPtr::new(out)
+}
+
 fn induced_subgraph_session_from_keep(
     session: &mut ExternalPtr<GraphSession>,
     keep_u: &[u32],
@@ -1870,7 +1887,7 @@ fn induced_subgraph_session_from_keep(
             sub_core,
             names,
         );
-        return ExternalPtr::new(out);
+        return downgrade_subgraph_class(out);
     }
 
     // Slow path: scan edge buffer when CSR is not yet built.
@@ -1910,7 +1927,7 @@ fn induced_subgraph_session_from_keep(
         kept_edges,
         names,
     );
-    ExternalPtr::new(out)
+    downgrade_subgraph_class(out)
 }
 
 #[extendr]
@@ -1952,7 +1969,7 @@ fn subgraph(cg: Robj, nodes: Robj, index: Robj) -> Robj {
         let mut has_duplicate = false;
         let mut first_missing: Option<String> = None;
 
-        for s in node_strings.iter() {
+        for s in rstrs(&node_strings) {
             if s.is_na() {
                 throw_r_error("`nodes` cannot contain NA values.");
             }
@@ -1980,7 +1997,7 @@ fn subgraph(cg: Robj, nodes: Robj, index: Robj) -> Robj {
             let mut miss: Vec<String> = Vec::new();
             miss_seen.insert(first.clone());
             miss.push(first);
-            for s in node_strings.iter() {
+            for s in rstrs(&node_strings) {
                 if s.is_na() {
                     continue;
                 }

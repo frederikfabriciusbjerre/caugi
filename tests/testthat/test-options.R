@@ -88,8 +88,15 @@ test_that("caugi_options preserves other nested values when setting", {
   caugi_options(plot = original)
 })
 
-test_that("caugi_default_options returns expected structure", {
-  defaults <- caugi_default_options()
+test_that("caugi_default_options is deprecated", {
+  expect_warning(
+    expect_identical(caugi_default_options(), .caugi_default_options()),
+    "deprecated"
+  )
+})
+
+test_that(".caugi_default_options returns expected structure", {
+  defaults <- .caugi_default_options()
   expect_type(defaults, "list")
   expect_true("plot" %in% names(defaults))
   expect_true("tier_style" %in% names(defaults$plot))
@@ -113,13 +120,16 @@ test_that("caugi_options retrieves grid::unit values", {
 })
 
 test_that("caugi_options resets to defaults", {
-  # Modify options
-  caugi_options(plot = list(node_style = list(fill = "blue")))
+  on.exit(caugi_options(reset = TRUE))
+  # Modify options, including a key that is not in the defaults
+  caugi_options(plot = list(node_style = list(fill = "blue"), newkey = 1))
   expect_equal(caugi_options("plot", "node_style", "fill"), "blue")
 
-  # Reset to defaults
-  caugi_options(caugi_default_options())
-  expect_equal(caugi_options("plot", "node_style", "fill"), "lightgrey")
+  # Reset to defaults; returns the previous options invisibly
+  prev <- caugi_options(reset = TRUE)
+  expect_equal(prev$plot$newkey, 1)
+  expect_identical(caugi_options(), .caugi_default_options())
+  expect_error(caugi_options(plot = list(), reset = TRUE), "cannot be combined")
 })
 
 test_that("caugi_options sets multiple options at once", {

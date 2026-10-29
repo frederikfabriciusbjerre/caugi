@@ -103,6 +103,14 @@ test_that("expression and isolated nodes in nodes", {
   expect_equal(nodes(cg)$name, c("A", "B", "C", "D", "E"))
 })
 
+test_that("nodes does not drop isolates declared in the DSL", {
+  cg <- caugi(A %-->% B, D, nodes = c("A", "B", "C"))
+  expect_equal(nodes(cg)$name, c("A", "B", "C", "D"))
+
+  cg <- caugi(A %-->% B, D, nodes = "C")
+  expect_equal(nodes(cg)$name, c("A", "B", "C", "D"))
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────── Simple / non-simple ──────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
@@ -803,14 +811,14 @@ test_that("UG graph parents_of and children_of are not defined", {
   expect_error(children(cg, "B"), "not defined for UG")
 })
 
-test_that("UG graph ancestors_of and descendants_of are not defined", {
+test_that("UG graph has no ancestors or descendants", {
   cg <- caugi(
     A %---% B,
     B %---% C,
     class = "UG"
   )
-  expect_error(ancestors(cg, "B"), "not defined for UG")
-  expect_error(descendants(cg, "B"), "not defined for UG")
+  expect_length(ancestors(cg, "B"), 0L)
+  expect_length(descendants(cg, "B"), 0L)
 })
 
 test_that("UG graph markov_blanket_of returns neighbors", {
@@ -831,7 +839,21 @@ test_that("UG graph exogenous function works", {
     nodes = c("A", "B", "C", "D", "E"),
     class = "UG"
   )
-  expect_equal(sort(exogenous(cg)), c("D", "E"))
+  # Undirected edges are ignored by default, as for PDAGs (#386).
+  expect_equal(sort(exogenous(cg)), c("A", "B", "C", "D", "E"))
+  expect_equal(sort(exogenous(cg, undirected_as_parents = TRUE)), c("D", "E"))
+  expect_equal(
+    sort(exogenous(cg)),
+    sort(exogenous(caugi(A %---% B, B %---% C, D, E, class = "PDAG")))
+  )
+})
+
+test_that("index rejects NaN and non-whole values and reports 1-based indices", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_error(children(cg, index = NaN), "NA values")
+  expect_error(children(cg, index = 1.5), "whole numbers")
+  expect_error(parents(cg, index = 4), "Index 4 is out of bounds")
+  expect_error(parents(cg, index = c(1, 4)), "Index 4 is out of bounds")
 })
 
 test_that("UG graph with only isolated nodes", {

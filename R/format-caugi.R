@@ -64,6 +64,7 @@ write_caugi <- function(x, path, comment = NULL, tags = NULL) {
   if (!is.character(path) || length(path) != 1L) {
     stop("`path` must be a single character string", call. = FALSE)
   }
+  path <- path.expand(path)
   if (!is.null(comment) && (!is.character(comment) || length(comment) != 1L)) {
     stop("`comment` must be NULL or a single character string", call. = FALSE)
   }
@@ -117,6 +118,7 @@ read_caugi <- function(path, lazy) {
   if (!is.character(path) || length(path) != 1L) {
     stop("`path` must be a single character string", call. = FALSE)
   }
+  path <- path.expand(path)
   if (!file.exists(path)) {
     stop("File not found: ", path, call. = FALSE)
   }

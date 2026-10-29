@@ -51,6 +51,11 @@ impl Pdag {
         self.meeks_rules_blocked()
     }
 
+    /// True if the PDAG has a consistent DAG extension (Dor & Tarsi 1992).
+    pub fn is_extendable(&self) -> bool {
+        self.dag_extension().is_ok()
+    }
+
     /// DFS over undirected edges to get chain components.
     pub(crate) fn chain_components(&self) -> (Vec<usize>, usize) {
         let n = self.n() as usize;
@@ -195,9 +200,12 @@ impl Pdag {
                     continue;
                 }
 
+                // Perfect elimination check (Tarjan & Yannakakis 1984): the
+                // pivot must be the *nearest* later neighbour; checking the
+                // others against it covers the whole clique by induction.
                 higher.sort_unstable_by_key(|&w| pos[w]);
-                let pvt = *higher.last().unwrap();
-                for &w in &higher[..higher.len() - 1] {
+                let pvt = higher[0];
+                for &w in &higher[1..] {
                     if !self
                         .undirected_of(w as u32)
                         .binary_search(&(pvt as u32))
@@ -221,29 +229,14 @@ impl Pdag {
 
     /// No Meeks rule applies (R1..R4).
     fn meeks_rules_blocked(&self) -> bool {
-        // R1: u->v, v--w, u !~ w  =>  v->w (if safe)
+        // R1: u->v, v--w, u !~ w  =>  v->w. The orientation is forced, so if it
+        // would create a cycle or a new collider the PDAG has no extension at
+        // all; either way the graph is not closed.
         for v in 0..self.n() {
             let pa = self.parents_of(v);
-            if pa.is_empty() {
-                continue;
-            }
             for &w in self.undirected_of(v) {
-                for &u in pa {
-                    if self.adjacent(u, w) {
-                        continue;
-                    }
-                    // Mirror meek_closure() safeguards: skip orientations that would
-                    // create a directed cycle or a new unshielded collider at w.
-                    if self.has_dir_path(w, v) {
-                        continue;
-                    }
-                    let creates_collider = self
-                        .parents_of(w)
-                        .iter()
-                        .any(|&p| p != v && !self.adjacent(v, p));
-                    if !creates_collider {
-                        return false;
-                    }
+                if pa.iter().any(|&u| !self.adjacent(u, w)) {
+                    return false;
                 }
             }
         }
@@ -280,7 +273,22 @@ impl Pdag {
             }
         }
 
-        // R4: u--v and (u ⇒ v or v ⇒ u)
+        // R4 (Meek 1995): u--v and ∃ c,d: u--c, c->d, d->v, c !~ v
+        for v in 0..self.n() {
+            let pa_v = self.parents_of(v);
+            for &u in self.undirected_of(v) {
+                for &c in self.undirected_of(u) {
+                    if c != v
+                        && !self.adjacent(c, v)
+                        && Self::intersects_sorted(self.children_of(c), pa_v)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // Cycle avoidance: u--v and (u ⇒ v or v ⇒ u)
         for v in 0..self.n() {
             for &u in self.undirected_of(v) {
                 if self.has_dir_path(u, v) || self.has_dir_path(v, u) {

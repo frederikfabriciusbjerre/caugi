@@ -11,7 +11,10 @@ meek_closure(cg)
 }
 \value{
 A \code{caugi} object closed under Meek's rules. Class \code{"MPDAG"} in
-general, or \code{"DAG"} if the closure orients every edge.
+general, or \code{"DAG"} if the closure orients every edge. Errors if \code{cg} has
+no consistent DAG extension (e.g. \verb{A --> B --- C <-- D}, where either
+orientation of \code{B --- C} adds a v-structure), since such a PDAG
+represents no DAG; see \code{\link[=is_mpdag]{is_mpdag()}}.
 }
 \description{
 Applies Meek's orientation rules (R1--R4) repeatedly to a PDAG until no more

@@ -66,6 +66,9 @@ make_tiers <- function(
   by_tier <- tier_style$by_tier
 
   padding <- tier_style$global$padding
+  if (!grid::is.unit(padding)) {
+    padding <- grid::unit(padding, "mm")
+  }
 
   do_labels <- tier_style$global$labels
   do_boxes <- tier_style$global$boxes
@@ -242,7 +245,7 @@ make_styles <- function(
   tier_style
 ) {
   # Get global options
-  opts <- get0("options", .caugi_env, ifnotfound = caugi_default_options())
+  opts <- get0("options", .caugi_env, ifnotfound = .caugi_default_options())
   plot_opts <- opts$plot %||% list()
 
   # Default styles from options (with fallbacks)

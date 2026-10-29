@@ -701,6 +701,22 @@ test_that("plot with tier_style and label_style works", {
   )
 })
 
+test_that("a numeric tier_style padding is read as mm", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(
+    plot(
+      cg,
+      tiers = list(a = "A", b = c("B", "C")),
+      tier_style = list(boxes = TRUE, padding = 3)
+    ),
+    caugi_plot
+  )
+})
+
 test_that("plot with tiers orientation='rows' and labels works", {
   cg <- caugi(
     A %-->% B + C,
@@ -935,6 +951,17 @@ test_that("plot routes edges around collinear nodes by default", {
   )
 })
 
+test_that("plot accepts a factor name column in a precomputed layout", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  layout <- caugi_layout(cg)
+  layout$name <- factor(layout$name)
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  expect_s7_class(plot(cg, layout = layout), caugi_plot)
+})
+
 test_that("plot routing works for partial edge types", {
   cg <- caugi(A %o-o% B + C, B %o-o% C, class = "UNKNOWN")
   layout <- caugi_layout_tiered(
@@ -968,4 +995,43 @@ test_that("plot routing can be disabled per edge type", {
     ),
     caugi_plot
   )
+})
+
+test_that("plot does not amplify tiny coordinate differences", {
+  cg <- caugi(A %---% B)
+  pdf(NULL)
+  on.exit(dev.off())
+
+  layouts <- list(
+    caugi_layout(cg),
+    data.frame(name = c("A", "B"), x = c(0, 1), y = c(0, 1e-17)),
+    data.frame(name = c("A", "B"), x = c(0, 1e-17), y = c(0, 1)),
+    data.frame(name = c("A", "B"), x = c(0, 1), y = c(4, 4)),
+    data.frame(name = c("A", "B"), x = c(4, 4), y = c(0, 1))
+  )
+  for (coords in layouts) {
+    for (asp in list(NA, NULL, 1)) {
+      p <- plot(cg, layout = coords, asp = asp)
+      vp <- p@grob$children[["caugi.graph"]]$vp[[3]]
+      scaled_dx <- diff(coords$x) / diff(vp$xscale)
+      scaled_dy <- diff(coords$y) / diff(vp$yscale)
+      expect_equal(scaled_dx, diff(coords$x))
+      expect_equal(scaled_dy, diff(coords$y))
+      expect_no_error(grid::grid.draw(p@grob))
+    }
+  }
+})
+
+test_that("plot handles coincident coordinates and a single node", {
+  pdf(NULL)
+  on.exit(dev.off())
+
+  for (cg in list(caugi(A %---% B), caugi(nodes = "A"))) {
+    coords <- data.frame(name = nodes(cg)$name, x = 3, y = 7)
+    p <- plot(cg, layout = coords)
+    vp <- p@grob$children[["caugi.graph"]]$vp[[3]]
+    expect_equal(vp$xscale, c(2, 4))
+    expect_equal(vp$yscale, c(6, 8))
+    expect_no_error(grid::grid.draw(p@grob))
+  }
 })

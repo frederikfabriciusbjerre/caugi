@@ -4,22 +4,28 @@
 
 #' Default options for caugi
 #'
-#' Returns the default options for the caugi package. Useful for resetting
-#' options to their original state.
+#' Deprecated. Use `caugi_options(reset = TRUE)` to reset the options to their
+#' defaults; `caugi_options()` then returns them.
 #'
 #' @return A list of default options for caugi.
 #'
 #' @seealso [caugi_options()] for setting and getting options
-#' @concept options
+#' @keywords internal
 #' @export
-#'
-#' @examples
-#' # Get defaults
-#' caugi_default_options()
-#'
-#' # Reset to defaults
-#' caugi_options(caugi_default_options())
 caugi_default_options <- function() {
+  .Deprecated(
+    msg = paste0(
+      "`caugi_default_options()` is deprecated. ",
+      "Use `caugi_options(reset = TRUE)` to reset options to their defaults."
+    )
+  )
+  .caugi_default_options()
+}
+
+#' Default options for caugi, without the deprecation warning.
+#' @keywords internal
+#' @noRd
+.caugi_default_options <- function() {
   list(
     use_open_graph_definition = TRUE,
     plot = list(
@@ -64,9 +70,11 @@ caugi_default_options <- function() {
 #'   retrieve. Multiple unnamed arguments drill down through nested options.
 #'   To query all options, call without arguments. Attempting to access a
 #'   non-existent option will raise an error.
+#' @param reset If `TRUE`, reset all options to their defaults.
+#'   Cannot be combined with `...`.
 #'
 #' @return When setting, returns (invisibly) the previous values for the updated
-#'   options. When getting (no arguments or unnamed character vector), returns
+#'   options; with `reset = TRUE`, all previous options. When getting (no arguments or unnamed character vector), returns
 #'   the requested options.
 #'
 #' @details
@@ -137,16 +145,28 @@ caugi_default_options <- function() {
 #' ))
 #'
 #' # Reset to defaults
-#' caugi_options(caugi_default_options())
+#' caugi_options(reset = TRUE)
 #'
 #' @export
-caugi_options <- function(...) {
+caugi_options <- function(..., reset = FALSE) {
+  if (isTRUE(reset)) {
+    if (...length() > 0L) {
+      stop("`reset = TRUE` cannot be combined with `...`.", call. = FALSE)
+    }
+    out <- get0("options", .caugi_env, ifnotfound = .caugi_default_options())
+    .caugi_env$options <- .caugi_default_options()
+    .caugi_env$open_graph_def <- isTRUE(
+      .caugi_env$options$use_open_graph_definition
+    )
+    return(invisible(out))
+  }
+
   new <- list(...)
   if (is.null(names(new)) && length(new) == 1L && is.list(new[[1L]])) {
     new <- new[[1L]]
   }
 
-  old <- get0("options", .caugi_env, ifnotfound = caugi_default_options())
+  old <- get0("options", .caugi_env, ifnotfound = .caugi_default_options())
 
   if (length(new) == 0L) {
     return(old)

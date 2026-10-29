@@ -227,6 +227,41 @@ impl GraphView {
         }
     }
 
+    /// Nodes reachable from `i` in an UNKNOWN graph by following directed
+    /// edges backwards (`back`) or forwards, plus undirected edges either way
+    /// when `undirected`; bidirected edges are never followed. Reads each
+    /// edge's class, as the typed classes do, so custom registry edges behave
+    /// like their built-in counterparts. Excludes `i` itself.
+    fn reach_raw(&self, i: u32, back: bool, undirected: bool) -> Result<Vec<u32>, String> {
+        use crate::edges::EdgeClass;
+
+        let core = self.core();
+        let mut seen = vec![false; core.n() as usize];
+        seen[i as usize] = true;
+        let mut stack = vec![i];
+        while let Some(u) = stack.pop() {
+            for k in core.row_range(u) {
+                let step = match core.spec(k).class {
+                    // An incoming arrow means the neighbour is a parent.
+                    EdgeClass::Directed => core.is_incoming_arrow(k) == back,
+                    EdgeClass::Undirected => undirected,
+                    EdgeClass::Bidirected => false,
+                    _ => {
+                        return Err("ancestral relations are not defined for partially \
+                                    directed edges (o-o, o->, --o)"
+                            .into())
+                    }
+                };
+                let v = core.col_index[k];
+                if step && !std::mem::replace(&mut seen[v as usize], true) {
+                    stack.push(v);
+                }
+            }
+        }
+        seen[i as usize] = false;
+        Ok((0..core.n()).filter(|&v| seen[v as usize]).collect())
+    }
+
     /// Generic implementation for Raw graphs - iterates CSR and filters by edge class.
     fn neighbors_mode_of_raw(&self, i: u32, mode: NeighborMode) -> Result<Vec<u32>, String> {
         use crate::edges::{EdgeClass, Mark};
@@ -296,8 +331,8 @@ impl GraphView {
             GraphView::Cpdag(c) => Ok(c.as_pdag().ancestors_of(i)),
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.ancestors_of(i)),
-            GraphView::Ug(_) => Err("ancestors_of not defined for UG".into()),
-            GraphView::Raw(_) => Err("ancestors_of not implemented for UNKNOWN class".into()),
+            GraphView::Ug(_) => Ok(Vec::new()),
+            GraphView::Raw(_) => self.reach_raw(i, true, false),
         }
     }
     pub fn descendants_of(&self, i: u32) -> Result<Vec<u32>, String> {
@@ -308,8 +343,8 @@ impl GraphView {
             GraphView::Cpdag(c) => Ok(c.as_pdag().descendants_of(i)),
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.descendants_of(i)),
-            GraphView::Ug(_) => Err("descendants_of not defined for UG".into()),
-            GraphView::Raw(_) => Err("descendants_of not implemented for UNKNOWN class".into()),
+            GraphView::Ug(_) => Ok(Vec::new()),
+            GraphView::Raw(_) => self.reach_raw(i, false, false),
         }
     }
     pub fn anteriors_of(&self, i: u32) -> Result<Vec<u32>, String> {
@@ -318,10 +353,10 @@ impl GraphView {
             GraphView::Pdag(g) => Ok(g.anteriors_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().anteriors_of(i)),
             GraphView::Cpdag(c) => Ok(c.as_pdag().anteriors_of(i)),
-            GraphView::Admg(_) => Err("anteriors_of not defined for ADMG".into()),
+            GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.anteriors_of(i)),
-            GraphView::Ug(_) => Err("anteriors_of not defined for UG".into()),
-            GraphView::Raw(_) => Err("anteriors_of not implemented for UNKNOWN class".into()),
+            GraphView::Ug(g) => Ok(g.component_of(i)),
+            GraphView::Raw(_) => self.reach_raw(i, true, true),
         }
     }
     pub fn posteriors_of(&self, i: u32) -> Result<Vec<u32>, String> {
@@ -330,10 +365,10 @@ impl GraphView {
             GraphView::Pdag(g) => Ok(g.posteriors_of(i)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().posteriors_of(i)),
             GraphView::Cpdag(c) => Ok(c.as_pdag().posteriors_of(i)),
-            GraphView::Admg(_) => Err("posteriors_of not defined for ADMG".into()),
+            GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.posteriors_of(i)),
-            GraphView::Ug(_) => Err("posteriors_of not defined for UG".into()),
-            GraphView::Raw(_) => Err("posteriors_of not implemented for UNKNOWN class".into()),
+            GraphView::Ug(g) => Ok(g.component_of(i)),
+            GraphView::Raw(_) => self.reach_raw(i, false, true),
         }
     }
     pub fn markov_blanket_of(&self, i: u32) -> Result<Vec<u32>, String> {
@@ -354,7 +389,7 @@ impl GraphView {
             GraphView::Pdag(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().exogenous_nodes(undirected_as_parents)),
             GraphView::Cpdag(c) => Ok(c.as_pdag().exogenous_nodes(undirected_as_parents)),
-            GraphView::Ug(g) => Ok(g.exogenous_nodes()),
+            GraphView::Ug(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
             GraphView::Admg(g) => Ok(g.exogenous_nodes()),
             GraphView::Ag(g) => {
                 if undirected_as_parents {
@@ -417,7 +452,8 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.m_separated(xs, ys, z)),
             GraphView::Dag(d) => Ok(d.d_separated(xs, ys, z)), // d-sep is m-sep for DAGs
             GraphView::Ag(g) => Ok(g.m_separated(xs, ys, z)),
-            _ => Err("m_separated is only defined for ADMGs, AGs, and DAGs".into()),
+            GraphView::Ug(g) => Ok(g.separated(xs, ys, z)),
+            _ => Err("m_separated is only defined for ADMGs, AGs, DAGs, and UGs".into()),
         }
     }
 
@@ -1088,50 +1124,23 @@ mod tests {
         assert_eq!(v_admg.descendants_of(0).unwrap(), vec![1, 2]);
         assert_eq!(v_ag.ancestors_of(2).unwrap(), vec![0, 1]);
         assert_eq!(v_ag.descendants_of(0).unwrap(), vec![1, 2]);
-        assert_eq!(
-            v_ug.ancestors_of(0).unwrap_err(),
-            "ancestors_of not defined for UG"
-        );
-        assert_eq!(
-            v_ug.descendants_of(0).unwrap_err(),
-            "descendants_of not defined for UG"
-        );
-        assert_eq!(
-            v_raw.ancestors_of(0).unwrap_err(),
-            "ancestors_of not implemented for UNKNOWN class"
-        );
-        assert_eq!(
-            v_raw.descendants_of(0).unwrap_err(),
-            "descendants_of not implemented for UNKNOWN class"
-        );
+        assert!(v_ug.ancestors_of(0).unwrap().is_empty());
+        assert!(v_ug.descendants_of(0).unwrap().is_empty());
+        assert_eq!(v_raw.ancestors_of(2).unwrap(), vec![0, 1]);
+        assert_eq!(v_raw.descendants_of(0).unwrap(), vec![1, 2]);
 
-        // anteriors/posteriors dispatch
-        assert_eq!(
-            v_admg.anteriors_of(0).unwrap_err(),
-            "anteriors_of not defined for ADMG"
-        );
-        assert_eq!(
-            v_admg.posteriors_of(0).unwrap_err(),
-            "posteriors_of not defined for ADMG"
-        );
+        // anteriors/posteriors dispatch: ADMG gives ancestors/descendants,
+        // UG the connected component, Raw reads the edge classes.
+        assert!(v_admg.anteriors_of(0).unwrap().is_empty());
+        assert_eq!(v_admg.posteriors_of(0).unwrap(), vec![1, 2]);
         assert_eq!(v_ag.anteriors_of(2).unwrap(), vec![0, 1]);
         assert_eq!(v_ag.posteriors_of(0).unwrap(), vec![1, 2]);
-        assert_eq!(
-            v_ug.anteriors_of(0).unwrap_err(),
-            "anteriors_of not defined for UG"
-        );
-        assert_eq!(
-            v_ug.posteriors_of(0).unwrap_err(),
-            "posteriors_of not defined for UG"
-        );
-        assert_eq!(
-            v_raw.anteriors_of(0).unwrap_err(),
-            "anteriors_of not implemented for UNKNOWN class"
-        );
-        assert_eq!(
-            v_raw.posteriors_of(0).unwrap_err(),
-            "posteriors_of not implemented for UNKNOWN class"
-        );
+        assert_eq!(v_ug.anteriors_of(0).unwrap(), vec![1, 2]);
+        assert_eq!(v_ug.posteriors_of(2).unwrap(), vec![0, 1]);
+        assert!(!v_ug.m_separated(&[0], &[2], &[]).unwrap());
+        assert!(v_ug.m_separated(&[0], &[2], &[1]).unwrap());
+        assert_eq!(v_raw.anteriors_of(4).unwrap(), vec![3]);
+        assert_eq!(v_raw.posteriors_of(0).unwrap(), vec![1, 2]);
 
         // markov blanket and neighbors all-mode dispatch
         assert_eq!(v_ug.markov_blanket_of(1).unwrap(), vec![0, 2]);
@@ -1144,7 +1153,8 @@ mod tests {
         assert_eq!(v_ag.neighbors_of(1, NeighborMode::All).unwrap(), vec![0, 2]);
 
         // exogenous nodes dispatch for UG/ADMG/AG + Raw error
-        assert_eq!(v_ug.exogenous_nodes(false).unwrap(), Vec::<u32>::new());
+        assert_eq!(v_ug.exogenous_nodes(false).unwrap(), vec![0, 1, 2]);
+        assert!(v_ug.exogenous_nodes(true).unwrap().is_empty());
         assert_eq!(v_admg.exogenous_nodes(false).unwrap(), vec![0]);
         assert_eq!(v_ag.exogenous_nodes(false).unwrap(), vec![0, 3, 4]);
         assert_eq!(v_ag.exogenous_nodes(true).unwrap(), vec![0]);
@@ -1235,7 +1245,7 @@ mod tests {
         assert_eq!(v_ag.m_separated(&[0], &[1], &[]).unwrap(), false);
         assert_eq!(
             v_pdag.m_separated(&[0], &[2], &[]).unwrap_err(),
-            "m_separated is only defined for ADMGs, AGs, and DAGs"
+            "m_separated is only defined for ADMGs, AGs, DAGs, and UGs"
         );
         assert_eq!(v_pdag.anteriors_of(1).unwrap(), vec![0, 2]);
         assert_eq!(v_pdag.posteriors_of(1).unwrap(), vec![2]);

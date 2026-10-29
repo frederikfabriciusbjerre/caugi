@@ -13,7 +13,9 @@ as_adjacency(x)
 An integer 0/1 adjacency matrix with row/col names.
 }
 \description{
-Does not take other edge types than the one found in a PDAG.
+Only supports the edge types found in a PDAG (\verb{-->} and \verb{---}). A \verb{---} edge
+is written as \code{1} in both directions, so other symmetric edges such as \verb{<->}
+are rejected rather than encoded the same way.
 }
 \examples{
 cg <- caugi(

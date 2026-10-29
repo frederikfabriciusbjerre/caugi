@@ -49,8 +49,8 @@
 #'   when `boxes = TRUE` is set within this list. Supports:
 #'   * Appearance (passed to `gpar()`): `fill`, `col` (border color), `lwd`,
 #'     `lty`, `alpha`
-#'   * Geometry: `padding` (padding around tier nodes as proportion of plot range,
-#'     default 0.05)
+#'   * Geometry: `padding` (padding around tier nodes, a [grid::unit()] or a
+#'     number in mm like node padding, default 4 mm)
 #'   * Labels: `labels` (logical or character vector). If `TRUE`, uses tier names
 #'     from `tiers` argument. If a character vector, uses custom labels (one per
 #'     tier). If `FALSE` or `NULL` (default), no labels are shown.
@@ -67,7 +67,7 @@
 #'   * Appearance (passed to `gpar()`): `col`, `fontsize`, `fontface`,
 #'     `fontfamily`, `cex`
 #' @param asp Numeric value for the y/x aspect ratio. If `NA` or `NULL` (default),
-#'   the aspect ratio is automatically determined to fill the available space.
+#'   both axes use a common coordinate range within the available space.
 #'   Use `asp = 1` to ensure that one unit on the x-axis equals one unit on
 #'   the y-axis, which respects the layout coordinates. Values other than 1
 #'   will stretch the plot accordingly (e.g., `asp = 2` makes the y-axis
@@ -215,6 +215,8 @@ plot.caugi <- function(
       )
     }
 
+    layout$name <- as.character(layout$name)
+
     # Check that number of nodes matches
     graph_nodes <- nodes(x)[["name"]]
     if (nrow(layout) != length(graph_nodes)) {
@@ -291,12 +293,13 @@ plot.caugi <- function(
   x_range <- range(coords$x)
   y_range <- range(coords$y)
 
-  if (x_range[1] == x_range[2]) {
-    x_range <- x_range + c(-1, 1)
+  # A common range prevents floating-point noise from filling either axis.
+  span <- max(diff(x_range), diff(y_range))
+  if (span == 0) {
+    span <- 2
   }
-  if (y_range[1] == y_range[2]) {
-    y_range <- y_range + c(-1, 1)
-  }
+  x_range <- mean(x_range) + c(-0.5, 0.5) * span
+  y_range <- mean(y_range) + c(-0.5, 0.5) * span
 
   # Nodes
   nodes_res <- make_nodes(
@@ -621,7 +624,7 @@ S7::method(`/`, list(caugi_plot, caugi_plot)) <- `/.caugi_plot`
 compose_plots <- function(e1, e2, horizontal = TRUE) {
   # Compose using a fixed layout to avoid grob size conversions
   # (which can fail for nested viewports).
-  opts <- get0("options", .caugi_env, ifnotfound = caugi_default_options())
+  opts <- get0("options", .caugi_env, ifnotfound = .caugi_default_options())
   spacing <- opts$plot$spacing
   if (is.null(spacing)) {
     spacing <- grid::unit(1, "lines")

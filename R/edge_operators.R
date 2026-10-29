@@ -16,7 +16,11 @@
 #'
 #' @keywords internal
 .edge_spec <- function(from_sym, to_expr, glyph) {
-  from <- deparse1(from_sym)
+  from <- if (is.numeric(from_sym)) {
+    .dsl_number(from_sym)
+  } else {
+    deparse1(from_sym)
+  }
   to <- .expand_targets(to_expr)
   .edge_constructor(from = from, edge = glyph, to = to)
 }
@@ -52,7 +56,7 @@
     return(expr)
   }
   if (is.numeric(expr) && length(expr) == 1L) {
-    return(as.character(expr))
+    return(.dsl_number(expr))
   }
   stop(
     "Unsupported right-hand side in edge operator: ",

@@ -146,6 +146,12 @@ adjustment_set <- function(
   }
   X_idx0 <- unique(.resolve_idx0_mget(cg@session, X, X_index))
   Y_idx0 <- unique(.resolve_idx0_mget(cg@session, Y, Y_index))
+  if (length(X_idx0) == 0L) {
+    stop("`X` must name at least one node.", call. = FALSE)
+  }
+  if (length(Y_idx0) == 0L) {
+    stop("`Y` must name at least one node.", call. = FALSE)
+  }
   if (any(X_idx0 %in% Y_idx0)) {
     stop("X and Y must be disjoint.", call. = FALSE)
   }

@@ -11,7 +11,8 @@
 #' @param class "DAG" or "CPDAG". When `"CPDAG"`, the result is the CPDAG
 #'   (essential graph) of the sampled DAG's Markov equivalence class, returned
 #'   with class `"CPDAG"`.
-#' @param seed Optional integer; random seed for reproducibility.
+#' @param seed Optional integer; random seed for reproducibility. The caller's
+#'   random number state is restored on exit.
 #'
 #' @returns The sampled `caugi` object. `class = "DAG"` returns a `"DAG"`;
 #'   `class = "CPDAG"` returns a `"CPDAG"`.
@@ -43,10 +44,10 @@ generate_graph <- function(
     stop("Supply exactly one of m or p", call. = FALSE)
   }
   if (!is.null(seed)) {
-    set.seed(seed)
+    .local_seed(seed)
   }
 
-  tot <- as.integer(n * (n - 1L) / 2L)
+  tot <- n * (n - 1) / 2 # double: n * (n - 1L) overflows for n >= 46342
 
   if (!is.null(p)) {
     if (length(p) != 1L || !is.finite(p) || p < 0 || p > 1) {
@@ -56,7 +57,7 @@ generate_graph <- function(
   } else {
     m <- as.integer(m)
     if (length(m) != 1L || m < 0L || m > tot) {
-      stop(sprintf("m must be in 0..%d", tot), call. = FALSE)
+      stop(sprintf("m must be in 0..%.0f", tot), call. = FALSE)
     }
   }
 
@@ -68,9 +69,9 @@ generate_graph <- function(
   if (m > 0L) {
     ranks <- sample.int(tot, m) - 1L
     row_len <- (n - 1L):1L
-    cum <- cumsum(row_len)
+    cum <- cumsum(as.numeric(row_len))
     i <- as.integer(findInterval(ranks, cum))
-    cum0 <- c(0L, cum)
+    cum0 <- c(0, cum)
     offset <- ranks - cum0[i + 1L]
     j <- i + 1L + offset
 
@@ -120,7 +121,8 @@ generate_graph <- function(
 #'   coefficients that will be sampled uniformly. Default is `c(0.1, 0.9)`.
 #' @param error_sd Numeric; standard deviation for error terms in
 #'   auto-generated equations. Default is `1`.
-#' @param seed Optional integer; random seed for reproducibility.
+#' @param seed Optional integer; random seed for reproducibility. The caller's
+#'   random number state is restored on exit.
 #'
 #' @returns A `data.frame` with `n` rows and one column per node, ordered
 #'   according to the node order in the graph.
@@ -171,7 +173,7 @@ simulate_data <- function(
   }
 
   if (!is.null(seed)) {
-    set.seed(seed)
+    .local_seed(seed)
   }
 
   n <- as.integer(n)
@@ -215,20 +217,29 @@ simulate_data <- function(
         env[[p]] <- data[[p]]
       }
 
-      # validate that all parents are referenced in the equation
-      if (length(pa) > 0L) {
-        eq_vars <- all.vars(equations[[node]])
-        missing_parents <- setdiff(pa, eq_vars)
-        if (length(missing_parents) > 0L) {
-          stop(
-            sprintf(
-              "Equation for '%s' must reference all parent nodes. Missing: %s",
-              node,
-              paste(missing_parents, collapse = ", ")
-            ),
-            call. = FALSE
-          )
-        }
+      # validate that the equation references all parents and no other node
+      eq_vars <- all.vars(equations[[node]])
+      missing_parents <- setdiff(pa, eq_vars)
+      if (length(missing_parents) > 0L) {
+        stop(
+          sprintf(
+            "Equation for '%s' must reference all parent nodes. Missing: %s",
+            node,
+            paste(missing_parents, collapse = ", ")
+          ),
+          call. = FALSE
+        )
+      }
+      non_parents <- setdiff(intersect(eq_vars, node_names), pa)
+      if (length(non_parents) > 0L) {
+        stop(
+          sprintf(
+            "Equation for '%s' may only reference its parents. Not parents: %s",
+            node,
+            paste(non_parents, collapse = ", ")
+          ),
+          call. = FALSE
+        )
       }
 
       data[[node]] <- eval(equations[[node]], envir = env)
@@ -258,14 +269,35 @@ simulate_data <- function(
     }
   }
 
-  # build data.frame in original node order
-  out <- as.data.frame(data)[, node_names, drop = FALSE]
+  # build data.frame in original node order, keeping non-syntactic names
+  out <- as.data.frame(data, check.names = FALSE)[, node_names, drop = FALSE]
 
   if (standardize) {
-    out <- as.data.frame(lapply(out, function(x) {
-      (x - mean(x)) / stats::sd(x)
-    }))
+    out[] <- lapply(out, function(x) (x - mean(x)) / stats::sd(x))
   }
 
   out
+}
+
+#' Set the RNG seed until the calling function exits, then restore the
+#' caller's RNG state (like `withr::local_seed()`).
+#' @keywords internal
+#' @noRd
+.local_seed <- function(seed, envir = parent.frame()) {
+  old <- get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+  do.call(
+    on.exit,
+    list(
+      substitute(
+        if (is.null(old)) {
+          rm(".Random.seed", envir = globalenv())
+        } else {
+          assign(".Random.seed", old, envir = globalenv())
+        }
+      ),
+      add = TRUE
+    ),
+    envir = envir
+  )
+  set.seed(seed)
 }

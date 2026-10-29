@@ -32,6 +32,17 @@ impl Pdag {
     /// knowledge) orientations and need not have chordal chain components.
     /// For a true CPDAG, start from a `Dag` and call `Dag::to_cpdag`.
     pub fn to_mpdag(&self) -> Result<Mpdag, String> {
+        if !self.is_extendable() {
+            return Err(
+                "this PDAG has no consistent DAG extension, so it has no Meek closure".into(),
+            );
+        }
+        self.closure_of_extendable()
+    }
+
+    /// [`Pdag::to_mpdag`] without the extension check, for callers that have
+    /// already run [`Pdag::is_extendable`].
+    pub(crate) fn closure_of_extendable(&self) -> Result<Mpdag, String> {
         let n = self.n() as usize;
 
         let mut pa: Vec<HashSet<u32>> = vec![HashSet::new(); n];
@@ -213,13 +224,17 @@ mod tests {
     }
 
     #[test]
-    fn pdag_meek_closure_orients_r4() {
+    fn pdag_meek_closure_chains_r2() {
+        // R2 orients 0->3 (via 0->2->3), then 0->1 (via 0->3->1). 0--3 also
+        // makes the PDAG extendable: without it, 0->1 would add the
+        // v-structure 0->1<-3 and 1->0 would close a cycle.
         let (reg, d, u) = setup();
         let mut b = GraphBuilder::new_with_registry(4, true, &reg);
         b.add_edge(0, 1, u).unwrap();
         b.add_edge(0, 2, d).unwrap();
         b.add_edge(2, 3, d).unwrap();
         b.add_edge(3, 1, d).unwrap();
+        b.add_edge(0, 3, u).unwrap();
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
 
         let m = p.meek_closure().unwrap();
@@ -236,6 +251,7 @@ mod tests {
         b.add_edge(0, 2, d).unwrap();
         b.add_edge(2, 3, d).unwrap();
         b.add_edge(3, 1, d).unwrap();
+        b.add_edge(0, 3, u).unwrap();
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
 
         let m1 = p.meek_closure().unwrap();
@@ -248,7 +264,7 @@ mod tests {
     }
 
     #[test]
-    fn meek_closure_dense_component_is_closed() {
+    fn meek_closure_dense_component_without_extension_errors() {
         // Regression for a panic in `count_dags`/`enumerate_dags`: on dense
         // chain components a node ends up with neighbors in several buckets,
         // and the `adjacent` check used to binary-search the (unsorted)
@@ -279,8 +295,10 @@ mod tests {
             b.add_edge(a, c, u).unwrap();
         }
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        let m = p.meek_closure().unwrap();
-        assert!(m.is_meek_closed(), "closure result must be meek-closed");
+        // R1 forces 2->1 and 4->1 (6->2, 6->4, 6 !~ 1), and 2 !~ 4, so no DAG
+        // extends this PDAG: the closure must error, not panic.
+        assert!(!p.is_extendable());
+        assert!(p.meek_closure().is_err());
     }
 
     // ── Tests derived from pgmpy, pcalg, and Perkovic (2017) ──────────────
@@ -322,29 +340,10 @@ mod tests {
     }
 
     #[test]
-    fn meek_closure_pgmpy_case3_no_rule_fires() {
-        // pgmpy case 3: directed=[A->B, D->C], undirected=[B--C]
-        // No rule fires: B--C stays undirected.
-        // R1 check: A->B, B--C, A adj C? No. So R1 WOULD fire for B->C.
-        //   BUT also D->C, C--B, D adj B? No. So R1 would also fire for C->B.
-        // Both directions would be oriented, conflict: try_orient prevents cycle.
-        // Actually: R1 first orients B->C (from A->B), then D->C is already directed.
-        // Wait, this depends on iteration order. Let me think again.
-        //
-        // R1: for b=1 (B): parents={A}, und={C}. A not adj C => orient B->C.
-        // Now B->C and D->C. No undirected edges left. Done.
-        //
-        // Actually pgmpy says B--C stays undirected. That's because pgmpy's
-        // apply_meeks_rules starts from a PDAG and the expected output has
-        // both (B,C) and (C,B) in directed_edges, meaning B--C stays undirected
-        // in their representation. But our R1 would fire since A->B, B--C, A!~C.
-        //
-        // pgmpy's test expects the edge to remain undirected because both
-        // A->B and D->C each trigger R1 in opposite directions. The pgmpy
-        // implementation apparently checks both and leaves it undirected.
-        // Our implementation orients B->C first (R1 from A->B side).
-        // This is a valid Meek closure—the result is still acyclic.
-        // Let's just test that the closure is valid (meek closed + acyclic).
+    fn meek_closure_pgmpy_case3_has_no_extension() {
+        // pgmpy case 3: directed=[A->B, D->C], undirected=[B--C].
+        // B->C adds the v-structure B->C<-D and C->B adds A->B<-C, so no DAG
+        // extends this PDAG. pgmpy leaves B--C undirected; we error.
         let (reg, d, u) = setup();
         let mut b = GraphBuilder::new_with_registry(4, true, &reg);
         b.add_edge(0, 1, d).unwrap(); // A->B
@@ -352,12 +351,8 @@ mod tests {
         b.add_edge(1, 2, u).unwrap(); // B--C
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
 
-        let m = p.meek_closure().unwrap();
-        assert!(m.is_meek_closed());
-        // B--C should be oriented in some direction
-        let bc_directed = m.children_of(1).contains(&2) || m.children_of(2).contains(&1);
-        let bc_undirected = m.undirected_of(1).contains(&2);
-        assert!(bc_directed || bc_undirected);
+        assert!(!p.is_meek_closed());
+        assert!(p.meek_closure().is_err());
     }
 
     #[test]
@@ -403,41 +398,30 @@ mod tests {
 
     #[test]
     fn meek_closure_pgmpy_case11_r4() {
-        // pgmpy case 11 (R4 test): directed=[B->D, D->A], undirected=[A--C, B--C, D--C]
-        // Directed path B->D->A exists.
-        // R4: B--C... no, let's trace through.
-        // R1: B->D, D--C, B adj C? Yes (B--C). So no R1 for D--C from B.
-        //     D->A, A--C, D adj C? Yes (D--C). So no R1 for A--C from D.
-        // R2: A--C: A->w->C? A has no children initially. No.
-        //     B--C: B->w->C? B->D, D->C? D--C undirected, not D->C. No.
-        //     D--C: D->w->C? D->A, A->C? A--C undirected. No.
-        // R3: check each undirected edge for two non-adj parents of the target.
-        //     For C: parents_of(C) = {} initially. No R3.
-        // R4: A--C: directed path A=>C? A has no children. No.
-        //     B--C: directed path B=>C? B->D->...->C? D--C undirected. No.
-        //     D--C: directed path D=>C? D->A, A->C? A--C undirected. No.
-        //           directed path C=>D? C has no children. No.
-        //
-        // Hmm, no rule fires at all. Let me re-read the pgmpy test...
-        // pgmpy says with apply_r4=True the expected is:
-        //   {C->A, C--B (both dirs), B->D, D->A, D--C (both dirs)}
-        // So C->A is oriented. How?
-        //
-        // Actually in pgmpy case 11 with R4: B->D, D->A with A--C, B--C, D--C.
-        // R4: A--C, directed path from C to A: C has no directed children. No.
-        //     A--C, directed path from A to C: A has no directed children. No.
-        // Wait, maybe I misread. Let me re-check pgmpy's R4 definition.
-        // pgmpy R4: if a--b and ∃ c: c--a and c->b, then orient a->b.
-        // That's actually a different R4 than the standard Meek R4!
-        //
-        // Standard Meek R4: a--b, ∃c: c->b, c--a, and ∃ directed path a->...->c.
-        // Let me use the standard definition.
-        //
-        // For A--C: ∃ d: d->C and d--A? No directed parents of C.
-        // No R4 fires.
-        //
-        // Let's skip this ambiguous case and test R4 with a clear example instead.
-        // R4: a--b with directed path a->c->d->b, and a--d.
+        // pgmpy case 11: B->D, D->A, A--C, B--C, D--C.
+        // R4 on C--A with chain B->D->A, C--B and B !~ A orients C->A,
+        // which every DAG in the class has.
+        let (reg, d, u) = setup();
+        // 0:A, 1:B, 2:C, 3:D
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(1, 3, d).unwrap(); // B->D
+        b.add_edge(3, 0, d).unwrap(); // D->A
+        b.add_edge(0, 2, u).unwrap(); // A--C
+        b.add_edge(1, 2, u).unwrap(); // B--C
+        b.add_edge(3, 2, u).unwrap(); // D--C
+        let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(!p.is_meek_closed());
+
+        let m = p.meek_closure().unwrap();
+        assert!(m.children_of(2).contains(&0)); // C->A
+        assert!(m.undirected_of(2).contains(&1)); // C--B stays
+        assert!(m.undirected_of(2).contains(&3)); // C--D stays
+        assert!(m.is_meek_closed());
+    }
+
+    #[test]
+    fn meek_closure_orients_along_directed_path() {
+        // A--B with directed path A->C->D->B, and A--D.
         let (reg, d, u) = setup();
         // 0:A, 1:B, 2:C, 3:D
         // A--B, A->C, C->D, D->B, A--D
@@ -450,7 +434,7 @@ mod tests {
         let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
 
         let m = p.meek_closure().unwrap();
-        // R4: A--B, directed path A->C->D->B => A->B
+        // Directed path A->C->D->B => A->B
         assert!(m.children_of(0).contains(&1));
         assert!(m.is_meek_closed());
     }

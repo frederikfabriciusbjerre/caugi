@@ -67,6 +67,10 @@ test_that("matrix validation errors", {
   z <- matrix(0L, 2, 2)
   z[1, 2] <- 4L
   expect_error(as_caugi(z, class = "PAG"), "integer codes 0-3", fixed = TRUE)
+
+  # differing rownames and colnames
+  w <- matrix(0L, 2, 2, dimnames = list(c("A", "B"), c("B", "A")))
+  expect_error(as_caugi(w), "must be identical", fixed = TRUE)
 })
 
 test_that("MPDAG class is accepted for matrix conversion", {
@@ -210,6 +214,15 @@ test_that("igraph dispatch works and respects directedness + collapse", {
   expect_equal(e_col$from, "A")
   expect_equal(e_col$to, "B")
   expect_equal(e_col$edge, "---")
+
+  # reverse edge first
+  g_rev <- igraph::graph_from_edgelist(
+    matrix(c("B", "A", "A", "B"), 2, 2, byrow = TRUE),
+    directed = TRUE
+  )
+  e_rev <- edges(as_caugi(g_rev, class = "PDAG", collapse = TRUE))
+  expect_equal(nrow(e_rev), 1L)
+  expect_equal(c(e_rev$from, e_rev$edge, e_rev$to), c("A", "---", "B"))
 })
 
 test_that("empty igraph yield empty caugi graphs", {
@@ -217,6 +230,7 @@ test_that("empty igraph yield empty caugi graphs", {
   g0 <- igraph::make_empty_graph(n = 0, directed = TRUE)
   cg0 <- as_caugi(g0, class = "DAG")
   expect_equal(nrow(as.data.frame(edges(cg0))), 0L)
+  expect_equal(nrow(nodes(cg0)), 0L)
 })
 
 test_that("igraph with no edges, but with nodes, works", {

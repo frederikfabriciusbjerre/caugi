@@ -33,7 +33,8 @@ coefficients that will be sampled uniformly. Default is \code{c(0.1, 0.9)}.}
 \item{error_sd}{Numeric; standard deviation for error terms in
 auto-generated equations. Default is \code{1}.}
 
-\item{seed}{Optional integer; random seed for reproducibility.}
+\item{seed}{Optional integer; random seed for reproducibility. The caller's
+random number state is restored on exit.}
 }
 \value{
 A \code{data.frame} with \code{n} rows and one column per node, ordered

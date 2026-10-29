@@ -175,7 +175,24 @@ pub(crate) fn apply_meek_closure(
             }
         }
 
-        // R4: a--b and (a ⇒ b or b ⇒ a)  =>  orient along reachability
+        // R4 (Meek 1995): a--b and ∃ c,d: a--c, c->d, d->b, c !~ b  =>  a->b
+        for a in 0..n {
+            let uab: Vec<u32> = und[a].clone().into_iter().collect();
+            for b_u in uab {
+                let b = b_u as usize;
+                let fires = und[a].iter().any(|&c| {
+                    let ci = c as usize;
+                    c != b_u
+                        && !adjacent(ci, b, und, pa, ch)
+                        && ch[ci].iter().any(|d| pa[b].contains(d))
+                });
+                if fires && try_orient(a as u32, b_u, und, pa, ch) {
+                    changed = true;
+                }
+            }
+        }
+
+        // Cycle avoidance: a--b and (a ⇒ b or b ⇒ a)  =>  orient along reachability
         for a in 0..n {
             let uab: Vec<u32> = und[a].clone().into_iter().collect();
             for b_u in uab {

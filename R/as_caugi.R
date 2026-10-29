@@ -1,7 +1,7 @@
 #' @title Convert to a `caugi`
 #'
 #' @description Convert an object to a `caugi`. The object can be a
-#' `graphNEL`, `matrix`, `tidygraph`, `daggity`, `bn`, or `igraph`.
+#' `graphNEL`, `matrix`, `tidygraph`, `dagitty`, `bn`, or `igraph`.
 #'
 #' @details
 #' For matrices, `as_caugi` assumes that the rows are the `from` nodes
@@ -146,7 +146,7 @@ S7::method(
   has_names <- !is.null(igraph::V(x)$name)
   nm <- igraph::V(x)$name
   if (is.null(nm)) {
-    nm <- paste0("V", seq_len(igraph::vcount(x)))
+    nm <- sprintf("V%d", seq_len(igraph::vcount(x)))
   }
 
   if (class == "PAG") {
@@ -193,8 +193,9 @@ S7::method(
     rev_key <- interaction(to, from, drop = TRUE)
     has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
-    # keep asymmetric rows and the first canonical rep of each symmetric group
-    keep_rep <- !duplicated(key) & (from == canon_from)
+    # keep asymmetric rows and the first row of each symmetric group, whatever
+    # its direction; it is rewritten in canonical order below
+    keep_rep <- !duplicated(key)
     keep <- !has_rev | keep_rep
 
     # write collapsed rows
@@ -367,6 +368,9 @@ S7::method(
 
   # handle naming
   nm <- colnames(x)
+  if (!is.null(nm) && !is.null(rownames(x)) && !identical(nm, rownames(x))) {
+    stop("`rownames(x)` and `colnames(x)` must be identical.", call. = FALSE)
+  }
   if (is.null(nm)) {
     nm <- rownames(x)
   }
@@ -698,13 +702,17 @@ S7::method(
   # normalize direction when dagitty encodes reverse
   e <- gsub("@", "o", e, fixed = TRUE)
 
-  # swap reverse encodings (anything starting with "<-")
-  rev <- grepl("^<-", e)
+  # swap reverse encodings (anything starting with "<-", and "o--")
+  rev <- grepl("^<-", e) | e == "o--"
   if (any(rev)) {
     tmp <- v[rev]
     v[rev] <- w[rev]
     w[rev] <- tmp
-    e[rev] <- sub("^<-o$", "o->", sub("^<-$", "->", e[rev]))
+    e[rev] <- sub(
+      "^o--$",
+      "--o",
+      sub("^<-o$", "o->", sub("^<-$", "->", e[rev]))
+    )
   }
 
   map_glyph <- function(s) {
@@ -715,6 +723,7 @@ S7::method(
       "--" = "---",
       "o->" = "o->",
       "o-o" = "o-o",
+      "--o" = "--o",
       stop("Unsupported dagitty edge code: ", s, call. = FALSE)
     )
   }

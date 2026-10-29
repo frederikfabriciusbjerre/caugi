@@ -4,17 +4,20 @@
 \alias{caugi_options}
 \title{Get or set global options for caugi}
 \usage{
-caugi_options(...)
+caugi_options(..., reset = FALSE)
 }
 \arguments{
 \item{...}{Named values to update options with, or unnamed option names to
 retrieve. Multiple unnamed arguments drill down through nested options.
 To query all options, call without arguments. Attempting to access a
 non-existent option will raise an error.}
+
+\item{reset}{If \code{TRUE}, reset all options to their defaults.
+Cannot be combined with \code{...}.}
 }
 \value{
 When setting, returns (invisibly) the previous values for the updated
-options. When getting (no arguments or unnamed character vector), returns
+options; with \code{reset = TRUE}, all previous options. When getting (no arguments or unnamed character vector), returns
 the requested options.
 }
 \description{
@@ -91,7 +94,7 @@ caugi_options(plot = list(
 ))
 
 # Reset to defaults
-caugi_options(caugi_default_options())
+caugi_options(reset = TRUE)
 
 }
 \seealso{

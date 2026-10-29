@@ -636,6 +636,14 @@ test_that("exogenize fails with non-simple graphs", {
 })
 
 
+test_that("condition_marginalize() handles a result with no edges", {
+  cg <- caugi(X %-->% Z, Y %-->% Z, class = "DAG")
+  res <- condition_marginalize(cg, marg_vars = "Z")
+  expect_equal(res@graph_class, "AG")
+  expect_setequal(nodes(res)$name, c("X", "Y"))
+  expect_equal(nrow(edges(res)), 0L)
+})
+
 test_that("Marginalization and conditioning work", {
   ## Examples from Figure 10 of Richardson and Spirtes 2002
 
@@ -663,6 +671,16 @@ test_that("Marginalization and conditioning work", {
   expect_true(same_graphs(rescu, mgcu))
 
   expect_error(condition_marginalize(mg, cond_vars = NULL, marg_vars = NULL))
+  expect_error(
+    condition_marginalize(mg, marg_vars = c("U", "Q")),
+    "Unknown node(s): Q",
+    fixed = TRUE
+  )
+  expect_error(
+    condition_marginalize(mg, cond_vars = "Q"),
+    "Unknown node(s): Q",
+    fixed = TRUE
+  )
 
   # Figure 11
 
@@ -871,7 +889,7 @@ test_that("meek_closure orients compelled edges and returns an MPDAG", {
   check_oriented(c_r3, "A", "B")
   expect_true(is_mpdag(c_r3))
 
-  # R4: A -- B and A => B through A -> C -> D -> B  =>  A -> B
+  # Directed path: A -- B and A => B through A -> C -> D -> B  =>  A -> B
   g_r4 <- caugi(
     A %---% B,
     A %-->% C,
@@ -883,6 +901,75 @@ test_that("meek_closure orients compelled edges and returns an MPDAG", {
   c_r4 <- meek_closure(g_r4)
   check_oriented(c_r4, "A", "B")
   expect_true(is_mpdag(c_r4))
+})
+
+test_that("meek_closure applies Meek's rule R4 (#379)", {
+  # pgmpy case 11: chain B -> D -> A, C -- B, B !~ A  =>  C -> A.
+  # All three DAGs in the class have C -> A.
+  g <- caugi(
+    B %-->% D,
+    D %-->% A,
+    A %---% C,
+    B %---% C,
+    D %---% C,
+    class = "PDAG"
+  )
+  expect_false(is_mpdag(g))
+  closed <- meek_closure(g)
+  expect_true("C" %in% parents(closed, "A"))
+  expect_true(all(vapply(
+    enumerate_dags(g),
+    function(d) "C" %in% parents(d, "A"),
+    logical(1)
+  )))
+  expect_equal(
+    caugi(B %-->% D, D %-->% A, A %---% C, B %---% C, D %---% C)@graph_class,
+    "PDAG"
+  )
+})
+
+test_that("PDAGs with no DAG extension are not MPDAGs or CPDAGs (#380)", {
+  # R1 forces K -> X, which adds the v-structure K -> X <- Z.
+  g <- caugi(G %-->% K, K %---% X, Z %-->% X, class = "PDAG")
+  expect_false(is_mpdag(g))
+  expect_false(is_cpdag(g))
+  expect_error(
+    caugi(G %-->% K, K %---% X, Z %-->% X, class = "MPDAG"),
+    "not MPDAG"
+  )
+  expect_equal(caugi(G %-->% K, K %---% X, Z %-->% X)@graph_class, "PDAG")
+  expect_error(meek_closure(g), "no consistent DAG extension")
+
+  c2 <- caugi(
+    A %-->% K,
+    B %-->% K,
+    K %---% X,
+    C %-->% X,
+    D %-->% X,
+    class = "PDAG"
+  )
+  expect_false(is_cpdag(c2))
+
+  # count_dags()/enumerate_dags() return nothing for such PDAGs (#381).
+  pd <- caugi(
+    Z %-->% X,
+    X %---% D,
+    D %---% O,
+    O %---% Z,
+    X %---% Y,
+    Y %---% Z,
+    class = "PDAG"
+  )
+  expect_equal(count_dags(pd), 0)
+  expect_length(enumerate_dags(pd), 0L)
+
+  # A chordless 4-cycle has no directed edge for R1 to catch.
+  cyc <- caugi(A %---% B, B %---% C, C %---% D, D %---% A, class = "PDAG")
+  expect_false(is_mpdag(cyc))
+  expect_error(
+    caugi(A %---% B, B %---% C, C %---% D, D %---% A, class = "MPDAG"),
+    "no consistent DAG extension"
+  )
 })
 
 test_that("meek_closure is idempotent and preserves node names", {
@@ -1049,13 +1136,10 @@ test_that("pgmpy Meek fixtures: meek_closure on PDAG applies Meek closure", {
     edge_set(caugi(A %-->% B, B %-->% C, C %-->% D, class = "PDAG"))
   )
 
-  # Case 3 (pgmpy fixture): keep B-C undirected.
+  # Case 3 (pgmpy fixture): either orientation of B-C adds a v-structure,
+  # so no DAG extends this PDAG. pgmpy keeps B-C undirected; caugi errors.
   pdag3 <- caugi(A %-->% B, D %-->% C, B %---% C, class = "PDAG")
-  cpdag3 <- cpdag_from_pdag(pdag3)
-  expect_setequal(
-    edge_set(cpdag3),
-    edge_set(pdag3)
-  )
+  expect_error(cpdag_from_pdag(pdag3), "no consistent DAG extension")
 
   # Case 4 (pgmpy fixture): extra parent evidence orients B->C.
   pdag4 <- caugi(

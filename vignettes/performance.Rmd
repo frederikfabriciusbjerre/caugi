@@ -196,7 +196,7 @@ This vignette compares the performance of `caugi` against R packages
 ([`igraph`](https://r.igraph.org/), [`bnlearn`](https://www.bnlearn.com/),
 [`dagitty`](https://dagitty.net/),
 [`ggm`](https://cran.r-project.org/package=ggm),
-[`pcalg`](https://pcalg.r-forge.r-project.org/)), the Python package
+[`pcalg`](https://CRAN.R-project.org/package=pcalg)), the Python package
 [`pgmpy`](https://pgmpy.org/), and the Java library
 [Tetrad](https://www.cmu.edu/dietrich/philosophy/tetrad/). We focus on the
 practical trade-offs that arise from different core data structures and design
@@ -533,8 +533,9 @@ on every call; it is skipped at $n = 10000$.
 ### D-Separation
 
 For each fixture we pick a random `(X, Y)` pair and compute a **minimal
-d-separator** `Z` with `caugi::minimal_separator()`---that is, a smallest set of
-nodes whose conditioning blocks every path between `X` and `Y` in the DAG. The
+d-separator** `Z` with `caugi::minimal_separator()`---that is, an
+inclusion-minimal set of nodes whose conditioning blocks every path between `X`
+and `Y` in the DAG. The
 same triple `(X, Y, Z)` is then passed to every package's d-separation routine,
 so every package answers "is `X ⫫ Y | Z`?" on identical inputs. Tetrad uses the
 m-separation generalisation (equivalent on DAGs). `pcalg::dsep()` follows

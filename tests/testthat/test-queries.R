@@ -155,6 +155,39 @@ test_that("is_pdag works", {
   expect_false(is_pdag(cg))
 })
 
+test_that("is_cpdag rejects non-chordal undirected components (#378)", {
+  # B - D - C - E - B is a chordless 4-cycle; A is joined to all of them.
+  cg <- caugi(
+    A %---% B + C + D + E,
+    B %---% D + E,
+    C %---% D + E,
+    class = "PDAG"
+  )
+  expect_false(is_cpdag(cg))
+  expect_error(
+    caugi(A %---% B + C + D + E, B %---% D + E, C %---% D + E, class = "CPDAG"),
+    "not a CPDAG"
+  )
+})
+
+test_that("is_cpdag agrees with igraph::is_chordal on undirected graphs (#378)", {
+  skip_if_not_installed("igraph")
+  nm <- LETTERS[1:5]
+  pairs <- utils::combn(nm, 2)
+  for (code in 0:(2^ncol(pairs) - 1)) {
+    keep <- as.logical(intToBits(code))[seq_len(ncol(pairs))]
+    cg <- caugi(
+      from = pairs[1, keep],
+      edge = rep("---", sum(keep)),
+      to = pairs[2, keep],
+      nodes = nm,
+      class = "PDAG"
+    )
+    chordal <- igraph::is_chordal(as_igraph(cg))$chordal
+    expect_identical(is_cpdag(cg), chordal, info = paste("code", code))
+  }
+})
+
 test_that("is_cpdag works", {
   # Triangle with A--B undirected and A->C, B->C directed.
   # Since A and B are adjacent, there's NO v-structure at C.
@@ -612,6 +645,59 @@ test_that("markov_blanket works on DAGs (parents, children, spouses)", {
   expect_setequal(mb_idx, c("B", "C", "D"))
 })
 
+test_that("markov_blanket on ADMGs and AGs follows collider paths (#384)", {
+  # Children are in the blanket, whatever the class label.
+  expect_equal(
+    markov_blanket(caugi(A %-->% B, B %-->% C, class = "ADMG"), "A"),
+    "B"
+  )
+  expect_setequal(
+    markov_blanket(caugi(A %-->% B, B %-->% C, class = "ADMG"), "B"),
+    c("A", "C")
+  )
+  # S is reached through the collider path N -> R <-> S.
+  ag <- caugi(A %-->% R + S, N %-->% R, R %<->% S, class = "AG")
+  mb <- markov_blanket(ag, "N")
+  expect_setequal(mb, c("A", "R", "S"))
+})
+
+test_that("markov_blanket on ADMGs matches brute-force m-separation (#384)", {
+  # The Markov boundary of v is {w : v and w are m-connected given all other nodes}.
+  oracle <- function(cg, v) {
+    V <- nodes(cg)$name
+    Filter(
+      function(w) !m_separated(cg, v, w, Z = setdiff(V, c(v, w))),
+      setdiff(V, v)
+    )
+  }
+  set.seed(384)
+  for (k in 1:30) {
+    nm <- LETTERS[1:5]
+    ord <- sample(nm)
+    pairs <- utils::combn(5, 2)
+    type <- sample(
+      c("", "-->", "<->"),
+      ncol(pairs),
+      replace = TRUE,
+      prob = c(0.4, 0.35, 0.25)
+    )
+    keep <- type != ""
+    cg <- caugi(
+      from = ord[pairs[1, keep]],
+      edge = type[keep],
+      to = ord[pairs[2, keep]],
+      nodes = nm,
+      class = "ADMG"
+    )
+    for (v in nm) {
+      expect_identical(
+        sort(as.character(markov_blanket(cg, v))),
+        sort(oracle(cg, v))
+      )
+    }
+  }
+})
+
 test_that("markov_blanket includes undirected neighbors in PDAGs", {
   cg <- caugi(
     A %-->% B,
@@ -724,6 +810,27 @@ test_that("subgraph selects nodes and errors with none", {
     sg@edges,
     data.table::data.table(from = "A", edge = "-->", to = "B")
   )
+})
+
+test_that("subgraph with an empty character vector gives an empty graph", {
+  sg <- subgraph(caugi(A %-->% B, class = "DAG"), character(0))
+  expect_equal(length(sg), 0L)
+})
+
+test_that("subgraph re-checks the CPDAG class (#382)", {
+  # A single A -> C is not a CPDAG (the arrow is not protected) but is an MPDAG.
+  for (built in c(FALSE, TRUE)) {
+    cg <- caugi(A %-->% C, B %-->% C, class = "CPDAG")
+    if (built) {
+      build(cg)
+    }
+    s <- subgraph(cg, c("A", "C"))
+    expect_equal(s@graph_class, "MPDAG")
+    expect_equal(parents(s, "C"), "A")
+  }
+  # A v-structure survives intact.
+  cg <- caugi(A %-->% C, B %-->% C, D %---% E, class = "CPDAG")
+  expect_equal(subgraph(cg, c("A", "B", "C"))@graph_class, "CPDAG")
 })
 
 test_that("subgraph errors on invalid arg combos", {
@@ -1183,22 +1290,64 @@ test_that("anteriors works for PDAG with undirected cycle", {
   expect_equal(sort(anteriors(cg, "C")), c("A", "B"))
 })
 
-test_that("anteriors not defined for UG", {
-  cg <- caugi(
-    A %---% B,
-    B %---% C,
-    class = "UG"
-  )
-  expect_error(anteriors(cg, "B"), "not defined for UG")
+test_that("anteriors and posteriors on a UG are the connected component (#383)", {
+  cg <- caugi(A %---% B, B %---% C, D, class = "UG")
+  expect_setequal(anteriors(cg, "B"), c("A", "C"))
+  expect_setequal(posteriors(cg, "A"), c("B", "C"))
+  expect_length(anteriors(cg, "D"), 0L)
 })
 
-test_that("anteriors not defined for ADMG", {
-  cg <- caugi(
-    A %-->% B,
-    A %<->% C,
-    class = "ADMG"
+test_that("anteriors and posteriors on an ADMG skip <-> (#383)", {
+  cg <- caugi(A %-->% B, B %-->% C, A %<->% D, class = "ADMG")
+  expect_setequal(anteriors(cg, "C"), c("A", "B"))
+  expect_setequal(posteriors(cg, "A"), c("B", "C"))
+  expect_length(anteriors(cg, "D"), 0L)
+})
+
+test_that("ancestral queries on UNKNOWN work from the edge classes (#383)", {
+  cg <- caugi(A %-->% B, B %---% C, C %<->% D, class = "UNKNOWN")
+  expect_equal(ancestors(cg, "B"), "A")
+  expect_setequal(anteriors(cg, "C"), c("A", "B"))
+  expect_setequal(posteriors(cg, "A"), c("B", "C"))
+  expect_error(
+    ancestors(caugi(A %o->% B, class = "UNKNOWN"), "B"),
+    "partially directed"
   )
-  expect_error(anteriors(cg, "B"), "not defined for ADMG")
+})
+
+test_that("anteriors and posteriors follow custom undirected edges (#383)", {
+  reset_caugi_registry()
+  on.exit(reset_caugi_registry())
+  register_caugi_edge("x-x", "other", "other", "undirected", TRUE)
+
+  ug <- caugi(A %---% B, B %x-x% C, D, class = "UG")
+  expect_setequal(anteriors(ug, "A"), c("B", "C"))
+  expect_setequal(posteriors(ug, "C"), c("A", "B"))
+  expect_length(anteriors(ug, "D"), 0L)
+
+  raw <- caugi(A %-->% B, B %x-x% C, class = "UNKNOWN")
+  expect_setequal(anteriors(raw, "C"), c("A", "B"))
+  expect_setequal(posteriors(raw, "A"), c("B", "C"))
+})
+
+test_that("m_separated on a UG is graph separation", {
+  ug <- caugi(A %---% B, B %---% C, D, class = "UG")
+  expect_false(m_separated(ug, "A", "C"))
+  expect_true(m_separated(ug, "A", "C", "B"))
+  expect_true(m_separated(ug, "A", "D"))
+})
+
+test_that("condition_marginalize works on ADMG and UG input (#383)", {
+  adm <- caugi(A %-->% B, B %-->% C, class = "ADMG")
+  expect_equal(
+    edges(condition_marginalize(adm, marg_vars = "B")),
+    edges(caugi(A %-->% C))
+  )
+  ug <- caugi(A %---% B, B %---% C, class = "UG")
+  expect_equal(
+    edges(condition_marginalize(ug, marg_vars = "B")),
+    edges(caugi(A %---% C))
+  )
 })
 
 test_that("anteriors returns list for multiple nodes", {
@@ -1258,24 +1407,6 @@ test_that("posteriors works for PDAG with undirected cycle", {
   expect_equal(sort(posteriors(cg, "A")), c("B", "C"))
   expect_equal(sort(posteriors(cg, "B")), c("A", "C"))
   expect_equal(sort(posteriors(cg, "C")), c("A", "B"))
-})
-
-test_that("posteriors not defined for UG", {
-  cg <- caugi(
-    A %---% B,
-    B %---% C,
-    class = "UG"
-  )
-  expect_error(posteriors(cg, "B"), "not defined for UG")
-})
-
-test_that("posteriors not defined for ADMG", {
-  cg <- caugi(
-    A %-->% B,
-    A %<->% C,
-    class = "ADMG"
-  )
-  expect_error(posteriors(cg, "B"), "not defined for ADMG")
 })
 
 test_that("posteriors returns list for multiple nodes", {
@@ -1489,7 +1620,7 @@ test_that("Setting use_open_graph_definition via caugi_options works", {
   expect_equal(posteriors(cg, "A", open = TRUE), c("B", "C", "D"))
 
   # Reset to defaults
-  caugi_options(caugi_default_options())
+  caugi_options(reset = TRUE)
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -1501,39 +1632,39 @@ test_that("open_graph_def is TRUE by default", {
 })
 
 test_that("open_graph_def syncs to FALSE when use_open_graph_definition is set FALSE", {
-  on.exit(caugi_options(caugi_default_options()), add = TRUE)
+  on.exit(caugi_options(reset = TRUE), add = TRUE)
 
   caugi_options(use_open_graph_definition = FALSE)
   expect_false(.caugi_env$open_graph_def)
 })
 
 test_that("open_graph_def syncs back to TRUE when use_open_graph_definition is set TRUE", {
-  on.exit(caugi_options(caugi_default_options()), add = TRUE)
+  on.exit(caugi_options(reset = TRUE), add = TRUE)
 
   caugi_options(use_open_graph_definition = FALSE)
   caugi_options(use_open_graph_definition = TRUE)
   expect_true(.caugi_env$open_graph_def)
 })
 
-test_that("open_graph_def is restored to TRUE by caugi_default_options()", {
-  on.exit(caugi_options(caugi_default_options()), add = TRUE)
+test_that("open_graph_def is restored to TRUE by caugi_options(reset = TRUE)", {
+  on.exit(caugi_options(reset = TRUE), add = TRUE)
 
   caugi_options(use_open_graph_definition = FALSE)
   expect_false(.caugi_env$open_graph_def)
 
-  caugi_options(caugi_default_options())
+  caugi_options(reset = TRUE)
   expect_true(.caugi_env$open_graph_def)
 })
 
 test_that("open_graph_def is unaffected by unrelated option updates", {
-  on.exit(caugi_options(caugi_default_options()), add = TRUE)
+  on.exit(caugi_options(reset = TRUE), add = TRUE)
 
   caugi_options(plot = list(spacing = grid::unit(2, "lines")))
   expect_true(.caugi_env$open_graph_def)
 })
 
 test_that("missing(open) uses global option; explicit open overrides it", {
-  on.exit(caugi_options(caugi_default_options()), add = TRUE)
+  on.exit(caugi_options(reset = TRUE), add = TRUE)
 
   cg <- caugi(A %-->% B %-->% C, class = "DAG")
 

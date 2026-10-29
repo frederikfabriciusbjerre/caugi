@@ -24,7 +24,7 @@
     }
   )
 
-  caugi_options(caugi_default_options())
+  caugi_options(reset = TRUE)
   if ("S7_on_load" %in% getNamespaceExports("S7")) {
     getExportedValue("S7", "S7_on_load")()
   } else {

@@ -120,7 +120,7 @@
     return(expr)
   }
   if (is.numeric(expr) && length(expr) == 1L) {
-    return(as.character(expr))
+    return(.dsl_number(expr))
   }
   if (is.call(expr)) {
     fn <- as.character(expr[[1L]])
@@ -138,6 +138,20 @@
     }
   }
   stop("Unsupported node expression: ", deparse1(expr), call. = FALSE)
+}
+
+#' @title Format a numeric DSL node as a name
+#'
+#' @description Like `as.character()` (15 significant digits), but never in
+#' scientific notation, so `100000` becomes `"100000"`, not `"1e+05"`.
+#'
+#' @param x A single number.
+#'
+#' @returns A string.
+#'
+#' @keywords internal
+.dsl_number <- function(x) {
+  format(x, scientific = FALSE, trim = TRUE, digits = 15L)
 }
 
 

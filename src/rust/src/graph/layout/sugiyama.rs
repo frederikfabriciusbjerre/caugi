@@ -38,7 +38,8 @@ pub fn sugiyama_layout(graph: &CaugiGraph) -> Result<Vec<(f64, f64)>, String> {
     for (subgraph_layout, _width, _height) in subgraphs {
         for (node_id, (x, y)) in subgraph_layout {
             if node_id < n {
-                coords[node_id] = (x, y);
+                // Convert Sugiyama's downward-increasing y to upward-increasing y.
+                coords[node_id] = (x, -y);
             }
         }
     }
@@ -96,6 +97,8 @@ mod tests {
         assert!(result.is_ok());
         let coords = result.unwrap();
         assert_eq!(coords.len(), 3);
+        assert!(coords[0].1 > coords[1].1);
+        assert!(coords[1].1 > coords[2].1);
 
         // All coordinates should be finite
         for (x, y) in &coords {
@@ -122,6 +125,9 @@ mod tests {
         assert!(result.is_ok());
         let coords = result.unwrap();
         assert_eq!(coords.len(), 4);
+        for (parent, child) in [(0, 1), (0, 2), (1, 3), (2, 3)] {
+            assert!(coords[parent].1 > coords[child].1);
+        }
 
         // All coordinates should be finite
         for (x, y) in &coords {
