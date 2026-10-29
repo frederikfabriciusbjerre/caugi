@@ -99,6 +99,25 @@ impl CaugiGraph {
         self.row_index[i] as usize..self.row_index[i + 1] as usize
     }
 
+    /// Checks that the graph has no self-loops and at most one edge per pair.
+    /// Rows are sorted by neighbor, so parallel edges sit next to each other.
+    pub fn check_simple(&self) -> Result<(), error::BuilderError> {
+        for u in 0..self.n() {
+            let r = self.row_range(u);
+            for k in r.clone() {
+                let v = self.col_index[k];
+                if v == u {
+                    return Err(error::BuilderError::SelfLoop { node: u });
+                }
+                if k > r.start && self.col_index[k - 1] == v {
+                    let (from, to) = if u <= v { (u, v) } else { (v, u) };
+                    return Err(error::BuilderError::ParallelEdge { from, to });
+                }
+            }
+        }
+        Ok(())
+    }
+
     // ── Mark interpretation helpers ──────────────────────────────────────────
     // These provide canonical ways to interpret edge direction based on endpoint
     // marks rather than the raw `side` value. This is essential for supporting

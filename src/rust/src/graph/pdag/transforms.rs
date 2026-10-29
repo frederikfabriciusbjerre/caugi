@@ -37,6 +37,12 @@ impl Pdag {
                 "this PDAG has no consistent DAG extension, so it has no Meek closure".into(),
             );
         }
+        self.closure_of_extendable()
+    }
+
+    /// [`Pdag::to_mpdag`] without the extension check, for callers that have
+    /// already run [`Pdag::is_extendable`].
+    pub(crate) fn closure_of_extendable(&self) -> Result<Mpdag, String> {
         let n = self.n() as usize;
 
         let mut pa: Vec<HashSet<u32>> = vec![HashSet::new(); n];
@@ -218,8 +224,9 @@ mod tests {
     }
 
     #[test]
-    fn pdag_meek_closure_orients_r4() {
-        // 0--3 makes the PDAG extendable: without it, 0->1 would add the
+    fn pdag_meek_closure_chains_r2() {
+        // R2 orients 0->3 (via 0->2->3), then 0->1 (via 0->3->1). 0--3 also
+        // makes the PDAG extendable: without it, 0->1 would add the
         // v-structure 0->1<-3 and 1->0 would close a cycle.
         let (reg, d, u) = setup();
         let mut b = GraphBuilder::new_with_registry(4, true, &reg);
@@ -257,7 +264,7 @@ mod tests {
     }
 
     #[test]
-    fn meek_closure_dense_component_is_closed() {
+    fn meek_closure_dense_component_without_extension_errors() {
         // Regression for a panic in `count_dags`/`enumerate_dags`: on dense
         // chain components a node ends up with neighbors in several buckets,
         // and the `adjacent` check used to binary-search the (unsorted)
@@ -333,7 +340,7 @@ mod tests {
     }
 
     #[test]
-    fn meek_closure_pgmpy_case3_no_rule_fires() {
+    fn meek_closure_pgmpy_case3_has_no_extension() {
         // pgmpy case 3: directed=[A->B, D->C], undirected=[B--C].
         // B->C adds the v-structure B->C<-D and C->B adds A->B<-C, so no DAG
         // extends this PDAG. pgmpy leaves B--C undirected; we error.

@@ -2,6 +2,7 @@
 //! R bindings for caugi graph library.
 
 use extendr_api::prelude::*;
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::str::FromStr;
 pub mod edges;
 pub mod graph;
@@ -983,9 +984,6 @@ fn rs_remove_edges(
         throw_r_error("`from`, `edge`, `to` must be equal length.");
     }
     let s = session.as_ref();
-    if glyphs.is_none() && !s.simple() {
-        throw_r_error("When removing edges without specifying `edge`, `cg` must be simple.");
-    }
     let mut typed = Vec::new();
     let mut pairs = Vec::new();
     for i in 0..from.len() {
@@ -1011,6 +1009,29 @@ fn rs_remove_edges(
             }
         } else {
             pairs.push((u, v));
+        }
+    }
+    if !pairs.is_empty() && !s.simple() {
+        // Without `edge`, a pair is ambiguous only if it actually holds several edges.
+        let wanted: FxHashSet<(u32, u32)> = pairs
+            .iter()
+            .map(|&(u, v)| if u <= v { (u, v) } else { (v, u) })
+            .collect();
+        let mut first: FxHashMap<(u32, u32), (u32, u32, u8)> = FxHashMap::default();
+        let eb = s.edge_buffer();
+        for i in 0..eb.len() {
+            let (u, v, t) = (eb.from[i], eb.to[i], eb.etype[i]);
+            let pair = if u <= v { (u, v) } else { (v, u) };
+            if !wanted.contains(&pair) {
+                continue;
+            }
+            if *first.entry(pair).or_insert((u, v, t)) != (u, v, t) {
+                throw_r_error(format!(
+                    "Nodes {} and {} share several edges; specify `edge` to choose which to remove.",
+                    s.names()[pair.0 as usize],
+                    s.names()[pair.1 as usize]
+                ));
+            }
         }
     }
     ExternalPtr::new(
@@ -1139,7 +1160,7 @@ fn rs_n(session: ExternalPtr<GraphSession>) -> i32 {
 #[extendr]
 fn rs_is_simple(mut session: ExternalPtr<GraphSession>) -> bool {
     let core = session.as_mut().core().unwrap_or_else(|e| throw_r_error(e));
-    core.simple
+    core.check_simple().is_ok()
 }
 
 #[extendr]

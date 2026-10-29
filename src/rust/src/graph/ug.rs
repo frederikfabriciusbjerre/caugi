@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 //! UG (Undirected Graph) wrapper with O(1) slice queries via packed neighborhoods.
 
+use super::alg::reachability;
 use super::error::UgError;
 use super::packed::{PackedBuckets, PackedBucketsBuilder};
 use super::CaugiGraph;
@@ -82,6 +83,39 @@ impl Ug {
             .collect()
     }
 
+    /// Sorted nodes connected to `i` by a path, excluding `i`.
+    pub fn component_of(&self, i: u32) -> Vec<u32> {
+        let mut seen = vec![false; self.n() as usize];
+        seen[i as usize] = true;
+        let mut stack = vec![i];
+        while let Some(u) = stack.pop() {
+            for &v in self.neighbors_of(u) {
+                if !std::mem::replace(&mut seen[v as usize], true) {
+                    stack.push(v);
+                }
+            }
+        }
+        seen[i as usize] = false;
+        (0..self.n()).filter(|&v| seen[v as usize]).collect()
+    }
+
+    /// Graph separation: `true` iff every path from `xs` to `ys` passes
+    /// through `z`. This is m-separation for a UG, without the AG machinery.
+    pub fn separated(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> bool {
+        if xs.is_empty() || ys.is_empty() {
+            return true;
+        }
+        let n = self.n() as usize;
+        let adj: Vec<Vec<u32>> = (0..self.n())
+            .map(|i| self.neighbors_of(i).to_vec())
+            .collect();
+        let mut blocked = vec![false; n];
+        for &v in z {
+            blocked[v as usize] = true;
+        }
+        !reachability::reachable_to_any(&adj, &vec![true; n], xs, &blocked, ys)
+    }
+
     pub fn core_ref(&self) -> &CaugiGraph {
         &self.core
     }
@@ -122,6 +156,37 @@ mod tests {
         assert_eq!(g.neighbors_of(1), vec![0, 2]);
         assert_eq!(g.neighbors_of(2), vec![1, 3]);
         assert_eq!(g.neighbors_of(3), vec![2]);
+    }
+
+    #[test]
+    fn ug_component_and_separation_ignore_edge_marks() {
+        // A custom undirected edge whose marks are neither tail nor arrow.
+        use crate::edges::{EdgeSpec, Mark};
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cund = reg.code_of("---").unwrap();
+        let cxx = reg
+            .register(EdgeSpec {
+                glyph: "x-x".into(),
+                tail: Mark::Other,
+                head: Mark::Other,
+                symmetric: true,
+                class: EdgeClass::Undirected,
+            })
+            .unwrap();
+        // 0 --- 1 x-x 2, 3 isolated
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, cund).unwrap();
+        b.add_edge(1, 2, cxx).unwrap();
+        let g = Ug::new(std::sync::Arc::new(b.finalize().unwrap())).unwrap();
+
+        assert_eq!(g.component_of(0), vec![1, 2]);
+        assert_eq!(g.component_of(2), vec![0, 1]);
+        assert!(g.component_of(3).is_empty());
+        assert!(!g.separated(&[0], &[2], &[]));
+        assert!(g.separated(&[0], &[2], &[1]));
+        assert!(g.separated(&[0], &[3], &[]));
+        assert!(g.separated(&[], &[2], &[]));
     }
 
     #[test]
