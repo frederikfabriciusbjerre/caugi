@@ -22,6 +22,15 @@
 
 ## Bug Fixes
 
+- caugi's JSON output now validates against its published schema: the schema
+  allows the top-level `$schema` key that every file has, and its class list
+  includes MPDAG, CPDAG and AG (#419).
+
+- Removed doc claims of support that does not exist: `minimal_separator()` no
+  longer lists CPDAG and RCG, `write_caugi()`/`caugi_serialize()` take a
+  `caugi` object (not anything coercible to one), and the serialization
+  vignette no longer lists circle edges as valid in a PDAG (#457).
+
 - Fixed wrong defaults in the docs: the `plot()` layout list now includes
   `"tiered"` and `"circle"`, `tier_style` documents that boxes and labels are
   shown by default, and `generate_graph()` documents `n >= 1` (#454).

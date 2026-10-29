@@ -15,7 +15,7 @@ NULL
 #' This format is designed for reproducibility, caching, and sharing
 #' caugi graphs across R sessions.
 #'
-#' @param x A `caugi` object or an object coercible to `caugi`.
+#' @param x A `caugi` object.
 #' @param path Character string specifying the file path.
 #' @param comment Optional character string with a comment about the graph.
 #' @param tags Optional character vector of tags for categorizing the graph.
@@ -161,7 +161,7 @@ read_caugi <- function(path, lazy) {
 #' This is a lower-level function; consider using `write_caugi()` for
 #' writing to files.
 #'
-#' @param x A `caugi` object or an object coercible to `caugi`.
+#' @param x A `caugi` object.
 #' @param comment Optional character string with a comment about the graph.
 #' @param tags Optional character vector of tags for categorizing the graph.
 #'

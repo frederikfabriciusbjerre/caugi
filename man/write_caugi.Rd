@@ -7,7 +7,7 @@
 write_caugi(x, path, comment = NULL, tags = NULL)
 }
 \arguments{
-\item{x}{A \code{caugi} object or an object coercible to \code{caugi}.}
+\item{x}{A \code{caugi} object.}
 
 \item{path}{Character string specifying the file path.}
 
