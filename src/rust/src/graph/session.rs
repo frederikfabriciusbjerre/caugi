@@ -1860,8 +1860,9 @@ mod tests {
         assert!(mb.contains(&1));
 
         // exogenous_nodes through UG
-        let exo = ug.exogenous_nodes(false).unwrap();
-        assert!(exo.is_empty()); // all nodes have undirected neighbors
+        // undirected edges are ignored unless undirected_as_parents = true
+        assert_eq!(ug.exogenous_nodes(false).unwrap().len() as u32, ug.n());
+        assert!(ug.exogenous_nodes(true).unwrap().is_empty());
 
         // Type checks through UG
         assert!(!ug.is_dag_type().unwrap());

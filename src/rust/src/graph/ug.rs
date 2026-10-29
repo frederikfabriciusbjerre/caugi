@@ -73,11 +73,12 @@ impl Ug {
         self.neighbors_of(i).to_vec()
     }
 
+    /// With `undirected_as_parents = false` undirected edges are ignored, so
+    /// every node is exogenous; otherwise only isolated nodes are.
     #[inline]
-    pub fn exogenous_nodes(&self) -> Vec<u32> {
-        // In an undirected graph, nodes with no edges are exogenous
+    pub fn exogenous_nodes(&self, undirected_as_parents: bool) -> Vec<u32> {
         (0..self.n())
-            .filter(|&i| self.neighbors_of(i).is_empty())
+            .filter(|&i| !undirected_as_parents || self.neighbors_of(i).is_empty())
             .collect()
     }
 
@@ -178,7 +179,8 @@ mod tests {
         let core = std::sync::Arc::new(b.finalize().unwrap());
         let g = Ug::new(core).expect("UG construction failed");
 
-        assert_eq!(g.exogenous_nodes(), vec![3, 4]);
+        assert_eq!(g.exogenous_nodes(true), vec![3, 4]);
+        assert_eq!(g.exogenous_nodes(false), vec![0, 1, 2, 3, 4]);
     }
 
     #[test]

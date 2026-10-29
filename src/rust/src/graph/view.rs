@@ -393,7 +393,7 @@ impl GraphView {
             GraphView::Pdag(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
             GraphView::Mpdag(m) => Ok(m.as_pdag().exogenous_nodes(undirected_as_parents)),
             GraphView::Cpdag(c) => Ok(c.as_pdag().exogenous_nodes(undirected_as_parents)),
-            GraphView::Ug(g) => Ok(g.exogenous_nodes()),
+            GraphView::Ug(g) => Ok(g.exogenous_nodes(undirected_as_parents)),
             GraphView::Admg(g) => Ok(g.exogenous_nodes()),
             GraphView::Ag(g) => {
                 if undirected_as_parents {
@@ -1151,7 +1151,8 @@ mod tests {
         assert_eq!(v_ag.neighbors_of(1, NeighborMode::All).unwrap(), vec![0, 2]);
 
         // exogenous nodes dispatch for UG/ADMG/AG + Raw error
-        assert_eq!(v_ug.exogenous_nodes(false).unwrap(), Vec::<u32>::new());
+        assert_eq!(v_ug.exogenous_nodes(false).unwrap(), vec![0, 1, 2]);
+        assert!(v_ug.exogenous_nodes(true).unwrap().is_empty());
         assert_eq!(v_admg.exogenous_nodes(false).unwrap(), vec![0]);
         assert_eq!(v_ag.exogenous_nodes(false).unwrap(), vec![0, 3, 4]);
         assert_eq!(v_ag.exogenous_nodes(true).unwrap(), vec![0]);

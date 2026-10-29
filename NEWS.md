@@ -16,6 +16,12 @@
 
 ## Bug Fixes
 
+- `exogenous()` on a UG now honours `undirected_as_parents`: by default
+  undirected edges are ignored, so every node is exogenous, as for PDAGs.
+  Query `index` arguments now reject `NaN` and non-whole values instead of
+  silently using node 1, and out-of-range errors report the 1-based index
+  (#386).
+
 - `markov_blanket()` on ADMGs and AGs now returns every node joined by a
   collider path. ADMGs missed children and AGs missed the districts of
   children, so the same graph had a different blanket depending on its class.
