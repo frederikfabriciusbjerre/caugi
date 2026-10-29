@@ -46,7 +46,8 @@ With several treatments it can accept sets that Pearl's set version
 rejects, since that version requires \code{Z} alone to block every back-door
 path of each treatment. Every set accepted here is a valid adjustment set,
 but a valid adjustment set may be rejected, for example one containing a
-descendant of \code{X} off the causal paths.
+descendant of \code{X} off the causal paths. A \code{Z} that contains a node of \code{X}
+or \code{Y} is never valid.
 }
 \examples{
 cg <- caugi(

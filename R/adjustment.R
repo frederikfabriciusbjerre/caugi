@@ -202,7 +202,8 @@ adjustment_set <- function(
 #' rejects, since that version requires `Z` alone to block every back-door
 #' path of each treatment. Every set accepted here is a valid adjustment set,
 #' but a valid adjustment set may be rejected, for example one containing a
-#' descendant of `X` off the causal paths.
+#' descendant of `X` off the causal paths. A `Z` that contains a node of `X`
+#' or `Y` is never valid.
 #'
 #' @references
 #' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
@@ -686,7 +687,11 @@ all_adjustment_sets_admg <- function(
   if (is.null(node_name) && is.null(node_index)) {
     stop(arg, " (or ", arg, "_index) must be provided.", call. = FALSE)
   }
-  .resolve_idx0_mget(session, node_name, node_index)
+  idx0 <- .resolve_idx0_mget(session, node_name, node_index)
+  if (length(idx0) == 0L) {
+    stop("`", arg, "` must name at least one node.", call. = FALSE)
+  }
+  idx0
 }
 
 #' @name .resolve_idx0_get

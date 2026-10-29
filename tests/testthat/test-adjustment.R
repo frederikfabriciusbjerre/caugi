@@ -178,6 +178,23 @@ test_that("backdoor and d-separation functions check X and Y", {
     d_separated(adjustment_set_cg, X_index = c(1L, 2L), Z = "A"),
     "Y \\(or Y_index\\) must be provided."
   )
+  for (fn in list(is_valid_backdoor, all_backdoor_sets, d_separated)) {
+    expect_error(
+      fn(adjustment_set_cg, X = character(0), Y = "Y"),
+      "`X` must name at least one node"
+    )
+    expect_error(
+      fn(adjustment_set_cg, X = "X", Y_index = integer(0)),
+      "`Y` must name at least one node"
+    )
+  }
+})
+
+test_that("is_valid_backdoor rejects a Z that contains the outcome", {
+  cg <- caugi(U %-->% X + Y, class = "DAG")
+  expect_true(is_valid_backdoor(cg, "X", "Y", Z = "U"))
+  expect_false(is_valid_backdoor(cg, "X", "Y", Z = "Y"))
+  expect_false(is_valid_backdoor(cg, "X", "Y", Z = c("U", "Y")))
 })
 
 test_that("adjust functions fails with faulty input", {

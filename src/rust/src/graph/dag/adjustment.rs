@@ -197,25 +197,37 @@ impl Dag {
     /// 2) For every `x ∈ Xs`, `z ∪ Xs \ {x}` blocks every back-door path from
     ///    `x` to `Ys`.
     ///
+    /// `z` must also avoid `Ys`, as the criterion takes `Xs`, `Ys` and `z`
+    /// pairwise disjoint (`De(Xs)` already covers `Xs`).
+    ///
     /// Condition 2 is checked in one pass as `Pa(Xs) ⊥ Ys | z ∪ Xs`:
     /// conditioning on `x` blocks the paths out of it and leaves exactly the
-    /// back-door paths through its parents.
+    /// back-door paths through its parents. Parents in `Xs` are conditioned
+    /// non-colliders on those paths, so they are dropped as start nodes. The
+    /// test is a Bayes-ball traversal, linear in the graph size, rather than
+    /// `d_separated`, which moralizes and is quadratic in the in-degree.
     pub fn is_valid_backdoor_set(&self, xs: &[u32], ys: &[u32], z: &[u32]) -> bool {
         let de_mask = self.descendants_mask(xs);
-        if z.iter().any(|&v| de_mask[v as usize]) {
+        let y_mask = bitset::mask_from(ys, self.n());
+        if z.iter().any(|&v| de_mask[v as usize] || y_mask[v as usize]) {
             return false;
         }
 
-        let mut pa: Vec<u32> = xs
+        let mut obs = z.to_vec();
+        obs.extend_from_slice(xs);
+        let obs_mask = bitset::mask_from(&obs, self.n());
+        let pa: Vec<u32> = xs
             .iter()
             .flat_map(|&x| self.parents_of(x))
             .copied()
+            .filter(|&p| !obs_mask[p as usize])
             .collect();
-        pa.sort_unstable();
-        pa.dedup();
-        let mut obs = z.to_vec();
-        obs.extend_from_slice(xs);
-        self.d_separated(&pa, ys, &obs)
+        if pa.iter().any(|&p| y_mask[p as usize]) {
+            return false;
+        }
+        self.d_connected_restricted(&pa, &obs, None)
+            .map(|reached| !reached.iter().any(|&v| y_mask[v as usize]))
+            .unwrap_or(false)
     }
 
     /// Universe of candidates for backdoor adjustment wrt. `(Xs, Ys)`.
@@ -569,6 +581,13 @@ mod tests {
         let g = dag_from(3, &[(1, 0), (1, 2), (0, 2)]);
         assert!(g.is_valid_backdoor_set(&[0, 1], &[2], &[]));
 
+        // X=1 <- U=0 -> Y=2: Y is no descendant of X, but adjusting for the
+        // outcome itself is never valid.
+        let g = dag_from(3, &[(0, 1), (0, 2)]);
+        assert!(g.is_valid_backdoor_set(&[1], &[2], &[0]));
+        assert!(!g.is_valid_backdoor_set(&[1], &[2], &[2]));
+        assert!(!g.is_valid_backdoor_set(&[1], &[2], &[0, 2]));
+
         // U=0 -> X1=2, U -> X2=3, V=1 -> X2, V -> Y=4, X1 -> Y, X2 -> Y:
         // conditioning on the collider X2 opens X1 <- U -> X2 <- V -> Y, and
         // V also confounds X2, so every valid set holds V.
@@ -718,5 +737,6 @@ mod tests {
             g.adjustment_set_parents(&[x], &[y]).unwrap().len(),
             k as usize
         );
+        assert!(g.is_valid_backdoor_set(&[x], &[y], &[]));
     }
 }
