@@ -559,6 +559,13 @@ is_ag <- function(cg, force_check = FALSE) {
 #' violating the ancestral graph constraints or changing the encoded
 #' independence model.
 #'
+#' @details
+#' A non-adjacent pair has no separating set exactly when a collider path
+#' joins the two inside their anterior set (Richardson and Spirtes 2002,
+#' Theorem 4.2). Only pairs that both point into one district can be joined
+#' this way, and each is checked with one search along `<->` edges, so the
+#' check is polynomial in the size of the graph.
+#'
 #' @param cg A `caugi` object.
 #' @param force_check Logical; if `TRUE`, the function will test if the graph is
 #' a MAG, if `FALSE` (default), it will look at the graph class and match

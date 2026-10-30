@@ -351,58 +351,69 @@ impl Ag {
     ///
     /// For each non-adjacent pair (u, v), if they are not m-separated given any
     /// subset of the remaining nodes, then an edge could be added, making the
-    /// graph non-maximal.
-    ///
-    /// Note: This is a computationally expensive check (exponential in the worst case).
+    /// graph non-maximal. One m-separation test per pair decides this, so the
+    /// check is polynomial.
     pub fn is_mag(&self) -> bool {
-        let n = self.n();
-        if n <= 1 {
-            return true;
-        }
-
-        // For each non-adjacent pair, check if there exists any separating set
-        for u in 0..n {
-            for v in (u + 1)..n {
-                if !self.adjacent(u, v) && !self.has_separating_set(u, v) {
-                    return false;
+        // A pair with no separating set has an inducing path (Richardson and
+        // Spirtes 2002, Corollary 4.3), and every interior vertex of one is a
+        // collider. So the interior lies in one district D (consecutive
+        // colliders are joined by `<->`), and both ends point into it: they
+        // are in D or pa(D). Only such pairs need a test.
+        let mut tested = std::collections::HashSet::new();
+        for district in self.districts() {
+            let mut ends: Vec<u32> = district
+                .iter()
+                .flat_map(|&d| self.parents_of(d).iter().copied())
+                .chain(district.iter().copied())
+                .collect();
+            ends.sort_unstable();
+            ends.dedup();
+            for (k, &u) in ends.iter().enumerate() {
+                for &v in &ends[k + 1..] {
+                    if !self.adjacent(u, v)
+                        && tested.insert((u, v))
+                        && !self.has_separating_set(u, v)
+                    {
+                        return false;
+                    }
                 }
             }
         }
         true
     }
 
-    /// Determine if there exists any conditioning set that m-separates `u` and `v`.
+    /// Is there any set that m-separates the non-adjacent `u` and `v`?
+    ///
+    /// Richardson and Spirtes (2002), Theorem 4.2 (iii) <=> (v) with no
+    /// selection or latent nodes: no set does iff a collider path joins them
+    /// inside `ant({u, v})`. Its interior is a chain of `<->` edges that `u`
+    /// and `v` both point into, so a search along those edges decides it,
+    /// without building the augmented graph.
     fn has_separating_set(&self, u: u32, v: u32) -> bool {
-        let mut candidates = Vec::with_capacity(self.n() as usize - 2);
-        for w in 0..self.n() {
-            if w != u && w != v {
-                candidates.push(w);
+        let ant = self.anteriors_mask(&[u, v]);
+        let interior = |c: u32| ant[c as usize] && c != u && c != v;
+        let into = |x: u32, c: u32| {
+            self.children_of(x).binary_search(&c).is_ok()
+                || self.spouses_of(x).binary_search(&c).is_ok()
+        };
+        let mut seen = vec![false; self.n() as usize];
+        let mut stack: Vec<u32> = Vec::new();
+        for &c in self.children_of(u).iter().chain(self.spouses_of(u)) {
+            if interior(c) && !std::mem::replace(&mut seen[c as usize], true) {
+                stack.push(c);
             }
         }
-        let mut cur = Vec::new();
-        self.search_separator(u, v, &candidates, 0, &mut cur)
-    }
-
-    /// Recursively search for any conditioning set that m-separates `u` and `v`.
-    fn search_separator(
-        &self,
-        u: u32,
-        v: u32,
-        candidates: &[u32],
-        start: usize,
-        cur: &mut Vec<u32>,
-    ) -> bool {
-        if self.m_separated(&[u], &[v], cur) {
-            return true;
-        }
-        for i in start..candidates.len() {
-            cur.push(candidates[i]);
-            if self.search_separator(u, v, candidates, i + 1, cur) {
-                return true;
+        while let Some(c) = stack.pop() {
+            if into(v, c) {
+                return false;
             }
-            cur.pop();
+            for &d in self.spouses_of(c) {
+                if interior(d) && !std::mem::replace(&mut seen[d as usize], true) {
+                    stack.push(d);
+                }
+            }
         }
-        false
+        true
     }
 }
 
@@ -778,29 +789,29 @@ mod tests {
     }
 
     #[test]
-    fn ag_separator_search_recursion_true_and_false() {
+    fn ag_has_separating_set_uses_the_anterior_set() {
         let (reg, dir, _bid, _und) = setup();
-        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
-        // Chain: 0 -> 1 -> 2
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        // Chain 0 -> 1 -> 2, and an isolated 3.
         b.add_edge(0, 1, dir).unwrap();
         b.add_edge(1, 2, dir).unwrap();
         let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(ag.has_separating_set(0, 2)); // by {1}
+        assert!(ag.has_separating_set(0, 3)); // by {}
 
-        // Recursive search should find separator {1}.
-        let mut cur = Vec::new();
-        assert!(ag.search_separator(0, 2, &[1], 0, &mut cur));
-
-        // Adjacent pair with no candidates cannot be separated by this search.
-        let mut cur2 = Vec::new();
-        assert!(!ag.search_separator(0, 1, &[], 0, &mut cur2));
-
-        // Backtracking branch: try an irrelevant candidate first and pop it.
-        let mut b2 = GraphBuilder::new_with_registry(4, true, &reg);
-        b2.add_edge(0, 1, dir).unwrap();
-        b2.add_edge(1, 2, dir).unwrap();
-        let ag2 = Ag::new(Arc::new(b2.finalize().unwrap())).unwrap();
-        let mut cur3 = Vec::new();
-        assert!(!ag2.search_separator(0, 2, &[3], 0, &mut cur3));
+        // 2 <-> 0 <-> 1 <-> 3 is a collider path between the non-adjacent 2
+        // and 3 inside their anterior set (0 --> 3, 1 --> 2), so no set
+        // separates them.
+        let (reg, dir, bid, _und) = setup();
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 3, dir).unwrap();
+        b.add_edge(1, 0, bid).unwrap();
+        b.add_edge(1, 2, dir).unwrap();
+        b.add_edge(1, 3, bid).unwrap();
+        b.add_edge(2, 0, bid).unwrap();
+        let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(!ag.has_separating_set(2, 3));
+        assert!(!ag.is_mag());
     }
 
     #[test]
@@ -849,57 +860,91 @@ mod tests {
         ));
     }
 
-    #[test]
-    fn ag_is_mag_detects_non_mag_via_small_enumeration() {
-        let (reg, dir, bid, und) = setup();
-        let pairs: [(u32, u32); 6] = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)];
-
-        // Per pair state:
-        // 0 none, 1 a->b, 2 b->a, 3 a<->b, 4 a---b
-        let states = 5usize;
-        let total = states.pow(pairs.len() as u32);
-        let mut found_non_mag = false;
-
-        'search: for idx in 0..total {
-            let mut code = idx;
-            let mut b = GraphBuilder::new_with_registry(4, true, &reg);
-            for &(a, c) in &pairs {
-                match code % states {
-                    1 => {
-                        b.add_edge(a, c, dir).unwrap();
-                    }
-                    2 => {
-                        b.add_edge(c, a, dir).unwrap();
-                    }
-                    3 => {
-                        b.add_edge(a, c, bid).unwrap();
-                    }
-                    4 => {
-                        b.add_edge(a, c, und).unwrap();
-                    }
-                    _ => {}
-                }
-                code /= states;
-            }
-
-            // Not every enumerated candidate is a valid AG (e.g. undirected
-            // constraint violations); skip those that fail construction.
-            let Ok(ag) = Ag::new(Arc::new(b.finalize().unwrap())) else {
-                continue;
-            };
-            if !ag.is_mag() {
-                found_non_mag = true;
-                break 'search;
-            }
-        }
-
-        assert!(
-            found_non_mag,
-            "Expected at least one non-maximal AG among simple 4-node AG candidates"
-        );
+    /// The definition: some subset of the other nodes m-separates `u` and `v`.
+    fn separable_by_some_subset(ag: &Ag, u: u32, v: u32) -> bool {
+        let others: Vec<u32> = (0..ag.n()).filter(|&w| w != u && w != v).collect();
+        (0u32..1 << others.len()).any(|mask| {
+            let z: Vec<u32> = others
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| mask >> i & 1 == 1)
+                .map(|(_, &w)| w)
+                .collect();
+            ag.m_separated(&[u], &[v], &z)
+        })
     }
 
-    // Note: Anterior constraint validation tests would require carefully
-    // constructed graphs that violate the constraint. Since our construction
-    // validates this, we test via try_new error cases.
+    fn is_mag_by_subsets(ag: &Ag) -> bool {
+        (0..ag.n()).all(|u| {
+            (u + 1..ag.n()).all(|v| ag.adjacent(u, v) || separable_by_some_subset(ag, u, v))
+        })
+    }
+
+    /// An AG on `n` nodes with one state per pair: 0 none, 1 a->b, 2 b->a,
+    /// 3 a<->b, 4 a---b. `None` if the edges do not form an AG.
+    fn ag_from_states(n: u32, states: &[usize]) -> Option<Ag> {
+        let (reg, dir, bid, und) = setup();
+        let mut b = GraphBuilder::new_with_registry(n, true, &reg);
+        let mut k = 0;
+        for a in 0..n {
+            for c in (a + 1)..n {
+                match states[k] {
+                    1 => b.add_edge(a, c, dir).unwrap(),
+                    2 => b.add_edge(c, a, dir).unwrap(),
+                    3 => b.add_edge(a, c, bid).unwrap(),
+                    4 => b.add_edge(a, c, und).unwrap(),
+                    _ => {}
+                }
+                k += 1;
+            }
+        }
+        Ag::new(Arc::new(b.finalize().unwrap())).ok()
+    }
+
+    #[test]
+    fn is_mag_matches_the_subset_search_on_every_4_node_ag() {
+        let (mut mags, mut non_mags) = (0, 0);
+        for idx in 0..5usize.pow(6) {
+            let states: Vec<usize> = (0..6).map(|k| idx / 5usize.pow(k) % 5).collect();
+            let Some(ag) = ag_from_states(4, &states) else {
+                continue;
+            };
+            assert_eq!(ag.is_mag(), is_mag_by_subsets(&ag), "states {:?}", states);
+            if ag.is_mag() {
+                mags += 1;
+            } else {
+                non_mags += 1;
+            }
+        }
+        // Every 4-node MAG, as in the R ground truth; and some that are not.
+        assert_eq!(mags, 3045);
+        assert!(non_mags > 0);
+    }
+
+    #[test]
+    fn is_mag_matches_the_subset_search_on_random_ags() {
+        let mut seed: u64 = 398;
+        let mut next = || {
+            seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            (seed >> 33) as usize
+        };
+        for (n, graphs) in [(7u32, 2000), (9, 1000)] {
+            let pairs = (n * (n - 1) / 2) as usize;
+            let (mut checked, mut non_mags) = (0, 0);
+            while checked < graphs {
+                let states: Vec<usize> = (0..pairs)
+                    .map(|_| if next() % 10 < 4 { 1 + next() % 4 } else { 0 })
+                    .collect();
+                let Some(ag) = ag_from_states(n, &states) else {
+                    continue;
+                };
+                assert_eq!(ag.is_mag(), is_mag_by_subsets(&ag), "states {:?}", states);
+                checked += 1;
+                non_mags += usize::from(!ag.is_mag());
+            }
+            assert!(non_mags > 0, "no non-maximal {}-node AG drawn", n);
+        }
+    }
 }

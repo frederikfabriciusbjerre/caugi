@@ -114,6 +114,22 @@ impl GraphClass {
     }
 }
 
+impl GraphClass {
+    /// The class a view was built as. `Raw` serves both UNKNOWN and AUTO.
+    pub fn of(view: &GraphView) -> GraphClass {
+        match view {
+            GraphView::Dag(_) => GraphClass::Dag,
+            GraphView::Pdag(_) => GraphClass::Pdag,
+            GraphView::Mpdag(_) => GraphClass::Mpdag,
+            GraphView::Cpdag(_) => GraphClass::Cpdag,
+            GraphView::Ug(_) => GraphClass::Ug,
+            GraphView::Admg(_) => GraphClass::Admg,
+            GraphView::Ag(_) => GraphClass::Ag,
+            GraphView::Raw(_) => GraphClass::Unknown,
+        }
+    }
+}
+
 /// Compact buffer for storing edges before CSR compilation.
 #[derive(Debug, Clone, Default)]
 pub struct EdgeBuffer {
@@ -204,7 +220,7 @@ impl<T> Memo<T> {
 /// # Invalidation Rules
 ///
 /// - `edges`, `n`, `simple`, `registry` change → invalidate `core` → invalidate `view`
-/// - `class` change → invalidate `view` only
+/// - `class` change → `view` is rebuilt unless the cached one is of that class
 /// - `names` change → no invalidation (names are metadata)
 pub struct GraphSession {
     // ═══════════════════════════════════════════════════════════════════════════
@@ -526,10 +542,20 @@ impl GraphSession {
         self.invalidate_core();
     }
 
+    /// The cached view stays if it is of the new class, as after
+    /// [`resolve_class`](Self::resolve_class) to that class.
     pub fn set_class(&mut self, class: GraphClass) {
-        if self.graph_class != class {
-            self.graph_class = class;
-            self.view.clear(); // class change affects only the view, not the core
+        self.graph_class = class;
+        if self.built_view().is_none() {
+            self.view.clear();
+        }
+    }
+
+    /// The class whose view serves the current class: AUTO is served raw.
+    fn view_class(&self) -> GraphClass {
+        match self.graph_class {
+            GraphClass::Auto => GraphClass::Unknown,
+            c => c,
         }
     }
 
@@ -594,8 +620,9 @@ impl GraphSession {
         builder.finalize().map_err(|e| self.map_error(e))
     }
 
-    fn build_view(&self, core: Arc<CaugiGraph>) -> Result<GraphView, String> {
-        match self.graph_class {
+    /// Build the view of `class`, which validates the core against it.
+    fn build_view(&self, class: GraphClass, core: Arc<CaugiGraph>) -> Result<GraphView, String> {
+        match class {
             GraphClass::Dag => {
                 let dag = Dag::new(core).map_err(|e| self.map_error(e))?;
                 Ok(GraphView::Dag(Arc::new(dag)))
@@ -647,9 +674,9 @@ impl GraphSession {
 
     /// Get the typed view, building if necessary.
     pub fn view(&mut self) -> Result<Arc<GraphView>, String> {
-        if !self.view.is_present() {
+        if self.built_view().is_none() {
             let core = self.core()?;
-            let built = Arc::new(self.build_view(core)?);
+            let built = Arc::new(self.build_view(self.view_class(), core)?);
             self.view.set(built);
         }
         Ok(Arc::clone(
@@ -758,67 +785,50 @@ impl GraphSession {
     }
 
     /// Resolve a graph class given the current edges/core.
+    ///
+    /// Validating a class builds its view, so the view is kept: a following
+    /// [`set_class`](Self::set_class) to the resolved class then reuses it
+    /// instead of validating again.
     pub fn resolve_class(&mut self, class: GraphClass) -> Result<GraphClass, String> {
         let core = self.core()?;
-        match class {
-            GraphClass::Dag => {
-                Dag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
-                Ok(GraphClass::Dag)
-            }
-            GraphClass::Pdag => {
-                Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
-                Ok(GraphClass::Pdag)
-            }
-            GraphClass::Mpdag => {
-                let pdag = Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
-                Mpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
-                Ok(GraphClass::Mpdag)
-            }
-            GraphClass::Cpdag => {
-                let pdag = Pdag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
-                Cpdag::try_new(pdag).map_err(|e| self.map_error(e))?;
-                Ok(GraphClass::Cpdag)
-            }
-            GraphClass::Ug => {
-                Ug::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
-                Ok(GraphClass::Ug)
-            }
-            GraphClass::Admg => {
-                Admg::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
-                Ok(GraphClass::Admg)
-            }
-            GraphClass::Ag => {
-                Ag::new(Arc::clone(&core)).map_err(|e| self.map_error(e))?;
-                Ok(GraphClass::Ag)
-            }
-            GraphClass::Unknown => Ok(GraphClass::Unknown),
-            GraphClass::Auto => {
-                // Only ADMG and UNKNOWN admit parallel edges or self-loops.
-                if core.check_simple().is_err() {
-                    if Admg::new(Arc::clone(&core)).is_ok() {
-                        Ok(GraphClass::Admg)
-                    } else {
-                        Ok(GraphClass::Unknown)
-                    }
-                } else if Dag::new(Arc::clone(&core)).is_ok() {
-                    Ok(GraphClass::Dag)
-                } else if Ug::new(Arc::clone(&core)).is_ok() {
-                    Ok(GraphClass::Ug)
-                } else if let Ok(pdag) = Pdag::new(Arc::clone(&core)) {
-                    if pdag.is_meek_closed() && pdag.is_extendable() {
-                        Ok(GraphClass::Mpdag)
-                    } else {
-                        Ok(GraphClass::Pdag)
-                    }
-                } else if Admg::new(Arc::clone(&core)).is_ok() {
-                    Ok(GraphClass::Admg)
-                } else if Ag::new(Arc::clone(&core)).is_ok() {
-                    Ok(GraphClass::Ag)
-                } else {
-                    Ok(GraphClass::Unknown)
-                }
-            }
+        let view = match class {
+            GraphClass::Unknown => return Ok(GraphClass::Unknown),
+            GraphClass::Auto => match Self::auto_view(core) {
+                Some(view) => view,
+                None => return Ok(GraphClass::Unknown),
+            },
+            c => self.build_view(c, core)?,
+        };
+        let resolved = GraphClass::of(&view);
+        self.view.set(Arc::new(view));
+        Ok(resolved)
+    }
+
+    /// The view of the first class `core` satisfies, in AUTO's order, or
+    /// `None` for UNKNOWN.
+    fn auto_view(core: Arc<CaugiGraph>) -> Option<GraphView> {
+        let c = || Arc::clone(&core);
+        // Only ADMG and UNKNOWN admit parallel edges or self-loops.
+        if core.check_simple().is_err() {
+            return Admg::new(c()).ok().map(|g| GraphView::Admg(Arc::new(g)));
         }
+        if let Ok(g) = Dag::new(c()) {
+            return Some(GraphView::Dag(Arc::new(g)));
+        }
+        if let Ok(g) = Ug::new(c()) {
+            return Some(GraphView::Ug(Arc::new(g)));
+        }
+        if let Ok(pdag) = Pdag::new(c()) {
+            return Some(if pdag.is_meek_closed() && pdag.is_extendable() {
+                GraphView::Mpdag(Arc::new(Mpdag::from_closed_unchecked(pdag)))
+            } else {
+                GraphView::Pdag(Arc::new(pdag))
+            });
+        }
+        if let Ok(g) = Admg::new(c()) {
+            return Some(GraphView::Admg(Arc::new(g)));
+        }
+        Ag::new(c()).ok().map(|g| GraphView::Ag(Arc::new(g)))
     }
 
     /// Apply Meek closure to a PDAG.
@@ -1062,7 +1072,9 @@ impl GraphSession {
 
     /// The typed view **iff already built** — never triggers a build.
     pub fn built_view(&self) -> Option<&Arc<GraphView>> {
-        self.view.get()
+        self.view
+            .get()
+            .filter(|v| GraphClass::of(v) == self.view_class())
     }
 }
 
@@ -1240,6 +1252,35 @@ mod tests {
         assert_eq!(GraphClass::Ag.as_str(), "AG");
         assert_eq!(GraphClass::Unknown.as_str(), "UNKNOWN");
         assert_eq!(GraphClass::Auto.as_str(), "AUTO");
+    }
+
+    #[test]
+    fn resolve_class_keeps_the_view_it_validated() {
+        let reg = make_registry();
+        let d = reg.code_of("-->").unwrap();
+        let mut s = GraphSession::new(&reg, 3, true, GraphClass::Auto);
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(1, 2, d);
+        s.set_edges(e);
+
+        // AUTO validates DAG by building its view, which is kept.
+        assert_eq!(s.resolve_class(GraphClass::Auto).unwrap(), GraphClass::Dag);
+        let kept = Arc::clone(s.view.get().unwrap());
+        s.set_class(GraphClass::Dag);
+        assert!(Arc::ptr_eq(&s.view().unwrap(), &kept));
+
+        // A class the cached view is not of rebuilds it.
+        s.set_class(GraphClass::Pdag);
+        assert!(matches!(&*s.view().unwrap(), GraphView::Pdag(_)));
+        // UNKNOWN and AUTO are served by the raw view.
+        s.set_class(GraphClass::Auto);
+        assert!(matches!(&*s.view().unwrap(), GraphView::Raw(_)));
+
+        // A failed resolution leaves the cached view alone.
+        let raw = s.view().unwrap();
+        assert!(s.resolve_class(GraphClass::Ug).is_err());
+        assert!(Arc::ptr_eq(&s.view().unwrap(), &raw));
     }
 
     #[test]

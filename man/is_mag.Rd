@@ -24,6 +24,13 @@ A MAG is an ancestral graph where no additional edge can be added without
 violating the ancestral graph constraints or changing the encoded
 independence model.
 }
+\details{
+A non-adjacent pair has no separating set exactly when a collider path
+joins the two inside their anterior set (Richardson and Spirtes 2002,
+Theorem 4.2). Only pairs that both point into one district can be joined
+this way, and each is checked with one search along \verb{<->} edges, so the
+check is polynomial in the size of the graph.
+}
 \examples{
 cg_ag <- caugi(
   A \%-->\% B,
