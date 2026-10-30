@@ -4,15 +4,18 @@
 \alias{hd}
 \title{Hamming Distance}
 \usage{
-hd(cg1, cg2, normalized = FALSE)
+hd(truth, guess, normalized = FALSE, cg1, cg2)
 }
 \arguments{
-\item{cg1}{A \code{caugi} object.}
+\item{truth}{A \code{caugi} object.}
 
-\item{cg2}{A \code{caugi} object.}
+\item{guess}{A \code{caugi} object.}
 
 \item{normalized}{Logical; if \code{TRUE}, returns the normalized Hamming
 Distance.}
+
+\item{cg1, cg2}{Deprecated names for \code{truth} and \code{guess}. Supplying them
+gives a deprecation warning.}
 }
 \value{
 An integer representing the Hamming Distance between the two graphs,
@@ -20,11 +23,15 @@ if \code{normalized = FALSE}, or a numeric between 0 and 1 if \code{normalized =
 }
 \description{
 Compute the Hamming Distance between two graphs.
+
+The Hamming Distance is symmetric: swapping \code{truth} and \code{guess} gives the
+same value, normalized or not. The argument names only mark the usual roles
+of the true and the estimated graph, as in \code{\link[=aid]{aid()}}.
 }
 \examples{
-cg1 <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
-cg2 <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
-hd(cg1, cg2) # 0
+truth <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
+guess <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
+hd(truth, guess) # 0
 
 }
 \seealso{

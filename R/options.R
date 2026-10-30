@@ -78,13 +78,10 @@ caugi_default_options <- function() {
 #'   the requested options.
 #'
 #' @details
-#' The `use_open_graph_definition` option (`TRUE`/`FALSE`, default `TRUE`)
-#' controls how graph queries interpret reachability relations.
-#' When `TRUE` (open definition), queries such as `ancestors()`,
-#' `descendants()`, `posteriors()`,and `anteriors()`
-#' exclude the queried node itself.
-#' When `FALSE` (closed definition), the queried node is included in the
-#' results.
+#' The `use_open_graph_definition` option (`TRUE`/`FALSE`, default `TRUE`) is
+#' deprecated, and setting it warns. Pass the `open` argument of
+#' [ancestors()], [descendants()], [anteriors()] and [posteriors()] instead.
+#' The option still sets the default of `open` in those queries.
 #'
 #' The plot options are nested under the `plot` key:
 #'
@@ -117,9 +114,6 @@ caugi_default_options <- function() {
 #' @examples
 #' # Query all options
 #' caugi_options()
-#'
-#' # Use closed graph definition
-#' caugi_options(use_open_graph_definition = FALSE)
 #'
 #' # Query specific option
 #' caugi_options("plot")
@@ -155,13 +149,13 @@ caugi_options <- function(..., reset = FALSE) {
     }
     out <- get0("options", .caugi_env, ifnotfound = .caugi_default_options())
     .caugi_env$options <- .caugi_default_options()
-    .caugi_env$open_graph_def <- isTRUE(
-      .caugi_env$options$use_open_graph_definition
-    )
     return(invisible(out))
   }
 
   new <- list(...)
+  if ("use_open_graph_definition" %in% names(new)) {
+    .warn_open_option_deprecated()
+  }
   if (is.null(names(new)) && length(new) == 1L && is.list(new[[1L]])) {
     new <- new[[1L]]
   }
@@ -215,8 +209,39 @@ caugi_options <- function(..., reset = FALSE) {
   names(out) <- nm
 
   .caugi_env$options <- utils::modifyList(old, new)
-  .caugi_env$open_graph_def <- isTRUE(
-    .caugi_env$options$use_open_graph_definition
-  )
   invisible(out)
+}
+
+#' Default of `open` in `ancestors()`, `descendants()`, `anteriors()` and
+#' `posteriors()`: the deprecated `use_open_graph_definition` option, or `TRUE`
+#' if it is unset.
+#' @keywords internal
+#' @noRd
+.open_default <- function() {
+  open <- .caugi_env$options$use_open_graph_definition
+  if (is.null(open)) TRUE else open
+}
+
+#' Warn that the `use_open_graph_definition` option is deprecated, with class
+#' `caugi_deprecated_open_option` (and `deprecatedWarning`).
+#' @keywords internal
+#' @noRd
+.warn_open_option_deprecated <- function() {
+  warning(structure(
+    class = c(
+      "caugi_deprecated_open_option",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "The `use_open_graph_definition` option is deprecated. Pass `open =` ",
+        "to `ancestors()`, `descendants()`, `anteriors()` and `posteriors()` ",
+        "instead."
+      ),
+      call = NULL
+    )
+  ))
+  invisible(NULL)
 }

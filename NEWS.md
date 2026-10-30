@@ -209,7 +209,14 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+- `shd()` now compares the mark at each end of an edge. It counted `A --o B`
+  and `B --o A` as the same edge, since it only checked for an arrowhead
+  (#362).
+
 ## Deprecations
+
+* The `cg1` and `cg2` arguments of `shd()` and `hd()` are deprecated in favour
+  of `truth` and `guess`, the names `aid()` uses (#362).
 
 * The graph argument of `caugi_layout()`, `caugi_layout_sugiyama()`,
   `caugi_layout_fruchterman_reingold()`, `caugi_layout_kamada_kawai()`,
@@ -218,6 +225,20 @@
   name `x` still works but gives a deprecation warning; write
   `caugi_layout(cg = cg)` instead of `caugi_layout(x = cg)`. Positional calls
   are unaffected (#363).
+
+* The `use_open_graph_definition` option of `caugi_options()` is deprecated,
+  and setting it now warns. Instead of
+  `caugi_options(use_open_graph_definition = FALSE)`, pass `open = FALSE` to
+  `ancestors()`, `descendants()`, `anteriors()` and `posteriors()`. The option
+  still sets their default, which is `open = TRUE` (#364).
+
+* The `force_check` argument of `is_acyclic()`, `is_simple()`, `is_dag()`,
+  `is_pdag()`, `is_ug()`, `is_admg()`, `is_ag()` and `is_mag()` is deprecated
+  and warns when passed. Drop it; nothing replaces it, since the graph class
+  is already checked when the graph is built. The predicates also now answer
+  from every class that implies the answer, e.g. `is_pdag()` on a DAG or UG,
+  `is_admg()` on a DAG, and `is_mag()` on a DAG or UG, which skips the
+  exponential MAG search; the results are unchanged (#304).
 
 * `caugi_layout_sugiyama()`, `caugi_layout_fruchterman_reingold()`,
   `caugi_layout_kamada_kawai()`, `caugi_layout_bipartite()`,

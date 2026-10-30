@@ -9,9 +9,9 @@ is_acyclic(cg, force_check = FALSE)
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{force_check}{Logical; if \code{TRUE}, the function will test if the graph is
-acyclic, if \code{FALSE} (default), it will look at the graph class and match
-it, if possible.}
+\item{force_check}{Deprecated; passing it warns. Nothing replaces it: the
+graph class is already checked when the graph is built. If \code{TRUE}, the
+structural check runs even when the graph class answers the question.}
 }
 \value{
 A logical value indicating whether the graph is acyclic.
@@ -20,11 +20,10 @@ A logical value indicating whether the graph is acyclic.
 Checks if the given \code{caugi} graph is acyclic.
 }
 \details{
-Logically, it should not be possible to have a graph class of "DAG", "PDAG",
-"MPDAG", or "CPDAG"
-that has cycles, but in case the user modified the graph after creation in
-some unforeseen way that could have introduced cycles, this function allows
-to force a check of acyclicity, if needed.
+Every graph class except \code{"UNKNOWN"} forbids directed cycles and is checked
+when the graph is built, so for those classes this returns \code{TRUE} without
+looking at the edges. For \code{"UNKNOWN"} it checks the directed part for
+cycles.
 }
 \examples{
 cg_acyclic <- caugi(

@@ -7,11 +7,11 @@
 test_that("is_ag correctly identifies ancestral graphs", {
   # Pure DAG is a valid AG
   dag <- caugi(A %-->% B %-->% C, class = "DAG")
-  expect_true(is_ag(dag, force_check = TRUE))
+  expect_true(is_ag(mutate_caugi(dag, "UNKNOWN")))
 
   # UG is a valid AG
   ug <- caugi(A %---% B, class = "UG")
-  expect_true(is_ag(ug, force_check = TRUE))
+  expect_true(is_ag(mutate_caugi(ug, "UNKNOWN")))
 
   # ADMG is a valid AG (no undirected edges)
   admg <- caugi(
@@ -19,7 +19,7 @@ test_that("is_ag correctly identifies ancestral graphs", {
     A %<->% C,
     class = "ADMG"
   )
-  expect_true(is_ag(admg, force_check = TRUE))
+  expect_true(is_ag(mutate_caugi(admg, "UNKNOWN")))
 
   # AG with all three edge types (valid configuration)
   # Note: can't mix undirected edges with arrowhead edges on same node
@@ -470,30 +470,30 @@ test_that("is_mag handles larger disconnected components", {
 })
 
 # ─────────────────────────────────────────────────────────────────────────────
-# MAG - force_check Parameter
+# MAG - AG Class
 # ─────────────────────────────────────────────────────────────────────────────
 
-test_that("is_mag respects force_check parameter", {
+test_that("is_mag checks the structure of an AG-classed graph", {
   # Create a graph that we know is a MAG
   ag <- caugi(
     A %-->% B %-->% C,
     class = "AG"
   )
 
-  # Both with and without force_check should return TRUE for a valid MAG
-  expect_true(is_mag(ag, force_check = FALSE))
-  expect_true(is_mag(ag, force_check = TRUE))
-})
+  expect_true(is_mag(ag))
+  expect_true(is_mag(mutate_caugi(ag, "UNKNOWN")))
 
-test_that("is_mag returns TRUE for AG class without check when force_check=FALSE", {
-  # An AG-classed graph should be checked by default
-  ag <- caugi(
-    A %-->% B,
+  # An AG need not be maximal: X <-> Z1 <-> Z2 <-> Y is an inducing path
+  # (Z1 -> Y, Z2 -> X), so X and Y cannot be m-separated.
+  ag_not_mag <- caugi(
+    X %<->% Z1,
+    Z1 %<->% Z2,
+    Z2 %<->% Y,
+    Z1 %-->% Y,
+    Z2 %-->% X,
     class = "AG"
   )
-
-  result <- is_mag(ag, force_check = FALSE)
-  expect_true(result)
+  expect_false(is_mag(ag_not_mag))
 })
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -508,7 +508,7 @@ test_that("is_mag works with DAG (valid AG)", {
   )
 
   # DAG chain is a MAG (A,C m-separated by B)
-  expect_true(is_mag(dag, force_check = TRUE))
+  expect_true(is_mag(mutate_caugi(dag, "UNKNOWN")))
 })
 
 test_that("is_mag works with ADMG (valid AG)", {
@@ -520,7 +520,7 @@ test_that("is_mag works with ADMG (valid AG)", {
   )
 
   # A and C are m-separated by B
-  expect_true(is_mag(admg, force_check = TRUE))
+  expect_true(is_mag(mutate_caugi(admg, "UNKNOWN")))
 })
 
 test_that("is_mag works with UG (valid AG)", {
@@ -530,7 +530,7 @@ test_that("is_mag works with UG (valid AG)", {
     class = "UG"
   )
 
-  expect_true(is_mag(ug, force_check = TRUE))
+  expect_true(is_mag(mutate_caugi(ug, "UNKNOWN")))
 })
 
 test_that("is_mag returns FALSE for PDAG", {
@@ -542,7 +542,7 @@ test_that("is_mag returns FALSE for PDAG", {
   )
 
   # PDAG is not a valid AG structure for MAG checking
-  expect_false(is_mag(pdag, force_check = TRUE))
+  expect_false(is_mag(mutate_caugi(pdag, "UNKNOWN")))
 })
 
 # ─────────────────────────────────────────────────────────────────────────────
