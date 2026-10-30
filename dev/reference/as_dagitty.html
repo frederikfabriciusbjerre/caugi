@@ -64,6 +64,17 @@
     <p>A <code>dagitty</code> object.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The dagitty graph type is <code>dag</code>, <code>pdag</code>, <code>mag</code> or <code>pag</code>, picked from the
+edge types. Node names are always quoted, so they may contain spaces or
+edge symbols, with a few limits:</p><ul><li><p>dagitty rejects nodes named <code>node</code> or <code>graph</code>, so these raise an error.</p></li>
+<li><p>A <code>"</code> in a name is escaped. Backslashes are passed through as is, since
+dagitty keeps <code>\\</code> as two characters, so a name that ends in a backslash
+can't be written.</p></li>
+</ul><p>Reading a <code>pag</code> back with <code><a href="as_caugi.html">as_caugi()</a></code> gives class <code>"UNKNOWN"</code>, as caugi
+doesn't support PAGs yet.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other conversions:
 <code><a href="as_adjacency.html">as_adjacency()</a></code>,

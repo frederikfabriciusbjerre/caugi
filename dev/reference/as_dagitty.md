@@ -18,6 +18,23 @@ as_dagitty(x)
 
 A `dagitty` object.
 
+## Details
+
+The dagitty graph type is `dag`, `pdag`, `mag` or `pag`, picked from the
+edge types. Node names are always quoted, so they may contain spaces or
+edge symbols, with a few limits:
+
+- dagitty rejects nodes named `node` or `graph`, so these raise an
+  error.
+
+- A `"` in a name is escaped. Backslashes are passed through as is,
+  since dagitty keeps `\\` as two characters, so a name that ends in a
+  backslash can't be written.
+
+Reading a `pag` back with
+[`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) gives class
+`"UNKNOWN"`, as caugi doesn't support PAGs yet.
+
 ## See also
 
 Other conversions:
