@@ -11,7 +11,8 @@ anteriors(cg, nodes = NULL, index = NULL, open = .open_default())
 
 \item{nodes}{A character vector of node names.}
 
-\item{index}{A vector of node indexes.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. A vector of 1-based node indices.}
 
 \item{open}{Logical. If \code{TRUE} (the default), use the open definition: a
 node is not its own anterior, so the queried node is left out of the
@@ -22,7 +23,10 @@ default.}
 }
 \value{
 Either a character vector of node names (if a single node is
-requested) or a list of character vectors (if multiple nodes are requested).
+requested) or a named list of character vectors (if multiple nodes are
+requested). The list is deprecated: a future version will return the union
+of the results as one character vector in graph node order. For one result
+per node, use \code{lapply()} over the nodes.
 }
 \description{
 Get the anterior set of nodes in a graph. The anterior set (Richardson and

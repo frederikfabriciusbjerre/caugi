@@ -20,38 +20,43 @@ test_that("d-separation checks", {
   expect_true(d_separated(adjustment_set_cg, "X", "Y", Z = c("A", "D"))) # backdoor and causal both blocked
   expect_true(d_separated(adjustment_set_cg, "X", "Y", Z = c("K", "D"))) # backdoor and causal both blocked
 
-  # now with indexes
-  expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L)) # backdoor via A-->K-->Y and causal X-->D-->Y
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 3L
-  )) # causal path still open
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 4L
-  )) # causal path still open
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 5L
-  )) # backdoor still open
-  expect_true(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = c(3L, 5L)
-  ))
-  expect_true(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = c(4L, 5L)
-  ))
+  # now with indexes (deprecated)
+  expect_warning(
+    {
+      expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L)) # backdoor via A-->K-->Y and causal X-->D-->Y
+      expect_false(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = 3L
+      )) # causal path still open
+      expect_false(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = 4L
+      )) # causal path still open
+      expect_false(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = 5L
+      )) # backdoor still open
+      expect_true(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = c(3L, 5L)
+      ))
+      expect_true(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = c(4L, 5L)
+      ))
+    },
+    "argument is deprecated"
+  )
 })
 
 test_that("adjustment_set(type = 'parents') returns Pa(X) \\ {X,Y}", {
@@ -61,14 +66,20 @@ test_that("adjustment_set(type = 'parents') returns Pa(X) \\ {X,Y}", {
 
 test_that("adjustment_set(type = 'backdoor') returns a valid backdoor set", {
   Z <- adjustment_set(adjustment_set_cg, "X", "Y", type = "backdoor")
-  expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = Z))
+  expect_true(is_valid_adjustment(
+    adjustment_set_cg,
+    X = "X",
+    Y = "Y",
+    Z = Z,
+    type = "backdoor"
+  ))
   expect_false("D" %in% Z) # descendant of X should not appear
 })
 
 test_that("adjustment_set(type = 'backdoor') blocks paths via non-An(Y) parents (#308)", {
   cg <- caugi(C %-->% B %-->% X, C %-->% Y, class = "DAG")
   Z <- adjustment_set(cg, "X", "Y", type = "backdoor")
-  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = Z))
+  expect_true(is_valid_adjustment(cg, "X", "Y", Z = Z, type = "backdoor"))
   # B is a parent of X, not an ancestor of Y, yet it blocks X <- B <- C -> Y.
   # The minimal set is a single node, either {B} or {C}.
   expect_length(Z, 1L)
@@ -81,45 +92,63 @@ test_that("adjustment_set(type = 'backdoor') returns a minimal (not parent) set"
   cg <- caugi(A %-->% X, X %-->% Y, B %-->% X, class = "DAG")
   Z <- adjustment_set(cg, "X", "Y", type = "backdoor")
   expect_length(Z, 0L)
-  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = NULL))
+  expect_true(is_valid_adjustment(cg, "X", "Y", Z = NULL, type = "backdoor"))
   expect_setequal(adjustment_set(cg, "X", "Y", type = "parents"), c("A", "B"))
 })
 
 test_that("adjustment_set(type = 'optimal') is valid and minimal here", {
   Z <- adjustment_set(adjustment_set_cg, "X", "Y", type = "optimal")
-  expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = Z))
-  expect_true(setequal(Z, "A") || setequal(Z, "K")) # minimal sets in this DAG
-})
-
-test_that("is_valid_backdoor works on canonical choices", {
-  expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = "A"))
-  expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = "K"))
-  expect_false(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = "D"))
-  expect_false(is_valid_backdoor(
+  expect_true(is_valid_adjustment(
     adjustment_set_cg,
     X = "X",
     Y = "Y",
-    Z = c("A", "D")
+    Z = Z,
+    type = "backdoor"
   ))
-  expect_false(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = NULL))
+  expect_true(setequal(Z, "A") || setequal(Z, "K")) # minimal sets in this DAG
 })
 
-test_that("all_backdoor_sets enumerates minimal sets", {
-  sets <- all_backdoor_sets(adjustment_set_cg, X = "X", Y = "Y")
+test_that("is_valid_adjustment() works on canonical choices", {
+  for (type in c("adjustment", "backdoor")) {
+    valid <- function(Z) {
+      is_valid_adjustment(adjustment_set_cg, "X", "Y", Z = Z, type = type)
+    }
+    expect_true(valid("A"))
+    expect_true(valid("K"))
+    expect_false(valid("D"))
+    expect_false(valid(c("A", "D")))
+    expect_false(valid(NULL))
+  }
+})
+
+test_that("all_adjustment_sets(type = 'backdoor') enumerates minimal sets", {
+  sets <- all_adjustment_sets(
+    adjustment_set_cg,
+    X = "X",
+    Y = "Y",
+    type = "backdoor"
+  )
   norm <- lapply(sets, sort)
   expect_equal(length(norm), 2L)
   expect_true(any(setequal(norm[[1]], "A") | setequal(norm[[2]], "A")))
   expect_true(any(setequal(norm[[1]], "K") | setequal(norm[[2]], "K")))
 })
 
-test_that("all_backdoor_sets respects max_size and minimal", {
-  sets <- all_backdoor_sets(adjustment_set_cg, X = "X", Y = "Y", minimal = TRUE)
-  expect_equal(length(sets), 2L)
-  expect_setequal(sets, c("A", "K"))
-  sets2 <- all_backdoor_sets(
+test_that("all_adjustment_sets(type = 'backdoor') respects max_size and minimal", {
+  sets <- all_adjustment_sets(
     adjustment_set_cg,
     X = "X",
     Y = "Y",
+    type = "backdoor",
+    minimal = TRUE
+  )
+  expect_equal(length(sets), 2L)
+  expect_setequal(sets, c("A", "K"))
+  sets2 <- all_adjustment_sets(
+    adjustment_set_cg,
+    X = "X",
+    Y = "Y",
+    type = "backdoor",
     minimal = FALSE,
     max_size = 2
   )
@@ -127,7 +156,7 @@ test_that("all_backdoor_sets respects max_size and minimal", {
   expect_setequal(sets2, list("A", "K", c("A", "K"), c("C", "A"), c("C", "K")))
 })
 
-test_that("all_backdoor_sets includes empty set, if valid", {
+test_that("all_adjustment_sets(type = 'backdoor') includes empty set, if valid", {
   adjustment_set_cg <- caugi(
     C %-->% X,
     X %-->% F,
@@ -142,12 +171,19 @@ test_that("all_backdoor_sets includes empty set, if valid", {
     class = "DAG"
   )
   # check if empty set is valid
-  expect_true(is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = NULL))
-
-  sets <- all_backdoor_sets(
+  expect_true(is_valid_adjustment(
     adjustment_set_cg,
     X = "X",
     Y = "Y",
+    Z = NULL,
+    type = "backdoor"
+  ))
+
+  sets <- all_adjustment_sets(
+    adjustment_set_cg,
+    X = "X",
+    Y = "Y",
+    type = "backdoor",
     minimal = FALSE,
     max_size = 2
   )
@@ -167,34 +203,55 @@ test_that("all_backdoor_sets includes empty set, if valid", {
 
 test_that("backdoor and d-separation functions check X and Y", {
   expect_error(
-    is_valid_backdoor(adjustment_set_cg, X = "X", Y = c("Y", "X"), Z = "A"),
+    is_valid_adjustment(
+      adjustment_set_cg,
+      X = "X",
+      Y = c("Y", "X"),
+      Z = "A",
+      type = "backdoor"
+    ),
     "X and Y must be disjoint."
   )
   expect_error(
-    all_backdoor_sets(adjustment_set_cg, X = "X", Y = c("Y", "X")),
+    all_adjustment_sets(adjustment_set_cg, X = "X", Y = c("Y", "X")),
     "X and Y must be disjoint."
   )
   expect_error(
-    d_separated(adjustment_set_cg, X_index = c(1L, 2L), Z = "A"),
+    d_separated(adjustment_set_cg, X = c("C", "X"), Z = "A"),
     "Y \\(or Y_index\\) must be provided."
   )
-  for (fn in list(is_valid_backdoor, all_backdoor_sets, d_separated)) {
+  for (fn in list(is_valid_adjustment, all_adjustment_sets, d_separated)) {
     expect_error(
       fn(adjustment_set_cg, X = character(0), Y = "Y"),
       "`X` must name at least one node"
     )
-    expect_error(
-      fn(adjustment_set_cg, X = "X", Y_index = integer(0)),
-      "`Y` must name at least one node"
+    expect_warning(
+      expect_error(
+        fn(adjustment_set_cg, X = "X", Y_index = integer(0)),
+        "`Y` must name at least one node"
+      ),
+      "`Y_index` argument is deprecated",
+      fixed = TRUE
     )
   }
 })
 
-test_that("is_valid_backdoor rejects a Z that contains the outcome", {
-  cg <- caugi(U %-->% X + Y, class = "DAG")
-  expect_true(is_valid_backdoor(cg, "X", "Y", Z = "U"))
-  expect_false(is_valid_backdoor(cg, "X", "Y", Z = "Y"))
-  expect_false(is_valid_backdoor(cg, "X", "Y", Z = c("U", "Y")))
+test_that("is_valid_adjustment() rejects a Z that contains the outcome", {
+  # Y is not a descendant of X, so Z = "Y" is ruled out only because Z and Y
+  # must be disjoint.
+  cases <- list(
+    list(caugi(U %-->% X + Y, class = "DAG"), "backdoor"),
+    list(caugi(U %-->% X + Y, class = "DAG"), "adjustment"),
+    list(caugi(U %-->% X + Y, class = "ADMG"), "adjustment")
+  )
+  for (case in cases) {
+    valid <- function(Z) {
+      is_valid_adjustment(case[[1]], "X", "Y", Z = Z, type = case[[2]])
+    }
+    expect_true(valid("U"))
+    expect_false(valid("Y"))
+    expect_false(valid(c("U", "Y")))
+  }
 })
 
 test_that("adjust functions fails with faulty input", {
@@ -216,9 +273,13 @@ test_that("adjust functions fails with faulty input", {
       "`Y` must name at least one node"
     )
   }
-  expect_error(
-    adjustment_set(adjustment_set_cg, X = "X", Y_index = integer(0)),
-    "`Y` must name at least one node"
+  expect_warning(
+    expect_error(
+      adjustment_set(adjustment_set_cg, X = "X", Y_index = integer(0)),
+      "`Y` must name at least one node"
+    ),
+    "`Y_index` argument is deprecated",
+    fixed = TRUE
   )
   expect_error(
     adjustment_set(
@@ -244,10 +305,17 @@ test_that("mediator-only graph keeps empty adjustment set and rejects mediator",
     class = "DAG"
   )
 
-  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = NULL))
-  expect_false(is_valid_backdoor(cg, X = "X", Y = "Y", Z = "M"))
+  expect_true(is_valid_adjustment(cg, "X", "Y", Z = NULL, type = "backdoor"))
+  expect_false(is_valid_adjustment(cg, "X", "Y", Z = "M", type = "backdoor"))
 
-  sets <- all_backdoor_sets(cg, X = "X", Y = "Y", minimal = TRUE, max_size = 1L)
+  sets <- all_adjustment_sets(
+    cg,
+    X = "X",
+    Y = "Y",
+    type = "backdoor",
+    minimal = TRUE,
+    max_size = 1L
+  )
   expect_equal(sets, list(character(0)))
 })
 
@@ -260,15 +328,17 @@ test_that("collider-driven adjustment candidates are validated consistently", {
     class = "DAG"
   )
 
-  expect_false(is_valid_backdoor(cg, X = "X", Y = "Y", Z = "Z"))
-  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = "A"))
-  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("A", "Z")))
-  expect_true(is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("B", "Z")))
+  valid <- function(Z) is_valid_adjustment(cg, "X", "Y", Z, type = "backdoor")
+  expect_false(valid("Z"))
+  expect_true(valid("A"))
+  expect_true(valid(c("A", "Z")))
+  expect_true(valid(c("B", "Z")))
 
-  sets <- all_backdoor_sets(
+  sets <- all_adjustment_sets(
     cg,
     X = "X",
     Y = "Y",
+    type = "backdoor",
     minimal = FALSE,
     max_size = 2L
   )
@@ -429,8 +499,8 @@ test_that("collider-driven adjustment candidates are validated consistently", {
 test_that("ADMG adjustment with several treatments uses proper causal paths", {
   # W reaches Y only through the other treatment X2, so it is not causal.
   cg <- caugi(X1 %-->% W, W %-->% X2, X2 %-->% Y, class = "ADMG")
-  expect_true(is_valid_adjustment_admg(cg, X = c("X1", "X2"), Y = "Y", Z = "W"))
-  sets <- all_adjustment_sets_admg(
+  expect_true(is_valid_adjustment(cg, X = c("X1", "X2"), Y = "Y", Z = "W"))
+  sets <- all_adjustment_sets(
     cg,
     X = c("X1", "X2"),
     Y = "Y",
@@ -447,21 +517,21 @@ test_that("ADMG adjustment with several treatments uses proper causal paths", {
     W %<->% Y,
     class = "ADMG"
   )
-  expect_length(all_adjustment_sets_admg(cg, X = c("X1", "X2"), Y = "Y"), 0)
+  expect_length(all_adjustment_sets(cg, X = c("X1", "X2"), Y = "Y"), 0)
 })
 
 test_that("ADMG adjustment allows descendants of X off the causal paths", {
   # main forbade all of De(X) here, as X is an ancestor of Y.
   cg <- caugi(X %-->% Y + D, class = "ADMG")
-  expect_true(is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = "D"))
-  sets <- all_adjustment_sets_admg(cg, X = "X", Y = "Y", minimal = FALSE)
+  expect_true(is_valid_adjustment(cg, X = "X", Y = "Y", Z = "D"))
+  sets <- all_adjustment_sets(cg, X = "X", Y = "Y", minimal = FALSE)
   expect_setequal(lapply(sets, sort), list(character(0), "D"))
 })
 
 test_that("ADMG adjustment forbids descendants of the outcome", {
   cg <- caugi(X %-->% Y, Y %-->% D, class = "ADMG")
-  expect_false(is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = "D"))
-  expect_true(is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = character(0)))
+  expect_false(is_valid_adjustment(cg, X = "X", Y = "Y", Z = "D"))
+  expect_true(is_valid_adjustment(cg, X = "X", Y = "Y", Z = character(0)))
 })
 
 test_that("ADMG adjustment agrees with a brute-force oracle on random graphs", {
@@ -489,12 +559,12 @@ test_that("ADMG adjustment agrees with a brute-force oracle on random graphs", {
     truth <- vapply(subsets, oracle, logical(1))
     got <- vapply(
       subsets,
-      function(z) is_valid_adjustment_admg(cg, X = X, Y = Y, Z = z),
+      function(z) is_valid_adjustment(cg, X = X, Y = Y, Z = z),
       logical(1)
     )
     expect_identical(got, truth, label = paste("rep", rep))
 
-    all_sets <- all_adjustment_sets_admg(
+    all_sets <- all_adjustment_sets(
       cg,
       X = X,
       Y = Y,
@@ -684,7 +754,7 @@ test_that("adjustment agrees with exact do-calculus in random binary models", {
     truth <- .exact_adjustment_gap(edges, nodes, X, Y, Zs) < 1e-10
     got <- vapply(
       Zs,
-      function(z) is_valid_adjustment_admg(cg, X = X, Y = Y, Z = z),
+      function(z) is_valid_adjustment(cg, X = X, Y = Y, Z = z),
       logical(1)
     )
     expect_identical(got, truth, label = paste("ADMG rep", rep))
@@ -835,7 +905,11 @@ test_that("backdoor and d-separation agree with path oracles on random DAGs", {
     }
     for (i in seq_along(subsets)) {
       Z <- subsets[[i]]
-      expect_identical(is_valid_backdoor(cg, X, Y, Z), valid[i], label = label)
+      expect_identical(
+        is_valid_adjustment(cg, X, Y, Z, type = "backdoor"),
+        valid[i],
+        label = label
+      )
       # The criterion implies adjustment (Maathuis & Colombo 2015, Thm. 3.1).
       if (valid[i]) {
         expect_true(gac(Z), label = label)
@@ -848,7 +922,14 @@ test_that("backdoor and d-separation agree with path oracles on random DAGs", {
       expect_identical(d_separated(cg, X, Y, Z), !open, label = label)
     }
 
-    all_sets <- all_backdoor_sets(cg, X, Y, minimal = FALSE, max_size = 5)
+    all_sets <- all_adjustment_sets(
+      cg,
+      X,
+      Y,
+      type = "backdoor",
+      minimal = FALSE,
+      max_size = 5
+    )
     expect_setequal(key(all_sets), key(subsets[valid]))
     minimal <- subsets[valid][vapply(
       subsets[valid],
@@ -862,8 +943,362 @@ test_that("backdoor and d-separation agree with path oracles on random DAGs", {
       logical(1)
     )]
     expect_setequal(
-      key(all_backdoor_sets(cg, X, Y, max_size = 5)),
+      key(all_adjustment_sets(cg, X, Y, type = "backdoor", max_size = 5)),
       key(minimal)
     )
   }
+})
+
+test_that("all_adjustment_sets() agrees with the GAC oracle on random DAGs", {
+  set.seed(20261029)
+  nodes <- paste0("V", 1:7)
+  key <- function(sets) vapply(sets, \(z) paste(sort(z), collapse = ","), "")
+  for (rep in seq_len(60)) {
+    ord <- sample(nodes)
+    pairs <- t(combn(7, 2))
+    keep <- runif(nrow(pairs)) < 0.35
+    edges <- data.frame(
+      from = ord[pairs[keep, 1]],
+      edge = rep("-->", sum(keep)),
+      to = ord[pairs[keep, 2]]
+    )
+    build <- function(class) {
+      caugi(
+        from = edges$from,
+        edge = edges$edge,
+        to = edges$to,
+        nodes = nodes,
+        class = class
+      )
+    }
+    X <- sample(nodes, sample(1:2, 1))
+    Y <- sample(setdiff(nodes, X), sample(1:2, 1))
+    rest <- setdiff(nodes, c(X, Y))
+    gac <- .gac_oracle(edges, X, Y)
+    label <- paste("rep", rep)
+
+    subsets <- unlist(
+      lapply(0:length(rest), function(k) combn(rest, k, simplify = FALSE)),
+      recursive = FALSE
+    )
+    valid <- vapply(subsets, gac, logical(1))
+    all_sets <- all_adjustment_sets(
+      build("DAG"),
+      X,
+      Y,
+      minimal = FALSE,
+      max_size = 5
+    )
+    expect_setequal(key(all_sets), key(subsets[valid]))
+
+    # The same edges as an ADMG give the same sets.
+    for (minimal in c(FALSE, TRUE)) {
+      expect_identical(
+        all_adjustment_sets(build("ADMG"), X, Y, minimal = minimal),
+        all_adjustment_sets(build("DAG"), X, Y, minimal = minimal),
+        label = label
+      )
+    }
+  }
+})
+
+test_that("all_adjustment_sets() keeps descendants of X off the causal paths", {
+  # W is a descendant of X, so {W} is a valid adjustment set but not a
+  # back-door set.
+  cg <- caugi(X %-->% Y + W, class = "DAG")
+  expect_identical(
+    all_adjustment_sets(cg, X = "X", Y = "Y", minimal = FALSE),
+    list(character(0), "W")
+  )
+  expect_identical(
+    all_adjustment_sets(
+      cg,
+      X = "X",
+      Y = "Y",
+      type = "backdoor",
+      minimal = FALSE
+    ),
+    list(character(0))
+  )
+  expect_identical(
+    all_adjustment_sets(cg, X = "X", Y = "Y"),
+    list(character(0))
+  )
+})
+
+test_that("all_adjustment_sets() gives the same sets on a DAG and an ADMG", {
+  admg <- caugi(
+    C %-->% X,
+    X %-->% F,
+    X %-->% D,
+    A %-->% X,
+    A %-->% K,
+    K %-->% Y,
+    D %-->% Y,
+    D %-->% G,
+    Y %-->% H,
+    class = "ADMG"
+  )
+  for (minimal in c(TRUE, FALSE)) {
+    expect_identical(
+      all_adjustment_sets(admg, X = "X", Y = "Y", minimal = minimal),
+      all_adjustment_sets(
+        adjustment_set_cg,
+        X = "X",
+        Y = "Y",
+        minimal = minimal
+      )
+    )
+  }
+  expect_identical(
+    all_adjustment_sets(adjustment_set_cg, X = "X", Y = "Y"),
+    list("A", "K")
+  )
+  # F is a descendant of X off the causal paths: an adjustment set may hold
+  # it, a back-door set may not.
+  sets <- all_adjustment_sets(adjustment_set_cg, "X", "Y", minimal = FALSE)
+  expect_true(any(vapply(sets, \(z) setequal(z, c("A", "F")), logical(1))))
+  expect_false(any(vapply(
+    all_adjustment_sets(
+      adjustment_set_cg,
+      "X",
+      "Y",
+      type = "backdoor",
+      minimal = FALSE
+    ),
+    \(z) "F" %in% z,
+    logical(1)
+  )))
+})
+
+test_that("all_adjustment_sets() errors on unsupported graph classes", {
+  graphs <- list(
+    caugi(A %-->% X, X %---% Y, class = "PDAG"),
+    caugi(X %---% Y, class = "UG"),
+    caugi(X %-->% Y, class = "UNKNOWN")
+  )
+  for (cg in graphs) {
+    expect_error(
+      all_adjustment_sets(cg, X = "X", Y = "Y"),
+      paste0(
+        "with type = \"adjustment\" is only defined for DAGs and ADMGs. ",
+        "The graph has class \"",
+        cg@graph_class,
+        "\"."
+      ),
+      fixed = TRUE
+    )
+    expect_error(
+      all_adjustment_sets(cg, X = "X", Y = "Y", type = "backdoor"),
+      paste0(
+        "with type = \"backdoor\" is only defined for DAGs. ",
+        "The graph has class \"",
+        cg@graph_class,
+        "\"."
+      ),
+      fixed = TRUE
+    )
+  }
+  admg <- caugi(X %-->% Y, X %<->% Y, class = "ADMG")
+  expect_error(
+    all_adjustment_sets(admg, X = "X", Y = "Y", type = "backdoor"),
+    "is only defined for DAGs. The graph has class \"ADMG\".",
+    fixed = TRUE
+  )
+})
+
+test_that("all_backdoor_sets() is deprecated", {
+  expect_warning(
+    sets <- all_backdoor_sets(
+      adjustment_set_cg,
+      X = "X",
+      Y = "Y",
+      minimal = FALSE
+    ),
+    "all_adjustment_sets(type = \"backdoor\")",
+    fixed = TRUE
+  )
+  expect_identical(
+    sets,
+    all_adjustment_sets(
+      adjustment_set_cg,
+      X = "X",
+      Y = "Y",
+      type = "backdoor",
+      minimal = FALSE
+    )
+  )
+})
+
+test_that("all_adjustment_sets_admg() is deprecated and keeps its results", {
+  admg <- caugi(L %-->% X + Y, X %-->% Y, X %<->% M, M %-->% Y, class = "ADMG")
+  expect_warning(
+    sets <- all_adjustment_sets_admg(admg, X = "X", Y = "Y", minimal = FALSE),
+    "all_adjustment_sets",
+    fixed = TRUE
+  )
+  expect_identical(
+    sets,
+    all_adjustment_sets(admg, X = "X", Y = "Y", minimal = FALSE)
+  )
+
+  # Input that all_adjustment_sets() rejects keeps its old result.
+  old <- function(...) suppressWarnings(all_adjustment_sets_admg(...))
+  expect_identical(old(admg, X = character(0), Y = "Y"), list(character(0)))
+  expect_identical(old(admg, X = "X", Y = character(0)), list(character(0)))
+  expect_identical(old(admg, X = c("X", "Y"), Y = "Y"), list())
+
+  # It still errors on other graph classes.
+  expect_error(
+    old(adjustment_set_cg, X = "X", Y = "Y"),
+    "`all_adjustment_sets_admg()` is only defined for ADMGs.",
+    fixed = TRUE
+  )
+})
+
+test_that("is_valid_adjustment() keeps descendants of X off the causal paths", {
+  # W is a descendant of X, so {W} is a valid adjustment set but not a
+  # back-door set.
+  cg <- caugi(X %-->% Y + W, class = "DAG")
+  expect_true(is_valid_adjustment(cg, "X", "Y", Z = "W"))
+  expect_false(is_valid_adjustment(cg, "X", "Y", Z = "W", type = "backdoor"))
+  admg <- caugi(X %-->% Y + W, class = "ADMG")
+  expect_true(is_valid_adjustment(admg, "X", "Y", Z = "W"))
+})
+
+test_that("is_valid_adjustment() agrees with all_adjustment_sets()", {
+  set.seed(20261030)
+  nodes <- paste0("V", 1:6)
+  key <- function(z) paste(sort(z), collapse = ",")
+  subsets_of <- function(s) {
+    unlist(
+      lapply(0:length(s), function(k) combn(s, k, simplify = FALSE)),
+      recursive = FALSE
+    )
+  }
+  build <- function(edges, class) {
+    caugi(
+      from = edges$from,
+      edge = edges$edge,
+      to = edges$to,
+      nodes = nodes,
+      class = class
+    )
+  }
+  for (rep in seq_len(40)) {
+    dag_edges <- .random_admg_edges(nodes, prob = c(0.6, 0.4, 0, 0))
+    graphs <- list(
+      build(dag_edges, "DAG"),
+      build(dag_edges, "ADMG"),
+      build(.random_admg_edges(nodes, prob = c(0.5, 0.3, 0.2, 0)), "ADMG")
+    )
+    X <- sample(nodes, sample(1:2, 1))
+    Y <- sample(setdiff(nodes, X), sample(1:2, 1))
+    # Z may hold nodes of Y, which no returned set does.
+    Zs <- subsets_of(setdiff(nodes, X))
+    for (cg in graphs) {
+      types <- if (cg@graph_class == "DAG") {
+        c("adjustment", "backdoor")
+      } else {
+        "adjustment"
+      }
+      for (type in types) {
+        label <- paste("rep", rep, cg@graph_class, type)
+        all_sets <- all_adjustment_sets(
+          cg,
+          X,
+          Y,
+          type = type,
+          minimal = FALSE,
+          max_size = length(nodes)
+        )
+        got <- vapply(
+          Zs,
+          function(z) is_valid_adjustment(cg, X, Y, z, type = type),
+          logical(1)
+        )
+        expected <- vapply(Zs, key, "") %in% vapply(all_sets, key, "")
+        expect_identical(got, expected, label = label)
+      }
+    }
+    # The same edges as a DAG and as an ADMG accept the same sets.
+    expect_identical(
+      vapply(Zs, function(z) is_valid_adjustment(graphs[[2]], X, Y, z), TRUE),
+      vapply(Zs, function(z) is_valid_adjustment(graphs[[1]], X, Y, z), TRUE),
+      label = paste("rep", rep)
+    )
+  }
+})
+
+test_that("is_valid_adjustment() errors on unsupported graph classes", {
+  graphs <- list(
+    caugi(A %-->% X, X %---% Y, class = "PDAG"),
+    caugi(X %---% Y, class = "UG"),
+    caugi(X %-->% Y, class = "UNKNOWN")
+  )
+  for (cg in graphs) {
+    expect_error(
+      is_valid_adjustment(cg, X = "X", Y = "Y"),
+      paste0(
+        "`is_valid_adjustment()` with type = \"adjustment\" is only defined ",
+        "for DAGs and ADMGs. The graph has class \"",
+        cg@graph_class,
+        "\"."
+      ),
+      fixed = TRUE
+    )
+    expect_error(
+      is_valid_adjustment(cg, X = "X", Y = "Y", type = "backdoor"),
+      paste0(
+        "`is_valid_adjustment()` with type = \"backdoor\" is only defined ",
+        "for DAGs. The graph has class \"",
+        cg@graph_class,
+        "\"."
+      ),
+      fixed = TRUE
+    )
+  }
+  admg <- caugi(X %-->% Y, X %<->% Y, class = "ADMG")
+  expect_error(
+    is_valid_adjustment(admg, X = "X", Y = "Y", type = "backdoor"),
+    "is only defined for DAGs. The graph has class \"ADMG\".",
+    fixed = TRUE
+  )
+})
+
+test_that("is_valid_backdoor() is deprecated", {
+  expect_warning(
+    valid <- is_valid_backdoor(adjustment_set_cg, X = "X", Y = "Y", Z = "A"),
+    "is_valid_adjustment(type = \"backdoor\")",
+    fixed = TRUE
+  )
+  expect_true(valid)
+  cg <- caugi(X %-->% Y + W, class = "DAG")
+  expect_false(suppressWarnings(is_valid_backdoor(cg, "X", "Y", Z = "W")))
+})
+
+test_that("is_valid_adjustment_admg() is deprecated and keeps its results", {
+  admg <- caugi(L %-->% X + Y, X %-->% Y, class = "ADMG")
+  expect_warning(
+    valid <- is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = "L"),
+    "is_valid_adjustment",
+    fixed = TRUE
+  )
+  expect_true(valid)
+
+  # Input that is_valid_adjustment() rejects keeps its old result.
+  old <- function(...) suppressWarnings(is_valid_adjustment_admg(...))
+  expect_true(old(admg, X = character(0), Y = "Y"))
+  expect_true(old(admg, X = "X", Y = character(0)))
+  expect_false(old(admg, X = c("X", "Y"), Y = "Y"))
+  admg2 <- caugi(Y %-->% X, class = "ADMG")
+  expect_true(old(admg2, X = "X", Y = "Y", Z = "Y"))
+  expect_false(is_valid_adjustment(admg2, X = "X", Y = "Y", Z = "Y"))
+
+  # It still errors on other graph classes.
+  expect_error(
+    old(adjustment_set_cg, X = "X", Y = "Y", Z = "A"),
+    "`is_valid_adjustment_admg()` is only defined for ADMGs.",
+    fixed = TRUE
+  )
 })
