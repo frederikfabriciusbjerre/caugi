@@ -9,6 +9,11 @@
   which `as_caugi()` uses when `class` is not given, so
   `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
 
+* `as_caugi()` keeps `class = "PAG"` for mark-coded matrices and dagitty objects
+  instead of returning `"UNKNOWN"`, and reads PAGs from data.frames. PAGs
+  round-trip through `as.data.frame()`, `write_caugi()`, `write_graphml()` and
+  their readers. The JSON schema lists the `"PAG"` class.
+
 * `dag_to_pag()` returns the PAG a DAG induces over its observed nodes after
   marginalizing `latents` and conditioning on `selection`.
 

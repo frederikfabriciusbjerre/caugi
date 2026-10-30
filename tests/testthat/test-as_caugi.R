@@ -159,7 +159,7 @@ test_that("default names V1..Vn when dimnames are missing", {
   expect_setequal(nodes(cg)[["name"]], c("V1", "V2"))
 })
 
-test_that("PAG code pairs map to expected glyphs", {
+test_that("mark code pairs map to expected glyphs", {
   nm <- c("A", "B", "C", "D")
   M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
 
@@ -179,7 +179,8 @@ test_that("PAG code pairs map to expected glyphs", {
   M["C", "D"] <- 2L
   M["D", "C"] <- 2L
 
-  cg <- as_caugi(M, class = "PAG")
+  # Not a PAG, so decoded as UNKNOWN; the glyph mapping is the same.
+  cg <- as_caugi(M, class = "UNKNOWN")
   e <- as.data.frame(edges(cg))[c("from", "edge", "to")]
 
   exp <- rbind(
@@ -474,7 +475,7 @@ test_that("dagitty -> caugi: bidirected '<->' is preserved", {
 test_that("dagitty -> caugi: partial edges 'o->' and 'o-o' map correctly", {
   skip_if_not_installed("dagitty")
   g <- dagitty::dagitty("pag { A @-> B; C @-@ D }")
-  cg <- as_caugi(g, class = "PAG")
+  cg <- as_caugi(g, class = "UNKNOWN") # not a complete PAG
 
   expect_true(any(
     cg@edges$from == "A" & cg@edges$to == "B" & cg@edges$edge == "o->"
@@ -507,14 +508,33 @@ test_that("dagitty -> caugi: isolates are retained alongside edges", {
   expect_equal(nrow(cg@edges), 1L)
 })
 
-test_that("dagitty -> caugi: PAG class is routed to UNKNOWN until supported", {
+test_that("dagitty -> caugi: PAG class is kept and validated", {
   skip_if_not_installed("dagitty")
-  g <- dagitty::dagitty("pag { A @-> B }")
-  cg <- as_caugi(g, class = "PAG")
+  # The PAG of the collider A --> C <-- B.
+  cg <- as_caugi(dagitty::dagitty("pag { A @-> C ; B @-> C }"), class = "PAG")
+  expect_identical(cg@graph_class, "PAG")
+  expect_true(all(cg@edges$edge == "o->"))
+  # A lone `A o-> B` is not a PAG.
+  expect_error(
+    as_caugi(dagitty::dagitty("pag { A @-> B }"), class = "PAG"),
+    "invariant marks"
+  )
+})
 
-  # graph_class getter returns uppercase from Rust; compare in upper
-  expect_identical(toupper(cg@graph_class), "UNKNOWN")
-  expect_true(any(cg@edges$edge == "o->"))
+test_that("a mark-coded matrix keeps the PAG class", {
+  nm <- c("A", "B", "C", "D")
+  M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
+  M["A", "B"] <- 2L # A --> B
+  M["B", "A"] <- 3L
+  M["A", "C"] <- 2L # A o-> C
+  M["C", "A"] <- 1L
+  M["C", "B"] <- 2L # C --> B
+  M["B", "C"] <- 3L
+  M["D", "C"] <- 2L # D o-> C
+  M["C", "D"] <- 1L
+  cg <- as_caugi(M, class = "PAG")
+  expect_identical(cg@graph_class, "PAG")
+  expect_identical(as_adjacency(cg, coding = "marks"), M)
 })
 
 test_that("dagitty -> caugi: respects `simple` flag and builds session", {
@@ -667,7 +687,7 @@ test_that("PAG normalization swap branches are covered", {
   m["A", "D"] <- 1L
   m["D", "A"] <- 2L
 
-  cg <- as_caugi(m, class = "PAG")
+  cg <- as_caugi(m, class = "UNKNOWN")
   e <- edges(cg)
 
   expect_true(any(e$from == "B" & e$edge == "-->" & e$to == "A"))
@@ -786,7 +806,8 @@ test_that("as_caugi on edges() drops isolated nodes", {
 test_that("as_caugi rejects bad data.frame input", {
   expect_error(as_caugi(data.frame(a = 1)), "must contain columns")
   df <- as.data.frame(caugi(A %-->% B, class = "DAG"))
-  expect_error(as_caugi(df, class = "PAG"), "not supported for data.frames")
+  # A lone edge is not a PAG.
+  expect_error(as_caugi(df, class = "PAG"), "invariant marks")
   expect_error(as_caugi(df, collapse = TRUE), "not supported for data.frames")
   # The class is validated.
   expect_error(as_caugi(as.data.frame(caugi(A %---% B)), class = "DAG"))

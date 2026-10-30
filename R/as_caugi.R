@@ -22,8 +22,9 @@
 #'
 #' @param x An object to convert to a `caugi`.
 #' @param class Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
-#'  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
-#'  integer coded matrices. For a data.frame, it defaults to the data.frame's
+#'  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is supported for
+#'  integer coded matrices, data.frames and `dagitty` objects, and is validated
+#'  as in [caugi()]. For a data.frame, it defaults to the data.frame's
 #'  `"graph_class"` attribute, which [as.data.frame()] sets, if present.
 #' @param simple Deprecated; see [caugi()]. If omitted (recommended), it is
 #' derived from `class`.
@@ -78,25 +79,27 @@
 #' ig2 <- igraph::graph_from_literal(A - +B, B - +A, C - +D)
 #' cg2 <- as_caugi(ig2, class = "PDAG", collapse = TRUE, collapse_to = "---")
 #'
-#' # coded integer matrix for PAGs (pcalg style)
+#' # coded integer matrix for PAGs (pcalg style). `class = "PAG"` is fully
+#' # validated, so the marks must be the invariant marks of a Markov
+#' # equivalence class; these are.
 #' nm <- c("A", "B", "C", "D")
 #' M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
 #'
 #' # A --> B
-#' M["A", "B"] <- 2L # mark at B end
-#' M["B", "A"] <- 3L # mark at A end
+#' M["A", "B"] <- 2L # arrowhead at B
+#' M["B", "A"] <- 3L # tail at A
 #'
-#' # A --- C
-#' M["A", "C"] <- 3L
-#' M["C", "A"] <- 3L
+#' # A o-> C
+#' M["A", "C"] <- 2L # arrowhead at C
+#' M["C", "A"] <- 1L # circle at A
 #'
-#' # B o-> C
-#' M["B", "C"] <- 2L
-#' M["C", "B"] <- 1L
+#' # C --> B
+#' M["C", "B"] <- 2L # arrowhead at B
+#' M["B", "C"] <- 3L # tail at C
 #'
-#' # C o-o D
-#' M["C", "D"] <- 1L
-#' M["D", "C"] <- 1L
+#' # D o-> C
+#' M["D", "C"] <- 2L # arrowhead at C
+#' M["C", "D"] <- 1L # circle at D
 #'
 #' cg <- as_caugi(M, class = "PAG")
 #'
@@ -507,11 +510,6 @@ S7::method(
     }
   }
 
-  # todo:
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
-  class <- if (class == "PAG") "UNKNOWN" else class
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
-
   caugi(
     from = from,
     edge = edge,
@@ -710,7 +708,7 @@ S7::method(
       to = character(),
       nodes = nm,
       simple = simple,
-      class = if (class == "PAG") "UNKNOWN" else class
+      class = class
     ))
   }
 
@@ -763,11 +761,6 @@ S7::method(
   from <- v[keep]
   to <- w[keep]
   edge <- edge[keep]
-
-  # todo:
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
-  class <- if (class == "PAG") "UNKNOWN" else class
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
 
   if (collapse) {
     is_edge_symmetric(collapse_to)
@@ -898,9 +891,6 @@ S7::method(as_caugi, S7::class_data.frame) <- function(
     class <- attr(x, "graph_class")
   }
   class <- match.arg(class)
-  if (class == "PAG") {
-    stop("PAG class is not supported for data.frames.", call. = FALSE)
-  }
   if (!isFALSE(collapse)) {
     stop("`collapse` is not supported for data.frames.", call. = FALSE)
   }
