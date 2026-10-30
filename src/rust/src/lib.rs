@@ -3,6 +3,7 @@
 
 use extendr_api::prelude::*;
 use rustc_hash::{FxHashMap, FxHashSet};
+use std::ffi::{c_char, c_int, c_void, CStr};
 use std::str::FromStr;
 pub mod edges;
 pub mod graph;
@@ -78,6 +79,31 @@ fn rstrs(s: &Strings) -> impl Iterator<Item = Rstr> + '_ {
     (0..s.len()).map(move |i| s.elt(i))
 }
 
+// R API functions that extendr does not bind; `x` is a CHARSXP.
+extern "C" {
+    fn Rf_getCharCE(x: *mut c_void) -> c_int;
+    fn Rf_translateCharUTF8(x: *mut c_void) -> *const c_char;
+}
+
+/// A node name from R, converted to UTF-8 as `enc2utf8()` does. Node names
+/// are stored in UTF-8, so a latin1 name must be converted to be found.
+fn rstr_to_utf8(s: &Rstr) -> String {
+    const CE_UTF8: c_int = 1;
+    const CE_BYTES: c_int = 3;
+    let raw: &str = s.as_ref();
+    if raw.is_ascii() {
+        return raw.to_string();
+    }
+    unsafe {
+        let x = s.get().cast::<c_void>();
+        if matches!(Rf_getCharCE(x), CE_UTF8 | CE_BYTES) {
+            return raw.to_string();
+        }
+        let utf8 = CStr::from_ptr(Rf_translateCharUTF8(x)).to_bytes();
+        std::str::from_utf8(utf8).unwrap_or(raw).to_string()
+    }
+}
+
 fn session_ptr_from_cg(cg: &Robj) -> ExternalPtr<GraphSession> {
     let session = cg
         .get_attrib(sym!(session))
@@ -101,7 +127,7 @@ fn parse_parent_nodes(nodes: Robj) -> Vec<String> {
         if s.is_na() {
             throw_r_error("`nodes` cannot contain NA values.");
         }
-        out.push(s.to_string());
+        out.push(rstr_to_utf8(&s));
     }
     out
 }
@@ -992,7 +1018,10 @@ fn rs_remove_edges(
         if from.is_na() || to.is_na() {
             continue;
         }
-        let (Some(u), Some(v)) = (s.index_of(from.as_ref()), s.index_of(to.as_ref())) else {
+        let (Some(u), Some(v)) = (
+            s.index_of(&rstr_to_utf8(&from)),
+            s.index_of(&rstr_to_utf8(&to)),
+        ) else {
             continue;
         };
         if let Some(glyphs) = &glyphs {
@@ -1200,8 +1229,9 @@ fn rs_names_subset(session: ExternalPtr<GraphSession>, indices: Vec<i32>) -> Str
 }
 
 #[extendr]
-fn rs_index_of(session: ExternalPtr<GraphSession>, name: &str) -> Robj {
-    match session.as_ref().index_of(name) {
+fn rs_index_of(session: ExternalPtr<GraphSession>, name: Rstr) -> Robj {
+    let name = rstr_to_utf8(&name);
+    match session.as_ref().index_of(&name) {
         Some(idx) => (idx as i32).into_robj(),
         None => throw_r_error(format!("Non-existent node name: {}", name)),
     }
@@ -1224,7 +1254,7 @@ fn rs_indices_of(session: ExternalPtr<GraphSession>, names: Robj) -> Robj {
     let mut name_vec = Vec::with_capacity(n);
     for i in 0..n {
         let s = names_strings.elt(i);
-        name_vec.push(s.to_string());
+        name_vec.push(rstr_to_utf8(&s));
     }
 
     match session.as_ref().indices_of(&name_vec) {
@@ -1552,7 +1582,7 @@ fn districts(cg: Robj, nodes: Robj, index: Robj, all: Robj) -> Robj {
         if s.is_na() {
             throw_r_error("`nodes` must be a character vector without NA.");
         }
-        node_names.push(s.to_string());
+        node_names.push(rstr_to_utf8(&s));
     }
     let idx0: Vec<i32> = session
         .as_ref()
@@ -1988,8 +2018,8 @@ fn subgraph(cg: Robj, nodes: Robj, index: Robj) -> Robj {
             if s.is_na() {
                 throw_r_error("`nodes` cannot contain NA values.");
             }
-            let name = s.as_ref();
-            let idx = sref.index_of(name);
+            let name = rstr_to_utf8(&s);
+            let idx = sref.index_of(&name);
             match idx {
                 Some(idx) => {
                     let ui = idx as usize;
@@ -2001,7 +2031,7 @@ fn subgraph(cg: Robj, nodes: Robj, index: Robj) -> Robj {
                     keep.push(idx);
                 }
                 None => {
-                    first_missing = Some(name.to_string());
+                    first_missing = Some(name);
                     break;
                 }
             }
@@ -2016,10 +2046,10 @@ fn subgraph(cg: Robj, nodes: Robj, index: Robj) -> Robj {
                 if s.is_na() {
                     continue;
                 }
-                let name = s.as_ref();
-                let missing = sref.index_of(name).is_none();
-                if missing && miss_seen.insert(name.to_string()) {
-                    miss.push(name.to_string());
+                let name = rstr_to_utf8(&s);
+                let missing = sref.index_of(&name).is_none();
+                if missing && miss_seen.insert(name.clone()) {
+                    miss.push(name);
                 }
             }
             throw_r_error(format!("Unknown node(s): {}", miss.join(", ")));

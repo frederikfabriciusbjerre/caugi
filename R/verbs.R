@@ -412,6 +412,9 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 
   action <- match.arg(action)
   session <- cg@session
+  if (!identical(action, "remove")) {
+    added_nodes <- .check_node_names(c(nodes$name, edges$from, edges$to))
+  }
 
   # Get current state from Rust session (session is always present)
   current_nodes <- cg@nodes$name
@@ -427,7 +430,7 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
       return(cg)
     }
 
-    new_nodes <- unique(c(current_nodes, edges$from, edges$to))
+    new_nodes <- unique(c(current_nodes, added_nodes))
     target_session <- rs_clone(session)
 
     if (
@@ -458,12 +461,8 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 
   # Apply modifications
   if (identical(action, "add")) {
-    if (!is.null(nodes)) {
-      current_nodes <- unique(c(current_nodes, nodes$name))
-    }
+    current_nodes <- unique(c(current_nodes, added_nodes))
     if (!is.null(edges)) {
-      # Add nodes from edges
-      current_nodes <- unique(c(current_nodes, edges$from, edges$to))
       # Add edges
       current_edges <- unique(
         data.table::rbindlist(list(current_edges, edges), use.names = TRUE),

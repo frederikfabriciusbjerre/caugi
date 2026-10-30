@@ -209,6 +209,23 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+* Node names are now stored as UTF-8: `caugi()`, `as_caugi()`, `add_nodes()`,
+  `add_edges()` and `set_edges()` convert them with `enc2utf8()`. A latin1
+  name was stored as invalid UTF-8 before. Node queries convert the names
+  they are given in the same way, so such a node is found by its latin1 or
+  its UTF-8 name (#394).
+
+## Deprecations
+
+* Node names that are `NA`, empty (`""`) or contain control characters, such
+  as tabs and newlines, now give a deprecation warning when they enter a
+  graph through `caugi()`, `as_caugi()`, `add_nodes()`, `add_edges()`,
+  `set_edges()`, `read_caugi()`, `read_graphml()` or `caugi_deserialize()`.
+  They will be an error in a future version. `NA` is stored as the name
+  `"NA"`, an empty name cannot be given edges, and control characters break
+  the GraphML output. Use non-empty names without control characters instead
+  (#394).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.

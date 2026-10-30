@@ -451,7 +451,7 @@ caugi <- S7::new_class(
       # No declared nodes: use edge order
       all_node_names <- edge_node_names
     }
-    nodes <- .node_constructor(all_node_names)
+    nodes <- .node_constructor(.check_node_names(all_node_names))
     n <- nrow(nodes)
     id <- seq_len(n) - 1L
     names(id) <- nodes$name
@@ -628,6 +628,47 @@ caugi <- S7::new_class(
     )
   ))
   invisible(NULL)
+}
+
+#' @title Check node names entering a graph
+#'
+#' @description Converts node names to UTF-8 and warns (class
+#' `caugi_deprecated_node_names` and `deprecatedWarning`) about names that are
+#' `NA`, empty, or contain control characters, which will be an error in a
+#' future version.
+#'
+#' @param x Character vector of node names.
+#'
+#' @returns `x`, converted with [enc2utf8()].
+#'
+#' @keywords internal
+.check_node_names <- function(x) {
+  x <- enc2utf8(as.character(x))
+  # ASCII control characters, i.e. [[:cntrl:]]. Matched bytewise, which is
+  # safe in every encoding and locale.
+  bad <- is.na(x) |
+    !nzchar(x) |
+    grepl("[\\x01-\\x1f\\x7f]", x, perl = TRUE, useBytes = TRUE)
+  if (any(bad)) {
+    warning(structure(
+      class = c(
+        "caugi_deprecated_node_names",
+        "deprecatedWarning",
+        "warning",
+        "condition"
+      ),
+      list(
+        message = paste0(
+          "Node names that are NA, empty, or contain control characters are ",
+          "deprecated and will be an error in a future version of caugi: ",
+          paste(encodeString(unique(x[bad]), quote = "\""), collapse = ", "),
+          "."
+        ),
+        call = NULL
+      )
+    ))
+  }
+  x
 }
 
 .deprecated_field_warning <- function(message) {
