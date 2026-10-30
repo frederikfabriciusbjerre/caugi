@@ -112,6 +112,27 @@ test_that("all_backdoor_sets enumerates minimal sets", {
   expect_true(any(setequal(norm[[1]], "K") | setequal(norm[[2]], "K")))
 })
 
+test_that("max_size is validated in R", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  msg <- "`max_size` must be a single whole number >= 0."
+  expect_error(
+    all_backdoor_sets(cg, "A", "C", max_size = -1),
+    msg,
+    fixed = TRUE
+  )
+  expect_error(
+    all_backdoor_sets(cg, "A", "C", max_size = 1.5),
+    msg,
+    fixed = TRUE
+  )
+  admg <- caugi(A %-->% B, B %-->% C, class = "ADMG")
+  expect_error(
+    all_adjustment_sets_admg(admg, "A", "C", max_size = NA),
+    msg,
+    fixed = TRUE
+  )
+})
+
 test_that("all_backdoor_sets respects max_size and minimal", {
   sets <- all_backdoor_sets(adjustment_set_cg, X = "X", Y = "Y", minimal = TRUE)
   expect_equal(length(sets), 2L)

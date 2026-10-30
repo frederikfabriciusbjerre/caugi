@@ -33,6 +33,10 @@
 
 ## Bug Fixes
 
+- `all_backdoor_sets()` and `all_adjustment_sets_admg()` now validate
+  `max_size` in R, with a plain error instead of a message about the input
+  having "been subtracted with 1".
+
 - `remove_nodes()` and `remove_edges()` now warn about nodes that are not in
   the graph instead of silently ignoring them.
 
