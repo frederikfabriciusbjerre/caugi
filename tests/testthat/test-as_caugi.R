@@ -225,6 +225,16 @@ test_that("igraph dispatch works and respects directedness + collapse", {
   expect_equal(c(e_rev$from, e_rev$edge, e_rev$to), c("A", "---", "B"))
 })
 
+test_that("collapse does not mix up node names that contain `.`", {
+  skip_if_not_installed("igraph")
+  g <- igraph::graph_from_edgelist(
+    matrix(c("A.B", "C", "A", "B.C", "C", "A.B"), 3, 2, byrow = TRUE)
+  )
+  e <- edges(as_caugi(g, class = "PDAG", collapse = TRUE))
+  expect_equal(nrow(e), 2L)
+  expect_true(any(e$from == "A" & e$edge == "-->" & e$to == "B.C"))
+})
+
 test_that("empty igraph yield empty caugi graphs", {
   skip_if_not_installed("igraph")
   g0 <- igraph::make_empty_graph(n = 0, directed = TRUE)
@@ -654,4 +664,72 @@ test_that("class-specific branches for optional backends are covered", {
     as_caugi(bn, class = "PAG"),
     "PAG class is not supported for bnlearn objects."
   )
+})
+
+
+test_that("caugi -> data.frame -> caugi round-trips for every class", {
+  # Each graph has isolated nodes; the last two are edgeless and empty.
+  graphs <- list(
+    caugi(A %-->% B, B %-->% C, D, E, class = "DAG"),
+    caugi(A %-->% B, B %---% C, D, class = "PDAG"),
+    caugi(A %-->% C, B %-->% C, C %-->% D, E, class = "CPDAG"),
+    caugi(A %-->% B, C %---% D, E, class = "MPDAG"),
+    caugi(A %---% B, B %---% C, D, class = "UG"),
+    caugi(A %-->% B, A %<->% B, B %<->% C, D, class = "ADMG"),
+    caugi(A %-->% B, B %<->% C, D %---% E, F, class = "AG"),
+    caugi(A %o->% B, B %--o% C, C %-->% C, D, class = "UNKNOWN"),
+    caugi(nodes = c("A", "B", "C"), class = "DAG"),
+    caugi(class = "DAG")
+  )
+  for (cg in graphs) {
+    df <- as.data.frame(cg)
+    expect_identical(attr(df, "graph_class"), cg@graph_class)
+    # The class comes from the attribute, or from `class =`.
+    back <- as_caugi(df)
+    expect_true(back == cg)
+    expect_identical(as.data.frame(back), df)
+    expect_true(as_caugi(df, class = cg@graph_class) == cg)
+    dt <- data.table::as.data.table(df)
+    expect_true(as_caugi(dt, class = cg@graph_class) == cg)
+  }
+})
+
+test_that("an explicit class wins over the graph_class attribute", {
+  df <- as.data.frame(caugi(A %-->% B, B %---% C, D, class = "PDAG"))
+  back <- as_caugi(df, class = "UNKNOWN")
+  expect_identical(back@graph_class, "UNKNOWN")
+  expect_true(back == caugi(A %-->% B, B %---% C, D, class = "UNKNOWN"))
+})
+
+test_that("as_caugi reads a plain edge list with isolated nodes", {
+  df <- data.frame(
+    from = c("A", "B", "C", "D"),
+    edge = c("-->", "---", NA, NA),
+    to = c("B", "C", NA, NA)
+  )
+  expect_true(
+    as_caugi(df, class = "PDAG") ==
+      caugi(A %-->% B, B %---% C, C, D, class = "PDAG")
+  )
+  # Only isolated nodes.
+  iso <- data.frame(from = c("A", "B"), edge = NA, to = NA)
+  expect_true(as_caugi(iso, class = "DAG") == caugi(A, B, class = "DAG"))
+})
+
+test_that("as_caugi on edges() drops isolated nodes", {
+  # edges() lists edges only, so isolated nodes are not in it.
+  cg <- caugi(A %-->% B, B %---% C, D, class = "PDAG")
+  expect_true(
+    as_caugi(edges(cg), class = "PDAG") ==
+      caugi(A %-->% B, B %---% C, class = "PDAG")
+  )
+})
+
+test_that("as_caugi rejects bad data.frame input", {
+  expect_error(as_caugi(data.frame(a = 1)), "must contain columns")
+  df <- as.data.frame(caugi(A %-->% B, class = "DAG"))
+  expect_error(as_caugi(df, class = "PAG"), "not supported for data.frames")
+  expect_error(as_caugi(df, collapse = TRUE), "not supported for data.frames")
+  # The class is validated.
+  expect_error(as_caugi(as.data.frame(caugi(A %---% B)), class = "DAG"))
 })

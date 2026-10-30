@@ -156,7 +156,9 @@ test_that("to_dot handles empty graph", {
   expect_match(as.character(dot), "A;")
   expect_match(as.character(dot), "B;")
   expect_match(as.character(dot), "C;")
-  # Should have no edges section or empty
+  # A DAG stays directed without edges; a UG stays undirected
+  expect_match(as.character(dot), "^digraph ")
+  expect_match(as.character(to_dot(caugi(A + B, class = "UG"))), "^graph ")
 })
 
 test_that("to_dot chooses graph type correctly", {

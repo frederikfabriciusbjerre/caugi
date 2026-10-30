@@ -2,6 +2,13 @@
 
 ## New Features
 
+* `as_caugi()` now reads a data.frame or data.table edge list with columns
+  `from`, `edge` and `to`, such as the output of `as.data.frame()` or
+  `edges()`. Rows with an `NA` edge are read as isolated nodes.
+  `as.data.frame()` records the graph class in a `"graph_class"` attribute,
+  which `as_caugi()` uses when `class` is not given, so
+  `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
+
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a
   plain data.frame with one extra row per isolated node (`edge` and `to` are
   `NA`). `caugi()` reads such rows back as isolated nodes, so
@@ -32,6 +39,36 @@
   the graph size; it was cubic in the number of parents of `X`.
 
 ## Bug Fixes
+
+- `write_graphml()` and `read_graphml()` now write and read UTF-8, as the file
+  declares. In a non-UTF-8 locale a node name such as `"æø"` came back as
+  `"<U+00E6><U+00F8>"`.
+
+- `to_dot()` now writes a directed graph class with no edges (e.g. a DAG of
+  isolated nodes) as `digraph`, not `graph`.
+
+- `read_caugi()` and `caugi_deserialize()` now say the input is not a valid
+  caugi JSON document, and `read_caugi()` names the file, instead of only
+  passing on the JSON parser's message.
+
+- Queries given an empty node vector, e.g. `descendants(cg, character(0))`,
+  now say which argument is empty instead of "Expected non zero length".
+
+- `all_backdoor_sets()` and `all_adjustment_sets_admg()` now validate
+  `max_size` in R, with a plain error instead of a message about the input
+  having "been subtracted with 1".
+
+- `remove_nodes()` and `remove_edges()` now error on nodes that are not in the
+  graph, as `subgraph()` does, instead of silently ignoring them.
+
+- `generate_graph()` now errors on a non-whole or non-numeric `n` or `m`
+  instead of silently truncating it (e.g. `m = 2.7` gave 2 edges).
+
+- Edge operators used on their own no longer keep the quotes on a string
+  `from` node: `"my var" %-->% B` now has `from` `"my var"`, not `"\"my var\""`.
+
+- `as_caugi(collapse = TRUE)` no longer mixes up node names that contain `.`
+  (e.g. `"A.B"`+`"C"` and `"A"`+`"B.C"`), which dropped edges.
 
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
   accepted, for example, `Z = "Y"` for `X <-- U --> Y`.

@@ -134,7 +134,12 @@ read_caugi <- function(path, lazy) {
   reg <- caugi_registry()
 
   # Read from file
-  result <- read_caugi_file(path, reg)
+  result <- tryCatch(
+    read_caugi_file(path, reg),
+    error = function(e) {
+      stop("Can't read `", path, "`: ", conditionMessage(e), call. = FALSE)
+    }
+  )
 
   # Create caugi object using the standard constructor
   if (length(result$edges_from) == 0L) {

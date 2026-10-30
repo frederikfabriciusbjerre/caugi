@@ -14,14 +14,17 @@
 \item{...}{Passed to \code{\link[base:as.data.frame]{base::as.data.frame()}}.}
 }
 \value{
-A \code{data.frame} with columns \code{from}, \code{edge} and \code{to}.
+A \code{data.frame} with columns \code{from}, \code{edge} and \code{to}, and a
+\code{"graph_class"} attribute.
 }
 \description{
 Returns the graph as a plain \code{data.frame} with columns \code{from},
 \code{edge} and \code{to}: one row per edge, then one row per isolated node with the
 node in \code{from} and \code{NA} in \code{edge} and \code{to}. \code{\link[=caugi]{caugi()}} reads such rows back
 as isolated nodes, so \code{caugi(edges_df = as.data.frame(cg))} keeps every
-node. Use \code{\link[=edges]{edges()}} for the edges alone.
+node. Use \code{\link[=edges]{edges()}} for the edges alone. The graph class is kept in the
+\code{"graph_class"} attribute, which \code{\link[=as_caugi]{as_caugi()}} uses as its default \code{class},
+so \code{as_caugi(as.data.frame(cg))} gives back \code{cg}.
 }
 \examples{
 cg <- caugi(A \%-->\% B + C, B \%---\% C, D, class = "PDAG")

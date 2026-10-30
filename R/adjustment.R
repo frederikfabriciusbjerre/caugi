@@ -345,7 +345,7 @@ all_backdoor_sets <- function(
     X_idx0,
     Y_idx0,
     minimal,
-    as.integer(max_size)
+    .check_max_size(max_size)
   )
   nm <- cg@nodes$name
   lapply(sets_idx0, \(idx0) nm[idx0 + 1L])
@@ -642,7 +642,7 @@ all_adjustment_sets_admg <- function(
     X_idx0,
     Y_idx0,
     minimal,
-    as.integer(max_size)
+    .check_max_size(max_size)
   )
   nm <- cg@nodes$name
   lapply(sets_idx0, \(idx0) nm[idx0 + 1L])
@@ -708,4 +708,19 @@ all_adjustment_sets_admg <- function(
   } else if (!is.null(node_name)) {
     rs_indices_of(session, node_name)
   }
+}
+
+#' Validate `max_size` and return it as an integer.
+#' @keywords internal
+#' @noRd
+.check_max_size <- function(max_size) {
+  ok <- is.numeric(max_size) &&
+    length(max_size) == 1L &&
+    is.finite(max_size) &&
+    max_size >= 0 &&
+    max_size == round(max_size)
+  if (!ok) {
+    stop("`max_size` must be a single whole number >= 0.", call. = FALSE)
+  }
+  as.integer(max_size)
 }

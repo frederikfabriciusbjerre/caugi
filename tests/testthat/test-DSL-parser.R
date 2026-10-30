@@ -118,6 +118,11 @@ test_that("numeric node names are not written in scientific notation", {
   expect_equal((100000 %-->% 300000)$to, "300000")
 })
 
+test_that("standalone edge operators read a string `from` without quotes", {
+  expect_equal(("my var" %-->% B)$from, "my var")
+  expect_equal((A %-->% B)$from, "A")
+})
+
 test_that(".split_plus and .combine_plus are consistent", {
   expr <- quote(A + (B + C) + D)
   parts <- .split_plus(expr)

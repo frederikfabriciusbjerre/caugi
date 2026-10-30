@@ -1,7 +1,9 @@
 #' @title Convert to a `caugi`
 #'
 #' @description Convert an object to a `caugi`. The object can be a
-#' `graphNEL`, `matrix`, `tidygraph`, `dagitty`, `bn`, or `igraph`.
+#' `graphNEL`, `matrix`, `tidygraph`, `dagitty`, `bn`, `igraph`, or a
+#' `data.frame` edge list with columns `from`, `edge` and `to`, as written by
+#' [as.data.frame()] (rows with an `NA` edge are isolated nodes).
 #'
 #' @details
 #' For matrices, `as_caugi` assumes that the rows are the `from` nodes
@@ -16,7 +18,8 @@
 #' @param x An object to convert to a `caugi`.
 #' @param class Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
 #'  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
-#'  integer coded matrices.
+#'  integer coded matrices. For a data.frame, it defaults to the data.frame's
+#'  `"graph_class"` attribute, which [as.data.frame()] sets, if present.
 #' @param simple Deprecated; see [caugi()]. If omitted (recommended), it is
 #' derived from `class`.
 #' @param collapse logical. If `TRUE` collapse mutual directed edges to
@@ -62,6 +65,9 @@
 #'   stopifnot(identical(nodes(cg), nodes(cg_converted)))
 #'   stopifnot(identical(edges(cg), edges(cg_converted)))
 #' }
+#'
+#' # data.frame edge list
+#' cg_df <- as_caugi(as.data.frame(cg), class = "DAG")
 #'
 #' # collapse mutual edges
 #' ig2 <- igraph::graph_from_literal(A - +B, B - +A, C - +D)
@@ -186,11 +192,11 @@ S7::method(
     # pairwise canonical order
     canon_from <- pmin(from, to)
     canon_to <- pmax(from, to)
-    key <- interaction(canon_from, canon_to, drop = TRUE)
+    key <- paste(canon_from, canon_to, sep = "\r")
 
     # reverse exists for this row
-    pair_key <- interaction(from, to, drop = TRUE)
-    rev_key <- interaction(to, from, drop = TRUE)
+    pair_key <- paste(from, to, sep = "\r")
+    rev_key <- paste(to, from, sep = "\r")
     has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
     # keep asymmetric rows and the first row of each symmetric group, whatever
@@ -251,7 +257,7 @@ register_graphnel_s4_class <- function() {
     if (!directed) {
       canon_from <- pmin(from, to)
       canon_to <- pmax(from, to)
-      keep <- !duplicated(interaction(canon_from, canon_to, drop = TRUE))
+      keep <- !duplicated(paste(canon_from, canon_to, sep = "\r"))
       from <- canon_from[keep]
       to <- canon_to[keep]
     }
@@ -276,10 +282,10 @@ register_graphnel_s4_class <- function() {
 
       canon_from <- pmin(from, to)
       canon_to <- pmax(from, to)
-      key <- interaction(canon_from, canon_to, drop = TRUE)
+      key <- paste(canon_from, canon_to, sep = "\r")
 
-      pair_key <- interaction(from, to, drop = TRUE)
-      rev_key <- interaction(to, from, drop = TRUE)
+      pair_key <- paste(from, to, sep = "\r")
+      rev_key <- paste(to, from, sep = "\r")
       has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
       keep <- !has_rev | (from == canon_from)
@@ -474,10 +480,10 @@ S7::method(
 
       canon_from <- pmin(from, to)
       canon_to <- pmax(from, to)
-      key <- interaction(canon_from, canon_to, drop = TRUE)
+      key <- paste(canon_from, canon_to, sep = "\r")
 
-      pair_key <- interaction(from, to, drop = TRUE)
-      rev_key <- interaction(to, from, drop = TRUE)
+      pair_key <- paste(from, to, sep = "\r")
+      rev_key <- paste(to, from, sep = "\r")
       has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
       keep <- !has_rev | (from == canon_from)
@@ -755,10 +761,10 @@ S7::method(
 
     canon_from <- pmin(from, to)
     canon_to <- pmax(from, to)
-    key <- interaction(canon_from, canon_to, drop = TRUE)
+    key <- paste(canon_from, canon_to, sep = "\r")
 
-    pair_key <- interaction(from, to, drop = TRUE)
-    rev_key <- interaction(to, from, drop = TRUE)
+    pair_key <- paste(from, to, sep = "\r")
+    rev_key <- paste(to, from, sep = "\r")
     has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
     keep <- !has_rev | (from == canon_from)
@@ -855,4 +861,35 @@ S7::method(
     simple = simple,
     class = class
   )
+}
+
+S7::method(as_caugi, S7::class_data.frame) <- function(
+  x,
+  class = c(
+    "DAG",
+    "UG",
+    "PDAG",
+    "MPDAG",
+    "CPDAG",
+    "ADMG",
+    "AG",
+    "PAG",
+    "UNKNOWN"
+  ),
+  simple = NULL,
+  collapse = FALSE,
+  collapse_to = "---",
+  ...
+) {
+  if (length(class) > 1L && is.character(attr(x, "graph_class"))) {
+    class <- attr(x, "graph_class")
+  }
+  class <- match.arg(class)
+  if (class == "PAG") {
+    stop("PAG class is not supported for data.frames.", call. = FALSE)
+  }
+  if (!isFALSE(collapse)) {
+    stop("`collapse` is not supported for data.frames.", call. = FALSE)
+  }
+  caugi(edges_df = x, simple = simple, class = class)
 }

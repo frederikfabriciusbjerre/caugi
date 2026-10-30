@@ -264,13 +264,16 @@ S7::method(summary, caugi) <- summary.caugi
 #' `edge` and `to`: one row per edge, then one row per isolated node with the
 #' node in `from` and `NA` in `edge` and `to`. [caugi()] reads such rows back
 #' as isolated nodes, so `caugi(edges_df = as.data.frame(cg))` keeps every
-#' node. Use [edges()] for the edges alone.
+#' node. Use [edges()] for the edges alone. The graph class is kept in the
+#' `"graph_class"` attribute, which [as_caugi()] uses as its default `class`,
+#' so `as_caugi(as.data.frame(cg))` gives back `cg`.
 #'
 #' @param x A `caugi` object.
 #' @param row.names,optional Passed to [base::as.data.frame()].
 #' @param ... Passed to [base::as.data.frame()].
 #'
-#' @returns A `data.frame` with columns `from`, `edge` and `to`.
+#' @returns A `data.frame` with columns `from`, `edge` and `to`, and a
+#'   `"graph_class"` attribute.
 #'
 #' @examples
 #' cg <- caugi(A %-->% B + C, B %---% C, D, class = "PDAG")
@@ -285,13 +288,15 @@ as.data.frame.caugi <- function(x, row.names = NULL, optional = FALSE, ...) {
   e <- x@edges
   iso <- setdiff(x@nodes$name, c(e$from, e$to))
   na <- rep(NA_character_, length(iso))
-  as.data.frame(
+  out <- as.data.frame(
     list(from = c(e$from, iso), edge = c(e$edge, na), to = c(e$to, na)),
     row.names = row.names,
     optional = optional,
     stringsAsFactors = FALSE,
     ...
   )
+  attr(out, "graph_class") <- x@graph_class
+  out
 }
 S7::method(as.data.frame, caugi) <- as.data.frame.caugi
 

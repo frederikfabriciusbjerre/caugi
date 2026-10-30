@@ -330,7 +330,7 @@ where
 {
     if idx0.len() <= 1 {
         if idx0.is_empty() {
-            throw_r_error("Expected non zero length");
+            throw_r_error("`nodes`/`index` must contain at least one node.");
         }
         let i = rint_to_u32(Rint::from(idx0[0]), scalar_field);
         if i >= session.as_ref().n() {
@@ -1513,7 +1513,7 @@ fn districts(cg: Robj, nodes: Robj, index: Robj, all: Robj) -> Robj {
 
         if idx1.len() <= 1 {
             if idx1.is_empty() {
-                throw_r_error("Expected non zero length");
+                throw_r_error("`index` must contain at least one node.");
             }
             let i0 = idx1[0] - 1;
             let i = rint_to_u32(Rint::from(i0), "idx");
@@ -1564,7 +1564,7 @@ fn districts(cg: Robj, nodes: Robj, index: Robj, all: Robj) -> Robj {
 
     if idx0.len() <= 1 {
         if idx0.is_empty() {
-            throw_r_error("Expected non zero length");
+            throw_r_error("`nodes` must contain at least one node.");
         }
         let i = rint_to_u32(Rint::from(idx0[0]), "idx");
         let v = session

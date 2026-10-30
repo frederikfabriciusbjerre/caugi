@@ -125,7 +125,8 @@ pub fn serialize_caugi(
 }
 
 pub fn deserialize_caugi(json: &str, registry: &EdgeRegistry) -> Result<DeserializedGraph, String> {
-    let caugi_format: CaugiFormat = serde_json::from_str(json).map_err(|e| e.to_string())?;
+    let caugi_format: CaugiFormat =
+        serde_json::from_str(json).map_err(|e| format!("Not a valid caugi JSON document: {e}"))?;
 
     if caugi_format.format != "caugi" {
         return Err(format!(

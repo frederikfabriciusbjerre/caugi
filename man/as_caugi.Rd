@@ -18,7 +18,8 @@ as_caugi(
 
 \item{class}{Character; one of \code{"DAG"}, \code{"UG"}, \code{"PDAG"}, \code{"MPDAG"},
 \code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"PAG"} is only supported for
-integer coded matrices.}
+integer coded matrices. For a data.frame, it defaults to the data.frame's
+\code{"graph_class"} attribute, which \code{\link[=as.data.frame]{as.data.frame()}} sets, if present.}
 
 \item{simple}{Deprecated; see \code{\link[=caugi]{caugi()}}. If omitted (recommended), it is
 derived from \code{class}.}
@@ -36,7 +37,9 @@ A \code{caugi} object.
 }
 \description{
 Convert an object to a \code{caugi}. The object can be a
-\code{graphNEL}, \code{matrix}, \code{tidygraph}, \code{dagitty}, \code{bn}, or \code{igraph}.
+\code{graphNEL}, \code{matrix}, \code{tidygraph}, \code{dagitty}, \code{bn}, \code{igraph}, or a
+\code{data.frame} edge list with columns \code{from}, \code{edge} and \code{to}, as written by
+\code{\link[=as.data.frame]{as.data.frame()}} (rows with an \code{NA} edge are isolated nodes).
 }
 \details{
 For matrices, \code{as_caugi} assumes that the rows are the \code{from} nodes
@@ -85,6 +88,9 @@ for (cg_converted in list(cg_ig, cg_gn, cg_adj, cg_bn, cg_dg)) {
   stopifnot(identical(nodes(cg), nodes(cg_converted)))
   stopifnot(identical(edges(cg), edges(cg_converted)))
 }
+
+# data.frame edge list
+cg_df <- as_caugi(as.data.frame(cg), class = "DAG")
 
 # collapse mutual edges
 ig2 <- igraph::graph_from_literal(A - +B, B - +A, C - +D)

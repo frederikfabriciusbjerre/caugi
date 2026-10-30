@@ -275,10 +275,13 @@ test_that("as.data.frame() returns edges and isolated nodes (#446)", {
   expect_false(inherits(df, "data.table"))
   expect_equal(
     df,
-    data.frame(
-      from = c("A", "A", "B", "D"),
-      edge = c("-->", "-->", "---", NA),
-      to = c("B", "C", "C", NA)
+    structure(
+      data.frame(
+        from = c("A", "A", "B", "D"),
+        edge = c("-->", "-->", "---", NA),
+        to = c("B", "C", "C", NA)
+      ),
+      graph_class = "PDAG"
     )
   )
   expect_true(caugi(edges_df = df, class = "PDAG") == cg)

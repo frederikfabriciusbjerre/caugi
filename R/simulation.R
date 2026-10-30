@@ -36,10 +36,13 @@ generate_graph <- function(
   seed = NULL
 ) {
   class <- match.arg(class)
-  n <- as.integer(n)
-  if (length(n) != 1L || n <= 0L) {
+  is_whole <- function(x) {
+    is.numeric(x) && length(x) == 1L && is.finite(x) && x == round(x)
+  }
+  if (!is_whole(n) || n <= 0) {
     stop("n must be a single integer > 0", call. = FALSE)
   }
+  n <- as.integer(n)
   if (xor(is.null(m), is.null(p)) == FALSE) {
     stop("Supply exactly one of m or p", call. = FALSE)
   }
@@ -55,10 +58,10 @@ generate_graph <- function(
     }
     m <- as.integer(stats::rbinom(1L, tot, p))
   } else {
-    m <- as.integer(m)
-    if (length(m) != 1L || m < 0L || m > tot) {
-      stop(sprintf("m must be in 0..%.0f", tot), call. = FALSE)
+    if (!is_whole(m) || m < 0 || m > tot) {
+      stop(sprintf("m must be a whole number in 0..%.0f", tot), call. = FALSE)
     }
+    m <- as.integer(m)
   }
 
   reg <- caugi_registry()

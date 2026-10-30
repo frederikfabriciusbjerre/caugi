@@ -1826,3 +1826,10 @@ test_that("descendants NetworkX 1 test", {
   descendants_cg_c <- descendants(cg, nodes = "C")
   expect_null(descendants_cg_c)
 })
+
+test_that("queries with an empty node vector name the argument", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  msg <- "`nodes`/`index` must contain at least one node."
+  expect_error(descendants(cg, character(0)), msg, fixed = TRUE)
+  expect_error(parents(cg, index = integer(0)), msg, fixed = TRUE)
+})
