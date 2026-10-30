@@ -1764,6 +1764,16 @@ fn rs_moralize(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSessi
 }
 
 #[extendr]
+fn rs_mag_to_pag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .mag_to_pag()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
 fn rs_latent_project(
     mut session: ExternalPtr<GraphSession>,
     latents: Integers,
@@ -2382,6 +2392,7 @@ extendr_module! {
     fn rs_count_dags;
     fn rs_skeleton;
     fn rs_moralize;
+    fn rs_mag_to_pag;
     fn rs_latent_project;
     fn rs_exogenize;
     fn rs_normalize_latent_structure;

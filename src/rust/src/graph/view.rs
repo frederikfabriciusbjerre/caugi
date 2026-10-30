@@ -666,6 +666,23 @@ impl GraphView {
         }
     }
 
+    /// The PAG of this MAG's Markov equivalence class.
+    ///
+    /// Maximality is checked here, since the construction assumes it.
+    pub fn mag_to_pag(&self) -> Result<GraphView, String> {
+        match self {
+            GraphView::Ag(g) => {
+                if !g.is_mag() {
+                    return Err("mag_to_pag requires a maximal ancestral graph; this \
+                                ancestral graph is not maximal"
+                        .into());
+                }
+                Ok(GraphView::Raw(Arc::new(super::pag::pag_of_mag(g)?)))
+            }
+            _ => Err("mag_to_pag is only defined for MAGs (class 'AG')".into()),
+        }
+    }
+
     pub fn skeleton(&self) -> Result<GraphView, String> {
         match self {
             GraphView::Dag(d) => {

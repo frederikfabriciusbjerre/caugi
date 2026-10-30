@@ -129,6 +129,8 @@ rs_skeleton <- function(session) .Call(wrap__rs_skeleton, session)
 
 rs_moralize <- function(session) .Call(wrap__rs_moralize, session)
 
+rs_mag_to_pag <- function(session) .Call(wrap__rs_mag_to_pag, session)
+
 rs_latent_project <- function(session, latents) .Call(wrap__rs_latent_project, session, latents)
 
 rs_exogenize <- function(session, nodes) .Call(wrap__rs_exogenize, session, nodes)

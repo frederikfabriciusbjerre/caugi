@@ -3,5 +3,8 @@
 //! and PAG predicates share.
 
 mod marked;
+mod orient;
+mod transforms;
 
 pub(crate) use marked::MarkedGraph;
+pub(crate) use transforms::pag_of_mag;

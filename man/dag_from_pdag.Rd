@@ -44,6 +44,7 @@ Other operations:
 \code{\link[=enumerate_dags]{enumerate_dags()}},
 \code{\link[=exogenize]{exogenize()}},
 \code{\link[=latent_project]{latent_project()}},
+\code{\link[=mag_to_pag]{mag_to_pag()}},
 \code{\link[=meek_closure]{meek_closure()}},
 \code{\link[=moralize]{moralize()}},
 \code{\link[=mutate_caugi]{mutate_caugi()}},

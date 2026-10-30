@@ -9,6 +9,9 @@
   which `as_caugi()` uses when `class` is not given, so
   `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
 
+* `mag_to_pag()` returns the PAG of a MAG's Markov equivalence class, using
+  Zhang's complete orientation rules R1-R10.
+
 * `is_visible_edge()` checks whether a directed edge in a MAG is visible (Zhang
   2008, Definition 8), which rules out latent confounding of its two ends.
 

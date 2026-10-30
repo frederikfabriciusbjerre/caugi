@@ -4,7 +4,8 @@
 //! The skeleton is the CSR of a [`CaugiGraph`], shared rather than copied,
 //! and never changes. Each edge slot carries the mark at its own row's node,
 //! so the mark at `a` on the edge to `b` lives in `a`'s row, and `twin` links
-//! each slot to the same edge in the other row. The MAG and PAG path
+//! each slot to the same edge in the other row. The orientation rules only
+//! change marks, so they run on this directly, and the MAG and PAG path
 //! predicates read it.
 //!
 //! The path searches are depth-first with a path-local visited set, so they
@@ -13,7 +14,8 @@
 //! path whose interior was consumed by an earlier branch.
 
 use crate::edges::Mark;
-use crate::graph::CaugiGraph;
+use crate::graph::builder::GraphBuilder;
+use crate::graph::{CaugiGraph, RegistrySnapshot};
 use std::ops::Range;
 use std::sync::Arc;
 
@@ -54,6 +56,14 @@ impl MarkedGraph {
         g
     }
 
+    /// The same skeleton with every mark a circle.
+    pub(super) fn with_circles(&self) -> Self {
+        Self {
+            mark: vec![Mark::Circle; self.mark.len()],
+            ..self.clone()
+        }
+    }
+
     /// Number of nodes.
     #[inline]
     pub(crate) fn n(&self) -> u32 {
@@ -82,6 +92,12 @@ impl MarkedGraph {
     #[inline]
     pub(super) fn far(&self, k: usize) -> Mark {
         self.mark[self.twin[k] as usize]
+    }
+
+    /// Set the mark at slot `k`'s row node, returning whether it changed.
+    #[inline]
+    pub(super) fn set_slot(&mut self, k: usize, m: Mark) -> bool {
+        std::mem::replace(&mut self.mark[k], m) != m
     }
 
     /// Every node adjacent to `i`, in ascending order.
@@ -116,6 +132,53 @@ impl MarkedGraph {
         self.slot(i, j).is_some()
     }
 
+    /// Set the mark at `at` on the edge to `from`, returning whether it
+    /// changed. A no-op on a non-adjacent pair.
+    pub(super) fn set(&mut self, at: u32, from: u32, m: Mark) -> bool {
+        self.slot(at, from).is_some_and(|k| self.set_slot(k, m))
+    }
+
+    /// The neighbours `b` adjacent to both `a` and `c`, each with its slot in
+    /// `a`'s row and in `c`'s row.
+    pub(super) fn common(&self, a: u32, c: u32) -> Vec<(u32, usize, usize)> {
+        let (ra, rc) = (self.slots(a), self.slots(c));
+        let (mut i, mut j) = (ra.start, rc.start);
+        let mut out = Vec::new();
+        while i < ra.end && j < rc.end {
+            match self.col_index[i].cmp(&self.col_index[j]) {
+                std::cmp::Ordering::Less => i += 1,
+                std::cmp::Ordering::Greater => j += 1,
+                std::cmp::Ordering::Equal => {
+                    out.push((self.col_index[i], i, j));
+                    i += 1;
+                    j += 1;
+                }
+            }
+        }
+        out
+    }
+
+    /// Every edge, as `(i, j, mark at i, mark at j)` with `i < j`, in order.
+    pub(super) fn edges(&self) -> Vec<(u32, u32, Mark, Mark)> {
+        (0..self.n())
+            .flat_map(|i| self.slots(i).map(move |k| (i, k)))
+            .filter(|&(i, k)| i < self.col_index[k])
+            .map(|(i, k)| (i, self.col_index[k], self.near(k), self.far(k)))
+            .collect()
+    }
+
+    /// A CSR core with these marks, using `registry`'s edge codes.
+    pub(super) fn to_core(&self, registry: &RegistrySnapshot) -> Result<CaugiGraph, String> {
+        let snapshot = Arc::new(registry.clone());
+        let mut builder = GraphBuilder::new_from_snapshot(self.n(), true, snapshot);
+        for (i, j, at_i, at_j) in self.edges() {
+            let (code, swap) = code_for_marks(registry, at_i, at_j)?;
+            let (u, v) = if swap { (j, i) } else { (i, j) };
+            builder.add_edge(u, v, code).map_err(|e| e.to_string())?;
+        }
+        builder.finalize()
+    }
+
     // ── derived relations ────────────────────────────────────────────────
 
     /// Is `p --> c`?
@@ -130,10 +193,27 @@ impl MarkedGraph {
             .is_some_and(|k| self.near(k) == Mark::Arrow && self.far(k) == Mark::Arrow)
     }
 
+    /// Is `i o-o j`?
+    pub(super) fn is_circle_circle(&self, i: u32, j: u32) -> bool {
+        self.slot(i, j)
+            .is_some_and(|k| self.near(k) == Mark::Circle && self.far(k) == Mark::Circle)
+    }
+
     /// Neighbours joined to `i` by an edge with an arrowhead at `i`.
     pub(crate) fn arrowhead_neighbors(&self, i: u32) -> impl Iterator<Item = u32> + '_ {
         self.slots(i)
             .filter(move |&k| self.near(k) == Mark::Arrow)
+            .map(move |k| self.col(k))
+    }
+
+    /// Neighbours `j` such that some member MAG can orient `i --> j`: no
+    /// arrowhead at `i` and no tail at `j`.
+    pub(super) fn possible_children(&self, i: u32) -> impl Iterator<Item = u32> + '_ {
+        self.slots(i)
+            .filter(move |&k| {
+                matches!(self.near(k), Mark::Tail | Mark::Circle)
+                    && matches!(self.far(k), Mark::Arrow | Mark::Circle)
+            })
             .map(move |k| self.col(k))
     }
 
@@ -219,13 +299,184 @@ impl MarkedGraph {
         }
         false
     }
+
+    /// An uncovered potentially-directed path `[x, first, ..., y]` avoiding
+    /// `exclude`.
+    ///
+    /// Every consecutive pair satisfies [`possible_children`](Self::possible_children)
+    /// and every consecutive triple has non-adjacent ends, the triples at the
+    /// endpoints included. `first`, when given, pins the vertex after `x`; the
+    /// single-edge path `[x, y]` is returned only when `first` is `None` or
+    /// `Some(y)`.
+    pub(super) fn uncovered_pd_path(
+        &self,
+        x: u32,
+        y: u32,
+        first: Option<u32>,
+        exclude: &[u32],
+    ) -> Option<Vec<u32>> {
+        let n = self.n();
+        if x == y || x >= n || y >= n || exclude.contains(&x) || exclude.contains(&y) {
+            return None;
+        }
+        // Excluded vertices are pre-marked as used.
+        let mut on_path = vec![false; n as usize];
+        on_path[x as usize] = true;
+        for &e in exclude.iter().filter(|&&e| e < n) {
+            on_path[e as usize] = true;
+        }
+        let mut path = vec![x];
+        self.extend_pd_path(&mut path, &mut on_path, y, first)
+            .then_some(path)
+    }
+
+    /// Extend the potentially-directed path in `path` toward `y`.
+    fn extend_pd_path(
+        &self,
+        path: &mut Vec<u32>,
+        on_path: &mut [bool],
+        y: u32,
+        first: Option<u32>,
+    ) -> bool {
+        let curr = path[path.len() - 1];
+        let prev = path.len().checked_sub(2).map(|k| path[k]);
+        for next in self.possible_children(curr) {
+            if path.len() == 1 && first.is_some_and(|f| next != f) {
+                continue;
+            }
+            if prev.is_some_and(|p| self.adjacent(p, next)) {
+                continue; // covered
+            }
+            if next == y {
+                path.push(y);
+                return true;
+            }
+            if on_path[next as usize] {
+                continue;
+            }
+            on_path[next as usize] = true;
+            path.push(next);
+            if self.extend_pd_path(path, on_path, y, first) {
+                return true;
+            }
+            path.pop();
+            on_path[next as usize] = false;
+        }
+        false
+    }
+
+    /// An uncovered circle path `[a, c, ..., d, b]` not using the edge `a-b`,
+    /// with `c` not adjacent to `b` and `d` not adjacent to `a`: the witness
+    /// R5 needs.
+    pub(super) fn uncovered_circle_path(&self, a: u32, b: u32) -> Option<Vec<u32>> {
+        let n = self.n();
+        if a == b || a >= n || b >= n {
+            return None;
+        }
+        for &c in self.neighbors(a) {
+            if c == b || !self.is_circle_circle(a, c) || self.adjacent(b, c) {
+                continue;
+            }
+            let mut on_path = vec![false; n as usize];
+            for v in [a, b, c] {
+                on_path[v as usize] = true;
+            }
+            let mut path = vec![a, c];
+            if self.extend_circle_path(&mut path, &mut on_path, a, b, c) {
+                return Some(path);
+            }
+        }
+        None
+    }
+
+    /// Extend the circle path in `path` toward `b`.
+    fn extend_circle_path(
+        &self,
+        path: &mut Vec<u32>,
+        on_path: &mut [bool],
+        a: u32,
+        b: u32,
+        c: u32,
+    ) -> bool {
+        let curr = path[path.len() - 1];
+        let prev = path[path.len() - 2];
+        if curr != c
+            && self.is_circle_circle(curr, b)
+            && !self.adjacent(a, curr)
+            && !self.adjacent(prev, b)
+        {
+            path.push(b);
+            return true;
+        }
+        for &next in self.neighbors(curr) {
+            if next == b
+                || on_path[next as usize]
+                || !self.is_circle_circle(curr, next)
+                || self.adjacent(prev, next)
+            {
+                continue;
+            }
+            on_path[next as usize] = true;
+            path.push(next);
+            if self.extend_circle_path(path, on_path, a, b, c) {
+                return true;
+            }
+            path.pop();
+            on_path[next as usize] = false;
+        }
+        false
+    }
+}
+
+/// The registered edge code for an edge carrying `at_i` at its first endpoint
+/// and `at_j` at its second, plus whether the endpoints must be swapped to
+/// match the spec's own tail/head order.
+fn code_for_marks(
+    registry: &RegistrySnapshot,
+    at_i: Mark,
+    at_j: Mark,
+) -> Result<(u8, bool), String> {
+    for (code, spec) in registry.specs.iter().enumerate() {
+        if spec.tail == at_i && spec.head == at_j {
+            return Ok((code as u8, false));
+        }
+    }
+    for (code, spec) in registry.specs.iter().enumerate() {
+        if spec.tail == at_j && spec.head == at_i {
+            return Ok((code as u8, true));
+        }
+    }
+    Err(format!(
+        "no registered edge has the endpoint marks {} .. {}",
+        at_i, at_j
+    ))
+}
+
+/// A graph on `n` nodes from `(i, j, mark at i, mark at j)` rows, for tests.
+#[cfg(test)]
+pub(super) fn from_mark_edges(n: u32, edges: &[(u32, u32, Mark, Mark)]) -> MarkedGraph {
+    let mut rows: Vec<Vec<(u32, Mark)>> = vec![Vec::new(); n as usize];
+    for &(i, j, at_i, at_j) in edges {
+        rows[i as usize].push((j, at_i));
+        rows[j as usize].push((i, at_j));
+    }
+    let mut row_index = vec![0u32];
+    let (mut col_index, mut mark) = (Vec::new(), Vec::new());
+    for mut row in rows {
+        row.sort_unstable_by_key(|&(j, _)| j);
+        for (j, m) in row {
+            col_index.push(j);
+            mark.push(m);
+        }
+        row_index.push(col_index.len() as u32);
+    }
+    MarkedGraph::new(row_index.into(), col_index.into(), mark)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::edges::EdgeRegistry;
-    use crate::graph::builder::GraphBuilder;
 
     /// A graph from glyph triples. Most of these are not valid PAGs, which is
     /// fine: the predicates are defined on any mixed graph.
@@ -259,6 +510,40 @@ mod tests {
     }
 
     #[test]
+    fn set_reports_change_and_ignores_non_adjacent() {
+        let mut g = from_mark_edges(3, &[(0, 1, Mark::Circle, Mark::Circle)]);
+        assert!(g.set(1, 0, Mark::Arrow));
+        assert!(!g.set(1, 0, Mark::Arrow));
+        assert_eq!(g.mark_at(1, 0), Some(Mark::Arrow));
+        assert_eq!(g.mark_at(0, 1), Some(Mark::Circle));
+        assert!(!g.set(2, 0, Mark::Arrow));
+    }
+
+    #[test]
+    fn edges_list_each_edge_once_and_round_trip_through_a_core() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let g = from_mark_edges(
+            3,
+            &[
+                (1, 0, Mark::Arrow, Mark::Tail),
+                (2, 1, Mark::Arrow, Mark::Arrow),
+            ],
+        );
+        let want = vec![
+            (0, 1, Mark::Tail, Mark::Arrow),
+            (1, 2, Mark::Arrow, Mark::Arrow),
+        ];
+        assert_eq!(g.edges(), want);
+        let snapshot = GraphBuilder::new_with_registry(0, true, &reg)
+            .finalize()
+            .unwrap()
+            .registry;
+        let back = MarkedGraph::from_core(&g.to_core(&snapshot).unwrap()).unwrap();
+        assert_eq!(back.edges(), g.edges());
+    }
+
+    #[test]
     fn self_loops_and_parallel_edges_cannot_be_read() {
         let mut reg = EdgeRegistry::new();
         reg.register_builtins().unwrap();
@@ -274,6 +559,9 @@ mod tests {
         assert!(g.is_parent(0, 1) && !g.is_parent(1, 0));
         assert!(g.is_spouse(1, 2));
         assert_eq!(g.arrowhead_neighbors(1).collect::<Vec<_>>(), vec![0, 2]);
+        assert_eq!(g.possible_children(0).collect::<Vec<_>>(), vec![1]);
+        assert_eq!(g.possible_children(1).count(), 0);
+        assert_eq!(g.common(0, 2), vec![(1, 0, 3)]);
     }
 
     #[test]
@@ -393,5 +681,63 @@ mod tests {
         );
         assert_eq!(g.discriminating_path(1, 2, 3), None);
         assert!(!g.visible_edge(2, 3));
+    }
+
+    #[test]
+    fn uncovered_pd_path_basics() {
+        let g = build(3, &[(0, 1, "o->"), (1, 2, "o->")]);
+        assert_eq!(g.uncovered_pd_path(0, 2, None, &[]), Some(vec![0, 1, 2]));
+        assert_eq!(g.uncovered_pd_path(0, 2, Some(1), &[]), Some(vec![0, 1, 2]));
+        assert_eq!(g.uncovered_pd_path(0, 2, None, &[1]), None);
+        assert_eq!(g.uncovered_pd_path(2, 0, None, &[]), None);
+        assert_eq!(g.uncovered_pd_path(0, 0, None, &[]), None);
+        assert_eq!(g.uncovered_pd_path(0, 9, None, &[]), None);
+    }
+
+    #[test]
+    fn uncovered_pd_path_rejects_a_covered_triple() {
+        let g = build(3, &[(0, 1, "o->"), (1, 2, "o->"), (0, 2, "o->")]);
+        assert_eq!(g.uncovered_pd_path(0, 2, None, &[]), Some(vec![0, 2]));
+        assert_eq!(g.uncovered_pd_path(0, 2, Some(1), &[]), None);
+    }
+
+    #[test]
+    fn uncovered_pd_path_allows_adjacent_endpoints_on_longer_paths() {
+        // The shape R9 and R10 search for out of an `a o-> c` edge.
+        let g = build(
+            4,
+            &[(0, 1, "o->"), (1, 2, "o->"), (2, 3, "o->"), (0, 3, "o->")],
+        );
+        assert_eq!(
+            g.uncovered_pd_path(0, 3, Some(1), &[]),
+            Some(vec![0, 1, 2, 3])
+        );
+        assert_eq!(g.uncovered_pd_path(0, 3, Some(3), &[]), Some(vec![0, 3]));
+    }
+
+    #[test]
+    fn uncovered_pd_path_needs_every_edge_potentially_directed() {
+        let bi = build(3, &[(0, 1, "<->"), (1, 2, "o->")]);
+        assert_eq!(bi.uncovered_pd_path(0, 2, None, &[]), None);
+        let und = build(3, &[(0, 1, "---"), (1, 2, "--o")]);
+        assert_eq!(und.uncovered_pd_path(0, 2, None, &[]), None);
+        let sel = build(3, &[(0, 1, "--o"), (1, 2, "--o")]);
+        assert_eq!(sel.uncovered_pd_path(0, 2, None, &[]), Some(vec![0, 1, 2]));
+    }
+
+    #[test]
+    fn uncovered_pd_path_backtracks_and_stays_simple() {
+        let g = build(4, &[(0, 1, "o->"), (0, 2, "o->"), (2, 3, "o->")]);
+        assert_eq!(g.uncovered_pd_path(0, 3, None, &[]), Some(vec![0, 2, 3]));
+
+        let cyc = build(
+            4,
+            &[(0, 1, "o-o"), (1, 2, "o-o"), (0, 2, "o-o"), (2, 3, "o-o")],
+        );
+        let path = cyc.uncovered_pd_path(0, 3, None, &[]).expect("a path");
+        let mut uniq = path.clone();
+        uniq.sort_unstable();
+        uniq.dedup();
+        assert_eq!(uniq.len(), path.len(), "path repeats a node: {:?}", path);
     }
 }

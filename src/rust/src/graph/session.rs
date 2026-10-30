@@ -710,6 +710,7 @@ impl GraphSession {
         dag_extension() -> GraphView;
         skeleton() -> GraphView;
         moralize() -> GraphView;
+        mag_to_pag() -> GraphView;
         latent_project(latents: &[u32]) -> GraphView;
         exogenize(nodes: &[u32]) -> GraphView;
         normalize_latent_structure(latents: &[u32]) -> (GraphView, Vec<u32>);
