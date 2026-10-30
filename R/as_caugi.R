@@ -18,7 +18,8 @@
 #' @param x An object to convert to a `caugi`.
 #' @param class Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
 #'  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
-#'  integer coded matrices.
+#'  integer coded matrices. For a data.frame, it defaults to the data.frame's
+#'  `"graph_class"` attribute, which [as.data.frame()] sets, if present.
 #' @param simple Deprecated; see [caugi()]. If omitted (recommended), it is
 #' derived from `class`.
 #' @param collapse logical. If `TRUE` collapse mutual directed edges to
@@ -880,6 +881,9 @@ S7::method(as_caugi, S7::class_data.frame) <- function(
   collapse_to = "---",
   ...
 ) {
+  if (length(class) > 1L && is.character(attr(x, "graph_class"))) {
+    class <- attr(x, "graph_class")
+  }
   class <- match.arg(class)
   if (class == "PAG") {
     stop("PAG class is not supported for data.frames.", call. = FALSE)

@@ -2,6 +2,10 @@
 
 ## New Features
 
+* `as.data.frame()` now records the graph class in a `"graph_class"`
+  attribute, which `as_caugi()` uses as its default `class`, so
+  caugi → data.frame → caugi → data.frame round-trips without losing the class.
+
 * `as_caugi()` now reads a data.frame or data.table edge list with columns
   `from`, `edge` and `to`, such as the output of `as.data.frame()` or
   `edges()`. Rows with an `NA` edge are read as isolated nodes.

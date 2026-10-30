@@ -678,3 +678,17 @@ test_that("as_caugi reads data.frame and data.table edge lists", {
   expect_equal(edges(from_dt), edges(cg))
   expect_error(as_caugi(data.frame(a = 1)), "must contain columns")
 })
+
+test_that("caugi -> data.frame -> caugi -> data.frame round-trips", {
+  cg <- caugi(A %-->% B, B %---% C, D, class = "PDAG")
+  df <- as.data.frame(cg)
+  expect_equal(attr(df, "graph_class"), "PDAG")
+
+  cg2 <- as_caugi(df)
+  expect_equal(cg2@graph_class, "PDAG")
+  expect_true(cg2 == cg)
+  expect_identical(as.data.frame(cg2), df)
+
+  # an explicit class still wins over the attribute
+  expect_equal(as_caugi(df, class = "UNKNOWN")@graph_class, "UNKNOWN")
+})

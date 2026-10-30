@@ -18,7 +18,8 @@ as_caugi(
 
 \item{class}{Character; one of \code{"DAG"}, \code{"UG"}, \code{"PDAG"}, \code{"MPDAG"},
 \code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"PAG"} is only supported for
-integer coded matrices.}
+integer coded matrices. For a data.frame, it defaults to the data.frame's
+\code{"graph_class"} attribute, which \code{\link[=as.data.frame]{as.data.frame()}} sets, if present.}
 
 \item{simple}{Deprecated; see \code{\link[=caugi]{caugi()}}. If omitted (recommended), it is
 derived from \code{class}.}
