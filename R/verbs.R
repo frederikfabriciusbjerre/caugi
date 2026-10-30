@@ -148,7 +148,7 @@ remove_edges <- function(
     if (length(from) != length(to)) {
       stop("`from` and `to` must be equal length.", call. = FALSE)
     }
-    .warn_unknown_nodes(cg, c(from, to))
+    .stop_unknown_nodes(cg, c(from, to))
 
     return(caugi(
       .session = rs_remove_edges(
@@ -173,7 +173,7 @@ remove_edges <- function(
     edge <- edges$edge
     to <- edges$to
   }
-  .warn_unknown_nodes(cg, c(from, to))
+  .stop_unknown_nodes(cg, c(from, to))
   caugi(
     .session = rs_remove_edges(
       cg@session,
@@ -261,21 +261,17 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   if (!nrow(nodes)) {
     return(cg)
   }
-  .warn_unknown_nodes(cg, nodes$name)
+  .stop_unknown_nodes(cg, nodes$name)
   .update_caugi(cg, nodes = nodes, action = "remove")
 }
 
-#' Warn about nodes that are not in the graph and will be ignored.
+#' Error on nodes that are not in the graph.
 #' @keywords internal
 #' @noRd
-.warn_unknown_nodes <- function(cg, x) {
+.stop_unknown_nodes <- function(cg, x) {
   unknown <- setdiff(as.character(x), cg@nodes$name)
   if (length(unknown) > 0L) {
-    warning(
-      "Unknown node(s) ignored: ",
-      paste(unknown, collapse = ", "),
-      call. = FALSE
-    )
+    stop("Unknown node(s): ", paste(unknown, collapse = ", "), call. = FALSE)
   }
 }
 
