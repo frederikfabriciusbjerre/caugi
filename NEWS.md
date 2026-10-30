@@ -33,6 +33,10 @@
 
 ## Bug Fixes
 
+- `read_caugi()` and `caugi_deserialize()` now say the input is not a valid
+  caugi JSON document, and `read_caugi()` names the file, instead of only
+  passing on the JSON parser's message.
+
 - Queries given an empty node vector, e.g. `descendants(cg, character(0))`,
   now say which argument is empty instead of "Expected non zero length".
 

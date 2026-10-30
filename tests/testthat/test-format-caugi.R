@@ -382,3 +382,9 @@ test_that("serialized output of every class fits the published schema (#419)", {
     )
   }
 })
+
+test_that("invalid JSON gives an error that says what failed", {
+  tmp <- withr::local_tempfile(lines = "{not json")
+  expect_error(read_caugi(tmp), "Can't read `.*`: Not a valid caugi JSON")
+  expect_error(caugi_deserialize("[]"), "Not a valid caugi JSON document")
+})
