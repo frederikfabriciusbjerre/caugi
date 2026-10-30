@@ -17,12 +17,12 @@ d_separated(
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{X, Y, Z}{Character vectors of node names, or \code{NULL}. Use \verb{*_index} to
-pass 1-based indices. If \code{Z} is \code{NULL} or missing, no nodes are conditioned
-on.}
+\item{X, Y, Z}{Character vectors of node names, or \code{NULL}. If \code{Z} is \code{NULL}
+or missing, no nodes are conditioned on.}
 
-\item{X_index, Y_index, Z_index}{Optional numeric 1-based indices (exclusive
-with \code{X},\code{Y},\code{Z} respectively).}
+\item{X_index, Y_index, Z_index}{Deprecated; pass node names to \code{X}, \code{Y} and
+\code{Z} instead, e.g. \code{nodes(cg)$name[X_index]}. Optional numeric 1-based
+indices (exclusive with \code{X},\code{Y},\code{Z} respectively).}
 }
 \value{
 \code{TRUE} if d-separated, \code{FALSE} otherwise.
@@ -53,10 +53,8 @@ d_separated(cg, c("C", "X"), c("K", "Y"), Z = c("A", "D")) # TRUE
 \seealso{
 Other adjustment:
 \code{\link[=adjustment_set]{adjustment_set()}},
-\code{\link[=all_adjustment_sets_admg]{all_adjustment_sets_admg()}},
-\code{\link[=all_backdoor_sets]{all_backdoor_sets()}},
-\code{\link[=is_valid_adjustment_admg]{is_valid_adjustment_admg()}},
-\code{\link[=is_valid_backdoor]{is_valid_backdoor()}},
+\code{\link[=all_adjustment_sets]{all_adjustment_sets()}},
+\code{\link[=is_valid_adjustment]{is_valid_adjustment()}},
 \code{\link[=minimal_separator]{minimal_separator()}}
 }
 \concept{adjustment}

@@ -14,7 +14,8 @@ neighbours(cg, nodes = NULL, index = NULL, mode = "all")
 
 \item{nodes}{A character vector of node names.}
 
-\item{index}{A vector of node indexes.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. A vector of 1-based node indices.}
 
 \item{mode}{Character; specifies which types of neighbors to return:
 \describe{
@@ -41,7 +42,10 @@ Not all modes are valid for all graph classes:
 }
 \value{
 Either a character vector of node names (if a single node is
-requested) or a list of character vectors (if multiple nodes are requested).
+requested) or a named list of character vectors (if multiple nodes are
+requested). The list is deprecated: a future version will return the union
+of the results as one character vector in graph node order. For one result
+per node, use \code{lapply()} over the nodes.
 }
 \description{
 Get neighbors of a node in the graph, optionally filtered by edge direction
@@ -54,13 +58,12 @@ cg <- caugi(
   class = "DAG"
 )
 neighbors(cg, "A") # "B"
-neighbors(cg, index = 2) # "A" "C"
 neighbors(cg, "B") # "A" "C"
-neighbors(cg, c("B", "C"))
-#> $B
+lapply(c("B", "C"), function(x) neighbors(cg, x))
+#> [[1]]
 #> [1] "A" "C"
 #>
-#> $C
+#> [[2]]
 #> [1] "B"
 
 # Using mode to filter by edge direction

@@ -18,7 +18,8 @@ adjustment_set(
 
 \item{X, Y}{Node names; one or more each, and disjoint.}
 
-\item{X_index, Y_index}{Optional numeric 1-based indices.}
+\item{X_index, Y_index}{Deprecated; pass node names to \code{X} and \code{Y} instead,
+e.g. \code{nodes(cg)$name[X_index]}. Optional numeric 1-based indices.}
 
 \item{type}{One of \code{"parents"}, \code{"backdoor"}, \code{"optimal"}.
 The \code{optimal} option computes the O-set.}
@@ -87,11 +88,9 @@ adjustment_set(cg2, c("X1", "X2"), "Y", type = "optimal") # U
 }
 \seealso{
 Other adjustment:
-\code{\link[=all_adjustment_sets_admg]{all_adjustment_sets_admg()}},
-\code{\link[=all_backdoor_sets]{all_backdoor_sets()}},
+\code{\link[=all_adjustment_sets]{all_adjustment_sets()}},
 \code{\link[=d_separated]{d_separated()}},
-\code{\link[=is_valid_adjustment_admg]{is_valid_adjustment_admg()}},
-\code{\link[=is_valid_backdoor]{is_valid_backdoor()}},
+\code{\link[=is_valid_adjustment]{is_valid_adjustment()}},
 \code{\link[=minimal_separator]{minimal_separator()}}
 }
 \concept{adjustment}
