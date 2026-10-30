@@ -16,6 +16,205 @@ test_that("caugi_layout works with simple DAG", {
   expect_type(layout$y, "double")
 })
 
+test_that("layout functions take the graph as `cg`", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+
+  expect_equal(caugi_layout(cg = cg), caugi_layout(cg))
+  for (fn in list(
+    caugi_layout,
+    caugi_layout_sugiyama,
+    caugi_layout_fruchterman_reingold,
+    caugi_layout_kamada_kawai,
+    caugi_layout_bipartite,
+    caugi_layout_tiered,
+    caugi_layout_circle
+  )) {
+    expect_identical(names(formals(fn))[1], "cg")
+  }
+})
+
+test_that("deprecated caugi_layout_*() functions warn and match caugi_layout()", {
+  cg <- caugi(A %-->% B + C, B %-->% D, C %-->% D, class = "DAG")
+  tiers <- list("A", c("B", "C"), "D")
+  partition <- c(TRUE, FALSE, FALSE, FALSE)
+
+  expect_warning(
+    expect_equal(
+      caugi_layout_sugiyama(cg, packing_ratio = 1),
+      caugi_layout(cg, method = "sugiyama", packing_ratio = 1)
+    ),
+    "deprecated"
+  )
+  expect_warning(
+    expect_equal(
+      caugi_layout_fruchterman_reingold(cg),
+      caugi_layout(cg, method = "fruchterman-reingold")
+    ),
+    "deprecated"
+  )
+  expect_warning(
+    expect_equal(
+      caugi_layout_kamada_kawai(cg),
+      caugi_layout(cg, method = "kamada-kawai")
+    ),
+    "deprecated"
+  )
+  expect_warning(
+    expect_equal(
+      caugi_layout_bipartite(cg, partition, orientation = "rows"),
+      caugi_layout(
+        cg,
+        method = "bipartite",
+        partition = partition,
+        orientation = "rows"
+      )
+    ),
+    "deprecated"
+  )
+  expect_warning(
+    expect_equal(
+      caugi_layout_tiered(cg, tiers),
+      caugi_layout(cg, method = "tiered", tiers = tiers)
+    ),
+    "deprecated"
+  )
+  expect_warning(
+    expect_equal(
+      caugi_layout_circle(cg),
+      caugi_layout(cg, method = "circle")
+    ),
+    "deprecated"
+  )
+})
+
+test_that("caugi_layout() warns about options the method ignores (#367)", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  tiers <- list("A", "B", "C")
+
+  expect_warning(
+    layout <- caugi_layout(cg, method = "sugiyama", tiers = tiers),
+    "The \"sugiyama\" layout ignores `tiers`.",
+    fixed = TRUE
+  )
+  expect_equal(layout, caugi_layout(cg, method = "sugiyama"))
+  expect_warning(
+    caugi_layout(cg, method = "kamada-kawai", packing_raito = 1),
+    "ignores `packing_raito`",
+    fixed = TRUE
+  )
+  expect_warning(
+    caugi_layout(cg, method = "circle", packing_ratio = 1),
+    "The \"circle\" layout ignores `packing_ratio`.",
+    fixed = TRUE
+  )
+  expect_warning(
+    caugi_layout(cg, method = "tiered", tiers = tiers, packing_ratio = 1),
+    "The \"tiered\" layout ignores `packing_ratio`.",
+    fixed = TRUE
+  )
+  # "auto" resolves to Sugiyama here, which has no orientation
+  expect_warning(
+    caugi_layout(cg, orientation = "rows"),
+    "The \"sugiyama\" layout ignores `orientation`.",
+    fixed = TRUE
+  )
+  expect_no_warning(caugi_layout(cg, tiers = tiers, orientation = "rows"))
+  expect_no_warning(caugi_layout(
+    cg,
+    method = "kamada-kawai",
+    packing_ratio = 1
+  ))
+})
+
+test_that("`x` is a deprecated name for `cg` in the layout functions", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  extra_args <- list(
+    caugi_layout = list(),
+    caugi_layout_sugiyama = list(),
+    caugi_layout_fruchterman_reingold = list(),
+    caugi_layout_kamada_kawai = list(),
+    caugi_layout_bipartite = list(),
+    caugi_layout_tiered = list(tiers = list("A", "B", "C")),
+    caugi_layout_circle = list()
+  )
+  # Evaluates `expr`, collecting its warnings instead of signalling them.
+  with_warnings <- function(expr) {
+    warnings <- list()
+    value <- withCallingHandlers(
+      expr,
+      warning = function(w) {
+        warnings[[length(warnings) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+      }
+    )
+    list(value = value, warnings = warnings)
+  }
+  for (fn in names(extra_args)) {
+    args <- extra_args[[fn]]
+    res <- with_warnings(do.call(fn, c(list(x = cg), args)))
+    is_x <- vapply(
+      res$warnings,
+      inherits,
+      logical(1),
+      "caugi_deprecated_layout_x"
+    )
+    # One warning about `x`, plus the deprecation of the caugi_layout_*()
+    # wrappers themselves.
+    expect_equal(sum(is_x), 1L)
+    expect_length(res$warnings, if (fn == "caugi_layout") 1L else 2L)
+    x_warning <- res$warnings[is_x][[1]]
+    expect_s3_class(x_warning, "deprecatedWarning")
+    expect_match(
+      conditionMessage(x_warning),
+      paste0("The `x` argument of `", fn, "()` is deprecated"),
+      fixed = TRUE
+    )
+    expect_equal(
+      res$value,
+      with_warnings(do.call(fn, c(list(cg), args)))$value
+    )
+    expect_error(
+      suppressWarnings(do.call(fn, c(list(cg, x = cg), args))),
+      "`cg` only"
+    )
+  }
+})
+
+test_that("plot() computes every layout without warnings", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+
+  pdf(NULL)
+  on.exit(dev.off())
+
+  for (method in c(
+    "auto",
+    "sugiyama",
+    "fruchterman-reingold",
+    "kamada-kawai",
+    "bipartite",
+    "circle"
+  )) {
+    expect_no_warning(plot(cg, layout = method))
+  }
+  expect_no_warning(plot(cg, layout = "tiered", tiers = list("A", "B", "C")))
+  # plot() calls a layout function positionally, so a deprecated wrapper
+  # warns that it is deprecated but not about `x`.
+  expect_warning(
+    expect_no_warning(
+      plot(cg, layout = caugi_layout_sugiyama),
+      class = "caugi_deprecated_layout_x"
+    ),
+    "deprecated"
+  )
+  expect_warning(
+    expect_no_warning(
+      plot(cg, layout = caugi_layout_tiered, tiers = list("A", "B", "C")),
+      class = "caugi_deprecated_layout_x"
+    ),
+    "deprecated"
+  )
+})
+
 test_that("caugi_layout works with single node", {
   cg <- caugi(A, class = "DAG")
 
@@ -954,9 +1153,10 @@ test_that("plot layout validation branch is covered", {
 
 test_that("plot routes edges around collinear nodes by default", {
   cg <- caugi(A %---% B + C, B %---% C)
-  layout <- caugi_layout_tiered(
+  layout <- caugi_layout(
     cg,
-    list(c("A", "B", "C")),
+    method = "tiered",
+    tiers = list(c("A", "B", "C")),
     orientation = "rows"
   )
 
@@ -985,9 +1185,10 @@ test_that("plot accepts a factor name column in a precomputed layout", {
 
 test_that("plot routing works for partial edge types", {
   cg <- caugi(A %o-o% B + C, B %o-o% C, class = "UNKNOWN")
-  layout <- caugi_layout_tiered(
+  layout <- caugi_layout(
     cg,
-    list(c("A", "B", "C")),
+    method = "tiered",
+    tiers = list(c("A", "B", "C")),
     orientation = "rows"
   )
 
@@ -999,9 +1200,10 @@ test_that("plot routing works for partial edge types", {
 
 test_that("plot routing can be disabled per edge type", {
   cg <- caugi(A %-->% B + C, B %-->% C, class = "DAG")
-  layout <- caugi_layout_tiered(
+  layout <- caugi_layout(
     cg,
-    list(c("A", "B", "C")),
+    method = "tiered",
+    tiers = list(c("A", "B", "C")),
     orientation = "rows"
   )
 

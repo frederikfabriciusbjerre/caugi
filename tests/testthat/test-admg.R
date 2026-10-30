@@ -7,7 +7,7 @@
 test_that("is_admg correctly identifies ADMG graphs", {
   # Pure DAG is also a valid ADMG
   dag <- caugi(A %-->% B %-->% C, class = "DAG")
-  expect_true(is_admg(dag, force_check = TRUE))
+  expect_true(is_admg(mutate_caugi(dag, "UNKNOWN")))
 
   # ADMG with bidirected edges
   admg <- caugi(
@@ -410,7 +410,7 @@ test_that("dagitty ADMG can be converted to caugi", {
   dg <- dagitty::dagitty("mag { A -> B ; A <-> C }")
   cg <- as_caugi(dg, class = "ADMG")
 
-  expect_true(is_admg(cg, force_check = TRUE))
+  expect_true(is_admg(mutate_caugi(cg, "UNKNOWN")))
   expect_equal(cg@graph_class, "ADMG")
 })
 

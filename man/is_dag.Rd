@@ -9,9 +9,9 @@ is_dag(cg, force_check = FALSE)
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{force_check}{Logical; if \code{TRUE}, the function will test if the graph is
-a DAG, if \code{FALSE} (default), it will look at the graph class and match
-it, if possible.}
+\item{force_check}{Deprecated; passing it warns. Nothing replaces it: the
+graph class is already checked when the graph is built. If \code{TRUE}, the
+structural check runs even when the graph class answers the question.}
 }
 \value{
 A logical value indicating whether the graph is a DAG.

@@ -99,7 +99,7 @@ skeleton <- function(cg) {
 meek_closure <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
-  if (!is_pdag(cg, force_check = TRUE)) {
+  if (!is_pdag(cg)) {
     stop("meek_closure() can only be applied to PDAGs.", call. = FALSE)
   }
 
@@ -750,7 +750,7 @@ dag_from_pdag <- function(cg, PDAG) {
 enumerate_dags <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
-  if (!is_pdag(cg, force_check = TRUE)) {
+  if (!is_pdag(cg)) {
     stop("enumerate_dags() can only be applied to PDAGs.", call. = FALSE)
   }
 
@@ -795,7 +795,7 @@ enumerate_dags <- function(cg) {
 count_dags <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
-  if (!is_pdag(cg, force_check = TRUE)) {
+  if (!is_pdag(cg)) {
     stop("count_dags() can only be applied to PDAGs.", call. = FALSE)
   }
 

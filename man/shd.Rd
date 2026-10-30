@@ -4,14 +4,17 @@
 \alias{shd}
 \title{Structural Hamming Distance}
 \usage{
-shd(cg1, cg2, normalized = FALSE)
+shd(truth, guess, normalized = FALSE, cg1, cg2)
 }
 \arguments{
-\item{cg1}{A \code{caugi} object.}
+\item{truth}{A \code{caugi} object.}
 
-\item{cg2}{A \code{caugi} object.}
+\item{guess}{A \code{caugi} object.}
 
 \item{normalized}{Logical; if \code{TRUE}, returns the normalized SHD.}
+
+\item{cg1, cg2}{Deprecated names for \code{truth} and \code{guess}. Supplying them
+gives a deprecation warning.}
 }
 \value{
 An integer representing the Hamming Distance between the two graphs,
@@ -20,11 +23,16 @@ if \code{normalized = FALSE}, or a numeric between 0 and 1 if \code{normalized =
 \description{
 Compute the Structural Hamming Distance (SHD) between two
 graphs.
+
+For graphs with at most one edge between any two nodes, the SHD is
+symmetric: swapping \code{truth} and \code{guess} gives the same value, normalized or
+not. The argument names only mark the usual roles of the true and the
+estimated graph, as in \code{\link[=aid]{aid()}}.
 }
 \examples{
-cg1 <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
-cg2 <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
-shd(cg1, cg2) # 1
+truth <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
+guess <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
+shd(truth, guess) # 1
 
 }
 \seealso{

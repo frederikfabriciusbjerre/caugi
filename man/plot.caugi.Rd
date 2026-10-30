@@ -19,9 +19,9 @@ layout.}
 \item A character string: \code{"auto"} (default), \code{"sugiyama"},
 \code{"fruchterman-reingold"}, \code{"kamada-kawai"}, \code{"bipartite"}, \code{"tiered"},
 \code{"circle"}. See \code{\link[=caugi_layout]{caugi_layout()}} for details.
-\item A layout function: e.g., \code{caugi_layout_sugiyama},
-\code{caugi_layout_bipartite}, etc. The function will be called with \code{x} and
-any additional arguments passed via \code{...}.
+\item A layout function returning a layout data.frame as described below.
+The function will be called with \code{x} and any additional arguments
+passed via \code{...}.
 \item A pre-computed layout data.frame with columns \code{name}, \code{x}, and \code{y}.
 }}
 
@@ -135,16 +135,16 @@ plot(cg)
 plot(cg, layout = "kamada-kawai")
 
 # Use a layout function
-plot(cg, layout = caugi_layout_sugiyama)
+plot(cg, layout = function(cg) caugi_layout(cg, method = "circle"))
 
 # Pre-compute layout and use it
-coords <- caugi_layout_fruchterman_reingold(cg)
+coords <- caugi_layout(cg, method = "fruchterman-reingold")
 plot(cg, layout = coords)
 
-# Bipartite layout with a function
+# Bipartite layout with an explicit partition
 cg_bp <- caugi(A \%-->\% X, B \%-->\% X, C \%-->\% Y)
 partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE)
-plot(cg_bp, layout = caugi_layout_bipartite, partition = partition)
+plot(cg_bp, layout = "bipartite", partition = partition)
 
 # Customize nodes
 plot(cg, node_style = list(fill = "lightgreen", padding = 0.8))
@@ -176,12 +176,6 @@ plot(cg, asp = 1)
 Other plotting:
 \code{\link{add-caugi_plot-caugi_plot}},
 \code{\link[=caugi_layout]{caugi_layout()}},
-\code{\link[=caugi_layout_bipartite]{caugi_layout_bipartite()}},
-\code{\link[=caugi_layout_circle]{caugi_layout_circle()}},
-\code{\link[=caugi_layout_fruchterman_reingold]{caugi_layout_fruchterman_reingold()}},
-\code{\link[=caugi_layout_kamada_kawai]{caugi_layout_kamada_kawai()}},
-\code{\link[=caugi_layout_sugiyama]{caugi_layout_sugiyama()}},
-\code{\link[=caugi_layout_tiered]{caugi_layout_tiered()}},
 \code{\link[=caugi_plot]{caugi_plot()}},
 \code{\link{divide-caugi_plot-caugi_plot}}
 }

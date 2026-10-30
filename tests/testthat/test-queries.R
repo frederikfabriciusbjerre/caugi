@@ -28,11 +28,61 @@ test_that("acyclicity check works", {
   expect_true(is_acyclic(cg))
 })
 
-test_that("is_acyclic forces check when requested", {
+test_that("force_check is deprecated but gives the same answer", {
   cg <- caugi(A %-->% B, B %-->% C, C %-->% D, class = "DAG")
+  preds <- list(
+    is_acyclic = is_acyclic,
+    is_simple = is_simple,
+    is_dag = is_dag,
+    is_pdag = is_pdag,
+    is_ug = is_ug,
+    is_admg = is_admg,
+    is_ag = is_ag,
+    is_mag = is_mag
+  )
+  for (name in names(preds)) {
+    pred <- preds[[name]]
+    expect_no_warning(expected <- pred(cg))
+    for (force_check in c(FALSE, TRUE)) {
+      expect_warning(
+        expect_identical(pred(cg, force_check = force_check), expected),
+        class = "caugi_deprecated_force_check",
+        info = name
+      )
+    }
+  }
+})
 
-  expect_true(is_acyclic(cg))
-  expect_true(is_acyclic(cg, force_check = TRUE))
+test_that("class short-circuits of the is_*() checks match the structure", {
+  graphs <- list(
+    caugi(A %-->% B, B %-->% C, A %-->% C, class = "DAG"),
+    caugi(A %---% B, B %---% C, class = "UG"),
+    caugi(A %-->% B, B %---% C, class = "PDAG"),
+    caugi(A %---% B, A %-->% C, B %-->% C, class = "MPDAG"),
+    caugi(A %-->% C, B %-->% C, class = "CPDAG"),
+    caugi(A %-->% B, A %<->% B, B %-->% C, class = "ADMG"),
+    caugi(A %-->% B, C %<->% D, E %---% F, class = "AG")
+  )
+  preds <- list(
+    is_acyclic = is_acyclic,
+    is_dag = is_dag,
+    is_pdag = is_pdag,
+    is_ug = is_ug,
+    is_admg = is_admg,
+    is_ag = is_ag,
+    is_mag = is_mag
+  )
+  for (cg in graphs) {
+    # The UNKNOWN copy has no class to trust, so it runs the structural check.
+    unknown <- mutate_caugi(cg, "UNKNOWN")
+    for (name in names(preds)) {
+      expect_identical(
+        preds[[name]](cg),
+        preds[[name]](unknown),
+        info = paste(name, "on", cg@graph_class)
+      )
+    }
+  }
 })
 
 test_that("is_acyclic fast path handles MPDAG class", {
@@ -43,13 +93,12 @@ test_that("is_acyclic fast path handles MPDAG class", {
     class = "MPDAG"
   )
   expect_true(is_acyclic(cg))
-  expect_true(is_acyclic(cg, force_check = TRUE))
+  expect_true(is_acyclic(mutate_caugi(cg, "UNKNOWN")))
 })
 
 test_that("is_simple checks the graph structure", {
   cg_simple <- caugi(A %-->% B, class = "DAG")
   expect_true(is_simple(cg_simple))
-  expect_true(is_simple(cg_simple, force_check = TRUE))
 
   cg_nonsimple <- caugi(
     A %-->% B,
@@ -57,7 +106,6 @@ test_that("is_simple checks the graph structure", {
     class = "UNKNOWN"
   )
   expect_false(is_simple(cg_nonsimple))
-  expect_false(is_simple(cg_nonsimple, force_check = TRUE))
 
   # UNKNOWN allows multi-edges, but this graph has none
   cg_unknown <- caugi(A %-->% B, class = "UNKNOWN")
@@ -472,7 +520,7 @@ test_that("same_nodes works", {
 test_that("is_ug works", {
   cg <- caugi(A %---% B, B %---% C, C %---% D, class = "UG")
   expect_true(is_ug(cg))
-  expect_true(is_ug(cg, force_check = TRUE))
+  expect_true(is_ug(mutate_caugi(cg, "UNKNOWN")))
 
   cg <- caugi(A %-->% B, B %---% C, C %---% D, class = "PDAG")
   expect_false(is_ug(cg))
@@ -1598,93 +1646,46 @@ test_that("ancestors, anteriors, descendants, posteriors handles closed graph de
   expect_equal(posteriors(cg, "B", open = FALSE), c("B", "C", "D"))
 })
 
-test_that("Setting use_open_graph_definition via caugi_options works", {
-  caugi_options(use_open_graph_definition = FALSE)
+test_that("ancestors, anteriors, descendants, posteriors default to open = TRUE", {
   cg <- caugi(
     A %-->% B %---% C,
     B %-->% D,
     class = "PDAG"
   )
 
-  expect_equal(ancestors(cg, "A"), "A")
+  expect_null(ancestors(cg, "A"))
+  expect_equal(ancestors(cg, "B"), "A")
+  expect_null(anteriors(cg, "A"))
+  expect_equal(anteriors(cg, "C"), c("A", "B"))
+  expect_equal(descendants(cg, "A"), c("B", "D"))
+  expect_equal(posteriors(cg, "A"), c("B", "C", "D"))
+})
+
+test_that("setting use_open_graph_definition warns and still sets the open default", {
+  on.exit(caugi_options(reset = TRUE), add = TRUE)
+  cg <- caugi(
+    A %-->% B %---% C,
+    B %-->% D,
+    class = "PDAG"
+  )
+
+  expect_warning(
+    caugi_options(use_open_graph_definition = FALSE),
+    class = "deprecatedWarning"
+  )
+  expect_no_warning(
+    expect_false(caugi_options("use_open_graph_definition"))
+  )
+  # Restoring all options does not warn
+  expect_no_warning(caugi_options(caugi_options()))
+
   expect_equal(ancestors(cg, "B"), c("B", "A"))
-
-  expect_equal(anteriors(cg, "A"), "A")
   expect_equal(anteriors(cg, "C"), c("C", "A", "B"))
-
   expect_equal(descendants(cg, "A"), c("A", "B", "D"))
-  expect_equal(descendants(cg, "B"), c("B", "D"))
-
   expect_equal(posteriors(cg, "A"), c("A", "B", "C", "D"))
 
-  # Can still override with explicit argument
-  expect_equal(ancestors(cg, "A", open = TRUE), NULL)
-  expect_equal(anteriors(cg, "A", open = TRUE), NULL)
-  expect_equal(descendants(cg, "A", open = TRUE), c("B", "D"))
-  expect_equal(posteriors(cg, "A", open = TRUE), c("B", "C", "D"))
-
-  # Reset to defaults
-  caugi_options(reset = TRUE)
-})
-
-# ──────────────────────────────────────────────────────────────────────────────
-# ──────────────────── open_graph_def fast-access env var ──────────────────────
-# ──────────────────────────────────────────────────────────────────────────────
-
-test_that("open_graph_def is TRUE by default", {
-  expect_true(.caugi_env$open_graph_def)
-})
-
-test_that("open_graph_def syncs to FALSE when use_open_graph_definition is set FALSE", {
-  on.exit(caugi_options(reset = TRUE), add = TRUE)
-
-  caugi_options(use_open_graph_definition = FALSE)
-  expect_false(.caugi_env$open_graph_def)
-})
-
-test_that("open_graph_def syncs back to TRUE when use_open_graph_definition is set TRUE", {
-  on.exit(caugi_options(reset = TRUE), add = TRUE)
-
-  caugi_options(use_open_graph_definition = FALSE)
-  caugi_options(use_open_graph_definition = TRUE)
-  expect_true(.caugi_env$open_graph_def)
-})
-
-test_that("open_graph_def is restored to TRUE by caugi_options(reset = TRUE)", {
-  on.exit(caugi_options(reset = TRUE), add = TRUE)
-
-  caugi_options(use_open_graph_definition = FALSE)
-  expect_false(.caugi_env$open_graph_def)
-
-  caugi_options(reset = TRUE)
-  expect_true(.caugi_env$open_graph_def)
-})
-
-test_that("open_graph_def is unaffected by unrelated option updates", {
-  on.exit(caugi_options(reset = TRUE), add = TRUE)
-
-  caugi_options(plot = list(spacing = grid::unit(2, "lines")))
-  expect_true(.caugi_env$open_graph_def)
-})
-
-test_that("missing(open) uses global option; explicit open overrides it", {
-  on.exit(caugi_options(reset = TRUE), add = TRUE)
-
-  cg <- caugi(A %-->% B %-->% C, class = "DAG")
-
-  # With default option (open = TRUE): node excluded
-  expect_equal(ancestors(cg, "B"), "A")
-
-  # Switch global option to closed; missing open now means closed
-  caugi_options(use_open_graph_definition = FALSE)
-  expect_equal(ancestors(cg, "B"), c("B", "A"))
-
-  # Explicit open = TRUE overrides the closed global option
+  # An explicit `open` overrides the option
   expect_equal(ancestors(cg, "B", open = TRUE), "A")
-
-  # Explicit open = FALSE overrides the open global option after reset
-  caugi_options(use_open_graph_definition = TRUE)
-  expect_equal(ancestors(cg, "B", open = FALSE), c("B", "A"))
 })
 
 test_that("getter and districts branches are covered", {

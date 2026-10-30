@@ -7,7 +7,6 @@ test_that("Sugiyama layouts place parents above children in DAGs", {
   for (cg in graphs) {
     edge_df <- edges(cg)
     layouts <- list(
-      caugi_layout_sugiyama(cg),
       caugi_layout(cg, method = "sugiyama"),
       caugi_layout(cg)
     )
@@ -29,7 +28,11 @@ test_that("Sugiyama component packing preserves top-to-bottom flow", {
   edge_df <- edges(cg)
 
   for (packing_ratio in c(0, 1.618034, Inf)) {
-    layout <- caugi_layout_sugiyama(cg, packing_ratio = packing_ratio)
+    layout <- caugi_layout(
+      cg,
+      method = "sugiyama",
+      packing_ratio = packing_ratio
+    )
     y <- stats::setNames(layout$y, layout$name)
 
     expect_equal(layout$name, nodes(cg)[["name"]])
@@ -42,16 +45,16 @@ test_that("Sugiyama component packing preserves top-to-bottom flow", {
 })
 
 test_that("Sugiyama layout handles empty graphs and isolated nodes", {
-  empty <- caugi_layout_sugiyama(caugi(class = "DAG"))
+  empty <- caugi_layout(caugi(class = "DAG"), method = "sugiyama")
   expect_equal(nrow(empty), 0L)
   expect_named(empty, c("name", "x", "y"))
 
-  singleton <- caugi_layout_sugiyama(caugi(A, class = "DAG"))
+  singleton <- caugi_layout(caugi(A, class = "DAG"), method = "sugiyama")
   expect_equal(singleton$name, "A")
   expect_equal(singleton$x, 0.5)
   expect_equal(singleton$y, 0.5)
 
-  isolated <- caugi_layout_sugiyama(caugi(A, B, C, class = "DAG"))
+  isolated <- caugi_layout(caugi(A, B, C, class = "DAG"), method = "sugiyama")
   expect_equal(isolated$name, c("A", "B", "C"))
   expect_true(all(is.finite(isolated$x)))
   expect_true(all(is.finite(isolated$y)))
