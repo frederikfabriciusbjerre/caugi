@@ -15,7 +15,7 @@ p <- 0.25
 
 cat(sprintf("Running benchmark on %s...\n", opt$branch_name))
 
-cg <- generate_graph(n, p, class="DAG")
+cg <- generate_graph(n, p = p, class="DAG")
 build(cg)
 
 test_node_index <- sample(n, 1)
