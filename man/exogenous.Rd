@@ -13,8 +13,7 @@ exogenous(cg, undirected_as_parents = FALSE)
 as (possible) parents, if \code{FALSE} (default), undirected edges are ignored.}
 }
 \value{
-Either a character vector of node names (if a single node is
-requested) or a list of character vectors (if multiple nodes are requested).
+A character vector of node names.
 }
 \description{
 Get all exogenous nodes (nodes with no parents) in a

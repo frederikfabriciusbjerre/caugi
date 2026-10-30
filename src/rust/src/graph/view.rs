@@ -522,20 +522,23 @@ impl GraphView {
         }
     }
 
-    // ---- ADMG adjustment methods ----
-    pub fn is_valid_adjustment_set_admg(
+    // ---- Adjustment criterion (DAGs and ADMGs) ----
+    // The DAG check rejects a `z` that meets `ys`; the ADMG check does not, so
+    // R's `is_valid_adjustment()` tests that itself.
+    pub fn is_valid_adjustment_set(
         &self,
         xs: &[u32],
         ys: &[u32],
         z: &[u32],
     ) -> Result<bool, String> {
         match self {
+            GraphView::Dag(d) => Ok(d.is_valid_adjustment_set(xs, ys, z)),
             GraphView::Admg(g) => Ok(g.is_valid_adjustment_set(xs, ys, z)),
-            _ => Err("is_valid_adjustment_set_admg is only defined for ADMGs".into()),
+            _ => Err("is_valid_adjustment_set is only defined for DAGs and ADMGs".into()),
         }
     }
 
-    pub fn all_adjustment_sets_admg(
+    pub fn all_adjustment_sets(
         &self,
         xs: &[u32],
         ys: &[u32],
@@ -543,8 +546,9 @@ impl GraphView {
         max_size: u32,
     ) -> Result<Vec<Vec<u32>>, String> {
         match self {
+            GraphView::Dag(d) => Ok(d.all_adjustment_sets(xs, ys, minimal, max_size)),
             GraphView::Admg(g) => Ok(g.all_adjustment_sets(xs, ys, minimal, max_size)),
-            _ => Err("all_adjustment_sets_admg is only defined for ADMGs".into()),
+            _ => Err("all_adjustment_sets is only defined for DAGs and ADMGs".into()),
         }
     }
 
@@ -972,9 +976,11 @@ mod tests {
             vec![0]
         );
 
-        // backdoor validity + enumeration
+        // backdoor and adjustment validity + enumeration
         assert_eq!(v.is_valid_backdoor_set(&[1], &[2], &[0]).unwrap(), true);
         assert_eq!(v.is_valid_backdoor_set(&[1], &[2], &[]).unwrap(), false);
+        assert_eq!(v.is_valid_adjustment_set(&[1], &[2], &[0]).unwrap(), true);
+        assert_eq!(v.is_valid_adjustment_set(&[1], &[2], &[]).unwrap(), false);
         assert_eq!(
             v.all_backdoor_sets(&[1], &[2], true, 5).unwrap(),
             vec![vec![0]]
@@ -1250,18 +1256,14 @@ mod tests {
         assert_eq!(v_pdag.anteriors_of(1).unwrap(), vec![0, 2]);
         assert_eq!(v_pdag.posteriors_of(1).unwrap(), vec![2]);
 
-        // ADMG-only adjustment methods error branches
+        // Adjustment criterion error branches
         assert_eq!(
-            v_dag
-                .is_valid_adjustment_set_admg(&[0], &[2], &[])
-                .unwrap_err(),
-            "is_valid_adjustment_set_admg is only defined for ADMGs"
+            v_pdag.is_valid_adjustment_set(&[0], &[2], &[]).unwrap_err(),
+            "is_valid_adjustment_set is only defined for DAGs and ADMGs"
         );
         assert_eq!(
-            v_dag
-                .all_adjustment_sets_admg(&[0], &[2], true, 2)
-                .unwrap_err(),
-            "all_adjustment_sets_admg is only defined for ADMGs"
+            v_pdag.all_adjustment_sets(&[0], &[2], true, 2).unwrap_err(),
+            "all_adjustment_sets is only defined for DAGs and ADMGs"
         );
 
         // Pdag -> MPDAG via meek closure

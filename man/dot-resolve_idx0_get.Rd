@@ -10,7 +10,7 @@
 
 .resolve_idx0_xy(session, node_name, node_index, arg)
 
-.resolve_idx0_mget(session, node_name = NULL, node_index = NULL)
+.resolve_idx0_mget(session, node_name = NULL, node_index = NULL, arg)
 }
 \arguments{
 \item{session}{A GraphSession pointer.}
@@ -18,6 +18,10 @@
 \item{node_name}{Optional character vector of node names.}
 
 \item{node_index}{Optional numeric vector of 1-based node indices.}
+
+\item{arg}{Name of the node-names argument, e.g. \code{"X"}, used in messages.
+\code{.resolve_idx0_xy} and \code{.resolve_idx0_mget} warn that the argument
+\verb{<arg>_index} is deprecated when \code{node_index} is supplied.}
 }
 \description{
 Internal helper function to resolve either a node name or a
