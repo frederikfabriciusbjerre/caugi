@@ -21,7 +21,10 @@ Cannot be combined with \code{nodes} or \code{index}.)}
 \value{
 If all districts are requested: a list of character vectors, one per
 district. If \code{nodes}/\code{index} are supplied: either a character vector (single
-target) or a named list of character vectors (multiple targets).
+target) or a named list of character vectors (multiple targets). The named
+list for multiple targets is deprecated: a future version will return the
+union of their districts as one character vector in graph node order. For
+one district per node, use \code{lapply()} over the nodes.
 }
 \description{
 Get districts (c-components) for all nodes, or for selected
@@ -38,7 +41,8 @@ cg <- caugi(
 districts(cg)
 # Returns list with districts: {A, C}, {B}, {D, E}
 districts(cg, nodes = "A") # Returns c("A", "C")
-districts(cg, index = c(1, 4))
+lapply(c("A", "D"), function(x) districts(cg, nodes = x))
+# Returns list(c("A", "C"), c("D", "E"))
 
 }
 \seealso{

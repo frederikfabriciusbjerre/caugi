@@ -15,7 +15,10 @@ children(cg, nodes = NULL, index = NULL)
 }
 \value{
 Either a character vector of node names (if a single node is
-requested) or a list of character vectors (if multiple nodes are requested).
+requested) or a named list of character vectors (if multiple nodes are
+requested). The list is deprecated: a future version will return the union
+of the results as one character vector in graph node order. For one result
+per node, use \code{lapply()} over the nodes.
 }
 \description{
 Get children of nodes in a graph (nodes with directed edges pointing OUT
@@ -31,11 +34,11 @@ cg <- caugi(
 children(cg, "A") # "B"
 children(cg, index = 2) # "C"
 children(cg, "B") # "C"
-children(cg, c("B", "C"))
-#> $B
+lapply(c("B", "C"), function(x) children(cg, x))
+#> [[1]]
 #> [1] "C"
 #>
-#> $C
+#> [[2]]
 #> NULL
 
 }

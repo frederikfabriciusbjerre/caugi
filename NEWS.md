@@ -248,6 +248,17 @@
   node of `Y`; `is_valid_adjustment_admg()` keeps its old results for such
   input (#355).
 
+* Querying several nodes at once with `parents()`, `children()`,
+  `neighbors()`/`neighbours()`, `ancestors()`, `descendants()`, `anteriors()`,
+  `posteriors()`, `markov_blanket()`, `spouses()` or `districts()` is
+  deprecated. Such calls still return a named list with one entry per node,
+  but now warn: a future version will return the union of the results as one
+  character vector in graph node order, so that a query returns the same type
+  whatever the number of nodes. For one result per node, write
+  `lapply(nodes, function(x) parents(cg, x))` instead of
+  `parents(cg, nodes)`. Single-node queries and `districts(cg)` without nodes
+  are unchanged (#359).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.

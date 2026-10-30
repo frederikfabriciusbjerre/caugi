@@ -24,7 +24,10 @@ which by default is TRUE.}
 }
 \value{
 Either a character vector of node names (if a single node is
-requested) or a list of character vectors (if multiple nodes are requested).
+requested) or a named list of character vectors (if multiple nodes are
+requested). The list is deprecated: a future version will return the union
+of the results as one character vector in graph node order. For one result
+per node, use \code{lapply()} over the nodes.
 }
 \description{
 Get the posterior set of nodes in a graph. The posterior set (dual of the

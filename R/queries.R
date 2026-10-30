@@ -699,6 +699,41 @@ edge_types <- function(cg) {
 # ──────────────────────────────── Relations ───────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
+#' @title Warn that querying several nodes is deprecated
+#'
+#' @description Node queries such as [parents()] return a named list with one
+#' entry per node when several nodes are requested. Signals a warning of class
+#' `caugi_deprecated_node_list` (and `deprecatedWarning`) saying that a future
+#' version returns the union of the results instead.
+#'
+#' @param fun Name of the query function, used in the message.
+#'
+#' @returns `NULL`, invisibly.
+#'
+#' @keywords internal
+.warn_node_list_deprecated <- function(fun) {
+  warning(structure(
+    class = c(
+      "caugi_deprecated_node_list",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "Calling `",
+        fun,
+        "()` with several nodes is deprecated. It returns a list with one ",
+        "entry per node, but a future version of caugi will return the union ",
+        "of the results as one character vector. For one result per node, ",
+        "use `lapply()` over the nodes."
+      ),
+      call = NULL
+    )
+  ))
+  invisible(NULL)
+}
+
 #' @title Get parents of nodes in a `caugi`
 #'
 #' @description
@@ -712,7 +747,10 @@ edge_types <- function(cg) {
 #' @param index A vector of node indexes.
 #'
 #' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' cg <- caugi(
@@ -723,20 +761,25 @@ edge_types <- function(cg) {
 #' parents(cg, "A") # NULL
 #' parents(cg, index = 2) # "A"
 #' parents(cg, "B") # "A"
-#' parents(cg, c("B", "C"))
-#' #> $B
+#' lapply(c("B", "C"), function(x) parents(cg, x))
+#' #> [[1]]
 #' #> [1] "A"
 #' #>
-#' #> $C
+#' #> [[2]]
 #' #> [1] "B"
 #'
 #' @family queries
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `parents()` in `src/rust/src/lib.rs`.
-parents <- parents
-formals(parents) <- alist(cg = , nodes = NULL, index = NULL)
+# Implemented in Rust via `parents()` in `src/rust/src/lib.rs`.
+parents <- function(cg, nodes = NULL, index = NULL) {
+  out <- .Call(wrap__parents, cg, nodes, index)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("parents")
+  }
+  out
+}
 
 #' @title Get children of nodes in a `caugi`
 #'
@@ -748,7 +791,10 @@ formals(parents) <- alist(cg = , nodes = NULL, index = NULL)
 #' @inheritParams parents
 #'
 #' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' cg <- caugi(
@@ -759,20 +805,25 @@ formals(parents) <- alist(cg = , nodes = NULL, index = NULL)
 #' children(cg, "A") # "B"
 #' children(cg, index = 2) # "C"
 #' children(cg, "B") # "C"
-#' children(cg, c("B", "C"))
-#' #> $B
+#' lapply(c("B", "C"), function(x) children(cg, x))
+#' #> [[1]]
 #' #> [1] "C"
 #' #>
-#' #> $C
+#' #> [[2]]
 #' #> NULL
 #'
 #' @family queries
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `children()` in `src/rust/src/lib.rs`.
-children <- children
-formals(children) <- alist(cg = , nodes = NULL, index = NULL)
+# Implemented in Rust via `children()` in `src/rust/src/lib.rs`.
+children <- function(cg, nodes = NULL, index = NULL) {
+  out <- .Call(wrap__children, cg, nodes, index)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("children")
+  }
+  out
+}
 
 #' @title Get neighbors of nodes in a `caugi`
 #'
@@ -805,7 +856,10 @@ formals(children) <- alist(cg = , nodes = NULL, index = NULL)
 #' }
 #'
 #' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' cg <- caugi(
@@ -816,11 +870,11 @@ formals(children) <- alist(cg = , nodes = NULL, index = NULL)
 #' neighbors(cg, "A") # "B"
 #' neighbors(cg, index = 2) # "A" "C"
 #' neighbors(cg, "B") # "A" "C"
-#' neighbors(cg, c("B", "C"))
-#' #> $B
+#' lapply(c("B", "C"), function(x) neighbors(cg, x))
+#' #> [[1]]
 #' #> [1] "A" "C"
 #' #>
-#' #> $C
+#' #> [[2]]
 #' #> [1] "B"
 #'
 #' # Using mode to filter by edge direction
@@ -842,9 +896,14 @@ formals(children) <- alist(cg = , nodes = NULL, index = NULL)
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `neighbors()` in `src/rust/src/lib.rs`.
-neighbors <- neighbors
-formals(neighbors) <- alist(cg = , nodes = NULL, index = NULL, mode = "all")
+# Implemented in Rust via `neighbors()` in `src/rust/src/lib.rs`.
+neighbors <- function(cg, nodes = NULL, index = NULL, mode = "all") {
+  out <- .Call(wrap__neighbors, cg, nodes, index, mode)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("neighbors")
+  }
+  out
+}
 
 #' @rdname neighbors
 #' @export
@@ -858,7 +917,10 @@ neighbours <- neighbors
 #'   which by default is `r caugi_options("use_open_graph_definition")`.
 #'
 #' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' cg <- caugi(
@@ -870,25 +932,30 @@ neighbours <- neighbors
 #' ancestors(cg, "A", open = FALSE) # A
 #' ancestors(cg, index = 2) # "A"
 #' ancestors(cg, "B") # "A"
-#' ancestors(cg, c("B", "C"))
-#' #> $B
+#' lapply(c("B", "C"), function(x) ancestors(cg, x))
+#' #> [[1]]
 #' #> [1] "A"
 #' #>
-#' #> $C
+#' #> [[2]]
 #' #> [1] "A" "B"
 #'
 #' @family queries
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `ancestors()` in `src/rust/src/lib.rs`.
-ancestors <- ancestors
-formals(ancestors) <- alist(
-  cg = ,
+# Implemented in Rust via `ancestors()` in `src/rust/src/lib.rs`.
+ancestors <- function(
+  cg,
   nodes = NULL,
   index = NULL,
   open = caugi_options("use_open_graph_definition")
-)
+) {
+  out <- .Call(wrap__ancestors, cg, nodes, index, open)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("ancestors")
+  }
+  out
+}
 
 #' @title Get descendants of nodes in a `caugi`
 #'
@@ -898,7 +965,10 @@ formals(ancestors) <- alist(
 #'   which by default is `r caugi_options("use_open_graph_definition")`.
 #'
 #' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' cg <- caugi(
@@ -910,25 +980,30 @@ formals(ancestors) <- alist(
 #' descendants(cg, "A", open = FALSE) # "A" "B" "C"
 #' descendants(cg, index = 2) # "C"
 #' descendants(cg, "B") # "C"
-#' descendants(cg, c("B", "C"))
-#' #> $B
+#' lapply(c("B", "C"), function(x) descendants(cg, x))
+#' #> [[1]]
 #' #> [1] "C"
 #' #>
-#' #> $C
+#' #> [[2]]
 #' #> NULL
 #'
 #' @family queries
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `descendants()` in `src/rust/src/lib.rs`.
-descendants <- descendants
-formals(descendants) <- alist(
-  cg = ,
+# Implemented in Rust via `descendants()` in `src/rust/src/lib.rs`.
+descendants <- function(
+  cg,
   nodes = NULL,
   index = NULL,
   open = caugi_options("use_open_graph_definition")
-)
+) {
+  out <- .Call(wrap__descendants, cg, nodes, index, open)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("descendants")
+  }
+  out
+}
 
 #' @title Get anteriors of nodes in a `caugi`
 #'
@@ -948,7 +1023,10 @@ formals(descendants) <- alist(
 #'   which by default is `r caugi_options("use_open_graph_definition")`.
 #'
 #' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' # PDAG example with directed and undirected edges
@@ -977,14 +1055,19 @@ formals(descendants) <- alist(
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `anteriors()` in `src/rust/src/lib.rs`.
-anteriors <- anteriors
-formals(anteriors) <- alist(
-  cg = ,
+# Implemented in Rust via `anteriors()` in `src/rust/src/lib.rs`.
+anteriors <- function(
+  cg,
   nodes = NULL,
   index = NULL,
   open = caugi_options("use_open_graph_definition")
-)
+) {
+  out <- .Call(wrap__anteriors, cg, nodes, index, open)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("anteriors")
+  }
+  out
+}
 
 #' @title Get posteriors of nodes in a `caugi`
 #'
@@ -1005,7 +1088,10 @@ formals(anteriors) <- alist(
 #'   which by default is `r caugi_options("use_open_graph_definition")`.
 #'
 #' @returns Either a character vector of node names (if a single node is
-#'   requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' # PDAG example with directed and undirected edges
@@ -1031,21 +1117,29 @@ formals(anteriors) <- alist(
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `posteriors()` in `src/rust/src/lib.rs`.
-posteriors <- posteriors
-formals(posteriors) <- alist(
-  cg = ,
+# Implemented in Rust via `posteriors()` in `src/rust/src/lib.rs`.
+posteriors <- function(
+  cg,
   nodes = NULL,
   index = NULL,
   open = caugi_options("use_open_graph_definition")
-)
+) {
+  out <- .Call(wrap__posteriors, cg, nodes, index, open)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("posteriors")
+  }
+  out
+}
 
 #' @title Get Markov blanket of nodes in a `caugi`
 #'
 #' @inheritParams parents
 #'
 #' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' cg <- caugi(
@@ -1056,20 +1150,25 @@ formals(posteriors) <- alist(
 #' markov_blanket(cg, "A") # "B"
 #' markov_blanket(cg, index = 2) # "A" "C"
 #' markov_blanket(cg, "B") # "A" "C"
-#' markov_blanket(cg, c("B", "C"))
-#' #> $B
+#' lapply(c("B", "C"), function(x) markov_blanket(cg, x))
+#' #> [[1]]
 #' #> [1] "A" "C"
 #' #>
-#' #> $C
+#' #> [[2]]
 #' #> [1] "B"
 #'
 #' @family queries
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `markov_blanket()` in `src/rust/src/lib.rs`.
-markov_blanket <- markov_blanket
-formals(markov_blanket) <- alist(cg = , nodes = NULL, index = NULL)
+# Implemented in Rust via `markov_blanket()` in `src/rust/src/lib.rs`.
+markov_blanket <- function(cg, nodes = NULL, index = NULL) {
+  out <- .Call(wrap__markov_blanket, cg, nodes, index)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("markov_blanket")
+  }
+  out
+}
 
 #' @title Get all exogenous nodes in a `caugi`
 #'
@@ -1080,8 +1179,7 @@ formals(markov_blanket) <- alist(cg = , nodes = NULL, index = NULL)
 #' @param undirected_as_parents Logical; if `TRUE`, undirected edges are treated
 #' as (possible) parents, if `FALSE` (default), undirected edges are ignored.
 #'
-#' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' @returns A character vector of node names.
 #'
 #' @examples
 #' cg <- caugi(
@@ -1188,7 +1286,10 @@ components <- function(cg, mode = c("weak", "strong")) {
 #' @param cg A `caugi` object of class ADMG.
 #'
 #' @returns Either a character vector of node names (if a single node is
-#' requested) or a list of character vectors (if multiple nodes are requested).
+#' requested) or a named list of character vectors (if multiple nodes are
+#' requested). The list is deprecated: a future version will return the union
+#' of the results as one character vector in graph node order. For one result
+#' per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' cg <- caugi(
@@ -1204,9 +1305,14 @@ components <- function(cg, mode = c("weak", "strong")) {
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `spouses()` in `src/rust/src/lib.rs`.
-spouses <- spouses
-formals(spouses) <- alist(cg = , nodes = NULL, index = NULL)
+# Implemented in Rust via `spouses()` in `src/rust/src/lib.rs`.
+spouses <- function(cg, nodes = NULL, index = NULL) {
+  out <- .Call(wrap__spouses, cg, nodes, index)
+  if (is.list(out)) {
+    .warn_node_list_deprecated("spouses")
+  }
+  out
+}
 
 #' @title Get districts (c-components) of an ADMG or AG
 #'
@@ -1224,7 +1330,10 @@ formals(spouses) <- alist(cg = , nodes = NULL, index = NULL)
 #'
 #' @returns If all districts are requested: a list of character vectors, one per
 #' district. If `nodes`/`index` are supplied: either a character vector (single
-#' target) or a named list of character vectors (multiple targets).
+#' target) or a named list of character vectors (multiple targets). The named
+#' list for multiple targets is deprecated: a future version will return the
+#' union of their districts as one character vector in graph node order. For
+#' one district per node, use `lapply()` over the nodes.
 #'
 #' @examples
 #' cg <- caugi(
@@ -1236,7 +1345,8 @@ formals(spouses) <- alist(cg = , nodes = NULL, index = NULL)
 #' districts(cg)
 #' # Returns list with districts: {A, C}, {B}, {D, E}
 #' districts(cg, nodes = "A") # Returns c("A", "C")
-#' districts(cg, index = c(1, 4))
+#' lapply(c("A", "D"), function(x) districts(cg, nodes = x))
+#' # Returns list(c("A", "C"), c("D", "E"))
 #'
 #' @family queries
 #' @concept queries
@@ -1253,7 +1363,11 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
     )
   }
 
-  .Call(wrap__districts, cg, nodes, index, all)
+  out <- .Call(wrap__districts, cg, nodes, index, all)
+  if (is.list(out) && (!is.null(nodes) || !is.null(index))) {
+    .warn_node_list_deprecated("districts")
+  }
+  out
 }
 
 #' @title M-separation test for AGs and ADMGs

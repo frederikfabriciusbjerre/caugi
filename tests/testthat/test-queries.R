@@ -489,11 +489,17 @@ test_that("parents returns expected nodes for names, indices, and expr", {
   cg <- caugi(A %-->% B, B %-->% C, A %---% D, D %-->% B, class = "PDAG")
   expect_identical(parents(cg, "B"), c("A", "D"))
   expect_identical(parents(cg, "B"), c("A", "D"))
-  pa_AB <- parents(cg, c("A", "B"))
+  expect_warning(
+    pa_AB <- parents(cg, c("A", "B")),
+    "several nodes is deprecated"
+  )
   expect_null(pa_AB[["A"]])
   expect_setequal(pa_AB[["B"]], c("A", "D"))
   expect_identical(parents(cg, index = 2), c("A", "D"))
-  pa_BC <- parents(cg, c("B", "C"))
+  expect_warning(
+    pa_BC <- parents(cg, c("B", "C")),
+    "several nodes is deprecated"
+  )
   expect_setequal(pa_BC[["B"]], c("A", "D"))
   expect_setequal(pa_BC[["C"]], "B")
 })
@@ -501,8 +507,16 @@ test_that("parents returns expected nodes for names, indices, and expr", {
 test_that("children returns expected nodes", {
   cg <- caugi(A %-->% B, B %-->% C, C %---% D, D %-->% E, class = "PDAG")
   expect_identical(children(cg, "A")[[1]], "B")
-  expect_identical(children(cg, c("B", "D"))[[1]], "C")
-  expect_identical(children(cg, c("C", "D"))[[2]], "E")
+  expect_warning(
+    ch_BD <- children(cg, c("B", "D")),
+    "several nodes is deprecated"
+  )
+  expect_identical(ch_BD[[1]], "C")
+  expect_warning(
+    ch_CD <- children(cg, c("C", "D")),
+    "several nodes is deprecated"
+  )
+  expect_identical(ch_CD[[2]], "E")
   # indices
   expect_identical(children(cg, index = 1)[[1]], "B")
 })
@@ -560,7 +574,7 @@ test_that("getter queries handle missing relations and duplicates", {
   # node with no children
   expect_identical(length(children(cg, "C")[[1]]), 0L)
   # duplicate targets collapse to the same combined set
-  res <- parents(cg, c("B", "B"))
+  expect_warning(res <- parents(cg, c("B", "B")), "several nodes is deprecated")
   expect_identical(sort(res[[1]]), sort(parents(cg, "B")[[1]]))
 })
 
@@ -610,14 +624,30 @@ test_that("an and de works", {
   cg <- caugi(A %-->% B, B %-->% C, C %---% D, class = "PDAG")
   expect_identical(ancestors(cg, "C"), c("A", "B"))
   expect_identical(descendants(cg, "A"), c("B", "C"))
-  expect_identical(sort(ancestors(cg, c("C", "D"))[[1]]), c("A", "B"))
-  expect_identical(sort(descendants(cg, c("A", "D"))[[1]]), c("B", "C"))
+  expect_warning(
+    an_CD <- ancestors(cg, c("C", "D")),
+    "several nodes is deprecated"
+  )
+  expect_identical(sort(an_CD[[1]]), c("A", "B"))
+  expect_warning(
+    de_AD <- descendants(cg, c("A", "D")),
+    "several nodes is deprecated"
+  )
+  expect_identical(sort(de_AD[[1]]), c("B", "C"))
 
   # test index
   expect_identical(ancestors(cg, index = 3), c("A", "B"))
   expect_identical(descendants(cg, index = 1), c("B", "C"))
-  expect_identical(sort(ancestors(cg, index = c(3, 4))[[1]]), c("A", "B"))
-  expect_identical(sort(descendants(cg, index = c(1, 4))[[1]]), c("B", "C"))
+  expect_warning(
+    an_34 <- ancestors(cg, index = c(3, 4)),
+    "several nodes is deprecated"
+  )
+  expect_identical(sort(an_34[[1]]), c("A", "B"))
+  expect_warning(
+    de_14 <- descendants(cg, index = c(1, 4)),
+    "several nodes is deprecated"
+  )
+  expect_identical(sort(de_14[[1]]), c("B", "C"))
 
   cg <- caugi(A, B, class = "DAG")
 
@@ -641,7 +671,10 @@ test_that("markov_blanket works on DAGs (parents, children, spouses)", {
   expect_setequal(mb_B, c("A", "D", "E", "F"))
 
   # unquoted and vector inputs
-  mb_AC <- markov_blanket(cg, c("A", "C"))
+  expect_warning(
+    mb_AC <- markov_blanket(cg, c("A", "C")),
+    "several nodes is deprecated"
+  )
   expect_setequal(mb_AC[[1]], c("B", "C", "D"))
   expect_setequal(mb_AC[[2]], c("A"))
 
@@ -963,12 +996,18 @@ test_that("districts supports all, nodes, and index modes", {
 
   expect_setequal(districts(cg, nodes = "A"), c("A", "B", "C"))
 
-  by_nodes <- districts(cg, nodes = c("A", "D"))
+  expect_warning(
+    by_nodes <- districts(cg, nodes = c("A", "D")),
+    "several nodes is deprecated"
+  )
   expect_named(by_nodes, c("A", "D"))
   expect_setequal(by_nodes$A, c("A", "B", "C"))
   expect_identical(by_nodes$D, "D")
 
-  by_index <- districts(cg, index = c(1L, 4L))
+  expect_warning(
+    by_index <- districts(cg, index = c(1L, 4L)),
+    "several nodes is deprecated"
+  )
   expect_named(by_index, c("A", "D"))
   expect_setequal(by_index$A, c("A", "B", "C"))
   expect_identical(by_index$D, "D")
@@ -1112,7 +1151,10 @@ test_that("neighbors mode works with multiple nodes for UNKNOWN graphs", {
     class = "UNKNOWN"
   )
 
-  result <- neighbors(cg, c("B", "C"), mode = "in")
+  expect_warning(
+    result <- neighbors(cg, c("B", "C"), mode = "in"),
+    "several nodes is deprecated"
+  )
   expect_identical(names(result), c("B", "C"))
   expect_identical(result$B, "A")
   expect_identical(result$C, "B")
@@ -1360,7 +1402,10 @@ test_that("anteriors returns list for multiple nodes", {
     B %-->% D,
     class = "PDAG"
   )
-  result <- anteriors(cg, c("A", "D"))
+  expect_warning(
+    result <- anteriors(cg, c("A", "D")),
+    "several nodes is deprecated"
+  )
   expect_type(result, "list")
   expect_named(result, c("A", "D"))
   expect_null(result$A)
@@ -1419,7 +1464,10 @@ test_that("posteriors returns list for multiple nodes", {
     B %-->% D,
     class = "PDAG"
   )
-  result <- posteriors(cg, c("A", "D"))
+  expect_warning(
+    result <- posteriors(cg, c("A", "D")),
+    "several nodes is deprecated"
+  )
   expect_type(result, "list")
   expect_named(result, c("A", "D"))
   expect_equal(sort(result$A), c("B", "C", "D"))
@@ -1499,7 +1547,10 @@ test_that("posteriors works for multiple starting nodes (set semantics)", {
     class = "DAG"
   )
 
-  res <- posteriors(cg, c("A", "D"))
+  expect_warning(
+    res <- posteriors(cg, c("A", "D")),
+    "several nodes is deprecated"
+  )
 
   expect_type(res, "list")
   expect_named(res, c("A", "D"))
@@ -1825,4 +1876,162 @@ test_that("descendants NetworkX 1 test", {
 
   descendants_cg_c <- descendants(cg, nodes = "C")
   expect_null(descendants_cg_c)
+})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────── Deprecated per-node lists for several nodes (#359) ───────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("the several-nodes warning is a classed deprecatedWarning", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  cnd <- tryCatch(parents(cg, c("B", "C")), warning = identity)
+  expect_s3_class(cnd, c("caugi_deprecated_node_list", "deprecatedWarning"))
+  expect_match(conditionMessage(cnd), "union of the results", fixed = TRUE)
+  expect_match(conditionMessage(cnd), "`lapply()`", fixed = TRUE)
+})
+
+test_that("parents() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- parents(cg, c("B", "C")),
+    "`parents()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(B = "A", C = "B"))
+  expect_warning(
+    res <- parents(cg, index = 2:3),
+    "`parents()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(B = "A", C = "B"))
+})
+
+test_that("children() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- children(cg, c("A", "C")),
+    "`children()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", C = NULL))
+})
+
+test_that("neighbors() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- neighbors(cg, c("A", "B")),
+    "`neighbors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", B = c("A", "C")))
+  expect_warning(
+    res <- neighbours(cg, c("A", "B")),
+    "`neighbors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", B = c("A", "C")))
+})
+
+test_that("ancestors() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- ancestors(cg, c("A", "C")),
+    "`ancestors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = NULL, C = c("A", "B")))
+})
+
+test_that("descendants() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- descendants(cg, c("A", "C")),
+    "`descendants()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = c("B", "C"), C = NULL))
+})
+
+test_that("anteriors() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B %---% C, class = "PDAG")
+  expect_warning(
+    res <- anteriors(cg, c("A", "C")),
+    "`anteriors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = NULL, C = c("A", "B")))
+})
+
+test_that("posteriors() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B %---% C, class = "PDAG")
+  expect_warning(
+    res <- posteriors(cg, c("A", "C")),
+    "`posteriors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = c("B", "C"), C = "B"))
+})
+
+test_that("markov_blanket() with several nodes warns and returns the list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- markov_blanket(cg, c("A", "B")),
+    "`markov_blanket()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", B = c("A", "C")))
+})
+
+test_that("spouses() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %<->% B, B %<->% C, A %-->% C, class = "ADMG")
+  expect_warning(
+    res <- spouses(cg, c("A", "B")),
+    "`spouses()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", B = c("A", "C")))
+})
+
+test_that("districts() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %<->% B, B %<->% C, A %-->% C, D, class = "ADMG")
+  expect_warning(
+    res <- districts(cg, nodes = c("A", "D")),
+    "`districts()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = c("A", "B", "C"), D = "D"))
+  expect_warning(
+    res <- districts(cg, index = c(1, 4)),
+    "`districts()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = c("A", "B", "C"), D = "D"))
+})
+
+test_that("single-node queries and districts(cg) do not warn", {
+  dag <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  pdag <- caugi(A %-->% B %---% C, class = "PDAG")
+  admg <- caugi(A %<->% B, B %<->% C, A %-->% C, D, class = "ADMG")
+  expect_no_warning(parents(dag, "B"))
+  expect_no_warning(parents(dag, index = 2))
+  expect_no_warning(children(dag, "C"))
+  expect_no_warning(neighbors(dag, "B"))
+  expect_no_warning(neighbours(dag, "B"))
+  expect_no_warning(ancestors(dag, "C"))
+  expect_no_warning(descendants(dag, "A"))
+  expect_no_warning(anteriors(pdag, "C"))
+  expect_no_warning(posteriors(pdag, "A"))
+  expect_no_warning(markov_blanket(dag, "B"))
+  expect_no_warning(spouses(admg, "B"))
+  expect_no_warning(districts(admg, nodes = "A"))
+  expect_no_warning(districts(admg, index = 1))
+  expect_no_warning(districts(admg))
+})
+
+test_that("condition_marginalize() does not trigger the several-nodes warning", {
+  cg <- caugi(A %-->% B, B %-->% C, C %<->% D, D %-->% E, class = "ADMG")
+  expect_no_warning(
+    out <- condition_marginalize(cg, marg_vars = "B", cond_vars = "D")
+  )
+  expect_identical(out@edges$edge, "-->")
 })
