@@ -385,16 +385,7 @@ is_valid_adjustment_admg <- function(
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-  # The Rust check also runs on DAGs, but this function never did.
-  if (!identical(cg@graph_class, "ADMG")) {
-    stop(
-      "`is_valid_adjustment_admg()` is only defined for ADMGs. ",
-      "The graph has class \"",
-      cg@graph_class,
-      "\".",
-      call. = FALSE
-    )
-  }
+  .check_admg_class(cg, "is_valid_adjustment_admg")
 
   rs_is_valid_adjustment_set(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -588,16 +579,29 @@ all_adjustment_sets_admg <- function(
   max_size = 3L
 ) {
   .Deprecated("all_adjustment_sets")
-  all_adjustment_sets(
-    cg = cg,
-    X = X,
-    Y = Y,
-    X_index = X_index,
-    Y_index = Y_index,
-    type = "adjustment",
-    minimal = minimal,
-    max_size = max_size
+  is_caugi(cg, throw_error = TRUE)
+  # Calls Rust directly rather than all_adjustment_sets(), which errors on an
+  # empty or overlapping X and Y. This keeps the old results for such input.
+  if (is.null(X) && is.null(X_index)) {
+    stop("X (or X_index) must be provided.", call. = FALSE)
+  }
+  if (is.null(Y) && is.null(Y_index)) {
+    stop("Y (or Y_index) must be provided.", call. = FALSE)
+  }
+
+  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  .check_admg_class(cg, "all_adjustment_sets_admg")
+
+  sets_idx0 <- rs_all_adjustment_sets(
+    cg@session,
+    X_idx0,
+    Y_idx0,
+    minimal,
+    as.integer(max_size)
   )
+  nm <- cg@nodes$name
+  lapply(sets_idx0, \(idx0) nm[idx0 + 1L])
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -851,6 +855,22 @@ minimal_d_separator <- function(
       "\" is only defined for ",
       paste0(classes, "s", collapse = " and "),
       ". The graph has class \"",
+      cg@graph_class,
+      "\".",
+      call. = FALSE
+    )
+  }
+}
+
+# Errors unless `cg` is an ADMG. For deprecated ADMG-only functions that call
+# a Rust binding which now also accepts DAGs. `fn` names the calling function
+# in the message.
+.check_admg_class <- function(cg, fn) {
+  if (!identical(cg@graph_class, "ADMG")) {
+    stop(
+      "`",
+      fn,
+      "()` is only defined for ADMGs. The graph has class \"",
       cg@graph_class,
       "\".",
       call. = FALSE
