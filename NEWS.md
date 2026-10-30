@@ -40,12 +40,12 @@
 
 ## Performance Improvements
 
-* `is_mag()` is now polynomial instead of exponential. It tested every subset
-  of the other nodes as a separating set for each non-adjacent pair; one test
-  given the pair's anterior set decides the same thing (Richardson and Spirtes
-  2002, Theorem 4.2), and only pairs that both point into one district can fail
-  it. A 20-node graph took 2.5 seconds; 640 nodes now take a fraction of that
-  (#398).
+* `is_mag()` is now polynomial instead of exponential. It tried every subset
+  of the other nodes as a separating set for each non-adjacent pair. A pair
+  has no separating set exactly when a collider path joins it inside its
+  anterior set (Richardson and Spirtes 2002, Theorem 4.2), and a search along
+  `<->` edges finds that path. A 20-node graph could take seconds; a
+  5,000-node one now takes a fraction of a second (#398).
 
 ## Bug Fixes
 

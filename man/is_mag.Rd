@@ -25,11 +25,11 @@ violating the ancestral graph constraints or changing the encoded
 independence model.
 }
 \details{
-A non-adjacent pair with no separating set is joined by an inducing path,
-whose interior nodes are all colliders. So only pairs that both point into
-one district are tested, each with a single m-separation test given the
-other nodes in their anterior set (Richardson and Spirtes 2002, Theorem 4.2
-and Corollary 4.3). The check is polynomial in the size of the graph.
+A non-adjacent pair has no separating set exactly when a collider path
+joins the two inside their anterior set (Richardson and Spirtes 2002,
+Theorem 4.2). Only pairs that both point into one district can be joined
+this way, and each is checked with one search along \verb{<->} edges, so the
+check is polynomial in the size of the graph.
 }
 \examples{
 cg_ag <- caugi(

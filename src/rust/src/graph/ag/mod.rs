@@ -382,17 +382,38 @@ impl Ag {
         true
     }
 
-    /// Is there any set that m-separates `u` and `v`?
+    /// Is there any set that m-separates the non-adjacent `u` and `v`?
     ///
-    /// Richardson and Spirtes (2002), Theorem 4.2 (iv) <=> (v) with no
-    /// selection or latent nodes: some set does iff `ant({u, v}) \ {u, v}` does.
+    /// Richardson and Spirtes (2002), Theorem 4.2 (iii) <=> (v) with no
+    /// selection or latent nodes: no set does iff a collider path joins them
+    /// inside `ant({u, v})`. Its interior is a chain of `<->` edges that `u`
+    /// and `v` both point into, so a search along those edges decides it,
+    /// without building the augmented graph.
     fn has_separating_set(&self, u: u32, v: u32) -> bool {
-        let mut z = self.anteriors_of(u);
-        z.extend(self.anteriors_of(v));
-        z.sort_unstable();
-        z.dedup();
-        z.retain(|&w| w != u && w != v);
-        self.m_separated(&[u], &[v], &z)
+        let ant = self.anteriors_mask(&[u, v]);
+        let interior = |c: u32| ant[c as usize] && c != u && c != v;
+        let into = |x: u32, c: u32| {
+            self.children_of(x).binary_search(&c).is_ok()
+                || self.spouses_of(x).binary_search(&c).is_ok()
+        };
+        let mut seen = vec![false; self.n() as usize];
+        let mut stack: Vec<u32> = Vec::new();
+        for &c in self.children_of(u).iter().chain(self.spouses_of(u)) {
+            if interior(c) && !std::mem::replace(&mut seen[c as usize], true) {
+                stack.push(c);
+            }
+        }
+        while let Some(c) = stack.pop() {
+            if into(v, c) {
+                return false;
+            }
+            for &d in self.spouses_of(c) {
+                if interior(d) && !std::mem::replace(&mut seen[d as usize], true) {
+                    stack.push(d);
+                }
+            }
+        }
+        true
     }
 }
 
@@ -777,7 +798,20 @@ mod tests {
         let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
         assert!(ag.has_separating_set(0, 2)); // by {1}
         assert!(ag.has_separating_set(0, 3)); // by {}
-        assert!(!ag.has_separating_set(0, 1)); // adjacent
+
+        // 2 <-> 0 <-> 1 <-> 3 is a collider path between the non-adjacent 2
+        // and 3 inside their anterior set (0 --> 3, 1 --> 2), so no set
+        // separates them.
+        let (reg, dir, bid, _und) = setup();
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 3, dir).unwrap();
+        b.add_edge(1, 0, bid).unwrap();
+        b.add_edge(1, 2, dir).unwrap();
+        b.add_edge(1, 3, bid).unwrap();
+        b.add_edge(2, 0, bid).unwrap();
+        let ag = Ag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(!ag.has_separating_set(2, 3));
+        assert!(!ag.is_mag());
     }
 
     #[test]
@@ -888,7 +922,7 @@ mod tests {
     }
 
     #[test]
-    fn is_mag_matches_the_subset_search_on_random_7_node_ags() {
+    fn is_mag_matches_the_subset_search_on_random_ags() {
         let mut seed: u64 = 398;
         let mut next = || {
             seed = seed
@@ -896,18 +930,21 @@ mod tests {
                 .wrapping_add(1442695040888963407);
             (seed >> 33) as usize
         };
-        let (mut checked, mut non_mags) = (0, 0);
-        while checked < 2000 {
-            let states: Vec<usize> = (0..21)
-                .map(|_| if next() % 10 < 4 { 1 + next() % 4 } else { 0 })
-                .collect();
-            let Some(ag) = ag_from_states(7, &states) else {
-                continue;
-            };
-            assert_eq!(ag.is_mag(), is_mag_by_subsets(&ag), "states {:?}", states);
-            checked += 1;
-            non_mags += usize::from(!ag.is_mag());
+        for (n, graphs) in [(7u32, 2000), (9, 1000)] {
+            let pairs = (n * (n - 1) / 2) as usize;
+            let (mut checked, mut non_mags) = (0, 0);
+            while checked < graphs {
+                let states: Vec<usize> = (0..pairs)
+                    .map(|_| if next() % 10 < 4 { 1 + next() % 4 } else { 0 })
+                    .collect();
+                let Some(ag) = ag_from_states(n, &states) else {
+                    continue;
+                };
+                assert_eq!(ag.is_mag(), is_mag_by_subsets(&ag), "states {:?}", states);
+                checked += 1;
+                non_mags += usize::from(!ag.is_mag());
+            }
+            assert!(non_mags > 0, "no non-maximal {}-node AG drawn", n);
         }
-        assert!(non_mags > 0);
     }
 }
