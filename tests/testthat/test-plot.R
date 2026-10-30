@@ -126,6 +126,60 @@ test_that("caugi_layout() warns about options the method ignores (#367)", {
   ))
 })
 
+test_that("`x` is a deprecated name for `cg` in the layout functions", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  extra_args <- list(
+    caugi_layout = list(),
+    caugi_layout_sugiyama = list(),
+    caugi_layout_fruchterman_reingold = list(),
+    caugi_layout_kamada_kawai = list(),
+    caugi_layout_bipartite = list(),
+    caugi_layout_tiered = list(tiers = list("A", "B", "C")),
+    caugi_layout_circle = list()
+  )
+  # Evaluates `expr`, collecting its warnings instead of signalling them.
+  with_warnings <- function(expr) {
+    warnings <- list()
+    value <- withCallingHandlers(
+      expr,
+      warning = function(w) {
+        warnings[[length(warnings) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+      }
+    )
+    list(value = value, warnings = warnings)
+  }
+  for (fn in names(extra_args)) {
+    args <- extra_args[[fn]]
+    res <- with_warnings(do.call(fn, c(list(x = cg), args)))
+    is_x <- vapply(
+      res$warnings,
+      inherits,
+      logical(1),
+      "caugi_deprecated_layout_x"
+    )
+    # One warning about `x`, plus the deprecation of the caugi_layout_*()
+    # wrappers themselves.
+    expect_equal(sum(is_x), 1L)
+    expect_length(res$warnings, if (fn == "caugi_layout") 1L else 2L)
+    x_warning <- res$warnings[is_x][[1]]
+    expect_s3_class(x_warning, "deprecatedWarning")
+    expect_match(
+      conditionMessage(x_warning),
+      paste0("The `x` argument of `", fn, "()` is deprecated"),
+      fixed = TRUE
+    )
+    expect_equal(
+      res$value,
+      with_warnings(do.call(fn, c(list(cg), args)))$value
+    )
+    expect_error(
+      suppressWarnings(do.call(fn, c(list(cg, x = cg), args))),
+      "`cg` only"
+    )
+  }
+})
+
 test_that("plot() computes every layout without warnings", {
   cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
 
@@ -143,6 +197,22 @@ test_that("plot() computes every layout without warnings", {
     expect_no_warning(plot(cg, layout = method))
   }
   expect_no_warning(plot(cg, layout = "tiered", tiers = list("A", "B", "C")))
+  # plot() calls a layout function positionally, so a deprecated wrapper
+  # warns that it is deprecated but not about `x`.
+  expect_warning(
+    expect_no_warning(
+      plot(cg, layout = caugi_layout_sugiyama),
+      class = "caugi_deprecated_layout_x"
+    ),
+    "deprecated"
+  )
+  expect_warning(
+    expect_no_warning(
+      plot(cg, layout = caugi_layout_tiered, tiers = list("A", "B", "C")),
+      class = "caugi_deprecated_layout_x"
+    ),
+    "deprecated"
+  )
 })
 
 test_that("caugi_layout works with single node", {

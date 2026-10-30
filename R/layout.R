@@ -108,6 +108,8 @@
 #'     `TRUE` partition on top (y=1) and the `FALSE` partition at the bottom
 #'     (y=0). The tiered layout puts the first tier at the top (y=1) and the
 #'     last tier at the bottom (y=0).
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates. The tiered layout adds a `tier` column with
@@ -216,8 +218,12 @@ caugi_layout <- function(
     "circle"
   ),
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 ) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout")
+  }
   is_caugi(cg, throw_error = TRUE)
 
   method <- match.arg(method)
@@ -273,10 +279,53 @@ caugi_layout <- function(
   )
 }
 
+#' @title Handle the deprecated `x` argument of the layout functions
+#'
+#' @description Signals a warning of class `caugi_deprecated_layout_x` (and
+#' `deprecatedWarning`) and returns `x` as the graph. Errors if `cg` was
+#' supplied too.
+#'
+#' @param x The deprecated `x` argument.
+#' @param cg_missing Logical; whether `cg` was missing.
+#' @param fn Name of the calling layout function.
+#'
+#' @returns `x`.
+#'
+#' @keywords internal
+#' @noRd
+.layout_x_deprecated <- function(x, cg_missing, fn) {
+  if (!cg_missing) {
+    stop(
+      "Supply the graph as `cg` only; `x` is a deprecated name for it.",
+      call. = FALSE
+    )
+  }
+  warning(structure(
+    class = c(
+      "caugi_deprecated_layout_x",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "The `x` argument of `",
+        fn,
+        "()` is deprecated; use `cg` instead."
+      ),
+      call = NULL
+    )
+  ))
+  x
+}
+
 #' @rdname caugi_layout
 #' @export
-caugi_layout_sugiyama <- function(cg, packing_ratio = 1.618034, ...) {
+caugi_layout_sugiyama <- function(cg, packing_ratio = 1.618034, ..., x) {
   .Deprecated("caugi_layout")
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_sugiyama")
+  }
   caugi_layout(cg, method = "sugiyama", packing_ratio = packing_ratio)
 }
 
@@ -285,9 +334,17 @@ caugi_layout_sugiyama <- function(cg, packing_ratio = 1.618034, ...) {
 caugi_layout_fruchterman_reingold <- function(
   cg,
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 ) {
   .Deprecated("caugi_layout")
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(
+      x,
+      missing(cg),
+      "caugi_layout_fruchterman_reingold"
+    )
+  }
   caugi_layout(
     cg,
     method = "fruchterman-reingold",
@@ -297,8 +354,11 @@ caugi_layout_fruchterman_reingold <- function(
 
 #' @rdname caugi_layout
 #' @export
-caugi_layout_kamada_kawai <- function(cg, packing_ratio = 1.618034, ...) {
+caugi_layout_kamada_kawai <- function(cg, packing_ratio = 1.618034, ..., x) {
   .Deprecated("caugi_layout")
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_kamada_kawai")
+  }
   caugi_layout(cg, method = "kamada-kawai", packing_ratio = packing_ratio)
 }
 
@@ -307,9 +367,13 @@ caugi_layout_kamada_kawai <- function(cg, packing_ratio = 1.618034, ...) {
 caugi_layout_bipartite <- function(
   cg,
   partition = NULL,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  x
 ) {
   .Deprecated("caugi_layout")
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_bipartite")
+  }
   caugi_layout(
     cg,
     method = "bipartite",
@@ -323,16 +387,23 @@ caugi_layout_bipartite <- function(
 caugi_layout_tiered <- function(
   cg,
   tiers,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  x
 ) {
   .Deprecated("caugi_layout")
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_tiered")
+  }
   caugi_layout(cg, method = "tiered", tiers = tiers, orientation = orientation)
 }
 
 #' @rdname caugi_layout
 #' @export
-caugi_layout_circle <- function(cg, ...) {
+caugi_layout_circle <- function(cg, ..., x) {
   .Deprecated("caugi_layout")
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_circle")
+  }
   caugi_layout(cg, method = "circle")
 }
 

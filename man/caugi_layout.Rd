@@ -29,24 +29,26 @@ caugi_layout(
   method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite",
     "tiered", "circle"),
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 )
 
-caugi_layout_sugiyama(cg, packing_ratio = 1.618034, ...)
+caugi_layout_sugiyama(cg, packing_ratio = 1.618034, ..., x)
 
-caugi_layout_fruchterman_reingold(cg, packing_ratio = 1.618034, ...)
+caugi_layout_fruchterman_reingold(cg, packing_ratio = 1.618034, ..., x)
 
-caugi_layout_kamada_kawai(cg, packing_ratio = 1.618034, ...)
+caugi_layout_kamada_kawai(cg, packing_ratio = 1.618034, ..., x)
 
 caugi_layout_bipartite(
   cg,
   partition = NULL,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  x
 )
 
-caugi_layout_tiered(cg, tiers, orientation = c("columns", "rows"))
+caugi_layout_tiered(cg, tiers, orientation = c("columns", "rows"), x)
 
-caugi_layout_circle(cg, ...)
+caugi_layout_circle(cg, ..., x)
 }
 \arguments{
 \item{cg}{A \code{caugi} object. Must contain only directed edges for Sugiyama
@@ -83,6 +85,9 @@ single column.}
 layouts take none. Options a layout ignores give a warning: anything in
 \code{...} for layouts other than \code{"bipartite"} and \code{"tiered"}, and
 \code{packing_ratio} for \code{"bipartite"}, \code{"tiered"} and \code{"circle"}.}
+
+\item{x}{Deprecated; use \code{cg} instead. Supplying it gives a deprecation
+warning.}
 
 \item{partition}{For \code{"bipartite"}: optional logical vector indicating node
 partitions. Nodes with \code{TRUE} are placed in one partition and nodes with
