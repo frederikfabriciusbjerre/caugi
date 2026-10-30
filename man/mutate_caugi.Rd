@@ -40,6 +40,7 @@ Other operations:
 \code{\link[=meek_closure]{meek_closure()}},
 \code{\link[=moralize]{moralize()}},
 \code{\link[=normalize_latent_structure]{normalize_latent_structure()}},
+\code{\link[=pag_to_mag]{pag_to_mag()}},
 \code{\link[=skeleton]{skeleton()}}
 }
 \concept{operations}

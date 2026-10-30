@@ -756,6 +756,50 @@ mag_to_pag <- function(cg) {
   .session_to_caugi(rs_mag_to_pag(cg@session), node_names = cg@nodes$name)
 }
 
+#' @title Construct a MAG from a PAG
+#'
+#' @description
+#' Returns one maximal ancestral graph from the Markov equivalence class that
+#' the PAG represents. Every member encodes the same conditional
+#' independences.
+#'
+#' @details
+#' The member is the one Zhang's construction (2008, Theorem 2) selects: a
+#' circle opposite an arrowhead becomes a tail and a circle opposite a tail an
+#' arrowhead, so `o->` and `--o` both become `-->`, and the `o-o` subgraph is
+#' oriented into a DAG with no unshielded colliders. That choice always gives
+#' a member, but other members can resolve the same circles differently:
+#' `A o-> B <-o C` has both `A --> B <-- C` and `A <-> B <-> C`.
+#'
+#' @param cg A `caugi` object of class `"PAG"`.
+#'
+#' @returns A `caugi` object of class `"AG"` that is a MAG in the represented
+#' Markov equivalence class.
+#'
+#' @examples
+#' pag <- caugi(A %-->% B, C %o->% A, D %o->% A, class = "PAG")
+#' pag_to_mag(pag)
+#'
+#' # An all-circle graph is oriented into a DAG with no unshielded colliders.
+#' pag_to_mag(caugi(A %o-o% B, A %o-o% C, C %o-o% D, class = "PAG"))
+#'
+#' @references
+#' Zhang, J. (2008). On the completeness of orientation rules for causal
+#' discovery in the presence of latent confounders and selection bias.
+#' *Artificial Intelligence*, 172(16-17), 1873-1896.
+#'
+#' @family operations
+#' @concept operations
+#'
+#' @export
+pag_to_mag <- function(cg) {
+  is_caugi(cg, throw_error = TRUE)
+  if (!identical(cg@graph_class, "PAG")) {
+    stop("`cg` must be a caugi of class 'PAG'.", call. = FALSE)
+  }
+  .session_to_caugi(rs_pag_to_mag(cg@session), node_names = cg@nodes$name)
+}
+
 #' @title Enumerate all DAGs in a Markov equivalence class
 #'
 #' @description

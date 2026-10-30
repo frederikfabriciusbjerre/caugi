@@ -37,6 +37,7 @@ Other operations:
 \code{\link[=moralize]{moralize()}},
 \code{\link[=mutate_caugi]{mutate_caugi()}},
 \code{\link[=normalize_latent_structure]{normalize_latent_structure()}},
+\code{\link[=pag_to_mag]{pag_to_mag()}},
 \code{\link[=skeleton]{skeleton()}}
 }
 \concept{operations}

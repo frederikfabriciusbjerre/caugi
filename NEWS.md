@@ -9,6 +9,9 @@
   which `as_caugi()` uses when `class` is not given, so
   `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
 
+* `pag_to_mag()` returns a MAG from the Markov equivalence class a PAG
+  represents (Zhang 2008, Theorem 2).
+
 * New `"PAG"` (Partial Ancestral Graph) class, with selection bias in scope, so
   all six edge types `-->`, `---`, `<->`, `o-o`, `--o` and `o->` are allowed.
   The class is validated completely: a graph carries it only if its marks are

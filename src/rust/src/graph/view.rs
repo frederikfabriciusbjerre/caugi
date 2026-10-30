@@ -687,6 +687,14 @@ impl GraphView {
         }
     }
 
+    /// A MAG from the Markov equivalence class this PAG represents.
+    pub fn pag_to_mag(&self) -> Result<GraphView, String> {
+        match self {
+            GraphView::Pag(g) => Ok(GraphView::Ag(Arc::new(g.to_mag()?))),
+            _ => Err("pag_to_mag is only defined for PAGs".into()),
+        }
+    }
+
     /// The PAG of this MAG's Markov equivalence class.
     ///
     /// Maximality is checked here, since the construction assumes it.
