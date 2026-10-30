@@ -2,8 +2,10 @@
 # ──────────────────────────────── Node names ──────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
+# testthat edition 2 ignores `class` in expect_warning(), so match the
+# message; the class is checked once below.
 expect_name_warning <- function(object) {
-  expect_warning(object, class = "caugi_deprecated_node_names")
+  expect_warning(object, "will be an error in a future version of caugi")
 }
 
 # NA and "" already error as edge endpoints, so they are only declared as
@@ -140,10 +142,9 @@ test_that("bad node names are kept as before, with a classed warning", {
     fixed = TRUE
   )
   expect_identical(cg@nodes$name, c("A", "B", "NA", "", "a\tb"))
-  expect_warning(
-    add_nodes(caugi(A), name = NA),
-    class = "deprecatedWarning"
-  )
+  w <- tryCatch(add_nodes(caugi(A), name = NA), warning = identity)
+  expect_s3_class(w, "caugi_deprecated_node_names")
+  expect_s3_class(w, "deprecatedWarning")
 
   # Only the incoming names are checked: removing a bad node does not warn,
   # nor does adding a good node to a graph that has one.
