@@ -15,6 +15,20 @@ A \code{dagitty} object.
 \description{
 Convert a caugi to a dagitty graph
 }
+\details{
+The dagitty graph type is \code{dag}, \code{pdag}, \code{mag} or \code{pag}, picked from the
+edge types. Node names are always quoted, so they may contain spaces or
+edge symbols, with a few limits:
+\itemize{
+\item dagitty rejects nodes named \code{node} or \code{graph}, so these raise an error.
+\item A \verb{"} in a name is escaped. Backslashes are passed through as is, since
+dagitty keeps \verb{\\\\} as two characters, so a name that ends in a backslash
+can't be written.
+}
+
+Reading a \code{pag} back with \code{\link[=as_caugi]{as_caugi()}} gives class \code{"UNKNOWN"}, as caugi
+doesn't support PAGs yet.
+}
 \examples{
 cg <- caugi(
   A \%-->\% B,
