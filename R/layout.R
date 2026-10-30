@@ -36,7 +36,7 @@
 #' graphs, cycle visualization, and as a deterministic fallback. Works with
 #' all edge types and ignores edge structure.
 #'
-#' @param x A `caugi` object. Must contain only directed edges for Sugiyama
+#' @param cg A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
 #' @param method Character string specifying the layout method. Options:
 #'   * `"auto"`: Automatically choose the best layout (default). Selection order:
@@ -61,6 +61,8 @@
 #'   (`"columns"` or `"rows"`).
 #'   For tiered layouts, use `tiers` (list, named vector, or data.frame) and
 #'   `orientation` (`"rows"` or `"columns"`).
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -143,7 +145,7 @@
 #'
 #' @export
 caugi_layout <- function(
-  x,
+  cg,
   method = c(
     "auto",
     "sugiyama",
@@ -154,9 +156,13 @@ caugi_layout <- function(
     "circle"
   ),
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 ) {
-  is_caugi(x, throw_error = TRUE)
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout")
+  }
+  is_caugi(cg, throw_error = TRUE)
 
   method <- match.arg(method)
 
@@ -175,7 +181,7 @@ caugi_layout <- function(
         caugi_layout_bipartite
       } else {
         # Otherwise, choose based on edge types
-        edge_types <- unique(edges(x)[["edge"]])
+        edge_types <- unique(edges(cg)[["edge"]])
         non_directed <- setdiff(edge_types, "-->")
         if (length(non_directed) == 0) {
           caugi_layout_sugiyama
@@ -198,10 +204,50 @@ caugi_layout <- function(
     identical(layout_fn, caugi_layout_bipartite) ||
       identical(layout_fn, caugi_layout_tiered)
   ) {
-    layout_fn(x, ...)
+    layout_fn(cg, ...)
   } else {
-    layout_fn(x, packing_ratio = packing_ratio, ...)
+    layout_fn(cg, packing_ratio = packing_ratio, ...)
   }
+}
+
+#' @title Handle the deprecated `x` argument of the layout functions
+#'
+#' @description Signals a warning of class `caugi_deprecated_layout_x` (and
+#' `deprecatedWarning`) and returns `x` as the graph. Errors if `cg` was
+#' supplied too.
+#'
+#' @param x The deprecated `x` argument.
+#' @param cg_missing Logical; whether `cg` was missing.
+#' @param fn Name of the calling layout function.
+#'
+#' @returns `x`.
+#'
+#' @keywords internal
+#' @noRd
+.layout_x_deprecated <- function(x, cg_missing, fn) {
+  if (!cg_missing) {
+    stop(
+      "Supply the graph as `cg` only; `x` is a deprecated name for it.",
+      call. = FALSE
+    )
+  }
+  warning(structure(
+    class = c(
+      "caugi_deprecated_layout_x",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "The `x` argument of `",
+        fn,
+        "()` is deprecated; use `cg` instead."
+      ),
+      call = NULL
+    )
+  ))
+  x
 }
 
 #' Bipartite Graph Layout
@@ -211,7 +257,7 @@ caugi_layout <- function(
 #' has not been built yet, it will be built automatically before computing
 #' the layout.
 #'
-#' @param x A `caugi` object.
+#' @param cg A `caugi` object.
 #' @param partition Optional logical vector indicating node partitions.
 #'   Nodes with `TRUE` are placed in one partition and nodes with `FALSE`
 #'   in the other. Length must equal the number of nodes. Both partitions
@@ -223,6 +269,8 @@ caugi_layout <- function(
 #'     second partition on left (x=0).
 #'   * `"rows"`: Two horizontal rows. First partition on top (y=1),
 #'     second partition on bottom (y=0).
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -243,11 +291,15 @@ caugi_layout <- function(
 #'
 #' @export
 caugi_layout_bipartite <- function(
-  x,
+  cg,
   partition = NULL,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  x
 ) {
-  is_caugi(x, throw_error = TRUE)
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_bipartite")
+  }
+  is_caugi(cg, throw_error = TRUE)
 
   orientation <- match.arg(orientation)
 
@@ -255,8 +307,8 @@ caugi_layout_bipartite <- function(
   if (is.null(partition)) {
     # Simple heuristic: nodes with no incoming edges vs nodes with
     # incoming edges
-    edges_df <- edges(x)
-    node_names <- nodes(x)[["name"]]
+    edges_df <- edges(cg)
+    node_names <- nodes(cg)[["name"]]
 
     # Check which nodes have incoming edges
     has_incoming <- node_names %in% edges_df$to
@@ -276,23 +328,23 @@ caugi_layout_bipartite <- function(
       stop("partition must be a logical vector", call. = FALSE)
     }
 
-    if (length(partition) != nrow(nodes(x))) {
+    if (length(partition) != nrow(nodes(cg))) {
       stop(
         "partition length (",
         length(partition),
         ") ",
         "does not match number of nodes (",
-        nrow(nodes(x)),
+        nrow(nodes(cg)),
         ")",
         call. = FALSE
       )
     }
   }
 
-  coords <- rs_compute_bipartite_layout(x@session, partition, orientation)
+  coords <- rs_compute_bipartite_layout(cg@session, partition, orientation)
 
   data.frame(
-    name = nodes(x)[["name"]],
+    name = nodes(cg)[["name"]],
     x = coords[["x"]],
     y = coords[["y"]],
     stringsAsFactors = FALSE
@@ -388,7 +440,7 @@ caugi_layout_bipartite <- function(
 #' has not been built yet, it will be built automatically before computing
 #' the layout.
 #'
-#' @param x A `caugi` object.
+#' @param cg A `caugi` object.
 #' @param tiers Tier assignments specifying which tier each node belongs to.
 #'   Can be provided in multiple formats:
 #'   * **Named list**: List where each element is a character vector of node
@@ -406,6 +458,8 @@ caugi_layout_bipartite <- function(
 #'     subsequent tiers to the right, last tier at right (x=1).
 #'   * `"rows"`: Horizontal tiers. First tier at top (y=1),
 #'     subsequent tiers below, last tier at bottom (y=0).
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, `y`, and `tier` containing
 #'   node names, their coordinates, and tier assignments (0-indexed). The
@@ -449,15 +503,19 @@ caugi_layout_bipartite <- function(
 #'
 #' @export
 caugi_layout_tiered <- function(
-  x,
+  cg,
   tiers,
-  orientation = c("columns", "rows")
+  orientation = c("columns", "rows"),
+  x
 ) {
-  is_caugi(x, throw_error = TRUE)
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_tiered")
+  }
+  is_caugi(cg, throw_error = TRUE)
 
   orientation <- match.arg(orientation)
 
-  node_names <- nodes(x)[["name"]]
+  node_names <- nodes(cg)[["name"]]
 
   tier_assignments <- .tier_assignments(tiers, node_names)
 
@@ -497,7 +555,7 @@ caugi_layout_tiered <- function(
 
   # Call Rust function
   coords <- rs_compute_tiered_layout(
-    x@session,
+    cg@session,
     as.integer(tier_assignments),
     as.integer(num_tiers),
     orientation
@@ -523,7 +581,7 @@ caugi_layout_tiered <- function(
 #' Optimized for directed acyclic graphs (DAGs), placing nodes in layers to
 #' emphasize hierarchical structure and causal flow from top to bottom.
 #'
-#' @param x A `caugi` object. Must contain only directed edges.
+#' @param cg A `caugi` object. Must contain only directed edges.
 #' @param ... Ignored. For future extensibility.
 #' @inheritParams caugi_layout
 #'
@@ -543,10 +601,13 @@ caugi_layout_tiered <- function(
 #' \doi{10.1109/TSMC.1981.4308636}
 #'
 #' @export
-caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
-  is_caugi(x, throw_error = TRUE)
+caugi_layout_sugiyama <- function(cg, packing_ratio = 1.618034, ..., x) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_sugiyama")
+  }
+  is_caugi(cg, throw_error = TRUE)
 
-  edge_types <- unique(edges(x)[["edge"]])
+  edge_types <- unique(edges(cg)[["edge"]])
   non_directed <- setdiff(edge_types, "-->")
 
   if (length(non_directed) > 0) {
@@ -561,10 +622,10 @@ caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
     )
   }
 
-  coords <- rs_compute_layout(x@session, "sugiyama", packing_ratio)
+  coords <- rs_compute_layout(cg@session, "sugiyama", packing_ratio)
 
   data.frame(
-    name = nodes(x)[["name"]],
+    name = nodes(cg)[["name"]],
     x = coords[["x"]],
     y = coords[["y"]],
     stringsAsFactors = FALSE
@@ -579,7 +640,7 @@ caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
 #' layouts with uniform edge lengths. Works with all edge types and produces
 #' deterministic results.
 #'
-#' @param x A `caugi` object.
+#' @param cg A `caugi` object.
 #' @inheritParams caugi_layout
 #' @param ... Ignored. For future extensibility.
 #'
@@ -603,16 +664,24 @@ caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
 #'
 #' @export
 caugi_layout_fruchterman_reingold <- function(
-  x,
+  cg,
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 ) {
-  is_caugi(x, throw_error = TRUE)
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(
+      x,
+      missing(cg),
+      "caugi_layout_fruchterman_reingold"
+    )
+  }
+  is_caugi(cg, throw_error = TRUE)
 
-  coords <- rs_compute_layout(x@session, "fruchterman-reingold", packing_ratio)
+  coords <- rs_compute_layout(cg@session, "fruchterman-reingold", packing_ratio)
 
   data.frame(
-    name = nodes(x)[["name"]],
+    name = nodes(cg)[["name"]],
     x = coords[["x"]],
     y = coords[["y"]],
     stringsAsFactors = FALSE
@@ -628,7 +697,7 @@ caugi_layout_fruchterman_reingold <- function(
 #' Ideal for publication-quality visualizations. Works with all edge types and
 #' produces deterministic results.
 #'
-#' @param x A `caugi` object.
+#' @param cg A `caugi` object.
 #' @inheritParams caugi_layout
 #' @param ... Ignored. For future extensibility.
 #'
@@ -651,13 +720,16 @@ caugi_layout_fruchterman_reingold <- function(
 #' \doi{10.1016/0020-0190(89)90102-6}
 #'
 #' @export
-caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
-  is_caugi(x, throw_error = TRUE)
+caugi_layout_kamada_kawai <- function(cg, packing_ratio = 1.618034, ..., x) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_kamada_kawai")
+  }
+  is_caugi(cg, throw_error = TRUE)
 
-  coords <- rs_compute_layout(x@session, "kamada-kawai", packing_ratio)
+  coords <- rs_compute_layout(cg@session, "kamada-kawai", packing_ratio)
 
   data.frame(
-    name = nodes(x)[["name"]],
+    name = nodes(cg)[["name"]],
     x = coords[["x"]],
     y = coords[["y"]],
     stringsAsFactors = FALSE
@@ -671,8 +743,10 @@ caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
 #' nodes proceed counter-clockwise. Edge structure is ignored. Works with all
 #' edge types and produces deterministic results.
 #'
-#' @param x A `caugi` object.
+#' @param cg A `caugi` object.
 #' @param ... Ignored. For future extensibility.
+#' @param x Deprecated; use `cg` instead. Supplying it gives a deprecation
+#'   warning.
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
 #'   names and their coordinates.
@@ -690,13 +764,16 @@ caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
 #' @concept plotting
 #'
 #' @export
-caugi_layout_circle <- function(x, ...) {
-  is_caugi(x, throw_error = TRUE)
+caugi_layout_circle <- function(cg, ..., x) {
+  if (!missing(x)) {
+    cg <- .layout_x_deprecated(x, missing(cg), "caugi_layout_circle")
+  }
+  is_caugi(cg, throw_error = TRUE)
 
-  coords <- rs_compute_layout(x@session, "circle", 1.0)
+  coords <- rs_compute_layout(cg@session, "circle", 1.0)
 
   data.frame(
-    name = nodes(x)[["name"]],
+    name = nodes(cg)[["name"]],
     x = coords[["x"]],
     y = coords[["y"]],
     stringsAsFactors = FALSE

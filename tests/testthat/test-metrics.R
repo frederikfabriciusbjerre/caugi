@@ -132,6 +132,29 @@ test_that("SHD: larger graph with shuffled edges gives SHD 0", {
   expect_equal(shd(cg1, cg2), 0)
 })
 
+test_that("SHD: compares the mark at each end of an edge (#362)", {
+  g <- caugi(A %--o% B)
+  expect_equal(shd(g, caugi(B %--o% A)), 1)
+  expect_equal(shd(g, caugi(A %--o% B)), 0)
+})
+
+test_that("SHD: is 0 exactly for equal single-edge graphs (#362)", {
+  glyphs <- c("-->", "---", "<->", "o-o", "--o", "o->")
+  graphs <- c(
+    lapply(glyphs, function(e) {
+      caugi(from = "A", edge = e, to = "B", nodes = c("A", "B"))
+    }),
+    lapply(glyphs, function(e) {
+      caugi(from = "B", edge = e, to = "A", nodes = c("A", "B"))
+    })
+  )
+  for (g1 in graphs) {
+    for (g2 in graphs) {
+      expect_identical(shd(g1, g2) == 0, g1 == g2)
+    }
+  }
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────────────────── HD ──────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
@@ -206,4 +229,58 @@ test_that("HD: does not depend on node declaration order (#323)", {
   expect_equal(hd(dag, pdag), 0)
   expect_equal(hd(dag, pdag2), 0)
   expect_equal(hd(dag, pdag), hd(dag, pdag2))
+})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────── Argument names (#362) ────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("shd() and hd() take truth and guess and are symmetric (#362)", {
+  truth <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+  guess <- caugi(
+    A %---% B,
+    C %-->% B,
+    A %-->% C,
+    D %---% C,
+    nodes = c("D", "C", "B", "A"),
+    class = "PDAG"
+  )
+
+  expect_equal(shd(guess = guess, truth = truth), 4)
+  expect_equal(hd(guess = guess, truth = truth), 1)
+
+  for (normalized in c(FALSE, TRUE)) {
+    expect_equal(
+      shd(truth, guess, normalized = normalized),
+      shd(guess, truth, normalized = normalized)
+    )
+    expect_equal(
+      hd(truth, guess, normalized = normalized),
+      hd(guess, truth, normalized = normalized)
+    )
+  }
+})
+
+test_that("shd() and hd() accept the deprecated cg1 and cg2 (#362)", {
+  truth <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+  guess <- caugi(A %---% B, C %-->% B, A %-->% C, D %---% C, class = "PDAG")
+
+  for (f in list(shd, hd)) {
+    expect_warning(
+      res <- f(cg1 = truth, cg2 = guess, normalized = TRUE),
+      class = "deprecatedWarning"
+    )
+    expect_equal(res, f(truth, guess, normalized = TRUE))
+    expect_warning(res <- f(truth, cg2 = guess), class = "deprecatedWarning")
+    expect_equal(res, f(truth, guess))
+
+    expect_error(
+      suppressWarnings(f(truth = truth, cg1 = truth, cg2 = guess)),
+      "Supply only one of `truth` and `cg1`"
+    )
+    expect_error(
+      suppressWarnings(f(truth, guess, cg2 = guess)),
+      "Supply only one of `guess` and `cg2`"
+    )
+  }
 })
