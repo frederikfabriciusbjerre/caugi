@@ -1360,7 +1360,7 @@ m_separated <- function(
   rs_m_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
-#' @title Is a directed edge in a MAG visible?
+#' @title Is a directed edge in a MAG or PAG visible?
 #'
 #' @description
 #' Checks whether the directed edge `from --> to` is *visible* (Zhang 2008,
@@ -1378,10 +1378,14 @@ m_separated <- function(
 #' latent confounding of the pair, not mediation. Maathuis and Colombo (2015)
 #' use it in their generalized back-door criterion.
 #'
+#' In a PAG, an edge that meets the same criterion is *definitely visible*: it
+#' is visible in every MAG of the represented class (Zhang 2008, Section 4.2).
+#'
 #' Only `-->` edges can be visible, so `FALSE` is returned for any other edge,
 #' for a non-adjacent pair and for the reverse of a directed edge.
 #'
-#' @param cg A `caugi` object of class `"AG"` that is a MAG.
+#' @param cg A `caugi` object of class `"AG"` that is a MAG, or of class
+#'   `"PAG"`.
 #' @param from,to Node names. Use `from_index`/`to_index` to pass 1-based
 #'   indices instead.
 #' @param from_index,to_index Optional 1-based indices, exclusive with `from`
@@ -1395,6 +1399,10 @@ m_separated <- function(
 #' is_visible_edge(mag, "A", "B") # FALSE: every other node is adjacent to B
 #' is_visible_edge(mag, "B", "D") # TRUE: A --> B with A, D non-adjacent
 #' is_visible_edge(mag, "C", "D") # TRUE: collider path A --> B <-> C
+#'
+#' pag <- caugi(A %-->% B, C %o->% A, D %o->% A, C %-->% B, class = "PAG")
+#' is_visible_edge(pag, "A", "B") # TRUE: D *-> A with D, B non-adjacent
+#' is_visible_edge(pag, "C", "B") # FALSE
 #'
 #' @references
 #' Zhang, J. (2008). Causal reasoning with ancestral graphs. *Journal of

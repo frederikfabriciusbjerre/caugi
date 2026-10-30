@@ -387,13 +387,14 @@ impl GraphView {
             GraphView::Raw(_) => self.reach_raw(i, false, true),
         }
     }
-    /// Is the directed edge `a --> b` visible (Zhang 2008, Def. 8)?
+    /// Is the directed edge `a --> b` visible (Zhang 2008, Def. 8)? The same
+    /// criterion on a PAG gives definite visibility.
     pub fn is_visible_edge(&self, a: u32, b: u32) -> Result<bool, String> {
         match self {
-            GraphView::Ag(g) => {
-                Ok(super::pag::MarkedGraph::from_core(g.core_ref())?.visible_edge(a, b))
+            GraphView::Ag(_) | GraphView::Pag(_) => {
+                Ok(super::pag::MarkedGraph::from_core(self.core())?.visible_edge(a, b))
             }
-            _ => Err("is_visible_edge is only defined for MAGs (class 'AG')".into()),
+            _ => Err("is_visible_edge is only defined for MAGs and PAGs".into()),
         }
     }
 

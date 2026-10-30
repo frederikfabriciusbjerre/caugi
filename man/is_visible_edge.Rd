@@ -2,12 +2,13 @@
 % Please edit documentation in R/queries.R
 \name{is_visible_edge}
 \alias{is_visible_edge}
-\title{Is a directed edge in a MAG visible?}
+\title{Is a directed edge in a MAG or PAG visible?}
 \usage{
 is_visible_edge(cg, from = NULL, to = NULL, from_index = NULL, to_index = NULL)
 }
 \arguments{
-\item{cg}{A \code{caugi} object of class \code{"AG"} that is a MAG.}
+\item{cg}{A \code{caugi} object of class \code{"AG"} that is a MAG, or of class
+\code{"PAG"}.}
 
 \item{from, to}{Node names. Use \code{from_index}/\code{to_index} to pass 1-based
 indices instead.}
@@ -34,6 +35,9 @@ a latent common parent of the two (Lemma 10). Visibility therefore rules out
 latent confounding of the pair, not mediation. Maathuis and Colombo (2015)
 use it in their generalized back-door criterion.
 
+In a PAG, an edge that meets the same criterion is \emph{definitely visible}: it
+is visible in every MAG of the represented class (Zhang 2008, Section 4.2).
+
 Only \verb{-->} edges can be visible, so \code{FALSE} is returned for any other edge,
 for a non-adjacent pair and for the reverse of a directed edge.
 }
@@ -43,6 +47,10 @@ mag <- caugi(A \%-->\% B, B \%<->\% C, B \%-->\% D, C \%-->\% D, class = "AG")
 is_visible_edge(mag, "A", "B") # FALSE: every other node is adjacent to B
 is_visible_edge(mag, "B", "D") # TRUE: A --> B with A, D non-adjacent
 is_visible_edge(mag, "C", "D") # TRUE: collider path A --> B <-> C
+
+pag <- caugi(A \%-->\% B, C \%o->\% A, D \%o->\% A, C \%-->\% B, class = "PAG")
+is_visible_edge(pag, "A", "B") # TRUE: D *-> A with D, B non-adjacent
+is_visible_edge(pag, "C", "B") # FALSE
 
 }
 \references{

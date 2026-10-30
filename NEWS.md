@@ -32,7 +32,8 @@
   Zhang's complete orientation rules R1-R10.
 
 * `is_visible_edge()` checks whether a directed edge in a MAG is visible (Zhang
-  2008, Definition 8), which rules out latent confounding of its two ends.
+  2008, Definition 8), which rules out latent confounding of its two ends. On
+  a PAG it checks definite visibility, i.e. visibility in every member MAG.
 
 * `as_adjacency()` gains `coding = "marks"`, which writes the `amat.pag` mark
   coding that `as_caugi()` reads back, so graphs with `<->`, `o->`, `--o` and

@@ -40,6 +40,14 @@ test_that("is_visible_edge matches pcalg::visibleEdge on all 4-node MAGs", {
   expect_identical(head(res$bad, 10L), character(0))
 })
 
+test_that("is_visible_edge matches pcalg::visibleEdge on all 4-node PAGs", {
+  skip_on_cran()
+  skip_if_not_installed("pcalg")
+  res <- .visibility_mismatches(.pag_ground_truth()$pags, "PAG")
+  expect_gt(res$compared, 0L)
+  expect_identical(head(res$bad, 10L), character(0))
+})
+
 test_that("is_visible_edge reads the pcalg example", {
   mag <- caugi(A %-->% B, B %<->% C, B %-->% D, C %-->% D, class = "AG")
   expect_false(is_visible_edge(mag, "A", "B"))
@@ -65,6 +73,9 @@ test_that("is_visible_edge validates its input", {
   expect_error(is_visible_edge(mag, from_index = 3, to_index = 1), "Index 3")
   expect_error(
     is_visible_edge(caugi(A %-->% B, class = "DAG"), "A", "B"),
-    "only defined for MAGs"
+    "only defined for MAGs and PAGs"
   )
+  pag <- caugi(A %-->% B, C %o->% A, D %o->% A, C %-->% B, class = "PAG")
+  expect_true(is_visible_edge(pag, "A", "B"))
+  expect_false(is_visible_edge(pag, "C", "B"))
 })
