@@ -9,6 +9,10 @@
   which `as_caugi()` uses when `class` is not given, so
   `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
 
+* `m_separated()` and `minimal_separator()` accept PAGs. Both run on a member
+  MAG from `pag_to_mag()`, which is exact since every member encodes the same
+  m-separations.
+
 * Queries work on `"PAG"` graphs: `parents()`, `children()`, `neighbors()`
   (every mode), `ancestors()`, `descendants()`, `anteriors()`, `posteriors()`
   and `exogenous()` follow definite marks, so edges with a circle endpoint only

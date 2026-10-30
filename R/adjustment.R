@@ -359,8 +359,8 @@ all_backdoor_sets <- function(
 #'
 #' @description Computes a minimal separator Z for sets X and Y, optionally with
 #' mandatory inclusions and restrictions on the separator. Supports DAGs (where
-#' the result is a d-separator), ADMGs, and ancestral graphs (where the result
-#' is an m-separator).
+#' the result is a d-separator), ADMGs, ancestral graphs and PAGs (where the
+#' result is an m-separator).
 #'
 #' @details
 #' A separator Z for X and Y is a set of nodes such that conditioning on Z
@@ -370,9 +370,11 @@ all_backdoor_sets <- function(
 #' The algorithm runs in linear time O(n + m) and is unified across graph
 #' classes via the Bayes-ball reachability of van der Zander & Liśkiewicz
 #' (2020). For DAGs the algorithm specializes to FINDMINSEPINDAG; for ADMGs and
-#' AGs (including MAGs) it uses the general FINDMINSEP over mixed graphs.
+#' AGs (including MAGs) it uses the general FINDMINSEP over mixed graphs. For a
+#' PAG it runs on a member MAG from [pag_to_mag()], which is exact since every
+#' member encodes the same m-separations.
 #'
-#' @param cg A `caugi` object (DAG, ADMG, or AG).
+#' @param cg A `caugi` object (DAG, ADMG, AG, or PAG).
 #' @param X,Y Character vectors of node names. Use `*_index` to pass 1-based
 #'   indices.
 #' @param I Nodes that must be included in the separator.
@@ -442,9 +444,14 @@ minimal_separator <- function(
 ) {
   is_caugi(cg, throw_error = TRUE)
 
-  if (!is_dag(cg) && !is_admg(cg) && !is_ag(cg)) {
+  if (
+    !is_dag(cg) &&
+      !is_admg(cg) &&
+      !is_ag(cg) &&
+      !identical(cg@graph_class, "PAG")
+  ) {
     stop(
-      "`minimal_separator()` is only defined for DAGs, ADMGs, and AGs. ",
+      "`minimal_separator()` is only defined for DAGs, ADMGs, AGs, and PAGs. ",
       "The graph has class \"",
       cg@graph_class,
       "\".",

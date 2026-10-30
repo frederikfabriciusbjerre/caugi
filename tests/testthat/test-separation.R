@@ -146,7 +146,7 @@ test_that("minimal_separator rejects unsupported graph classes", {
 
   expect_error(
     minimal_separator(cg, "A", "B"),
-    "only defined for DAGs, ADMGs, and AGs"
+    "only defined for DAGs, ADMGs, AGs, and PAGs"
   )
 })
 

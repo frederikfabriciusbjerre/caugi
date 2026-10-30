@@ -487,7 +487,9 @@ impl GraphView {
             GraphView::Dag(d) => Ok(d.d_separated(xs, ys, z)), // d-sep is m-sep for DAGs
             GraphView::Ag(g) => Ok(g.m_separated(xs, ys, z)),
             GraphView::Ug(g) => Ok(g.separated(xs, ys, z)),
-            _ => Err("m_separated is only defined for ADMGs, AGs, DAGs, and UGs".into()),
+            // Exact: every member MAG encodes the same m-separations.
+            GraphView::Pag(g) => Ok(g.to_mag()?.m_separated(xs, ys, z)),
+            _ => Err("m_separated is only defined for ADMGs, AGs, PAGs, DAGs, and UGs".into()),
         }
     }
 
@@ -510,7 +512,8 @@ impl GraphView {
             GraphView::Dag(d) => d.minimal_d_separator(xs, ys, include, restrict),
             GraphView::Admg(a) => a.minimal_m_separator(xs, ys, include, restrict),
             GraphView::Ag(g) => g.minimal_m_separator(xs, ys, include, restrict),
-            _ => Err("minimal_separator is only defined for DAGs, ADMGs, and AGs".into()),
+            GraphView::Pag(g) => g.to_mag()?.minimal_m_separator(xs, ys, include, restrict),
+            _ => Err("minimal_separator is only defined for DAGs, ADMGs, AGs, and PAGs".into()),
         }
     }
 
@@ -1312,7 +1315,7 @@ mod tests {
         assert_eq!(v_ag.m_separated(&[0], &[1], &[]).unwrap(), false);
         assert_eq!(
             v_pdag.m_separated(&[0], &[2], &[]).unwrap_err(),
-            "m_separated is only defined for ADMGs, AGs, DAGs, and UGs"
+            "m_separated is only defined for ADMGs, AGs, PAGs, DAGs, and UGs"
         );
         assert_eq!(v_pdag.anteriors_of(1).unwrap(), vec![0, 2]);
         assert_eq!(v_pdag.posteriors_of(1).unwrap(), vec![2]);

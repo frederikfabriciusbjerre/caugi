@@ -1307,16 +1307,18 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
   .Call(wrap__districts, cg, nodes, index, all)
 }
 
-#' @title M-separation test for AGs and ADMGs
+#' @title M-separation test for AGs, PAGs and ADMGs
 #'
 #' @description Test whether two sets of nodes are m-separated given a
-#' conditioning set in an ancestral graph (AG) or an ADMG.
+#' conditioning set in an ancestral graph (AG), a PAG, or an ADMG.
 #'
-#' M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs.
+#' M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs. In
+#' a PAG it is decided on a member MAG from [pag_to_mag()], which is exact
+#' since every member encodes the same m-separations.
 #' On a UG it reduces to plain graph separation: every path from `X` to `Y`
 #' passes through `Z`.
 #'
-#' @param cg A `caugi` object of class AG, ADMG, DAG, or UG.
+#' @param cg A `caugi` object of class AG, PAG, ADMG, DAG, or UG.
 #' @param X,Y,Z Character vectors of node names, or `NULL`. Use `*_index` to
 #'   pass 1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
 #'   on.
