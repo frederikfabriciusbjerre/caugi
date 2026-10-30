@@ -71,18 +71,20 @@ This is the graph's class. As you can see here, it is a DAG.
 
 ## Querying the `caugi`
 
-We can query the `caugi` graph object with the built-in queries provided in the package. Let's try to find the descendants of all the parents of the node `C`:
+We can query the `caugi` graph object with the built-in queries provided in the package. Let's try to find the descendants of each of the parents of the node `C`. The parents of `C` are `A` and `B`:
 
 ```{r}
-descendants(cg, parents(cg, "C"))
+pa <- parents(cg, "C")
+pa
 ```
 
-First note that the output is a list of named character vectors. How come? Since the parents of `C` is `c(A, B)`:
+A query returns a character vector for one node, so to get the descendants of each parent we apply `descendants()` to each of them with `lapply()`:
+
 ```{r}
-parents(cg, "C")
+setNames(lapply(pa, function(p) descendants(cg, p)), pa)
 ```
 
-So for each parent of `C` we have a named vector in the list that represents the descendants of that parent node. 
+So for each parent of `C` we have a named vector in the list that represents the descendants of that parent node. Passing several nodes at once, as in `descendants(cg, pa)`, also returns such a list today, but that is deprecated: a future version will return the union of their descendants as one character vector.
 
 ## Modifying the `caugi`
 

@@ -37,34 +37,34 @@ test_that("queries work for DAGs and PDAGs", {
   # DAG EXAMPLE
   cg <- caugi(A %-->% B, class = "DAG")
 
-  expect_null(parents(cg, index = 1L))
-  expect_identical(children(cg, index = 1L), "B")
-  expect_identical(parents(cg, index = 2L), "A")
-  expect_null(children(cg, index = 2L))
+  expect_null(parents(cg, "A"))
+  expect_identical(children(cg, "A"), "B")
+  expect_identical(parents(cg, "B"), "A")
+  expect_null(children(cg, "B"))
 
   cg <- add_edges(cg, B %-->% C)
   # Session syncs automatically
 
-  expect_null(parents(cg, index = 1L))
-  expect_identical(children(cg, index = 1L), "B")
-  expect_identical(parents(cg, index = 2L), "A")
-  expect_identical(children(cg, index = 2L), "C")
-  expect_identical(parents(cg, index = 3L), "B")
-  expect_null(children(cg, index = 3L))
+  expect_null(parents(cg, "A"))
+  expect_identical(children(cg, "A"), "B")
+  expect_identical(parents(cg, "B"), "A")
+  expect_identical(children(cg, "B"), "C")
+  expect_identical(parents(cg, "C"), "B")
+  expect_null(children(cg, "C"))
 
   # PDAG EXAMPLE
   cg <- caugi(A %-->% B, class = "PDAG")
-  expect_null(parents(cg, index = 1L))
-  expect_identical(children(cg, index = 1L), "B")
-  expect_identical(parents(cg, index = 2L), "A")
-  expect_null(children(cg, index = 2L))
+  expect_null(parents(cg, "A"))
+  expect_identical(children(cg, "A"), "B")
+  expect_identical(parents(cg, "B"), "A")
+  expect_null(children(cg, "B"))
 
   cg <- add_edges(cg, B %---% C)
   # Session syncs automatically
 
-  expect_null(parents(cg, index = 1L))
-  expect_identical(children(cg, index = 1L), "B")
-  expect_identical(neighbors(cg, index = 2L, mode = "undirected"), "C")
+  expect_null(parents(cg, "A"))
+  expect_identical(children(cg, "A"), "B")
+  expect_identical(neighbors(cg, "B", mode = "undirected"), "C")
 })
 
 test_that("rs_build compiles core and view lazily", {

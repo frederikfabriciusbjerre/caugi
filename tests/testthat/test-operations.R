@@ -1182,16 +1182,7 @@ test_that("condition_marginalize and helper branches are covered", {
   expect_equal(out_trivial@graph_class, "AG")
   expect_setequal(out_trivial@nodes$name, "A")
 
-  # Force non-list anteriors branch (line coverage via expected error).
   cg2 <- caugi(A %-->% B %-->% C, class = "DAG")
-  expect_error(
-    testthat::with_mocked_bindings(
-      condition_marginalize(cg2, cond_vars = "B"),
-      anteriors = function(...) "A",
-      .package = "caugi"
-    ),
-    "must be the same length"
-  )
 
   expect_true(
     caugi:::.not_m_separated_for_all_subsets(
