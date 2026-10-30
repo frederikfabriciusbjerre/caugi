@@ -6,7 +6,10 @@ in `from` and `NA` in `edge` and `to`.
 [`caugi()`](https://caugi.org/dev/reference/caugi.md) reads such rows
 back as isolated nodes, so `caugi(edges_df = as.data.frame(cg))` keeps
 every node. Use [`edges()`](https://caugi.org/dev/reference/edges.md)
-for the edges alone.
+for the edges alone. The graph class is kept in the `"graph_class"`
+attribute, which
+[`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) uses as its
+default `class`, so `as_caugi(as.data.frame(cg))` gives back `cg`.
 
 ## Usage
 
@@ -33,7 +36,8 @@ as.data.frame(x, row.names = NULL, optional = FALSE, ...)
 
 ## Value
 
-A `data.frame` with columns `from`, `edge` and `to`.
+A `data.frame` with columns `from`, `edge` and `to`, and a
+`"graph_class"` attribute.
 
 ## See also
 

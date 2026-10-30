@@ -1,7 +1,10 @@
 # Convert to a `caugi`
 
 Convert an object to a `caugi`. The object can be a `graphNEL`,
-`matrix`, `tidygraph`, `dagitty`, `bn`, or `igraph`.
+`matrix`, `tidygraph`, `dagitty`, `bn`, `igraph`, or a `data.frame` edge
+list with columns `from`, `edge` and `to`, as written by
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) (rows
+with an `NA` edge are isolated nodes).
 
 ## Usage
 
@@ -26,7 +29,10 @@ as_caugi(
 
   Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`, `"CPDAG"`,
   `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
-  integer coded matrices.
+  integer coded matrices. For a data.frame, it defaults to the
+  data.frame's `"graph_class"` attribute, which
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) sets,
+  if present.
 
 - simple:
 
@@ -111,6 +117,9 @@ for (cg_converted in list(cg_ig, cg_gn, cg_adj, cg_bn, cg_dg)) {
   stopifnot(identical(nodes(cg), nodes(cg_converted)))
   stopifnot(identical(edges(cg), edges(cg_converted)))
 }
+
+# data.frame edge list
+cg_df <- as_caugi(as.data.frame(cg), class = "DAG")
 
 # collapse mutual edges
 ig2 <- igraph::graph_from_literal(A - +B, B - +A, C - +D)

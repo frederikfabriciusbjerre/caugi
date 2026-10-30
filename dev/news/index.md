@@ -4,6 +4,19 @@
 
 ### New Features
 
+- [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) now reads
+  a data.frame or data.table edge list with columns `from`, `edge` and
+  `to`, such as the output of
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) or
+  [`edges()`](https://caugi.org/dev/reference/edges.md). Rows with an
+  `NA` edge are read as isolated nodes.
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) records
+  the graph class in a `"graph_class"` attribute, which
+  [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) uses when
+  `class` is not given, so `as_caugi(as.data.frame(cg)) == cg`
+  ([\#529](https://github.com/frederikfabriciusbjerre/caugi/issues/529),
+  [\#530](https://github.com/frederikfabriciusbjerre/caugi/issues/530)).
+
 - [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) method
   for `caugi` objects, returning the edge list as a plain data.frame
   with one extra row per isolated node (`edge` and `to` are `NA`).
@@ -48,6 +61,49 @@
   of `X`.
 
 ### Bug Fixes
+
+- [`write_graphml()`](https://caugi.org/dev/reference/write_graphml.md)
+  and
+  [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md)
+  now write and read UTF-8, as the file declares. In a non-UTF-8 locale
+  a node name such as `"æø"` came back as `"<U+00E6><U+00F8>"`.
+
+- [`to_dot()`](https://caugi.org/dev/reference/to_dot.md) now writes a
+  directed graph class with no edges (e.g. a DAG of isolated nodes) as
+  `digraph`, not `graph`.
+
+- [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md) and
+  [`caugi_deserialize()`](https://caugi.org/dev/reference/caugi_deserialize.md)
+  now say the input is not a valid caugi JSON document, and
+  [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md) names
+  the file, instead of only passing on the JSON parser’s message.
+
+- Queries given an empty node vector,
+  e.g. `descendants(cg, character(0))`, now say which argument is empty
+  instead of “Expected non zero length”.
+
+- [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
+  and
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  now validate `max_size` in R, with a plain error instead of a message
+  about the input having “been subtracted with 1”.
+
+- [`remove_nodes()`](https://caugi.org/dev/reference/caugi_verbs.md) and
+  [`remove_edges()`](https://caugi.org/dev/reference/caugi_verbs.md) now
+  error on nodes that are not in the graph, as
+  [`subgraph()`](https://caugi.org/dev/reference/subgraph.md) does,
+  instead of silently ignoring them.
+
+- [`generate_graph()`](https://caugi.org/dev/reference/generate_graph.md)
+  now errors on a non-whole or non-numeric `n` or `m` instead of
+  silently truncating it (e.g. `m = 2.7` gave 2 edges).
+
+- Edge operators used on their own no longer keep the quotes on a string
+  `from` node: `"my var" %-->% B` now has `from` `"my var"`, not
+  `"\"my var\""`.
+
+- `as_caugi(collapse = TRUE)` no longer mixes up node names that contain
+  `.` (e.g. `"A.B"`+`"C"` and `"A"`+`"B.C"`), which dropped edges.
 
 - [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
   now rejects a `Z` that contains a node of `Y`. It accepted, for

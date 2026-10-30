@@ -3,11 +3,15 @@
 edge and to: one row per edge, then one row per isolated node with the
 node in from and NA in edge and to. caugi() reads such rows back
 as isolated nodes, so caugi(edges_df = as.data.frame(cg)) keeps every
-node. Use edges() for the edges alone."><meta property="og:description" content="Returns the graph as a plain data.frame with columns from,
+node. Use edges() for the edges alone. The graph class is kept in the
+&quot;graph_class&quot; attribute, which as_caugi() uses as its default class,
+so as_caugi(as.data.frame(cg)) gives back cg."><meta property="og:description" content="Returns the graph as a plain data.frame with columns from,
 edge and to: one row per edge, then one row per isolated node with the
 node in from and NA in edge and to. caugi() reads such rows back
 as isolated nodes, so caugi(edges_df = as.data.frame(cg)) keeps every
-node. Use edges() for the edges alone."><meta property="og:image" content="https://caugi.org/reference/figures/og.png"><meta property="og:image:alt" content="The name 'caugi' on the left and a graph on the right with corgi dogs as nodes."><meta name="robots" content="noindex"></head><body>
+node. Use edges() for the edges alone. The graph class is kept in the
+&quot;graph_class&quot; attribute, which as_caugi() uses as its default class,
+so as_caugi(as.data.frame(cg)) gives back cg."><meta property="og:image" content="https://caugi.org/reference/figures/og.png"><meta property="og:image:alt" content="The name 'caugi' on the left and a graph on the right with corgi dogs as nodes."><meta name="robots" content="noindex"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -55,7 +59,9 @@ node. Use edges() for the edges alone."><meta property="og:image" content="https
 <code>edge</code> and <code>to</code>: one row per edge, then one row per isolated node with the
 node in <code>from</code> and <code>NA</code> in <code>edge</code> and <code>to</code>. <code><a href="caugi.html">caugi()</a></code> reads such rows back
 as isolated nodes, so <code>caugi(edges_df = as.data.frame(cg))</code> keeps every
-node. Use <code><a href="edges.html">edges()</a></code> for the edges alone.</p>
+node. Use <code><a href="edges.html">edges()</a></code> for the edges alone. The graph class is kept in the
+<code>"graph_class"</code> attribute, which <code><a href="as_caugi.html">as_caugi()</a></code> uses as its default <code>class</code>,
+so <code>as_caugi(as.data.frame(cg))</code> gives back <code>cg</code>.</p>
     </div>
 
     <div class="section level2">
@@ -82,7 +88,8 @@ node. Use <code><a href="edges.html">edges()</a></code> for the edges alone.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>data.frame</code> with columns <code>from</code>, <code>edge</code> and <code>to</code>.</p>
+    <p>A <code>data.frame</code> with columns <code>from</code>, <code>edge</code> and <code>to</code>, and a
+<code>"graph_class"</code> attribute.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
