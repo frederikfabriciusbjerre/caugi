@@ -266,13 +266,18 @@ test_that("shd() and hd() accept the deprecated cg1 and cg2 (#362)", {
   guess <- caugi(A %---% B, C %-->% B, A %-->% C, D %---% C, class = "PDAG")
 
   for (f in list(shd, hd)) {
+    # testthat edition 2 ignores `class` in expect_warning(), so match the
+    # message here and check the class with tryCatch().
     expect_warning(
       res <- f(cg1 = truth, cg2 = guess, normalized = TRUE),
-      class = "deprecatedWarning"
+      "are deprecated"
     )
     expect_equal(res, f(truth, guess, normalized = TRUE))
-    expect_warning(res <- f(truth, cg2 = guess), class = "deprecatedWarning")
+    expect_warning(res <- f(truth, cg2 = guess), "are deprecated")
     expect_equal(res, f(truth, guess))
+    w <- tryCatch(f(cg1 = truth, cg2 = guess), warning = identity)
+    expect_s3_class(w, "caugi_deprecated_cg_args")
+    expect_s3_class(w, "deprecatedWarning")
 
     expect_error(
       suppressWarnings(f(truth = truth, cg1 = truth, cg2 = guess)),
