@@ -22,14 +22,35 @@
   dropped with a warning, since the total effect on them is zero. A dropped
   node can itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
-* `is_valid_backdoor()`, `all_backdoor_sets()` and `d_separated()` now accept
-  several treatments `X` and outcomes `Y` on DAGs. The back-door functions use
-  the generalized back-door criterion of Maathuis & Colombo (2015, Def. 3.7):
-  `Z` contains no descendant of `X`, and for each treatment `Xi`, `Z` together
+* `is_valid_adjustment(type = "backdoor")`,
+  `all_adjustment_sets(type = "backdoor")` and `d_separated()` accept several
+  treatments `X` and outcomes `Y` on DAGs. The back-door functions use the
+  generalized back-door criterion of Maathuis & Colombo (2015, Def. 3.7): `Z`
+  contains no descendant of `X`, and for each treatment `Xi`, `Z` together
   with the other treatments blocks every back-door path from `Xi` to `Y`. With
   one treatment and one outcome this is Pearl's back-door criterion, so
-  single-pair results are unchanged. `is_valid_backdoor()` is now linear in
-  the graph size; it was cubic in the number of parents of `X`.
+  single-pair results are unchanged from `is_valid_backdoor()` and
+  `all_backdoor_sets()`. The back-door check is now linear in the graph size;
+  it was cubic in the number of parents of `X`.
+
+* `all_adjustment_sets()` enumerates the adjustment sets of at most
+  `max_size` nodes for the effect of `X` on `Y`. `type = "adjustment"` (the
+  default) uses the generalized adjustment criterion of Perković et al. (2018)
+  on DAGs and ADMGs and returns every valid adjustment set; on DAGs this is
+  new. `type = "backdoor"` uses the generalized back-door criterion of Maathuis
+  & Colombo (2015) on DAGs, which leaves out sets that hold a descendant of
+  `X`: for `X --> Y, X --> W`, `{W}` is an adjustment set but not a back-door
+  set (#354).
+
+* `is_valid_adjustment()` checks whether `Z` is a valid set for adjusting for
+  the effect of `X` on `Y`. `type = "adjustment"` (the default) uses the
+  generalized adjustment criterion of Perković et al. (2018) on DAGs and
+  ADMGs, which is complete; on DAGs this is new. `type = "backdoor"` uses the
+  generalized back-door criterion of Maathuis & Colombo (2015) on DAGs, which
+  is sufficient but not complete: for `X --> Y, X --> W`, `Z = "W"` is valid
+  for `type = "adjustment"` but not for `type = "backdoor"`. `Z` is accepted
+  exactly when `all_adjustment_sets()` with the same `type` and
+  `minimal = FALSE` returns it (#355).
 
 ## Bug Fixes
 
@@ -209,11 +230,56 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+## Deprecations
+
+* `all_backdoor_sets()` and `all_adjustment_sets_admg()` are deprecated in
+  favour of `all_adjustment_sets()`. Write
+  `all_adjustment_sets(cg, X, Y, type = "backdoor")` instead of
+  `all_backdoor_sets(cg, X, Y)`, and `all_adjustment_sets(cg, X, Y)` instead
+  of `all_adjustment_sets_admg(cg, X, Y)`. Unlike
+  `all_adjustment_sets_admg()`, `all_adjustment_sets()` errors when `X` or `Y`
+  is empty or they overlap; `all_adjustment_sets_admg()` keeps its old results
+  for such input (#354).
+
+* `is_valid_backdoor()` and `is_valid_adjustment_admg()` are deprecated in
+  favour of `is_valid_adjustment()`. Write
+  `is_valid_adjustment(cg, X, Y, Z, type = "backdoor")` instead of
+  `is_valid_backdoor(cg, X, Y, Z)`, and `is_valid_adjustment(cg, X, Y, Z)`
+  instead of `is_valid_adjustment_admg(cg, X, Y, Z)`. Unlike
+  `is_valid_adjustment_admg()`, `is_valid_adjustment()` errors when `X` or `Y`
+  is empty or they overlap, and returns `FALSE` for every `Z` that contains a
+  node of `Y`; `is_valid_adjustment_admg()` keeps its old results for such
+  input (#355).
+
+* Querying several nodes at once with `parents()`, `children()`,
+  `neighbors()`/`neighbours()`, `ancestors()`, `descendants()`, `anteriors()`,
+  `posteriors()`, `markov_blanket()`, `spouses()` or `districts()` is
+  deprecated. Such calls still return a named list with one entry per node,
+  but now warn: a future version will return the union of the results as one
+  character vector in graph node order, so that a query returns the same type
+  whatever the number of nodes. For one result per node, write
+  `lapply(nodes, function(x) parents(cg, x))` instead of
+  `parents(cg, nodes)`. Single-node queries and `districts(cg)` without nodes
+  are unchanged (#359).
+
+* The arguments that take 1-based node indices instead of node names are
+  deprecated: `index` in `parents()`, `children()`,
+  `neighbors()`/`neighbours()`, `ancestors()`, `descendants()`, `anteriors()`,
+  `posteriors()`, `markov_blanket()`, `spouses()`, `districts()` and
+  `subgraph()`, and `X_index`, `Y_index`, `Z_index`, `I_index` and `R_index`
+  in `d_separated()`, `m_separated()`, `adjustment_set()`,
+  `is_valid_adjustment()`, `all_adjustment_sets()`, `minimal_separator()` and
+  the deprecated `is_valid_backdoor()`, `is_valid_adjustment_admg()`,
+  `all_backdoor_sets()`, `all_adjustment_sets_admg()` and
+  `minimal_d_separator()`. They still work and give the same results, but now
+  warn. Pass node names instead: write `parents(cg, nodes(cg)$name[i])`
+  instead of `parents(cg, index = i)`, and
+  `d_separated(cg, X = nodes(cg)$name[i], ...)` instead of
+  `d_separated(cg, X_index = i, ...)` (#360).
+
 - `shd()` now compares the mark at each end of an edge. It counted `A --o B`
   and `B --o A` as the same edge, since it only checked for an arrowhead
   (#362).
-
-## Deprecations
 
 * The `cg1` and `cg2` arguments of `shd()` and `hd()` are deprecated in favour
   of `truth` and `guess`, the names `aid()` uses (#362).

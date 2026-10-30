@@ -93,7 +93,10 @@ test_that("minimal_separator works with node indices", {
   )
 
   # A=1, B=2, C=3 in alphabetical order
-  sep <- minimal_separator(cg, X_index = 1L, Y_index = 3L)
+  expect_warning(
+    sep <- minimal_separator(cg, X_index = 1L, Y_index = 3L),
+    "argument is deprecated"
+  )
   expect_false(is.null(sep))
   expect_true("B" %in% sep)
 })
