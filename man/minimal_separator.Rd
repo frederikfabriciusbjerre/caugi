@@ -39,16 +39,16 @@ minimal_d_separator(
 \arguments{
 \item{cg}{A \code{caugi} object (DAG, ADMG, or AG).}
 
-\item{X, Y}{Character vectors of node names. Use \verb{*_index} to pass 1-based
-indices.}
+\item{X, Y}{Character vectors of node names.}
 
 \item{I}{Nodes that must be included in the separator.}
 
 \item{R}{Nodes allowed in the separator. If \code{NULL}, uses all nodes excluding
 X and Y.}
 
-\item{X_index, Y_index, I_index, R_index}{Optional numeric 1-based indices
-(exclusive with corresponding name parameters).}
+\item{X_index, Y_index, I_index, R_index}{Deprecated; pass node names to \code{X},
+\code{Y}, \code{I} and \code{R} instead, e.g. \code{nodes(cg)$name[X_index]}. Optional numeric
+1-based indices (exclusive with corresponding name parameters).}
 }
 \value{
 A character vector of node names representing the minimal separator,
@@ -109,10 +109,8 @@ Uncertainty in Artificial Intelligence (UAI 2020)}, PMLR 115:637--647.
 \seealso{
 Other adjustment:
 \code{\link[=adjustment_set]{adjustment_set()}},
-\code{\link[=all_adjustment_sets_admg]{all_adjustment_sets_admg()}},
-\code{\link[=all_backdoor_sets]{all_backdoor_sets()}},
+\code{\link[=all_adjustment_sets]{all_adjustment_sets()}},
 \code{\link[=d_separated]{d_separated()}},
-\code{\link[=is_valid_adjustment_admg]{is_valid_adjustment_admg()}},
-\code{\link[=is_valid_backdoor]{is_valid_backdoor()}}
+\code{\link[=is_valid_adjustment]{is_valid_adjustment()}}
 }
 \concept{adjustment}
