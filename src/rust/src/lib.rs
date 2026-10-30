@@ -366,19 +366,6 @@ fn coords_to_list(coords: Vec<(f64, f64)>) -> Robj {
     list!(x = x, y = y).into_robj()
 }
 
-fn graph_class_from_view(view: &GraphView) -> GraphClass {
-    match view {
-        GraphView::Dag(_) => GraphClass::Dag,
-        GraphView::Pdag(_) => GraphClass::Pdag,
-        GraphView::Mpdag(_) => GraphClass::Mpdag,
-        GraphView::Cpdag(_) => GraphClass::Cpdag,
-        GraphView::Ug(_) => GraphClass::Ug,
-        GraphView::Admg(_) => GraphClass::Admg,
-        GraphView::Ag(_) => GraphClass::Ag,
-        GraphView::Raw(_) => GraphClass::Unknown,
-    }
-}
-
 fn graph_class_label_from_view(view: &GraphView) -> &'static str {
     match view {
         GraphView::Dag(_) => "DAG",
@@ -422,7 +409,7 @@ fn edge_buffer_from_core(core: &CaugiGraph) -> EdgeBuffer {
 
 fn session_from_view(view: GraphView, node_names: Vec<String>) -> GraphSession {
     let core = view.core();
-    let class = graph_class_from_view(&view);
+    let class = GraphClass::of(&view);
     let mut session = GraphSession::from_snapshot(
         Arc::new(core.registry.clone()),
         core.n(),

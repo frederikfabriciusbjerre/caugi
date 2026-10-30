@@ -80,7 +80,8 @@ test_that("query builds", {
 })
 
 test_that("build initializes session without querying", {
-  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  # UNKNOWN skips class validation, so nothing builds the view before build().
+  cg <- caugi(A %-->% B, B %-->% C, class = "UNKNOWN")
   state_before <- rs_is_valid(cg@session)
   expect_true(state_before$core_valid)
   expect_false(state_before$view_valid)
@@ -96,8 +97,17 @@ test_that("build initializes session without querying", {
   expect_equal(nrow(edges(cg)), 2L)
 })
 
+test_that("class validation keeps the view it builds", {
+  # Validating DAG builds the DAG view; it is kept, not built twice.
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_true(rs_is_valid(cg@session)$view_valid)
+  cg <- add_edges(cg, C %-->% D)
+  expect_true(rs_is_valid(cg@session)$view_valid)
+  expect_identical(cg@graph_class, "DAG")
+})
+
 test_that("build is idempotent and survives updates", {
-  cg <- caugi(A %-->% B, class = "DAG")
+  cg <- caugi(A %-->% B, class = "UNKNOWN")
   build(cg)
   state_built <- rs_is_valid(cg@session)
   expect_true(state_built$core_valid)

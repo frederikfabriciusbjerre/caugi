@@ -68,7 +68,8 @@ test_that("queries work for DAGs and PDAGs", {
 })
 
 test_that("rs_build compiles core and view lazily", {
-  cg <- caugi(A %-->% B, class = "DAG")
+  # UNKNOWN skips class validation, so nothing builds the view before rs_build.
+  cg <- caugi(A %-->% B, class = "UNKNOWN")
   state_before <- rs_is_valid(cg@session)
   expect_true(state_before$core_valid)
   expect_false(state_before$view_valid)
