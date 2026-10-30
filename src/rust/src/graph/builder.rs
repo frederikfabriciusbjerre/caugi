@@ -237,10 +237,7 @@ impl GraphBuilder {
             for h in row {
                 col[k] = h.nbr;
                 ety[k] = h.etype;
-                side_arr[k] = match h.side {
-                    Side::Tail => 0,
-                    Side::Head => 1,
-                };
+                side_arr[k] = h.side.as_u8();
                 k += 1;
             }
         }
@@ -298,10 +295,7 @@ impl GraphBuilder {
             for h in row {
                 col[k] = h.nbr;
                 ety[k] = h.etype;
-                side[k] = match h.side {
-                    Side::Tail => 0,
-                    Side::Head => 1,
-                }; // todo: change to use Side::Tail and Side::Head instead of magic numbers
+                side[k] = h.side.as_u8();
                 k += 1;
             }
         }
