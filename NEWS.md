@@ -9,6 +9,11 @@
   which `as_caugi()` uses when `class` is not given, so
   `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
 
+* Queries work on `"PAG"` graphs: `parents()`, `children()`, `neighbors()`
+  (every mode), `ancestors()`, `descendants()`, `anteriors()`, `posteriors()`
+  and `exogenous()` follow definite marks, so edges with a circle endpoint only
+  count for `mode = "partial"`.
+
 * `pag_to_mag()` returns a MAG from the Markov equivalence class a PAG
   represents (Zhang 2008, Theorem 2).
 

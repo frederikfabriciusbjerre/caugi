@@ -851,6 +851,7 @@ formals(children) <- alist(cg = , nodes = NULL, index = NULL)
 #'   \item PDAG: `"in"`, `"out"`, `"undirected"`, `"all"`
 #'   \item UG: `"undirected"`, `"all"` only
 #'   \item ADMG: `"in"`, `"out"`, `"bidirected"`, `"all"`
+#'   \item PAG: all modes; `"in"` and `"out"` follow `-->` edges only
 #'   \item UNKNOWN: all modes allowed
 #' }
 #'

@@ -226,7 +226,13 @@ impl GraphView {
                 Err("mode 'partial' not valid for AG (no partial edges)".into())
             }
 
-            (GraphView::Pag(_), _) => Err("neighbors_of is not yet implemented for PAG".into()),
+            // PAG: in, out, undirected, bidirected, partial, all
+            (GraphView::Pag(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::In) => Ok(g.parents_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Out) => Ok(g.children_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Undirected) => Ok(g.undirected_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Bidirected) => Ok(g.spouses_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Partial) => Ok(g.partial_of(i)),
 
             // Raw (UNKNOWN): all modes allowed, iterate CSR
             (GraphView::Raw(_), _) => self.neighbors_mode_of_raw(i, mode),
@@ -338,7 +344,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.ancestors_of(i)),
             GraphView::Ug(_) => Ok(Vec::new()),
-            GraphView::Pag(_) => Err("ancestors_of is not yet implemented for PAG".into()),
+            GraphView::Pag(g) => Ok(g.ancestors_of(i)),
             GraphView::Raw(_) => self.reach_raw(i, true, false),
         }
     }
@@ -351,7 +357,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.descendants_of(i)),
             GraphView::Ug(_) => Ok(Vec::new()),
-            GraphView::Pag(_) => Err("descendants_of is not yet implemented for PAG".into()),
+            GraphView::Pag(g) => Ok(g.descendants_of(i)),
             GraphView::Raw(_) => self.reach_raw(i, false, false),
         }
     }
@@ -364,7 +370,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.anteriors_of(i)),
             GraphView::Ug(g) => Ok(g.component_of(i)),
-            GraphView::Pag(_) => Err("anteriors_of is not yet implemented for PAG".into()),
+            GraphView::Pag(g) => Ok(g.anteriors_of(i)),
             GraphView::Raw(_) => self.reach_raw(i, true, true),
         }
     }
@@ -377,7 +383,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.posteriors_of(i)),
             GraphView::Ug(g) => Ok(g.component_of(i)),
-            GraphView::Pag(_) => Err("posteriors_of is not yet implemented for PAG".into()),
+            GraphView::Pag(g) => Ok(g.posteriors_of(i)),
             GraphView::Raw(_) => self.reach_raw(i, false, true),
         }
     }
@@ -421,7 +427,12 @@ impl GraphView {
                     Ok(g.exogenous_nodes())
                 }
             }
-            GraphView::Pag(_) => Err("exogenous_nodes is not yet implemented for PAG".into()),
+            GraphView::Pag(g) => Ok((0..g.n())
+                .filter(|&i| {
+                    g.parents_of(i).is_empty()
+                        && !(undirected_as_parents && !g.undirected_of(i).is_empty())
+                })
+                .collect()),
             GraphView::Raw(_) => Err("exogenous_nodes not implemented for UNKNOWN class".into()),
         }
     }

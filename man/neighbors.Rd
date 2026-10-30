@@ -36,6 +36,7 @@ Not all modes are valid for all graph classes:
 \item PDAG: \code{"in"}, \code{"out"}, \code{"undirected"}, \code{"all"}
 \item UG: \code{"undirected"}, \code{"all"} only
 \item ADMG: \code{"in"}, \code{"out"}, \code{"bidirected"}, \code{"all"}
+\item PAG: all modes; \code{"in"} and \code{"out"} follow \verb{-->} edges only
 \item UNKNOWN: all modes allowed
 }}
 }
