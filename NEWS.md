@@ -33,6 +33,9 @@
 
 ## Bug Fixes
 
+- Queries given an empty node vector, e.g. `descendants(cg, character(0))`,
+  now say which argument is empty instead of "Expected non zero length".
+
 - `all_backdoor_sets()` and `all_adjustment_sets_admg()` now validate
   `max_size` in R, with a plain error instead of a message about the input
   having "been subtracted with 1".
