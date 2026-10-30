@@ -132,6 +132,29 @@ test_that("SHD: larger graph with shuffled edges gives SHD 0", {
   expect_equal(shd(cg1, cg2), 0)
 })
 
+test_that("SHD: compares the mark at each end of an edge (#362)", {
+  g <- caugi(A %--o% B)
+  expect_equal(shd(g, caugi(B %--o% A)), 1)
+  expect_equal(shd(g, caugi(A %--o% B)), 0)
+})
+
+test_that("SHD: is 0 exactly for equal single-edge graphs (#362)", {
+  glyphs <- c("-->", "---", "<->", "o-o", "--o", "o->")
+  graphs <- c(
+    lapply(glyphs, function(e) {
+      caugi(from = "A", edge = e, to = "B", nodes = c("A", "B"))
+    }),
+    lapply(glyphs, function(e) {
+      caugi(from = "B", edge = e, to = "A", nodes = c("A", "B"))
+    })
+  )
+  for (g1 in graphs) {
+    for (g2 in graphs) {
+      expect_identical(shd(g1, g2) == 0, g1 == g2)
+    }
+  }
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────────────────── HD ──────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
