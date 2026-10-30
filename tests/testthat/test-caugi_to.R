@@ -195,6 +195,42 @@ test_that("as_adjacency errors on unsupported glyphs", {
   expect_error(as_adjacency(cg2), "Unsupported edge glyphs")
 })
 
+test_that("the mark coding round-trips every edge type", {
+  g <- caugi(
+    A %-->% B,
+    B %<->% C,
+    C %o->% D,
+    D %--o% E,
+    E %o-o% F,
+    F %---% G,
+    H,
+    class = "UNKNOWN"
+  )
+  m <- as_adjacency(g, coding = "marks")
+  expect_identical(m["A", "B"], 2L) # arrowhead at B
+  expect_identical(m["B", "A"], 3L) # tail at A
+  expect_identical(m["C", "D"], 2L) # arrowhead at D
+  expect_identical(m["D", "C"], 1L) # circle at C
+  expect_true(all(m["H", ] == 0L))
+  expect_true(as_caugi(m, class = "UNKNOWN") == g)
+
+  ag <- caugi(A %-->% B, B %<->% C, D %---% E, class = "AG")
+  expect_true(as_caugi(as_adjacency(ag, "marks"), class = "AG") == ag)
+})
+
+test_that("the mark coding rejects what one matrix entry cannot hold", {
+  bow <- caugi(A %-->% B, A %<->% B, class = "ADMG")
+  expect_error(as_adjacency(bow, "marks"), "parallel edges")
+  loop <- caugi(A %-->% A, class = "UNKNOWN")
+  expect_error(as_adjacency(loop, "marks"), "self-loops")
+
+  reset_caugi_registry()
+  on.exit(reset_caugi_registry(), add = TRUE)
+  register_caugi_edge("x-x", "other", "other", "undirected", symmetric = TRUE)
+  cg <- caugi(A %x-x% B, class = "UNKNOWN")
+  expect_error(as_adjacency(cg, "marks"), "Unsupported edge glyphs.*x-x")
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────────── bnlearn ────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────

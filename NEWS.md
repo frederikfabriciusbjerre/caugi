@@ -9,6 +9,11 @@
   which `as_caugi()` uses when `class` is not given, so
   `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
 
+* `as_adjacency()` gains `coding = "marks"`, which writes the `amat.pag` mark
+  coding that `as_caugi()` reads back, so graphs with `<->`, `o->`, `--o` and
+  `o-o` edges can go through a matrix. Self-loops and parallel edges, which one
+  matrix entry cannot hold, are an error.
+
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a
   plain data.frame with one extra row per isolated node (`edge` and `to` are
   `NA`). `caugi()` reads such rows back as isolated nodes, so
