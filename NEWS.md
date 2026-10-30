@@ -230,6 +230,20 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+- `shd()` now compares the mark at each end of an edge. It counted `A --o B`
+  and `B --o A` as the same edge, since it only checked for an arrowhead
+  (#362).
+
+- `shd()` now compares the mark at each end of an edge. It counted `A --o B`
+  and `B --o A` as the same edge, since it only checked for an arrowhead
+  (#362).
+
+- Node names are now stored as UTF-8: `caugi()`, `as_caugi()`, `add_nodes()`,
+  `add_edges()` and `set_edges()` convert them with `enc2utf8()`. A latin1
+  name was stored as invalid UTF-8 before. Node queries convert the names
+  they are given in the same way, so such a node is found by its latin1 or
+  its UTF-8 name (#394).
+
 ## Deprecations
 
 * `all_backdoor_sets()` and `all_adjustment_sets_admg()` are deprecated in
@@ -277,15 +291,8 @@
   `d_separated(cg, X = nodes(cg)$name[i], ...)` instead of
   `d_separated(cg, X_index = i, ...)` (#360).
 
-- `shd()` now compares the mark at each end of an edge. It counted `A --o B`
-  and `B --o A` as the same edge, since it only checked for an arrowhead
-  (#362).
-
-- Node names are now stored as UTF-8: `caugi()`, `as_caugi()`, `add_nodes()`,
-  `add_edges()` and `set_edges()` convert them with `enc2utf8()`. A latin1
-  name was stored as invalid UTF-8 before. Node queries convert the names
-  they are given in the same way, so such a node is found by its latin1 or
-  its UTF-8 name (#394).
+* The `cg1` and `cg2` arguments of `shd()` and `hd()` are deprecated in favour
+  of `truth` and `guess`, the names `aid()` uses (#362).
 
 * The `cg1` and `cg2` arguments of `shd()` and `hd()` are deprecated in favour
   of `truth` and `guess`, the names `aid()` uses (#362).
