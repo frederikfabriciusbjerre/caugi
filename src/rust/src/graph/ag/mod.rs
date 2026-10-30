@@ -354,16 +354,28 @@ impl Ag {
     /// graph non-maximal. One m-separation test per pair decides this, so the
     /// check is polynomial.
     pub fn is_mag(&self) -> bool {
-        let n = self.n();
-        if n <= 1 {
-            return true;
-        }
-
-        // For each non-adjacent pair, check if there exists any separating set
-        for u in 0..n {
-            for v in (u + 1)..n {
-                if !self.adjacent(u, v) && !self.has_separating_set(u, v) {
-                    return false;
+        // A pair with no separating set has an inducing path (Richardson and
+        // Spirtes 2002, Corollary 4.3), and every interior vertex of one is a
+        // collider. So the interior lies in one district D (consecutive
+        // colliders are joined by `<->`), and both ends point into it: they
+        // are in D or pa(D). Only such pairs need a test.
+        let mut tested = std::collections::HashSet::new();
+        for district in self.districts() {
+            let mut ends: Vec<u32> = district
+                .iter()
+                .flat_map(|&d| self.parents_of(d).iter().copied())
+                .chain(district.iter().copied())
+                .collect();
+            ends.sort_unstable();
+            ends.dedup();
+            for (k, &u) in ends.iter().enumerate() {
+                for &v in &ends[k + 1..] {
+                    if !self.adjacent(u, v)
+                        && tested.insert((u, v))
+                        && !self.has_separating_set(u, v)
+                    {
+                        return false;
+                    }
                 }
             }
         }

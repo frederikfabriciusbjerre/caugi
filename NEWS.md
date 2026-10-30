@@ -43,7 +43,9 @@
 * `is_mag()` is now polynomial instead of exponential. It tested every subset
   of the other nodes as a separating set for each non-adjacent pair; one test
   given the pair's anterior set decides the same thing (Richardson and Spirtes
-  2002, Theorem 4.2). At 12 nodes it took over a second (#398).
+  2002, Theorem 4.2), and only pairs that both point into one district can fail
+  it. A 20-node graph took 2.5 seconds; 640 nodes now take a fraction of that
+  (#398).
 
 ## Bug Fixes
 
