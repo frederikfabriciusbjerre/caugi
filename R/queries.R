@@ -550,6 +550,49 @@ is_ag <- function(cg, force_check = FALSE) {
   is_it
 }
 
+#' @title Is the `caugi` graph a PAG?
+#'
+#' @description
+#' Checks whether the given graph is a Partial Ancestral Graph: whether some
+#' maximal ancestral graph's Markov equivalence class has exactly these marks
+#' as its invariant marks, with a circle wherever the members disagree.
+#'
+#' @details
+#' The check is complete. A member MAG is constructed from the graph, and
+#' [mag_to_pag()] must map it back to exactly this graph. That rejects
+#' over-oriented graphs (a definite mark that is not invariant) and
+#' under-oriented ones (a circle where an invariant mark belongs), which no
+#' structural check can detect. The maximality test is exponential in the
+#' worst case, as for [is_mag()].
+#'
+#' Building a graph with `class = "PAG"` runs the same check, so there is no
+#' `force_check` argument: the class is a guarantee.
+#'
+#' @param cg A `caugi` object.
+#'
+#' @returns A logical value indicating whether the graph is a PAG.
+#'
+#' @examples
+#' is_pag(mag_to_pag(caugi(A %-->% B, C %-->% B, class = "AG"))) # TRUE
+#'
+#' # Over-oriented: with A and C non-adjacent, whether B is a collider differs
+#' # between members, so these marks are not invariant.
+#' is_pag(caugi(A %o->% B, B %o-o% C, class = "UNKNOWN")) # FALSE
+#'
+#' @references
+#' Zhang, J. (2008). On the completeness of orientation rules for causal
+#' discovery in the presence of latent confounders and selection bias.
+#' *Artificial Intelligence*, 172(16-17), 1873-1896.
+#'
+#' @family queries
+#' @concept queries
+#'
+#' @export
+is_pag <- function(cg) {
+  is_caugi(cg, throw_error = TRUE)
+  identical(cg@graph_class, "PAG") || rs_is_pag_type(cg@session)
+}
+
 #' @title Is the `caugi` graph a MAG?
 #'
 #' @description Checks if the given `caugi` graph is a

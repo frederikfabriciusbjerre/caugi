@@ -3,6 +3,7 @@ use super::ag::Ag;
 use super::cpdag::Cpdag;
 use super::dag::Dag;
 use super::mpdag::Mpdag;
+use super::pag::Pag;
 use super::pdag::Pdag;
 use super::ug::Ug;
 use super::CaugiGraph;
@@ -49,6 +50,7 @@ pub enum GraphView {
     Ug(Arc<Ug>),
     Admg(Arc<Admg>),
     Ag(Arc<Ag>),
+    Pag(Arc<Pag>),
     Raw(Arc<CaugiGraph>),
 }
 
@@ -63,6 +65,7 @@ impl GraphView {
             GraphView::Ug(u) => u.core_ref(),
             GraphView::Admg(a) => a.core_ref(),
             GraphView::Ag(g) => g.core_ref(),
+            GraphView::Pag(g) => g.core_ref(),
             GraphView::Raw(c) => c,
         }
     }
@@ -77,6 +80,7 @@ impl GraphView {
             GraphView::Ug(g) => g.n(),
             GraphView::Admg(g) => g.n(),
             GraphView::Ag(g) => g.n(),
+            GraphView::Pag(g) => g.n(),
             GraphView::Raw(core) => core.n(),
         }
     }
@@ -222,6 +226,8 @@ impl GraphView {
                 Err("mode 'partial' not valid for AG (no partial edges)".into())
             }
 
+            (GraphView::Pag(_), _) => Err("neighbors_of is not yet implemented for PAG".into()),
+
             // Raw (UNKNOWN): all modes allowed, iterate CSR
             (GraphView::Raw(_), _) => self.neighbors_mode_of_raw(i, mode),
         }
@@ -332,6 +338,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.ancestors_of(i)),
             GraphView::Ug(_) => Ok(Vec::new()),
+            GraphView::Pag(_) => Err("ancestors_of is not yet implemented for PAG".into()),
             GraphView::Raw(_) => self.reach_raw(i, true, false),
         }
     }
@@ -344,6 +351,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.descendants_of(i)),
             GraphView::Ug(_) => Ok(Vec::new()),
+            GraphView::Pag(_) => Err("descendants_of is not yet implemented for PAG".into()),
             GraphView::Raw(_) => self.reach_raw(i, false, false),
         }
     }
@@ -356,6 +364,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.anteriors_of(i)),
             GraphView::Ug(g) => Ok(g.component_of(i)),
+            GraphView::Pag(_) => Err("anteriors_of is not yet implemented for PAG".into()),
             GraphView::Raw(_) => self.reach_raw(i, true, true),
         }
     }
@@ -368,6 +377,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.posteriors_of(i)),
             GraphView::Ug(g) => Ok(g.component_of(i)),
+            GraphView::Pag(_) => Err("posteriors_of is not yet implemented for PAG".into()),
             GraphView::Raw(_) => self.reach_raw(i, false, true),
         }
     }
@@ -390,6 +400,7 @@ impl GraphView {
             GraphView::Ug(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Admg(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Ag(g) => Ok(g.markov_blanket_of(i)),
+            GraphView::Pag(_) => Err("markov_blanket_of is not yet implemented for PAG".into()),
             GraphView::Raw(_) => Err("markov_blanket_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -410,6 +421,7 @@ impl GraphView {
                     Ok(g.exogenous_nodes())
                 }
             }
+            GraphView::Pag(_) => Err("exogenous_nodes is not yet implemented for PAG".into()),
             GraphView::Raw(_) => Err("exogenous_nodes not implemented for UNKNOWN class".into()),
         }
     }
@@ -427,6 +439,7 @@ impl GraphView {
             GraphView::Cpdag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ug(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ag(_) => Err("topological_sort is only defined for DAGs".into()),
+            GraphView::Pag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Raw(_) => Err("topological_sort is only defined for DAGs".into()),
         }
     }
@@ -606,6 +619,14 @@ impl GraphView {
                 let g = super::ag::Ag::new(std::sync::Arc::new(core2))?;
                 GraphView::Ag(std::sync::Arc::new(g))
             }
+            GraphView::Pag(_) => {
+                // An induced subgraph of a PAG need not be a PAG.
+                let core2 = std::sync::Arc::new(core2);
+                match Pag::new(std::sync::Arc::clone(&core2)) {
+                    Ok(g) => GraphView::Pag(std::sync::Arc::new(g)),
+                    Err(_) => GraphView::Raw(core2),
+                }
+            }
             GraphView::Raw(_) => GraphView::Raw(std::sync::Arc::new(core2)),
         };
         Ok(gv)
@@ -677,7 +698,7 @@ impl GraphView {
                                 ancestral graph is not maximal"
                         .into());
                 }
-                Ok(GraphView::Raw(Arc::new(super::pag::pag_of_mag(g)?)))
+                Ok(GraphView::Pag(Arc::new(Pag::from_mag(g)?)))
             }
             _ => Err("mag_to_pag is only defined for MAGs (class 'AG')".into()),
         }

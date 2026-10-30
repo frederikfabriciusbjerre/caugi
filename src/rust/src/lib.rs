@@ -375,6 +375,7 @@ fn graph_class_label_from_view(view: &GraphView) -> &'static str {
         GraphView::Ug(_) => "UG",
         GraphView::Admg(_) => "ADMG",
         GraphView::Ag(_) => "AG",
+        GraphView::Pag(_) => "PAG",
         GraphView::Raw(_) => "UNKNOWN",
     }
 }
@@ -1666,6 +1667,14 @@ fn rs_is_ag_type(mut session: ExternalPtr<GraphSession>) -> bool {
 }
 
 #[extendr]
+fn rs_is_pag_type(mut session: ExternalPtr<GraphSession>) -> bool {
+    session
+        .as_mut()
+        .is_pag_type()
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
 fn rs_is_mag(mut session: ExternalPtr<GraphSession>) -> bool {
     session
         .as_mut()
@@ -1853,12 +1862,14 @@ fn rs_normalize_latent_structure(
     ExternalPtr::new(session_from_view(view, names))
 }
 
-/// Removing nodes can break CPDAG strong protection, so re-check the class of
-/// an induced subgraph and keep the strongest one it still satisfies.
+/// Removing nodes can break CPDAG strong protection, or leave a PAG with marks
+/// that are no longer invariant, so re-check the class of an induced subgraph
+/// and keep the strongest one it still satisfies.
 fn downgrade_subgraph_class(mut out: GraphSession) -> ExternalPtr<GraphSession> {
     let candidates: &[GraphClass] = match out.class() {
         GraphClass::Cpdag => &[GraphClass::Cpdag, GraphClass::Mpdag, GraphClass::Pdag],
         GraphClass::Mpdag => &[GraphClass::Mpdag, GraphClass::Pdag],
+        GraphClass::Pag => &[GraphClass::Pag, GraphClass::Unknown],
         _ => &[],
     };
     if let Some(&c) = candidates.iter().find(|&&c| out.resolve_class(c).is_ok()) {
@@ -2382,6 +2393,7 @@ extendr_module! {
     fn rs_is_ug_type;
     fn rs_is_admg_type;
     fn rs_is_ag_type;
+    fn rs_is_pag_type;
     fn rs_is_mag;
     fn rs_is_cpdag;
     fn rs_is_mpdag;

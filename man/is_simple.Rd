@@ -55,6 +55,7 @@ Other queries:
 \code{\link[=is_empty_caugi]{is_empty_caugi()}},
 \code{\link[=is_mag]{is_mag()}},
 \code{\link[=is_mpdag]{is_mpdag()}},
+\code{\link[=is_pag]{is_pag()}},
 \code{\link[=is_pdag]{is_pdag()}},
 \code{\link[=is_ug]{is_ug()}},
 \code{\link[=is_visible_edge]{is_visible_edge()}},

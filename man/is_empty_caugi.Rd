@@ -50,6 +50,7 @@ Other queries:
 \code{\link[=is_dag]{is_dag()}},
 \code{\link[=is_mag]{is_mag()}},
 \code{\link[=is_mpdag]{is_mpdag()}},
+\code{\link[=is_pag]{is_pag()}},
 \code{\link[=is_pdag]{is_pdag()}},
 \code{\link[=is_simple]{is_simple()}},
 \code{\link[=is_ug]{is_ug()}},

@@ -1,14 +1,98 @@
 // SPDX-License-Identifier: MIT
-//! From a MAG to the PAG of its Markov equivalence class.
+//! Moving between a PAG and the MAGs of its Markov equivalence class.
 
 use super::marked::MarkedGraph;
+use super::Pag;
 use crate::edges::Mark;
 use crate::graph::ag::Ag;
-use crate::graph::CaugiGraph;
+use std::sync::Arc;
 
-/// The PAG of `mag`'s Markov equivalence class, as a CSR core.
-pub(crate) fn pag_of_mag(mag: &Ag) -> Result<CaugiGraph, String> {
-    marks_of_mag(mag)?.to_core(&mag.core_ref().registry)
+impl Pag {
+    /// A MAG from the Markov equivalence class this PAG represents (Zhang
+    /// 2008, Thm. 2).
+    ///
+    /// The member returned is the one Zhang's construction selects: a circle
+    /// opposite an arrowhead becomes a tail and a circle opposite a tail an
+    /// arrowhead, so `o->` and `--o` both become `-->`, and the remaining
+    /// `o-o` subgraph is oriented into a DAG with no unshielded colliders by
+    /// simplicial elimination. That choice always gives a member, but other
+    /// resolutions can too: `A o-> B <-o C` has both `A --> B <-- C` and
+    /// `A <-> B <-> C`.
+    ///
+    /// Only ancestrality is checked. Maximality is checked once, when the PAG
+    /// is validated in [`Pag::try_new`], so the result for a constructed `Pag`
+    /// is always a MAG.
+    pub fn to_mag(&self) -> Result<Ag, String> {
+        let mut g = MarkedGraph::from_core(self.core_ref())?;
+        resolve_circles(&mut g)?;
+        Ag::new(Arc::new(g.to_core(&self.core_ref().registry)?))
+    }
+
+    /// The PAG of `mag`'s Markov equivalence class.
+    pub fn from_mag(mag: &Ag) -> Result<Self, String> {
+        let marks = pag_of_mag(mag)?;
+        // Unchecked: validation would call back into this.
+        Pag::new_unchecked(Arc::new(marks.to_core(&mag.core_ref().registry)?))
+    }
+}
+
+/// Resolve every circle the way [`Pag::to_mag`] describes.
+fn resolve_circles(g: &mut MarkedGraph) -> Result<(), String> {
+    // Step 1: resolve each circle opposite a definite mark as the
+    // construction prescribes: a tail opposite an arrowhead, an arrowhead
+    // opposite a tail. This is a choice that always yields a member, not the
+    // only resolution that keeps the definite mark.
+    for i in 0..g.n() {
+        for k in g.slots(i) {
+            if g.near(k) != Mark::Circle {
+                continue;
+            }
+            match g.far(k) {
+                Mark::Arrow => {
+                    g.set_slot(k, Mark::Tail);
+                }
+                Mark::Tail => {
+                    g.set_slot(k, Mark::Arrow);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    // Step 2: orient the remaining `o-o` component into a DAG with no
+    // unshielded colliders.
+    let mut circle_nbrs: Vec<Vec<u32>> = (0..g.n())
+        .map(|i| {
+            g.slots(i)
+                .filter(|&k| g.near(k) == Mark::Circle && g.far(k) == Mark::Circle)
+                .map(|k| g.col(k))
+                .collect()
+        })
+        .collect();
+    loop {
+        // A simplicial vertex: orienting its circle neighbours into it adds
+        // no unshielded collider. Only the circle neighbours need form a
+        // clique, unlike `Pdag::dag_extension`; R1 has already ruled out an
+        // arrowhead into `x` from a node non-adjacent to one of them.
+        let mut remaining = (0..g.n()).filter(|&i| !circle_nbrs[i as usize].is_empty());
+        let first = match remaining.next() {
+            Some(x) => x,
+            None => return Ok(()),
+        };
+        let simplicial = std::iter::once(first).chain(remaining).find(|&x| {
+            let nbrs = &circle_nbrs[x as usize];
+            nbrs.iter()
+                .enumerate()
+                .all(|(ii, &a)| nbrs[ii + 1..].iter().all(|&b| g.adjacent(a, b)))
+        });
+        let x = simplicial
+            .ok_or("the `o-o` component is not chordal, so this graph is not the PAG of any MAG")?;
+        for u in std::mem::take(&mut circle_nbrs[x as usize]) {
+            g.set(x, u, Mark::Arrow); // u --> x
+            g.set(u, x, Mark::Tail);
+            circle_nbrs[u as usize].retain(|&w| w != x);
+        }
+    }
 }
 
 /// The marks of the PAG of `mag`'s Markov equivalence class.
@@ -17,7 +101,7 @@ pub(crate) fn pag_of_mag(mag: &Ag) -> Result<CaugiGraph, String> {
 /// unshielded colliders of `mag` (shared by every member), and closes under
 /// R1-R10, with R4 reading collider status off `mag`. No separating sets are
 /// needed because a member is in hand.
-fn marks_of_mag(mag: &Ag) -> Result<MarkedGraph, String> {
+pub(super) fn pag_of_mag(mag: &Ag) -> Result<MarkedGraph, String> {
     let m = MarkedGraph::from_core(mag.core_ref())?;
     let mut p = m.with_circles();
     for b in 0..m.n() {
@@ -40,7 +124,6 @@ mod tests {
     use super::*;
     use crate::edges::EdgeRegistry;
     use crate::graph::builder::GraphBuilder;
-    use std::sync::Arc;
 
     /// Build a MAG from glyphs, then its PAG.
     fn pag_of(n: u32, edges: &[(u32, u32, &str)]) -> MarkedGraph {
@@ -51,7 +134,7 @@ mod tests {
             b.add_edge(u, v, reg.code_of(glyph).unwrap()).unwrap();
         }
         let mag = Ag::new(Arc::new(b.finalize().unwrap())).expect("not a MAG");
-        marks_of_mag(&mag).expect("marks_of_mag failed")
+        pag_of_mag(&mag).expect("pag_of_mag failed")
     }
 
     /// The glyph of the edge `{i, j}` as `<mark at i>-<mark at j>`.

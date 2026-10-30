@@ -167,6 +167,13 @@ impl MarkedGraph {
             .collect()
     }
 
+    /// Do both graphs have the same skeleton and the same marks?
+    pub(super) fn same_marks(&self, other: &Self) -> bool {
+        self.row_index == other.row_index
+            && self.col_index == other.col_index
+            && self.mark == other.mark
+    }
+
     /// A CSR core with these marks, using `registry`'s edge codes.
     pub(super) fn to_core(&self, registry: &RegistrySnapshot) -> Result<CaugiGraph, String> {
         let snapshot = Arc::new(registry.clone());
@@ -540,7 +547,7 @@ mod tests {
             .unwrap()
             .registry;
         let back = MarkedGraph::from_core(&g.to_core(&snapshot).unwrap()).unwrap();
-        assert_eq!(back.edges(), g.edges());
+        assert!(back.same_marks(&g));
     }
 
     #[test]

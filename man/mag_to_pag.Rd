@@ -10,7 +10,7 @@ mag_to_pag(cg)
 \item{cg}{A \code{caugi} object of class \code{"AG"} that is maximal.}
 }
 \value{
-A \code{caugi} object of class \code{"UNKNOWN"} holding the PAG.
+A \code{caugi} object of class \code{"PAG"}.
 }
 \description{
 Returns the Partial Ancestral Graph of the Markov equivalence class of a

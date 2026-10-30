@@ -48,9 +48,12 @@
 #' `TRUE` forbids parallel edges and self-loops, and `FALSE` is only allowed
 #' for `"UNKNOWN"`, `"ADMG"`, and `"AG"`.
 #' @param class Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
-#' `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will automatically pick
-#' the appropriate class based on the first match in the order of `"DAG"`,
-#' `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, and `"AG"`.
+#' `"CPDAG"`, `"ADMG"`, `"AG"`, `"PAG"`, or `"UNKNOWN"`. `"AUTO"` will
+#' automatically pick the appropriate class based on the first match in the
+#' order of `"DAG"`, `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, `"AG"`, and `"PAG"`.
+#' `"PAG"` is validated completely (see [is_pag()]), which is exponential in
+#' the worst case, so partially oriented output that is not a complete PAG,
+#' such as an RFCI graph, belongs in `"UNKNOWN"`.
 #' It will default to `"UNKNOWN"` if no match is found. A graph with parallel
 #' edges or self-loops resolves to `"ADMG"` if it is a valid ADMG (e.g. a bow)
 #' and to `"UNKNOWN"` otherwise.
@@ -271,6 +274,7 @@ caugi <- S7::new_class(
       "CPDAG",
       "ADMG",
       "AG",
+      "PAG",
       "UNKNOWN"
     ),
     state = NULL, # deprecated

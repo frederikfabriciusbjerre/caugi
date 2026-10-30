@@ -242,6 +242,7 @@ mutate_caugi <- function(cg, class) {
     "UG" = is_ug(cg),
     "ADMG" = is_admg(cg),
     "AG" = is_ag(cg),
+    "PAG" = is_pag(cg),
     "UNKNOWN" = TRUE,
     stop(paste0("Unknown target class: ", class))
   )
@@ -728,7 +729,7 @@ dag_from_pdag <- function(cg, PDAG) {
 #'
 #' @param cg A `caugi` object of class `"AG"` that is maximal.
 #'
-#' @returns A `caugi` object of class `"UNKNOWN"` holding the PAG.
+#' @returns A `caugi` object of class `"PAG"`.
 #'
 #' @examples
 #' mag <- caugi(A %-->% B, C %-->% B, class = "AG")

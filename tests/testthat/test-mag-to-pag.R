@@ -23,6 +23,7 @@ test_that("mag_to_pag gives every 4-node MAG the PAG of its class", {
 
 test_that("mag_to_pag keeps exactly the invariant marks", {
   pag <- mag_to_pag(caugi(A %-->% B, C %-->% B, class = "AG"))
+  expect_identical(pag@graph_class, "PAG")
   expect_setequal(paste(edges(pag)$from, edges(pag)$edge), c("A o->", "C o->"))
 
   chain <- mag_to_pag(caugi(A %-->% B, B %-->% C, class = "AG"))
