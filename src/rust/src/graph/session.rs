@@ -700,6 +700,7 @@ impl GraphSession {
         descendants_of(node: u32) -> Vec<u32>;
         anteriors_of(node: u32) -> Vec<u32>;
         posteriors_of(node: u32) -> Vec<u32>;
+        is_visible_edge(from: u32, to: u32) -> bool;
         markov_blanket_of(node: u32) -> Vec<u32>;
         districts() -> Vec<Vec<u32>>;
         district_of(node: u32) -> Vec<u32>;

@@ -145,6 +145,8 @@ rs_minimal_separator <- function(session, xs, ys, include, restrict) .Call(wrap_
 
 rs_m_separated <- function(session, xs, ys, z) .Call(wrap__rs_m_separated, session, xs, ys, z)
 
+rs_is_visible_edge <- function(session, from, to) .Call(wrap__rs_is_visible_edge, session, from, to)
+
 rs_not_m_separated_for_all_subsets <- function(session, node_a, node_b, other_nodes, cond_vars) .Call(wrap__rs_not_m_separated_for_all_subsets, session, node_a, node_b, other_nodes, cond_vars)
 
 rs_adjustment_set_parents <- function(session, xs, ys) .Call(wrap__rs_adjustment_set_parents, session, xs, ys)

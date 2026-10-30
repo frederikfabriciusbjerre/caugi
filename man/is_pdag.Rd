@@ -75,6 +75,7 @@ Other queries:
 \code{\link[=is_mpdag]{is_mpdag()}},
 \code{\link[=is_simple]{is_simple()}},
 \code{\link[=is_ug]{is_ug()}},
+\code{\link[=is_visible_edge]{is_visible_edge()}},
 \code{\link[=m_separated]{m_separated()}},
 \code{\link[=markov_blanket]{markov_blanket()}},
 \code{\link[=neighbors]{neighbors()}},

@@ -2100,6 +2100,20 @@ fn rs_m_separated(
 }
 
 #[extendr]
+fn rs_is_visible_edge(mut session: ExternalPtr<GraphSession>, from: i32, to: i32) -> bool {
+    let n = session.as_ref().n();
+    for (i, field) in [(from, "from"), (to, "to")] {
+        if rint_to_u32(Rint::from(i), field) >= n {
+            throw_r_error(format!("Index {} is out of bounds", i + 1));
+        }
+    }
+    session
+        .as_mut()
+        .is_visible_edge(from as u32, to as u32)
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
 fn rs_not_m_separated_for_all_subsets(
     mut session: ExternalPtr<GraphSession>,
     node_a: i32,
@@ -2376,6 +2390,7 @@ extendr_module! {
     fn rs_d_separated;
     fn rs_minimal_separator;
     fn rs_m_separated;
+    fn rs_is_visible_edge;
     fn rs_not_m_separated_for_all_subsets;
     fn rs_adjustment_set_parents;
     fn rs_adjustment_set_backdoor;

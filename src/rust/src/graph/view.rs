@@ -371,6 +371,16 @@ impl GraphView {
             GraphView::Raw(_) => self.reach_raw(i, false, true),
         }
     }
+    /// Is the directed edge `a --> b` visible (Zhang 2008, Def. 8)?
+    pub fn is_visible_edge(&self, a: u32, b: u32) -> Result<bool, String> {
+        match self {
+            GraphView::Ag(g) => {
+                Ok(super::pag::MarkedGraph::from_core(g.core_ref())?.visible_edge(a, b))
+            }
+            _ => Err("is_visible_edge is only defined for MAGs (class 'AG')".into()),
+        }
+    }
+
     pub fn markov_blanket_of(&self, i: u32) -> Result<Vec<u32>, String> {
         match self {
             GraphView::Dag(g) => Ok(g.markov_blanket_of(i)),

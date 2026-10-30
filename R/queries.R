@@ -1314,6 +1314,69 @@ m_separated <- function(
   rs_m_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
+#' @title Is a directed edge in a MAG visible?
+#'
+#' @description
+#' Checks whether the directed edge `from --> to` is *visible* (Zhang 2008,
+#' Definition 8): some node `c` not adjacent to `to` has either an edge into
+#' `from`, or a collider path into `from` whose non-endpoints are all parents
+#' of `to`.
+#'
+#' @details
+#' In a MAG, `from --> to` means `from` is an ancestor of `to` in every DAG the
+#' MAG represents. The effect may run through latent variables, so it need not
+#' be direct. If the edge is visible, no represented DAG has an inducing path
+#' between `from` and `to`, relative to the latent variables, that is into
+#' `from` (Zhang 2008, Lemma 9). If it is invisible, some represented DAG has
+#' a latent common parent of the two (Lemma 10). Visibility therefore rules out
+#' latent confounding of the pair, not mediation. Maathuis and Colombo (2015)
+#' use it in their generalized back-door criterion.
+#'
+#' Only `-->` edges can be visible, so `FALSE` is returned for any other edge,
+#' for a non-adjacent pair and for the reverse of a directed edge.
+#'
+#' @param cg A `caugi` object of class `"AG"` that is a MAG.
+#' @param from,to Node names. Use `from_index`/`to_index` to pass 1-based
+#'   indices instead.
+#' @param from_index,to_index Optional 1-based indices, exclusive with `from`
+#'   and `to` respectively.
+#'
+#' @returns `TRUE` if the edge `from --> to` is visible, otherwise `FALSE`.
+#'
+#' @examples
+#' # The `pcalg::visibleEdge()` example MAG.
+#' mag <- caugi(A %-->% B, B %<->% C, B %-->% D, C %-->% D, class = "AG")
+#' is_visible_edge(mag, "A", "B") # FALSE: every other node is adjacent to B
+#' is_visible_edge(mag, "B", "D") # TRUE: A --> B with A, D non-adjacent
+#' is_visible_edge(mag, "C", "D") # TRUE: collider path A --> B <-> C
+#'
+#' @references
+#' Zhang, J. (2008). Causal reasoning with ancestral graphs. *Journal of
+#' Machine Learning Research*, 9, 1437-1474.
+#'
+#' Maathuis, M. H. and Colombo, D. (2015). A generalized back-door criterion.
+#' *The Annals of Statistics*, 43(3), 1060-1088.
+#'
+#' @family queries
+#' @concept queries
+#'
+#' @export
+is_visible_edge <- function(
+  cg,
+  from = NULL,
+  to = NULL,
+  from_index = NULL,
+  to_index = NULL
+) {
+  is_caugi(cg, throw_error = TRUE)
+  from_idx0 <- .resolve_idx0_mget(cg@session, from, from_index)
+  to_idx0 <- .resolve_idx0_mget(cg@session, to, to_index)
+  if (length(from_idx0) != 1L || length(to_idx0) != 1L) {
+    stop("`from` and `to` must each name exactly one node.", call. = FALSE)
+  }
+  rs_is_visible_edge(cg@session, from_idx0, to_idx0)
+}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────────── Subgraph ───────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
