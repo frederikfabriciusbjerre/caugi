@@ -225,6 +225,16 @@ test_that("igraph dispatch works and respects directedness + collapse", {
   expect_equal(c(e_rev$from, e_rev$edge, e_rev$to), c("A", "---", "B"))
 })
 
+test_that("collapse does not mix up node names that contain `.`", {
+  skip_if_not_installed("igraph")
+  g <- igraph::graph_from_edgelist(
+    matrix(c("A.B", "C", "A", "B.C", "C", "A.B"), 3, 2, byrow = TRUE)
+  )
+  e <- edges(as_caugi(g, class = "PDAG", collapse = TRUE))
+  expect_equal(nrow(e), 2L)
+  expect_true(any(e$from == "A" & e$edge == "-->" & e$to == "B.C"))
+})
+
 test_that("empty igraph yield empty caugi graphs", {
   skip_if_not_installed("igraph")
   g0 <- igraph::make_empty_graph(n = 0, directed = TRUE)

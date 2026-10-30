@@ -33,6 +33,9 @@
 
 ## Bug Fixes
 
+- `as_caugi(collapse = TRUE)` no longer mixes up node names that contain `.`
+  (e.g. `"A.B"`+`"C"` and `"A"`+`"B.C"`), which dropped edges.
+
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
   accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
 

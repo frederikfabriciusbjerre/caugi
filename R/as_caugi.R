@@ -186,11 +186,11 @@ S7::method(
     # pairwise canonical order
     canon_from <- pmin(from, to)
     canon_to <- pmax(from, to)
-    key <- interaction(canon_from, canon_to, drop = TRUE)
+    key <- paste(canon_from, canon_to, sep = "\r")
 
     # reverse exists for this row
-    pair_key <- interaction(from, to, drop = TRUE)
-    rev_key <- interaction(to, from, drop = TRUE)
+    pair_key <- paste(from, to, sep = "\r")
+    rev_key <- paste(to, from, sep = "\r")
     has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
     # keep asymmetric rows and the first row of each symmetric group, whatever
@@ -251,7 +251,7 @@ register_graphnel_s4_class <- function() {
     if (!directed) {
       canon_from <- pmin(from, to)
       canon_to <- pmax(from, to)
-      keep <- !duplicated(interaction(canon_from, canon_to, drop = TRUE))
+      keep <- !duplicated(paste(canon_from, canon_to, sep = "\r"))
       from <- canon_from[keep]
       to <- canon_to[keep]
     }
@@ -276,10 +276,10 @@ register_graphnel_s4_class <- function() {
 
       canon_from <- pmin(from, to)
       canon_to <- pmax(from, to)
-      key <- interaction(canon_from, canon_to, drop = TRUE)
+      key <- paste(canon_from, canon_to, sep = "\r")
 
-      pair_key <- interaction(from, to, drop = TRUE)
-      rev_key <- interaction(to, from, drop = TRUE)
+      pair_key <- paste(from, to, sep = "\r")
+      rev_key <- paste(to, from, sep = "\r")
       has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
       keep <- !has_rev | (from == canon_from)
@@ -474,10 +474,10 @@ S7::method(
 
       canon_from <- pmin(from, to)
       canon_to <- pmax(from, to)
-      key <- interaction(canon_from, canon_to, drop = TRUE)
+      key <- paste(canon_from, canon_to, sep = "\r")
 
-      pair_key <- interaction(from, to, drop = TRUE)
-      rev_key <- interaction(to, from, drop = TRUE)
+      pair_key <- paste(from, to, sep = "\r")
+      rev_key <- paste(to, from, sep = "\r")
       has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
       keep <- !has_rev | (from == canon_from)
@@ -755,10 +755,10 @@ S7::method(
 
     canon_from <- pmin(from, to)
     canon_to <- pmax(from, to)
-    key <- interaction(canon_from, canon_to, drop = TRUE)
+    key <- paste(canon_from, canon_to, sep = "\r")
 
-    pair_key <- interaction(from, to, drop = TRUE)
-    rev_key <- interaction(to, from, drop = TRUE)
+    pair_key <- paste(from, to, sep = "\r")
+    rev_key <- paste(to, from, sep = "\r")
     has_rev <- (from != to) & match(pair_key, rev_key, nomatch = 0L) > 0L
 
     keep <- !has_rev | (from == canon_from)
