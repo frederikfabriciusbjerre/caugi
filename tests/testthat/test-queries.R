@@ -489,11 +489,22 @@ test_that("parents returns expected nodes for names, indices, and expr", {
   cg <- caugi(A %-->% B, B %-->% C, A %---% D, D %-->% B, class = "PDAG")
   expect_identical(parents(cg, "B"), c("A", "D"))
   expect_identical(parents(cg, "B"), c("A", "D"))
-  pa_AB <- parents(cg, c("A", "B"))
+  expect_warning(
+    pa_AB <- parents(cg, c("A", "B")),
+    "several nodes is deprecated"
+  )
   expect_null(pa_AB[["A"]])
   expect_setequal(pa_AB[["B"]], c("A", "D"))
-  expect_identical(parents(cg, index = 2), c("A", "D"))
-  pa_BC <- parents(cg, c("B", "C"))
+  expect_warning(
+    pa_2 <- parents(cg, index = 2),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(pa_2, c("A", "D"))
+  expect_warning(
+    pa_BC <- parents(cg, c("B", "C")),
+    "several nodes is deprecated"
+  )
   expect_setequal(pa_BC[["B"]], c("A", "D"))
   expect_setequal(pa_BC[["C"]], "B")
 })
@@ -501,10 +512,23 @@ test_that("parents returns expected nodes for names, indices, and expr", {
 test_that("children returns expected nodes", {
   cg <- caugi(A %-->% B, B %-->% C, C %---% D, D %-->% E, class = "PDAG")
   expect_identical(children(cg, "A")[[1]], "B")
-  expect_identical(children(cg, c("B", "D"))[[1]], "C")
-  expect_identical(children(cg, c("C", "D"))[[2]], "E")
-  # indices
-  expect_identical(children(cg, index = 1)[[1]], "B")
+  expect_warning(
+    ch_BD <- children(cg, c("B", "D")),
+    "several nodes is deprecated"
+  )
+  expect_identical(ch_BD[[1]], "C")
+  expect_warning(
+    ch_CD <- children(cg, c("C", "D")),
+    "several nodes is deprecated"
+  )
+  expect_identical(ch_CD[[2]], "E")
+  # indices (deprecated)
+  expect_warning(
+    ch_1 <- children(cg, index = 1),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(ch_1[[1]], "B")
 })
 
 test_that("neighbors returns undirected and directed adjacency", {
@@ -517,9 +541,15 @@ test_that("neighbors returns undirected and directed adjacency", {
 
 test_that("queries match with nodes and indexes", {
   cg <- caugi(A %-->% B, B %-->% C, B %---% D, C %---% E, class = "PDAG")
-  expect_identical(children(cg, "A"), children(cg, index = 1))
-  expect_identical(parents(cg, "B"), parents(cg, index = 2))
-  expect_identical(neighbors(cg, "C"), neighbors(cg, index = 3))
+  expect_warning(
+    {
+      expect_identical(children(cg, "A"), children(cg, index = 1))
+      expect_identical(parents(cg, "B"), parents(cg, index = 2))
+      expect_identical(neighbors(cg, "C"), neighbors(cg, index = 3))
+    },
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
 })
 
 test_that("queries fail with bad input", {
@@ -560,7 +590,7 @@ test_that("getter queries handle missing relations and duplicates", {
   # node with no children
   expect_identical(length(children(cg, "C")[[1]]), 0L)
   # duplicate targets collapse to the same combined set
-  res <- parents(cg, c("B", "B"))
+  expect_warning(res <- parents(cg, c("B", "B")), "several nodes is deprecated")
   expect_identical(sort(res[[1]]), sort(parents(cg, "B")[[1]]))
 })
 
@@ -610,14 +640,40 @@ test_that("an and de works", {
   cg <- caugi(A %-->% B, B %-->% C, C %---% D, class = "PDAG")
   expect_identical(ancestors(cg, "C"), c("A", "B"))
   expect_identical(descendants(cg, "A"), c("B", "C"))
-  expect_identical(sort(ancestors(cg, c("C", "D"))[[1]]), c("A", "B"))
-  expect_identical(sort(descendants(cg, c("A", "D"))[[1]]), c("B", "C"))
+  expect_warning(
+    an_CD <- ancestors(cg, c("C", "D")),
+    "several nodes is deprecated"
+  )
+  expect_identical(sort(an_CD[[1]]), c("A", "B"))
+  expect_warning(
+    de_AD <- descendants(cg, c("A", "D")),
+    "several nodes is deprecated"
+  )
+  expect_identical(sort(de_AD[[1]]), c("B", "C"))
 
-  # test index
-  expect_identical(ancestors(cg, index = 3), c("A", "B"))
-  expect_identical(descendants(cg, index = 1), c("B", "C"))
-  expect_identical(sort(ancestors(cg, index = c(3, 4))[[1]]), c("A", "B"))
-  expect_identical(sort(descendants(cg, index = c(1, 4))[[1]]), c("B", "C"))
+  # test index (deprecated)
+  expect_warning(
+    an_3 <- ancestors(cg, index = 3),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(an_3, c("A", "B"))
+  expect_warning(
+    de_1 <- descendants(cg, index = 1),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(de_1, c("B", "C"))
+  expect_warning(
+    an_34 <- ancestors(cg, index = c(3, 4)),
+    "several nodes is deprecated"
+  )
+  expect_identical(sort(an_34[[1]]), c("A", "B"))
+  expect_warning(
+    de_14 <- descendants(cg, index = c(1, 4)),
+    "several nodes is deprecated"
+  )
+  expect_identical(sort(de_14[[1]]), c("B", "C"))
 
   cg <- caugi(A, B, class = "DAG")
 
@@ -641,12 +697,19 @@ test_that("markov_blanket works on DAGs (parents, children, spouses)", {
   expect_setequal(mb_B, c("A", "D", "E", "F"))
 
   # unquoted and vector inputs
-  mb_AC <- markov_blanket(cg, c("A", "C"))
+  expect_warning(
+    mb_AC <- markov_blanket(cg, c("A", "C")),
+    "several nodes is deprecated"
+  )
   expect_setequal(mb_AC[[1]], c("B", "C", "D"))
   expect_setequal(mb_AC[[2]], c("A"))
 
-  # index input
-  mb_idx <- markov_blanket(cg, index = 1)
+  # index input (deprecated)
+  expect_warning(
+    mb_idx <- markov_blanket(cg, index = 1),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
   expect_setequal(mb_idx, c("B", "C", "D"))
 })
 
@@ -938,7 +1001,11 @@ test_that("subgraph with index matches nodes variant", {
     class = "PDAG"
   )
   s1 <- subgraph(g, nodes = c("B", "A", "C"))
-  s2 <- subgraph(g, index = c(2L, 1L, 3L))
+  expect_warning(
+    s2 <- subgraph(g, index = c(2L, 1L, 3L)),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
   expect_identical(s1@nodes$name, s2@nodes$name)
   expect_identical(s1@edges, s2@edges)
   expect_true(!is.null(s1@session) && !is.null(s2@session))
@@ -963,12 +1030,18 @@ test_that("districts supports all, nodes, and index modes", {
 
   expect_setequal(districts(cg, nodes = "A"), c("A", "B", "C"))
 
-  by_nodes <- districts(cg, nodes = c("A", "D"))
+  expect_warning(
+    by_nodes <- districts(cg, nodes = c("A", "D")),
+    "several nodes is deprecated"
+  )
   expect_named(by_nodes, c("A", "D"))
   expect_setequal(by_nodes$A, c("A", "B", "C"))
   expect_identical(by_nodes$D, "D")
 
-  by_index <- districts(cg, index = c(1L, 4L))
+  expect_warning(
+    by_index <- districts(cg, index = c(1L, 4L)),
+    "several nodes is deprecated"
+  )
   expect_named(by_index, c("A", "D"))
   expect_setequal(by_index$A, c("A", "B", "C"))
   expect_identical(by_index$D, "D")
@@ -1099,9 +1172,19 @@ test_that("neighbors mode with index works for UNKNOWN graphs", {
     class = "UNKNOWN"
   )
 
-  # Using index parameter
-  expect_identical(neighbors(cg, index = 2, mode = "in"), "A")
-  expect_identical(neighbors(cg, index = 2, mode = "out"), "C")
+  # Using index parameter (deprecated)
+  expect_warning(
+    nb_in <- neighbors(cg, index = 2, mode = "in"),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(nb_in, "A")
+  expect_warning(
+    nb_out <- neighbors(cg, index = 2, mode = "out"),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(nb_out, "C")
 })
 
 test_that("neighbors mode works with multiple nodes for UNKNOWN graphs", {
@@ -1112,7 +1195,10 @@ test_that("neighbors mode works with multiple nodes for UNKNOWN graphs", {
     class = "UNKNOWN"
   )
 
-  result <- neighbors(cg, c("B", "C"), mode = "in")
+  expect_warning(
+    result <- neighbors(cg, c("B", "C"), mode = "in"),
+    "several nodes is deprecated"
+  )
   expect_identical(names(result), c("B", "C"))
   expect_identical(result$B, "A")
   expect_identical(result$C, "B")
@@ -1360,7 +1446,10 @@ test_that("anteriors returns list for multiple nodes", {
     B %-->% D,
     class = "PDAG"
   )
-  result <- anteriors(cg, c("A", "D"))
+  expect_warning(
+    result <- anteriors(cg, c("A", "D")),
+    "several nodes is deprecated"
+  )
   expect_type(result, "list")
   expect_named(result, c("A", "D"))
   expect_null(result$A)
@@ -1419,7 +1508,10 @@ test_that("posteriors returns list for multiple nodes", {
     B %-->% D,
     class = "PDAG"
   )
-  result <- posteriors(cg, c("A", "D"))
+  expect_warning(
+    result <- posteriors(cg, c("A", "D")),
+    "several nodes is deprecated"
+  )
   expect_type(result, "list")
   expect_named(result, c("A", "D"))
   expect_equal(sort(result$A), c("B", "C", "D"))
@@ -1433,8 +1525,18 @@ test_that("posteriors works with index parameter", {
     class = "DAG"
   )
   # Index 1 is A (0-indexed becomes 1-indexed in R)
-  expect_equal(sort(posteriors(cg, index = 1)), c("B", "C"))
-  expect_equal(posteriors(cg, index = 2), "C")
+  expect_warning(
+    po_1 <- posteriors(cg, index = 1),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_equal(sort(po_1), c("B", "C"))
+  expect_warning(
+    po_2 <- posteriors(cg, index = 2),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_equal(po_2, "C")
 })
 
 test_that("posteriors excludes the node itself", {
@@ -1499,7 +1601,10 @@ test_that("posteriors works for multiple starting nodes (set semantics)", {
     class = "DAG"
   )
 
-  res <- posteriors(cg, c("A", "D"))
+  expect_warning(
+    res <- posteriors(cg, c("A", "D")),
+    "several nodes is deprecated"
+  )
 
   expect_type(res, "list")
   expect_named(res, c("A", "D"))
@@ -1538,10 +1643,12 @@ test_that("posteriors index parameter matches name-based query", {
   nodes_vec <- nodes(cg)
   idx_A <- which(nodes_vec == "A")
 
-  expect_equal(
-    sort(posteriors(cg, index = idx_A)),
-    sort(posteriors(cg, "A"))
+  expect_warning(
+    po_A <- posteriors(cg, index = idx_A),
+    "`index` argument is deprecated",
+    fixed = TRUE
   )
+  expect_equal(sort(po_A), sort(posteriors(cg, "A")))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -1695,9 +1802,15 @@ test_that("getter and districts branches are covered", {
     class = "PDAG"
   )
 
-  expect_true("B" %in% ancestors(cg, index = 2, open = FALSE))
-  expect_true("A" %in% descendants(cg, index = 1, open = FALSE))
-  expect_true("D" %in% anteriors(cg, index = 4, open = FALSE))
+  expect_warning(
+    {
+      expect_true("B" %in% ancestors(cg, index = 2, open = FALSE))
+      expect_true("A" %in% descendants(cg, index = 1, open = FALSE))
+      expect_true("D" %in% anteriors(cg, index = 4, open = FALSE))
+    },
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
 
   expect_error(
     posteriors(cg, nodes = "A", index = 1),
@@ -1711,7 +1824,12 @@ test_that("getter and districts branches are covered", {
     posteriors(cg, nodes = 1),
     "`nodes` must be a character vector of node names."
   )
-  expect_true("B" %in% posteriors(cg, index = 2, open = FALSE))
+  expect_warning(
+    po_B <- posteriors(cg, index = 2, open = FALSE),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_true("B" %in% po_B)
 
   cg_admg <- caugi(
     A %<->% B,
@@ -1719,7 +1837,12 @@ test_that("getter and districts branches are covered", {
     C %-->% D,
     class = "ADMG"
   )
-  expect_setequal(spouses(cg_admg, index = 2), c("A", "C"))
+  expect_warning(
+    sp_2 <- spouses(cg_admg, index = 2),
+    "`index` argument is deprecated",
+    fixed = TRUE
+  )
+  expect_setequal(sp_2, c("A", "C"))
 
   # Test that deprecated 'all' parameter shows warning
   expect_warning(
@@ -1825,4 +1948,337 @@ test_that("descendants NetworkX 1 test", {
 
   descendants_cg_c <- descendants(cg, nodes = "C")
   expect_null(descendants_cg_c)
+})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────── Deprecated per-node lists for several nodes (#359) ───────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("the several-nodes warning is a classed deprecatedWarning", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  cnd <- tryCatch(parents(cg, c("B", "C")), warning = identity)
+  expect_s3_class(cnd, c("caugi_deprecated_node_list", "deprecatedWarning"))
+  expect_match(conditionMessage(cnd), "union of the results", fixed = TRUE)
+  expect_match(conditionMessage(cnd), "`lapply()`", fixed = TRUE)
+})
+
+test_that("parents() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- parents(cg, c("B", "C")),
+    "`parents()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(B = "A", C = "B"))
+  expect_warning(
+    res <- parents(cg, index = 2:3),
+    "`parents()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(B = "A", C = "B"))
+})
+
+test_that("children() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- children(cg, c("A", "C")),
+    "`children()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", C = NULL))
+})
+
+test_that("neighbors() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- neighbors(cg, c("A", "B")),
+    "`neighbors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", B = c("A", "C")))
+  expect_warning(
+    res <- neighbours(cg, c("A", "B")),
+    "`neighbors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", B = c("A", "C")))
+})
+
+test_that("ancestors() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- ancestors(cg, c("A", "C")),
+    "`ancestors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = NULL, C = c("A", "B")))
+})
+
+test_that("descendants() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- descendants(cg, c("A", "C")),
+    "`descendants()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = c("B", "C"), C = NULL))
+})
+
+test_that("anteriors() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B %---% C, class = "PDAG")
+  expect_warning(
+    res <- anteriors(cg, c("A", "C")),
+    "`anteriors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = NULL, C = c("A", "B")))
+})
+
+test_that("posteriors() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %-->% B %---% C, class = "PDAG")
+  expect_warning(
+    res <- posteriors(cg, c("A", "C")),
+    "`posteriors()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = c("B", "C"), C = "B"))
+})
+
+test_that("markov_blanket() with several nodes warns and returns the list", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_warning(
+    res <- markov_blanket(cg, c("A", "B")),
+    "`markov_blanket()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", B = c("A", "C")))
+})
+
+test_that("spouses() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %<->% B, B %<->% C, A %-->% C, class = "ADMG")
+  expect_warning(
+    res <- spouses(cg, c("A", "B")),
+    "`spouses()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = "B", B = c("A", "C")))
+})
+
+test_that("districts() with several nodes warns and returns the per-node list", {
+  cg <- caugi(A %<->% B, B %<->% C, A %-->% C, D, class = "ADMG")
+  expect_warning(
+    res <- districts(cg, nodes = c("A", "D")),
+    "`districts()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = c("A", "B", "C"), D = "D"))
+  expect_warning(
+    res <- districts(cg, index = c(1, 4)),
+    "`districts()` with several nodes is deprecated",
+    fixed = TRUE
+  )
+  expect_identical(res, list(A = c("A", "B", "C"), D = "D"))
+})
+
+test_that("single-node queries and districts(cg) do not warn", {
+  dag <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  pdag <- caugi(A %-->% B %---% C, class = "PDAG")
+  admg <- caugi(A %<->% B, B %<->% C, A %-->% C, D, class = "ADMG")
+  expect_no_warning(parents(dag, "B"))
+  expect_no_warning(children(dag, "C"))
+  expect_no_warning(neighbors(dag, "B"))
+  expect_no_warning(neighbours(dag, "B"))
+  expect_no_warning(ancestors(dag, "C"))
+  expect_no_warning(descendants(dag, "A"))
+  expect_no_warning(anteriors(pdag, "C"))
+  expect_no_warning(posteriors(pdag, "A"))
+  expect_no_warning(markov_blanket(dag, "B"))
+  expect_no_warning(spouses(admg, "B"))
+  expect_no_warning(districts(admg, nodes = "A"))
+  expect_no_warning(districts(admg))
+})
+
+test_that("condition_marginalize() does not trigger the several-nodes warning", {
+  cg <- caugi(A %-->% B, B %-->% C, C %<->% D, D %-->% E, class = "ADMG")
+  expect_no_warning(
+    out <- condition_marginalize(cg, marg_vars = "B", cond_vars = "D")
+  )
+  expect_identical(out@edges$edge, "-->")
+})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ───────────────────── Deprecated index arguments (#360) ──────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+test_that("the index-argument warning is a classed deprecatedWarning", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  cnd <- tryCatch(parents(cg, index = 2), warning = identity)
+  expect_s3_class(cnd, "caugi_deprecated_index")
+  expect_s3_class(cnd, "deprecatedWarning")
+  expect_match(
+    conditionMessage(cnd),
+    "`nodes = nodes(cg)$name[index]`",
+    fixed = TRUE
+  )
+  cnd <- tryCatch(d_separated(cg, X_index = 1, Y = "C"), warning = identity)
+  expect_s3_class(cnd, "caugi_deprecated_index")
+  expect_match(
+    conditionMessage(cnd),
+    "`X = nodes(cg)$name[X_index]`",
+    fixed = TRUE
+  )
+})
+
+test_that("index arguments warn and give the same result as node names", {
+  # Checks that `by_index` warns once for each index argument in `args`, with
+  # at most one other warning (from a deprecated wrapper or several nodes),
+  # and returns the same as `by_name`.
+  expect_index_deprecated <- function(by_index, by_name, args) {
+    msgs <- character(0)
+    res <- withCallingHandlers(
+      by_index,
+      warning = function(w) {
+        msgs <<- c(msgs, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      }
+    )
+    pattern <- "^The `([A-Za-z_]+)` argument is deprecated.*$"
+    is_index <- grepl(pattern, msgs)
+    expect_identical(sort(sub(pattern, "\\1", msgs[is_index])), sort(args))
+    expect_lte(sum(!is_index), 1L)
+    expect_identical(res, by_name)
+  }
+  parts <- function(cg) list(cg@nodes, cg@edges)
+
+  dag <- caugi(U %-->% X + Y, X %-->% M, M %-->% Y, class = "DAG")
+  admg <- caugi(L %-->% X + Y, X %-->% Y, X %<->% W, class = "ADMG")
+  expect_identical(dag@nodes$name, c("U", "X", "M", "Y"))
+  expect_identical(admg@nodes$name, c("L", "X", "Y", "W"))
+
+  expect_index_deprecated(parents(dag, index = 4), parents(dag, "Y"), "index")
+  expect_index_deprecated(
+    parents(dag, index = c(2, 4)),
+    suppressWarnings(parents(dag, c("X", "Y"))),
+    "index"
+  )
+  expect_index_deprecated(children(dag, index = 1), children(dag, "U"), "index")
+  expect_index_deprecated(
+    neighbors(dag, index = 2),
+    neighbors(dag, "X"),
+    "index"
+  )
+  expect_index_deprecated(
+    neighbours(dag, index = 2),
+    neighbours(dag, "X"),
+    "index"
+  )
+  expect_index_deprecated(
+    ancestors(dag, index = 4),
+    ancestors(dag, "Y"),
+    "index"
+  )
+  expect_index_deprecated(
+    descendants(dag, index = 1),
+    descendants(dag, "U"),
+    "index"
+  )
+  expect_index_deprecated(
+    anteriors(dag, index = 4),
+    anteriors(dag, "Y"),
+    "index"
+  )
+  expect_index_deprecated(
+    posteriors(dag, index = 1),
+    posteriors(dag, "U"),
+    "index"
+  )
+  expect_index_deprecated(
+    markov_blanket(dag, index = 2),
+    markov_blanket(dag, "X"),
+    "index"
+  )
+  expect_index_deprecated(spouses(admg, index = 2), spouses(admg, "X"), "index")
+  expect_index_deprecated(
+    districts(admg, index = 2),
+    districts(admg, nodes = "X"),
+    "index"
+  )
+  expect_index_deprecated(
+    parts(subgraph(dag, index = c(2, 3))),
+    parts(subgraph(dag, c("X", "M"))),
+    "index"
+  )
+
+  XYZ <- c("X_index", "Y_index", "Z_index")
+  expect_index_deprecated(
+    d_separated(dag, X_index = 2, Y_index = 4, Z_index = c(1, 3)),
+    d_separated(dag, "X", "Y", Z = c("U", "M")),
+    XYZ
+  )
+  expect_index_deprecated(
+    m_separated(dag, X_index = 2, Y_index = 4, Z_index = c(1, 3)),
+    m_separated(dag, "X", "Y", Z = c("U", "M")),
+    XYZ
+  )
+  expect_index_deprecated(
+    adjustment_set(dag, X_index = 2, Y_index = 4),
+    adjustment_set(dag, "X", "Y"),
+    XYZ[1:2]
+  )
+  expect_index_deprecated(
+    is_valid_adjustment(dag, X_index = 2, Y_index = 4, Z_index = 1),
+    is_valid_adjustment(dag, "X", "Y", Z = "U"),
+    XYZ
+  )
+  expect_index_deprecated(
+    is_valid_backdoor(dag, X_index = 2, Y_index = 4, Z_index = 1),
+    is_valid_adjustment(dag, "X", "Y", Z = "U", type = "backdoor"),
+    XYZ
+  )
+  expect_index_deprecated(
+    is_valid_adjustment_admg(admg, X_index = 2, Y_index = 3, Z_index = 1),
+    is_valid_adjustment(admg, "X", "Y", Z = "L"),
+    XYZ
+  )
+  expect_index_deprecated(
+    all_adjustment_sets(dag, X_index = 2, Y_index = 4),
+    all_adjustment_sets(dag, "X", "Y"),
+    XYZ[1:2]
+  )
+  expect_index_deprecated(
+    all_backdoor_sets(dag, X_index = 2, Y_index = 4),
+    all_adjustment_sets(dag, "X", "Y", type = "backdoor"),
+    XYZ[1:2]
+  )
+  expect_index_deprecated(
+    all_adjustment_sets_admg(admg, X_index = 2, Y_index = 3),
+    all_adjustment_sets(admg, "X", "Y"),
+    XYZ[1:2]
+  )
+
+  XYIR <- c("X_index", "Y_index", "I_index", "R_index")
+  expect_index_deprecated(
+    minimal_separator(
+      dag,
+      I = NULL,
+      X_index = 2,
+      Y_index = 4,
+      I_index = 1,
+      R_index = c(1, 3)
+    ),
+    minimal_separator(dag, "X", "Y", I = "U", R = c("U", "M")),
+    XYIR
+  )
+  expect_index_deprecated(
+    minimal_d_separator(
+      dag,
+      I = NULL,
+      X_index = 2,
+      Y_index = 4,
+      I_index = 1,
+      R_index = c(1, 3)
+    ),
+    minimal_separator(dag, "X", "Y", I = "U", R = c("U", "M")),
+    XYIR
+  )
 })

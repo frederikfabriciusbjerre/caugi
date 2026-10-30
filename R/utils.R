@@ -75,6 +75,46 @@
   list(nodes_supplied = nodes_supplied, index_supplied = index_supplied)
 }
 
+#' @title Warn that an index argument is deprecated
+#'
+#' @description Arguments such as `index` and `X_index` take 1-based node
+#' indices as a twin of a node-names argument. Signals a warning of class
+#' `caugi_deprecated_index` (and `deprecatedWarning`) that names the argument
+#' and says to pass node names instead.
+#'
+#' @param index_arg Name of the deprecated index argument, e.g. `"X_index"`.
+#' @param name_arg Name of the node-names argument to use instead, e.g. `"X"`.
+#'
+#' @returns `NULL`, invisibly.
+#'
+#' @keywords internal
+.warn_index_deprecated <- function(index_arg, name_arg) {
+  warning(structure(
+    class = c(
+      "caugi_deprecated_index",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "The `",
+        index_arg,
+        "` argument is deprecated and will be removed in a future version ",
+        "of caugi. Pass node names to `",
+        name_arg,
+        "` instead, e.g. `",
+        name_arg,
+        " = nodes(cg)$name[",
+        index_arg,
+        "]`."
+      ),
+      call = NULL
+    )
+  ))
+  invisible(NULL)
+}
+
 #' @title Convert node names to 0-based indices
 #'
 #' @description

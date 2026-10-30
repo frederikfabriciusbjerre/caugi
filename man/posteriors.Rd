@@ -16,7 +16,8 @@ posteriors(
 
 \item{nodes}{A character vector of node names.}
 
-\item{index}{A vector of node indexes.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. A vector of 1-based node indices.}
 
 \item{open}{Boolean. Determines how the graph is interpreted when retrieving posteriors.
 Default is taken from \code{caugi_options("use_open_graph_definition")},
@@ -24,7 +25,10 @@ which by default is TRUE.}
 }
 \value{
 Either a character vector of node names (if a single node is
-requested) or a list of character vectors (if multiple nodes are requested).
+requested) or a named list of character vectors (if multiple nodes are
+requested). The list is deprecated: a future version will return the union
+of the results as one character vector in graph node order. For one result
+per node, use \code{lapply()} over the nodes.
 }
 \description{
 Get the posterior set of nodes in a graph. The posterior set (dual of the
