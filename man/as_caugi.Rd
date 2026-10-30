@@ -45,13 +45,18 @@ Convert an object to a \code{caugi}. The object can be a
 For matrices, \code{as_caugi} assumes that the rows are the \code{from} nodes
 and the columns are the \code{to} nodes. Thus, for a graph, G: A --> B, we would
 have that \code{G["A", "B"] == 1} and \code{G["B", "A"] == 0}.
-For PAGs, the integer codes are as follows (as used in \code{pcalg}):
+A matrix that contains the codes \code{2} or \code{3}, or any matrix passed with
+\code{class = "PAG"}, is instead read in \code{pcalg}'s \code{amat.pag} mark coding, where
+\code{G[i, j]} is the mark at node \code{j} on the edge between \code{i} and \code{j}:
 \itemize{
 \item 0: no edge
 \item 1: circle (e.g., \verb{A o-o B} or \verb{A --o B})
 \item 2: arrowhead (e.g., \verb{A --> B} or \verb{A o-> B})
 \item 3: tail (e.g., \verb{A --o B} or \code{A --- B})
 }
+
+This holds for every \code{class}, so a MAG coded this way can be read with
+\code{class = "AG"}, and a graph with circle marks with \code{class = "UNKNOWN"}.
 }
 \examples{
 # igraph

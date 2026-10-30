@@ -84,6 +84,11 @@
 - `as_caugi(collapse = TRUE)` no longer mixes up node names that contain `.`
   (e.g. `"A.B"`+`"C"` and `"A"`+`"B.C"`), which dropped edges.
 
+- `as_caugi()` reads a matrix containing the mark codes `2` or `3` in the
+  `amat.pag` coding for every `class`, not only `"PAG"`. A MAG passed with
+  `class = "AG"` used to come back as `-->` edges in both directions. A matrix
+  with circle marks can now be read with `class = "UNKNOWN"`.
+
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
   accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
 

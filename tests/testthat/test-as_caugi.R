@@ -54,19 +54,12 @@ test_that("matrix validation errors", {
   x[1, 2] <- 0.5
   expect_error(as_caugi(x), "logical or a non-negative integer", fixed = TRUE)
 
-  # invalid codes for non-PAG
-  y <- matrix(0L, 2, 2)
-  y[1, 2] <- 1L # circle endpoints
-  y[2, 1] <- 2L # arrow endpoint
-  expect_error(
-    as_caugi(y, class = "DAG"),
-    "Only either 0:1 are allowed or 0,2,3"
-  )
-
-  # invalid codes for PAG
+  # codes beyond the mark coding
   z <- matrix(0L, 2, 2)
   z[1, 2] <- 4L
-  expect_error(as_caugi(z, class = "PAG"), "integer codes 0-3", fixed = TRUE)
+  for (cl in c("DAG", "PAG")) {
+    expect_error(as_caugi(z, class = cl), "mark codes 0-3", fixed = TRUE)
+  }
 
   # differing rownames and colnames
   w <- matrix(0L, 2, 2, dimnames = list(c("A", "B"), c("B", "A")))
@@ -79,6 +72,71 @@ test_that("MPDAG class is accepted for matrix conversion", {
 
   cg <- as_caugi(m, class = "MPDAG")
   expect_identical(cg@graph_class, "MPDAG")
+})
+
+test_that("mark-coded matrices decode for every class", {
+  ord <- function(df) df[order(df$from, df$edge, df$to), , drop = FALSE]
+  nm <- c("a", "b", "c", "d")
+
+  # `amat.pag` coding of the MAG a --> b, b <-> c, b --> d, c --> d
+  M <- matrix(
+    c(0, 3, 0, 0, 2, 0, 2, 3, 0, 2, 0, 3, 0, 2, 2, 0),
+    4,
+    4,
+    dimnames = list(nm, nm)
+  )
+  storage.mode(M) <- "integer"
+  exp <- data.frame(
+    from = c("a", "b", "b", "c"),
+    edge = c("-->", "<->", "-->", "-->"),
+    to = c("b", "c", "d", "d")
+  )
+
+  for (cl in c("AG", "UNKNOWN")) {
+    cg <- as_caugi(M, class = cl)
+    expect_identical(cg@graph_class, cl)
+    expect_equal(
+      ord(as.data.frame(edges(cg))[c("from", "edge", "to")]),
+      ord(exp),
+      ignore_attr = TRUE
+    )
+  }
+
+  # The decoded marks are then validated against the requested class.
+  expect_error(as_caugi(M, class = "DAG"))
+})
+
+test_that("circle marks decode for class UNKNOWN", {
+  # `A o-> B`: a circle at A and an arrowhead at B.
+  M <- matrix(
+    c(0L, 1L, 2L, 0L),
+    2,
+    2,
+    dimnames = list(c("A", "B"), c("A", "B"))
+  )
+  e <- edges(as_caugi(M, class = "UNKNOWN"))
+  expect_identical(c(e$from, e$edge, e$to), c("A", "o->", "B"))
+  expect_error(as_caugi(M, class = "AG"))
+})
+
+test_that("0/1 matrices keep adjacency semantics for non-PAG classes", {
+  nm <- c("A", "B", "C")
+  m <- matrix(0L, 3, 3, dimnames = list(nm, nm))
+  m["A", "B"] <- 1L
+  m["B", "C"] <- 1L
+
+  e <- edges(as_caugi(m, class = "DAG"))
+  expect_true(all(e$edge == "-->"))
+  expect_setequal(paste(e$from, e$to), c("A B", "B C"))
+})
+
+test_that("a one-sided mark is not an edge", {
+  m <- matrix(0L, 2, 2, dimnames = list(c("A", "B"), c("A", "B")))
+  m["A", "B"] <- 2L
+  expect_error(
+    as_caugi(m, class = "AG"),
+    "Unsupported endpoint marks: 0 at A and 2 at B."
+  )
 })
 
 test_that("logical matrices are accepted for non-PAG and rejected for PAG", {
@@ -559,7 +617,7 @@ test_that("integer matrix dead and error branches are covered", {
   m_bad_pag <- matrix(c(0L, 4L, 0L, 0L), 2, 2)
   expect_error(
     as_caugi(m_bad_pag, class = "PAG"),
-    "integer codes 0-3"
+    "mark codes 0-3"
   )
 
   # Force dispatch to integer method with non-integer payloads.
@@ -589,7 +647,7 @@ test_that("integer matrix dead and error branches are covered", {
   m_bad_switch[1, 2] <- 1L
   expect_error(
     as_caugi(m_bad_switch, class = "PAG"),
-    "Invalid PAG code"
+    "Unsupported endpoint marks: 0 at V1 and 1 at V2."
   )
 })
 

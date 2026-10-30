@@ -9,11 +9,16 @@
 #' For matrices, `as_caugi` assumes that the rows are the `from` nodes
 #' and the columns are the `to` nodes. Thus, for a graph, G: A --> B, we would
 #' have that `G["A", "B"] == 1` and `G["B", "A"] == 0`.
-#' For PAGs, the integer codes are as follows (as used in `pcalg`):
+#' A matrix that contains the codes `2` or `3`, or any matrix passed with
+#' `class = "PAG"`, is instead read in `pcalg`'s `amat.pag` mark coding, where
+#' `G[i, j]` is the mark at node `j` on the edge between `i` and `j`:
 #' - 0: no edge
 #' - 1: circle (e.g., `A o-o B` or `A --o B`)
 #' - 2: arrowhead (e.g., `A --> B` or `A o-> B`)
 #' - 3: tail (e.g., `A --o B` or `A --- B`)
+#'
+#' This holds for every `class`, so a MAG coded this way can be read with
+#' `class = "AG"`, and a graph with circle marks with `class = "UNKNOWN"`.
 #'
 #' @param x An object to convert to a `caugi`.
 #' @param class Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
@@ -352,21 +357,12 @@ S7::method(
         call. = FALSE
       )
     }
-    if (class == "PAG" && any(!(x %in% 0:3))) {
+    if (any(!(x %in% 0:3))) {
       stop(
-        "PAG class is only supported for integer codes 0-3.",
-        "This is meant to represent PAG edge types as used in `pcalg`.",
+        "Matrix entries must be 0/1 (adjacency) or the `amat.pag` mark ",
+        "codes 0-3.",
         call. = FALSE
       )
-    }
-    if (class != "PAG" && (any(!(x %in% 0:1)))) {
-      if (any(!(x %in% c(0, 2, 3)))) {
-        stop(
-          "Only either 0:1 are allowed or 0,2,3 for PAG edge codes in a ",
-          "non-PAG matrix.",
-          call. = FALSE
-        )
-      }
     }
   } else {
     stop("`x` must be logical or numeric matrix.", call. = FALSE)
@@ -384,8 +380,14 @@ S7::method(
     if (n > 0) nm <- paste0("V", seq_len(n))
   }
 
+  # The codes 2 (arrowhead) and 3 (tail) only occur in the mark coding, so a
+  # matrix containing them is decoded by endpoint marks whatever class was
+  # requested. A 0/1 matrix is ambiguous, so it keeps adjacency semantics
+  # unless a PAG was asked for.
+  mark_coded <- class == "PAG" || any(x == 2 | x == 3)
+
   # build edge list
-  if (class %in% "PAG") {
+  if (mark_coded) {
     # Correct pcalg PAG code mapping:
     # 1 = circle, 2 = arrowhead, 3 = tail (codes refer to the COLUMN end)
     mark_sym <- function(k) {
@@ -394,7 +396,7 @@ S7::method(
         "1" = "o", # circle
         "2" = ">", # arrowhead
         "3" = "-", # tail
-        stop("Invalid PAG code: ", k, call. = FALSE)
+        as.character(k) # not a mark; reported by the glyph lookup below
       )
     }
 
@@ -449,7 +451,18 @@ S7::method(
           "o>" = "o->",
           "oo" = "o-o",
           ">>" = "<->",
-          stop("Unsupported PAG endpoints: ", lf, " .. ", rt, call. = FALSE)
+          stop(
+            "Unsupported endpoint marks: ",
+            b,
+            " at ",
+            nm[i],
+            " and ",
+            a,
+            " at ",
+            nm[j],
+            ".",
+            call. = FALSE
+          )
         )
 
         from <- c(from, nm[li])
