@@ -82,6 +82,14 @@ it, if possible.</p></dd>
     <p>A logical value indicating whether the graph is a MAG.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>A non-adjacent pair has no separating set exactly when a collider path
+joins the two inside their anterior set (Richardson and Spirtes 2002,
+Theorem 4.2). Only pairs that both point into one district can be joined
+this way, and each is checked with one search along <code>&lt;-&gt;</code> edges, so the
+check is polynomial in the size of the graph.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other queries:
 <code><a href="ancestors.html">ancestors()</a></code>,

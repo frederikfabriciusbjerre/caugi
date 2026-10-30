@@ -60,6 +60,23 @@
   is now linear in the graph size; it was cubic in the number of parents
   of `X`.
 
+### Performance Improvements
+
+- [`is_mag()`](https://caugi.org/dev/reference/is_mag.md) is now
+  polynomial instead of exponential. It tried every subset of the other
+  nodes as a separating set for each non-adjacent pair. A pair has no
+  separating set exactly when a collider path joins it inside its
+  anterior set (Richardson and Spirtes 2002, Theorem 4.2), and a search
+  along `<->` edges finds that path. A 20-node graph could take seconds;
+  a 5,000-node one now takes a fraction of a second
+  ([\#398](https://github.com/frederikfabriciusbjerre/caugi/issues/398)).
+
+- A graph is validated against its class once, not twice. Building a
+  `caugi` validated the class by constructing its typed view, then threw
+  the view away, so the first query built and validated it again. The
+  view is now kept. This halves the cost of graphs whose check is
+  expensive, such as CPDAGs and MPDAGs.
+
 ### Bug Fixes
 
 - [`write_graphml()`](https://caugi.org/dev/reference/write_graphml.md)
