@@ -38,6 +38,13 @@
   single-pair results are unchanged. `is_valid_backdoor()` is now linear in
   the graph size; it was cubic in the number of parents of `X`.
 
+## Performance Improvements
+
+* `is_mag()` is now polynomial instead of exponential. It tested every subset
+  of the other nodes as a separating set for each non-adjacent pair; one test
+  given the pair's anterior set decides the same thing (Richardson and Spirtes
+  2002, Theorem 4.2). At 12 nodes it took over a second (#398).
+
 ## Bug Fixes
 
 - `write_graphml()` and `read_graphml()` now write and read UTF-8, as the file

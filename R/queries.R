@@ -559,6 +559,11 @@ is_ag <- function(cg, force_check = FALSE) {
 #' violating the ancestral graph constraints or changing the encoded
 #' independence model.
 #'
+#' @details
+#' Each pair of non-adjacent nodes takes one m-separation test, given the
+#' other nodes in their anterior set (Richardson and Spirtes 2002, Theorem
+#' 4.2), so the check is polynomial in the size of the graph.
+#'
 #' @param cg A `caugi` object.
 #' @param force_check Logical; if `TRUE`, the function will test if the graph is
 #' a MAG, if `FALSE` (default), it will look at the graph class and match

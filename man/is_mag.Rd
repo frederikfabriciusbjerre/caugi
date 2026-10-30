@@ -24,6 +24,11 @@ A MAG is an ancestral graph where no additional edge can be added without
 violating the ancestral graph constraints or changing the encoded
 independence model.
 }
+\details{
+Each pair of non-adjacent nodes takes one m-separation test, given the
+other nodes in their anterior set (Richardson and Spirtes 2002, Theorem
+4.2), so the check is polynomial in the size of the graph.
+}
 \examples{
 cg_ag <- caugi(
   A \%-->\% B,
