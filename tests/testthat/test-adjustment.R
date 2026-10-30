@@ -1077,7 +1077,7 @@ test_that("all_backdoor_sets() is deprecated", {
   )
 })
 
-test_that("all_adjustment_sets_admg() is deprecated", {
+test_that("all_adjustment_sets_admg() is deprecated and keeps its results", {
   admg <- caugi(L %-->% X + Y, X %-->% Y, X %<->% M, M %-->% Y, class = "ADMG")
   expect_warning(
     sets <- all_adjustment_sets_admg(admg, X = "X", Y = "Y", minimal = FALSE),
@@ -1087,5 +1087,18 @@ test_that("all_adjustment_sets_admg() is deprecated", {
   expect_identical(
     sets,
     all_adjustment_sets(admg, X = "X", Y = "Y", minimal = FALSE)
+  )
+
+  # Input that all_adjustment_sets() rejects keeps its old result.
+  old <- function(...) suppressWarnings(all_adjustment_sets_admg(...))
+  expect_identical(old(admg, X = character(0), Y = "Y"), list(character(0)))
+  expect_identical(old(admg, X = "X", Y = character(0)), list(character(0)))
+  expect_identical(old(admg, X = c("X", "Y"), Y = "Y"), list())
+
+  # It still errors on other graph classes.
+  expect_error(
+    old(adjustment_set_cg, X = "X", Y = "Y"),
+    "`all_adjustment_sets_admg()` is only defined for ADMGs.",
+    fixed = TRUE
   )
 })

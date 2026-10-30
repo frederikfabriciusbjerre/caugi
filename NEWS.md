@@ -224,7 +224,10 @@
   favour of `all_adjustment_sets()`. Write
   `all_adjustment_sets(cg, X, Y, type = "backdoor")` instead of
   `all_backdoor_sets(cg, X, Y)`, and `all_adjustment_sets(cg, X, Y)` instead
-  of `all_adjustment_sets_admg(cg, X, Y)` (#354).
+  of `all_adjustment_sets_admg(cg, X, Y)`. Unlike
+  `all_adjustment_sets_admg()`, `all_adjustment_sets()` errors when `X` or `Y`
+  is empty or they overlap; `all_adjustment_sets_admg()` keeps its old results
+  for such input (#354).
 
 # caugi 1.4.0
 
