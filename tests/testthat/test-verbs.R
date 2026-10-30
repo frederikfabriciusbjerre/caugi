@@ -189,16 +189,23 @@ test_that("edge removal preserves bows, directions, nodes, and its input", {
   }
 })
 
-test_that("edge removal ignores unknown requests and accepts duplicate requests", {
+test_that("edge removal rejects unknown nodes and accepts duplicate requests", {
   cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
-  expect_warning(
-    out <- remove_edges(
+  expect_error(
+    remove_edges(
       cg,
-      from = c("missing", NA_character_, "A", "A", "A"),
-      edge = c("-->", "-->", "missing", "-->", "-->"),
-      to = rep("B", 5)
+      from = c("missing", NA_character_, "A"),
+      edge = rep("-->", 3),
+      to = rep("B", 3)
     ),
-    "ignored: missing, NA"
+    "Unknown node\\(s\\): missing, NA"
+  )
+  # An absent edge between known nodes is ignored; duplicates are fine.
+  out <- remove_edges(
+    cg,
+    from = c("A", "A", "A"),
+    edge = c("missing", "-->", "-->"),
+    to = rep("B", 3)
   )
   expect_equal(edges(out), edges(caugi(B %-->% C, class = "DAG")))
   expect_identical(nodes(out)$name, nodes(cg)$name)
@@ -217,11 +224,10 @@ test_that("edge removal ignores unknown requests and accepts duplicate requests"
     ))),
     2
   )
-  expect_warning(
-    out <- remove_edges(caugi(nodes = "A", class = "DAG"), A %-->% B),
-    "ignored: B"
+  expect_error(
+    remove_edges(caugi(nodes = "A", class = "DAG"), A %-->% B),
+    "Unknown node\\(s\\): B"
   )
-  expect_equal(nrow(edges(out)), 0)
 })
 
 test_that("edge removal validates CPDAG invariants after deletion", {
@@ -296,13 +302,14 @@ test_that("set_edges returns cg if nothing given", {
 # ────────────────────────────────── Nodes ─────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that("remove_nodes and remove_edges warn on unknown nodes", {
+test_that("remove_nodes and remove_edges error on unknown nodes", {
   cg <- caugi(A %-->% B, class = "DAG")
-  expect_warning(out <- remove_nodes(cg, "Z"), "Unknown node\\(s\\) ignored: Z")
-  expect_equal(nrow(nodes(out)), 2L)
-  expect_warning(remove_edges(cg, Z %-->% A), "ignored: Z")
-  expect_warning(remove_edges(cg, from = "Z", to = "A"), "ignored: Z")
-  expect_no_warning(remove_edges(cg, A %-->% B))
+  expect_error(remove_nodes(cg, "Z"), "Unknown node\\(s\\): Z")
+  expect_error(remove_nodes(cg, c("A", "Y", "Z")), "Unknown node\\(s\\): Y, Z")
+  expect_error(remove_edges(cg, Z %-->% A), "Unknown node\\(s\\): Z")
+  expect_error(remove_edges(cg, from = "Z", to = "A"), "Unknown node\\(s\\): Z")
+  expect_equal(nrow(nodes(cg)), 2L)
+  expect_equal(nrow(edges(remove_edges(cg, A %-->% B))), 0L)
 })
 
 test_that("add_nodes, remove_nodes cover vector and expr paths", {
