@@ -10,12 +10,12 @@ use crate::{
 
 /// Represents the semantic kind of an edge between two nodes.
 /// - `Sym`: A symmetric edge (e.g., undirected `---` or bidirected `<->`).
-/// - `Asym`: An asymmetric edge with direction; `is_outgoing=true` means the edge
-///   points toward the neighbor (i.e., neighbor has Arrow mark).
+/// - `Asym`: An asymmetric edge with its mark at the row's node and its mark
+///   at the neighbor, so `u --o v` and `v --o u` differ.
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum EdgeKind {
     Sym(EdgeClass),
-    Asym(EdgeClass, bool),
+    Asym(EdgeClass, Mark, Mark),
 }
 
 /// Compute the EdgeKind for an edge at position `idx` in the graph's CSR storage.
@@ -25,16 +25,15 @@ fn compute_edge_kind(graph: &CaugiGraph, idx: usize) -> EdgeKind {
     if spec.symmetric {
         EdgeKind::Sym(spec.class)
     } else {
-        // Determine semantic direction: "outgoing" means neighbor has Arrow mark.
         // side[idx] stores position: 0 = tail position, 1 = head position.
-        // If side=0, neighbor mark = spec.head; if side=1, neighbor mark = spec.tail.
-        let neighbor_mark = if graph.side[idx] == 0 {
-            spec.head
+        // If side=0, the row's node has spec.tail and the neighbor spec.head;
+        // if side=1, the other way round.
+        let (own_mark, neighbor_mark) = if graph.side[idx] == 0 {
+            (spec.tail, spec.head)
         } else {
-            spec.tail
+            (spec.head, spec.tail)
         };
-        let is_outgoing = neighbor_mark == Mark::Arrow;
-        EdgeKind::Asym(spec.class, is_outgoing)
+        EdgeKind::Asym(spec.class, own_mark, neighbor_mark)
     }
 }
 
@@ -336,6 +335,27 @@ mod tests {
         let c2 = b2.finalize().unwrap();
 
         assert_eq!(shd(&c1, &c2), (0.0, 0));
+    }
+
+    #[test]
+    fn shd_reversed_tail_circle_counts_one() {
+        // `--o` has no arrowhead at either end, so its direction must come
+        // from comparing the mark at each endpoint.
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let pu = reg.code_of("--o").unwrap();
+
+        let mut b1 = GraphBuilder::new_with_registry(2, true, &reg);
+        b1.add_edge(0, 1, pu).unwrap();
+        let c1 = b1.finalize().unwrap();
+
+        let mut b2 = GraphBuilder::new_with_registry(2, true, &reg);
+        b2.add_edge(1, 0, pu).unwrap();
+        let c2 = b2.finalize().unwrap();
+
+        assert_eq!(shd(&c1, &c1), (0.0, 0));
+        assert_eq!(shd(&c1, &c2), (1.0, 1));
+        assert_eq!(shd(&c2, &c1), (1.0, 1));
     }
 
     #[test]

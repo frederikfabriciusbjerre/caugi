@@ -24,9 +24,10 @@ A numeric representing the AID between the two graphs, if
 \description{
 Compute the Adjustment Identification Distance (AID) between two
 graphs. AID counts how often the adjustment-identification strategy applied
-to \code{guess} yields a causal inference that is incorrect relative to \code{truth}.
-Implemented in caugi's Rust backend following Henckel, Würtzen & Weichwald
-(2024), \url{doi:10.48550/arXiv.2402.08616}.
+to \code{guess} yields a causal inference that is incorrect relative to \code{truth},
+so unlike \code{\link[=shd]{shd()}} and \code{\link[=hd]{hd()}}, swapping the two graphs generally changes the
+value. Implemented in caugi's Rust backend following Henckel, Würtzen &
+Weichwald (2024), \url{doi:10.48550/arXiv.2402.08616}.
 }
 \examples{
 set.seed(1)
