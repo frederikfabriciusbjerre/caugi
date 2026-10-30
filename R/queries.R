@@ -122,16 +122,15 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 #' @description Checks if the given `caugi` graph is acyclic.
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, the function will test if the graph is
-#' acyclic, if `FALSE` (default), it will look at the graph class and match
-#' it, if possible.
+#' @param force_check Deprecated; passing it warns. Nothing replaces it: the
+#' graph class is already checked when the graph is built. If `TRUE`, the
+#' structural check runs even when the graph class answers the question.
 #'
 #' @details
-#' Logically, it should not be possible to have a graph class of "DAG", "PDAG",
-#' "MPDAG", or "CPDAG"
-#' that has cycles, but in case the user modified the graph after creation in
-#' some unforeseen way that could have introduced cycles, this function allows
-#' to force a check of acyclicity, if needed.
+#' Every graph class except `"UNKNOWN"` forbids directed cycles and is checked
+#' when the graph is built, so for those classes this returns `TRUE` without
+#' looking at the edges. For `"UNKNOWN"` it checks the directed part for
+#' cycles.
 #'
 #' @returns A logical value indicating whether the graph is acyclic.
 #'
@@ -156,14 +155,14 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 #' @export
 is_acyclic <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
+  if (!missing(force_check)) {
+    .warn_force_check_deprecated()
+  }
 
   if (force_check) {
     is_it <- rs_is_acyclic(cg@session)
   } else if (
-    identical(cg@graph_class, "DAG") ||
-      identical(cg@graph_class, "PDAG") ||
-      identical(cg@graph_class, "MPDAG") ||
-      identical(cg@graph_class, "CPDAG")
+    cg@graph_class %in% c("DAG", "PDAG", "MPDAG", "CPDAG", "UG", "ADMG", "AG")
   ) {
     is_it <- TRUE
   } else {
@@ -178,9 +177,9 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' no parallel edges).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Ignored. Since caugi 1.4.0 the check always runs
-#' against the graph itself, since the deprecated `simple` flag no longer
-#' tells whether a graph has parallel edges or self-loops.
+#' @param force_check Deprecated and ignored; passing it warns. Nothing
+#' replaces it: since caugi 1.4.0 the check always runs against the graph
+#' itself.
 #'
 #' @returns A logical value indicating whether the graph is simple.
 #'
@@ -204,6 +203,9 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' @export
 is_simple <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
+  if (!missing(force_check)) {
+    .warn_force_check_deprecated()
+  }
   rs_is_simple(cg@session)
 }
 
@@ -213,9 +215,9 @@ is_simple <- function(cg, force_check = FALSE) {
 #' Directed Acyclic Graph (DAG).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, the function will test if the graph is
-#' a DAG, if `FALSE` (default), it will look at the graph class and match
-#' it, if possible.
+#' @param force_check Deprecated; passing it warns. Nothing replaces it: the
+#' graph class is already checked when the graph is built. If `TRUE`, the
+#' structural check runs even when the graph class answers the question.
 #'
 #' @returns A logical value indicating whether the graph is a DAG.
 #'
@@ -250,6 +252,9 @@ is_simple <- function(cg, force_check = FALSE) {
 #' @export
 is_dag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
+  if (!missing(force_check)) {
+    .warn_force_check_deprecated()
+  }
 
   if (identical(cg@graph_class, "DAG") && !force_check) {
     is_it <- TRUE
@@ -266,9 +271,9 @@ is_dag <- function(cg, force_check = FALSE) {
 #' Partially Directed Acyclic Graph (PDAG).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, the function will test if the graph is
-#' a PDAG, if `FALSE` (default), it will look at the graph class and match
-#' it, if possible.
+#' @param force_check Deprecated; passing it warns. Nothing replaces it: the
+#' graph class is already checked when the graph is built. If `TRUE`, the
+#' structural check runs even when the graph class answers the question.
 #'
 #' @returns A logical value indicating whether the graph is a PDAG.
 #' @examples
@@ -309,8 +314,14 @@ is_dag <- function(cg, force_check = FALSE) {
 #' @export
 is_pdag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
+  if (!missing(force_check)) {
+    .warn_force_check_deprecated()
+  }
 
-  if (cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG") && !force_check) {
+  # DAGs and UGs are PDAGs without undirected or directed edges, respectively.
+  if (
+    cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG", "DAG", "UG") && !force_check
+  ) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -424,9 +435,9 @@ is_mpdag <- function(cg) {
 #' @description Checks if the given `caugi` graph is an undirected graph (UG).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, the function will test if the graph is
-#' an UG, if `FALSE` (default), it will look at the graph class and match
-#' it, if possible.
+#' @param force_check Deprecated; passing it warns. Nothing replaces it: the
+#' graph class is already checked when the graph is built. If `TRUE`, the
+#' structural check runs even when the graph class answers the question.
 #'
 #' @returns A logical value indicating whether the graph is an UG.
 #'
@@ -448,6 +459,9 @@ is_mpdag <- function(cg) {
 #' @export
 is_ug <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
+  if (!missing(force_check)) {
+    .warn_force_check_deprecated()
+  }
 
   if (identical(cg@graph_class, "UG") && !force_check) {
     is_it <- TRUE
@@ -467,9 +481,9 @@ is_ug <- function(cg, force_check = FALSE) {
 #' and the directed part must be acyclic.
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, the function will test if the graph is
-#' an ADMG, if `FALSE` (default), it will look at the graph class and match
-#' it, if possible.
+#' @param force_check Deprecated; passing it warns. Nothing replaces it: the
+#' graph class is already checked when the graph is built. If `TRUE`, the
+#' structural check runs even when the graph class answers the question.
 #'
 #' @returns A logical value indicating whether the graph is an ADMG.
 #'
@@ -493,8 +507,11 @@ is_ug <- function(cg, force_check = FALSE) {
 #' @export
 is_admg <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
+  if (!missing(force_check)) {
+    .warn_force_check_deprecated()
+  }
 
-  if (identical(cg@graph_class, "ADMG") && !force_check) {
+  if (cg@graph_class %in% c("ADMG", "DAG") && !force_check) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -513,9 +530,9 @@ is_admg <- function(cg, force_check = FALSE) {
 #' anterior constraint, and undirected constraint).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, the function will test if the graph is
-#' an AG, if `FALSE` (default), it will look at the graph class and match
-#' it, if possible.
+#' @param force_check Deprecated; passing it warns. Nothing replaces it: the
+#' graph class is already checked when the graph is built. If `TRUE`, the
+#' structural check runs even when the graph class answers the question.
 #'
 #' @returns A logical value indicating whether the graph is an AG.
 #'
@@ -540,8 +557,11 @@ is_admg <- function(cg, force_check = FALSE) {
 #' @export
 is_ag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
+  if (!missing(force_check)) {
+    .warn_force_check_deprecated()
+  }
 
-  if (identical(cg@graph_class, "AG") && !force_check) {
+  if (cg@graph_class %in% c("AG", "DAG", "UG") && !force_check) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -560,9 +580,9 @@ is_ag <- function(cg, force_check = FALSE) {
 #' independence model.
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Logical; if `TRUE`, the function will test if the graph is
-#' a MAG, if `FALSE` (default), it will look at the graph class and match
-#' it, if possible.
+#' @param force_check Deprecated; passing it warns. Nothing replaces it: the
+#' graph class is already checked when the graph is built. If `TRUE`, the
+#' structural check runs even when the graph class answers the question.
 #'
 #' @returns A logical value indicating whether the graph is a MAG.
 #'
@@ -580,13 +600,47 @@ is_ag <- function(cg, force_check = FALSE) {
 #' @export
 is_mag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
+  if (!missing(force_check)) {
+    .warn_force_check_deprecated()
+  }
 
-  if (identical(cg@graph_class, "MAG") && !force_check) {
+  # There is no "MAG" class, and an AG need not be maximal. Every DAG and UG
+  # is a MAG: non-adjacent nodes are separated by the parents of the later
+  # one in a topological order (DAG) or by all other nodes (UG).
+  if (cg@graph_class %in% c("DAG", "UG") && !force_check) {
     is_it <- TRUE
   } else {
     is_it <- rs_is_mag(cg@session)
   }
   is_it
+}
+
+#' @title Warn that the `force_check` argument is deprecated
+#'
+#' @description Signals a warning of class `caugi_deprecated_force_check` (and
+#' `deprecatedWarning`).
+#'
+#' @returns `NULL`, invisibly.
+#'
+#' @keywords internal
+.warn_force_check_deprecated <- function() {
+  warning(structure(
+    class = c(
+      "caugi_deprecated_force_check",
+      "deprecatedWarning",
+      "warning",
+      "condition"
+    ),
+    list(
+      message = paste0(
+        "The `force_check` argument is deprecated and will be removed in a ",
+        "future version of caugi; the graph class is already checked when ",
+        "the graph is built."
+      ),
+      call = NULL
+    )
+  ))
+  invisible(NULL)
 }
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -93,7 +93,7 @@ test_that("CPDAG generation returns a valid CPDAG with supported edge types", {
   expect_true(is_pdag(g))
   expect_true(is_mpdag(g))
   expect_true(is_cpdag(g))
-  expect_true(is_acyclic(g, force_check = TRUE))
+  expect_true(is_acyclic(mutate_caugi(g, "UNKNOWN")))
   expect_true(all(edge_types(g) %in% c("-->", "---")))
 })
 
