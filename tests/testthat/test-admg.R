@@ -233,16 +233,16 @@ test_that("ADMG adjustment rejects opened bidirected collider chains", {
     class = "ADMG"
   )
 
-  expect_true(is_valid_adjustment_admg(admg, "a", "d"))
-  expect_true(is_valid_adjustment_admg(admg, "a", "d", Z = "b"))
-  expect_true(is_valid_adjustment_admg(admg, "a", "d", Z = "c"))
-  expect_false(is_valid_adjustment_admg(admg, "a", "d", Z = c("b", "c")))
+  expect_true(is_valid_adjustment(admg, "a", "d"))
+  expect_true(is_valid_adjustment(admg, "a", "d", Z = "b"))
+  expect_true(is_valid_adjustment(admg, "a", "d", Z = "c"))
+  expect_false(is_valid_adjustment(admg, "a", "d", Z = c("b", "c")))
   sets <- all_adjustment_sets(admg, "a", "d", minimal = FALSE)
   expect_length(sets, 3)
   expect_false(any(vapply(sets, setequal, logical(1), c("b", "c"))))
 })
 
-test_that("is_valid_adjustment_admg works for confounding", {
+test_that("is_valid_adjustment works for confounding", {
   admg <- caugi(
     L %-->% X,
     X %-->% Y,
@@ -251,13 +251,13 @@ test_that("is_valid_adjustment_admg works for confounding", {
   )
 
   # Empty set is not valid (backdoor through L)
-  expect_false(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = NULL))
+  expect_false(is_valid_adjustment(admg, X = "X", Y = "Y", Z = NULL))
 
   # L is valid
-  expect_true(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = "L"))
+  expect_true(is_valid_adjustment(admg, X = "X", Y = "Y", Z = "L"))
 })
 
-test_that("is_valid_adjustment_admg rejects forbidden descendants", {
+test_that("is_valid_adjustment rejects forbidden descendants", {
   admg <- caugi(
     X %-->% M,
     M %-->% Y,
@@ -267,10 +267,10 @@ test_that("is_valid_adjustment_admg rejects forbidden descendants", {
   )
 
   # M is a descendant of X on causal path - not valid
-  expect_false(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = "M"))
+  expect_false(is_valid_adjustment(admg, X = "X", Y = "Y", Z = "M"))
 
   # L is valid
-  expect_true(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = "L"))
+  expect_true(is_valid_adjustment(admg, X = "X", Y = "Y", Z = "L"))
 })
 
 test_that("all_adjustment_sets finds valid sets", {
@@ -298,8 +298,8 @@ test_that("M-bias collider at confounder admits no adjustment set (#277)", {
 
   # X <-> C <-> Y has a collider at C; conditioning on C opens it,
   # while leaving Z empty leaves the directed back-door C -> Y open.
-  expect_false(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = NULL))
-  expect_false(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = "C"))
+  expect_false(is_valid_adjustment(admg, X = "X", Y = "Y", Z = NULL))
+  expect_false(is_valid_adjustment(admg, X = "X", Y = "Y", Z = "C"))
 
   expect_identical(
     all_adjustment_sets(admg, X = "X", Y = "Y", minimal = TRUE),
@@ -311,7 +311,7 @@ test_that("M-bias collider at confounder admits no adjustment set (#277)", {
   )
 })
 
-test_that("is_valid_adjustment_admg errors when X or Y is missing", {
+test_that("is_valid_adjustment errors when X or Y is missing", {
   admg <- caugi(
     L %-->% X,
     X %-->% Y,
@@ -322,24 +322,24 @@ test_that("is_valid_adjustment_admg errors when X or Y is missing", {
   # Missing X
 
   expect_error(
-    is_valid_adjustment_admg(admg, Y = "Y", Z = "L"),
+    is_valid_adjustment(admg, Y = "Y", Z = "L"),
     "X \\(or X_index\\) must be provided"
   )
 
   # Missing Y
   expect_error(
-    is_valid_adjustment_admg(admg, X = "X", Z = "L"),
+    is_valid_adjustment(admg, X = "X", Z = "L"),
     "Y \\(or Y_index\\) must be provided"
   )
 
   # Missing both X and Y
   expect_error(
-    is_valid_adjustment_admg(admg, Z = "L"),
+    is_valid_adjustment(admg, Z = "L"),
     "X \\(or X_index\\) must be provided"
   )
 
   # Using indices should also work
-  expect_true(is_valid_adjustment_admg(
+  expect_true(is_valid_adjustment(
     admg,
     X_index = 2L,
     Y_index = 3L,

@@ -691,7 +691,7 @@ impl GraphSession {
         adjustment_set_parents(xs: &[u32], ys: &[u32]) -> Vec<u32>;
         adjustment_set_backdoor(xs: &[u32], ys: &[u32]) -> Vec<u32>;
         adjustment_set_optimal(xs: &[u32], ys: &[u32], return_dropped: bool) -> (Vec<u32>, Option<Vec<u32>>);
-        is_valid_adjustment_set_admg(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
+        is_valid_adjustment_set(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
         all_adjustment_sets(xs: &[u32], ys: &[u32], minimal: bool, max_size: u32) -> Vec<Vec<u32>>;
     }
 
@@ -1547,7 +1547,7 @@ mod tests {
         assert!(districts.iter().any(|d| d == &vec![1, 2]));
         assert_eq!(admg.district_of(1).unwrap(), vec![1, 2]);
         assert_eq!(admg.spouses_of(1).unwrap(), vec![2]);
-        let _ = admg.is_valid_adjustment_set_admg(&[0], &[2], &[1]).unwrap();
+        let _ = admg.is_valid_adjustment_set(&[0], &[2], &[1]).unwrap();
         let _ = admg.all_adjustment_sets(&[0], &[2], true, 2).unwrap();
         assert_eq!(
             admg.resolve_class(GraphClass::Auto).unwrap(),
@@ -1983,8 +1983,8 @@ mod tests {
         // m_separated on a UG is graph separation
         assert!(ug.m_separated(&[0], &[2], &[1]).is_ok());
 
-        // is_valid_adjustment_set_admg on UG errors
-        assert!(ug.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());
+        // is_valid_adjustment_set on UG errors
+        assert!(ug.is_valid_adjustment_set(&[0], &[2], &[1]).is_err());
         assert!(ug.all_adjustment_sets(&[0], &[2], true, 2).is_err());
     }
 
@@ -2041,7 +2041,7 @@ mod tests {
         assert!(pdag.adjustment_set_optimal(&[0], &[2], false).is_err());
         assert!(pdag.is_valid_backdoor_set(&[0], &[2], &[1]).is_err());
         assert!(pdag.all_backdoor_sets(&[0], &[2], true, 2).is_err());
-        assert!(pdag.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());
+        assert!(pdag.is_valid_adjustment_set(&[0], &[2], &[1]).is_err());
         assert!(pdag.all_adjustment_sets(&[0], &[2], true, 2).is_err());
     }
 
@@ -2152,7 +2152,7 @@ mod tests {
         assert!(dag.adjustment_set_optimal(&[0], &[1], false).is_err());
         assert!(dag.is_valid_backdoor_set(&[0], &[1], &[]).is_err());
         assert!(dag.all_backdoor_sets(&[0], &[1], false, 10).is_err());
-        assert!(dag.is_valid_adjustment_set_admg(&[0], &[1], &[]).is_err());
+        assert!(dag.is_valid_adjustment_set(&[0], &[1], &[]).is_err());
         assert!(dag.all_adjustment_sets(&[0], &[1], false, 10).is_err());
         assert!(dag.to_cpdag().is_err());
         assert!(dag.skeleton().is_err());

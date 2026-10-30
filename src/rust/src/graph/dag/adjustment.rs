@@ -553,10 +553,11 @@ mod tests {
     }
 
     #[test]
-    fn dag_all_adjustment_sets_match_admg_on_every_four_node_dag() {
+    fn dag_adjustment_criterion_matches_admg_on_every_four_node_dag() {
         // Every DAG on 4 nodes with topological order 0 < 1 < 2 < 3, read as
-        // an ADMG without bidirected edges, gives the same sets for every X
-        // (1-2 nodes) and Y (1 node).
+        // an ADMG without bidirected edges, accepts the same Z and gives the
+        // same sets for every X (1-2 nodes) and Y (1 node). Z ranges over
+        // every set without Y, so it may overlap X.
         let pairs: Vec<(u32, u32)> = (0..4)
             .flat_map(|u| (u + 1..4).map(move |v| (u, v)))
             .collect();
@@ -575,6 +576,14 @@ mod tests {
             let admg = Admg::new(Arc::new(g.core_ref().clone())).unwrap();
             for xs in &xs_choices {
                 for y in (0..4).filter(|v| !xs.contains(v)) {
+                    for z_mask in (0u32..16).filter(|m| m & (1 << y) == 0) {
+                        let z: Vec<u32> = (0..4).filter(|v| z_mask & (1 << v) != 0).collect();
+                        assert_eq!(
+                            g.is_valid_adjustment_set(xs, &[y], &z),
+                            admg.is_valid_adjustment_set(xs, &[y], &z),
+                            "edges {edges:?}, xs {xs:?}, y {y}, z {z:?}"
+                        );
+                    }
                     for minimal in [false, true] {
                         assert_eq!(
                             g.all_adjustment_sets(xs, &[y], minimal, 4),

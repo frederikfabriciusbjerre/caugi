@@ -2277,7 +2277,7 @@ fn rs_all_backdoor_sets(
 }
 
 #[extendr]
-fn rs_is_valid_adjustment_set_admg(
+fn rs_is_valid_adjustment_set(
     mut session: ExternalPtr<GraphSession>,
     xs: Integers,
     ys: Integers,
@@ -2288,7 +2288,7 @@ fn rs_is_valid_adjustment_set_admg(
     let z_u: Vec<u32> = z.iter().map(|ri| rint_to_u32(ri, "z")).collect();
     session
         .as_mut()
-        .is_valid_adjustment_set_admg(&xs_u, &ys_u, &z_u)
+        .is_valid_adjustment_set(&xs_u, &ys_u, &z_u)
         .unwrap_or_else(|e| throw_r_error(e))
 }
 
@@ -2395,7 +2395,7 @@ extendr_module! {
     fn rs_adjustment_set_optimal;
     fn rs_is_valid_backdoor_set;
     fn rs_all_backdoor_sets;
-    fn rs_is_valid_adjustment_set_admg;
+    fn rs_is_valid_adjustment_set;
     fn rs_all_adjustment_sets;
     fn rs_shd;
     fn rs_hd;

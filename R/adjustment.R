@@ -183,13 +183,25 @@ adjustment_set <- function(
   cg@nodes$name[idx0 + 1L]
 }
 
-#' @title Is a backdoor set valid?
+#' @title Is a set a valid adjustment set?
 #'
-#' @description Checks whether `Z` satisfies the generalized back-door
-#' criterion relative to `X` and `Y` in a DAG. `X` and `Y` can each hold one
-#' or more nodes.
+#' @description Checks whether `Z` is a valid set for adjusting for the effect
+#' of `X` on `Y`. `X` and `Y` can each hold one or more nodes.
 #'
 #' @details
+#' Types supported:
+#' - `"adjustment"`: the generalized adjustment criterion (Perković et al.,
+#'   2018): `Z` contains no descendant of a node outside `X` on a proper causal
+#'   path from `X` to `Y`, and blocks every proper non-causal path from `X` to
+#'   `Y`. The criterion is complete: `Z` is accepted exactly when it is a valid
+#'   adjustment set. Defined for DAGs and ADMGs; on an ADMG it is the
+#'   adjustment criterion of Shpitser, VanderWeele & Robins (2010), with
+#'   m-separation in place of d-separation.
+#' - `"backdoor"`: the generalized back-door criterion (Maathuis & Colombo,
+#'   2015), described below. It is sufficient but not complete: every set it
+#'   accepts is a valid adjustment set, but some valid adjustment sets are
+#'   rejected. Defined for DAGs only.
+#'
 #' `Z` satisfies the generalized back-door criterion (Maathuis & Colombo,
 #' 2015, Def. 3.7) when
 #' 1. `Z` contains no descendant of `X`, and
@@ -200,23 +212,44 @@ adjustment_set <- function(
 #' With one treatment and one outcome this is Pearl's back-door criterion.
 #' With several treatments it can accept sets that Pearl's set version
 #' rejects, since that version requires `Z` alone to block every back-door
-#' path of each treatment. Every set accepted here is a valid adjustment set,
-#' but a valid adjustment set may be rejected, for example one containing a
-#' descendant of `X` off the causal paths. A `Z` that contains a node of `X`
-#' or `Y` is never valid.
+#' path of each treatment.
+#'
+#' The two types differ when a descendant of `X` lies off every causal path.
+#' In `X --> Y, X --> W`, `{W}` is a valid adjustment set but not a back-door
+#' set, because `W` is a descendant of `X`.
+#'
+#' A `Z` that contains a node of `X` or `Y` is never valid. A `Z` is accepted
+#' exactly when [all_adjustment_sets()] with the same `type`,
+#' `minimal = FALSE` and a large enough `max_size` returns it.
+#'
+#' `is_valid_backdoor()` and `is_valid_adjustment_admg()` are deprecated; use
+#' `is_valid_adjustment()` with `type = "backdoor"` and `type = "adjustment"`.
+#'
+#' @param cg A `caugi` object of class DAG, or ADMG for
+#'   `type = "adjustment"`.
+#' @param X,Y Node names; one or more each, and disjoint.
+#' @param Z Node names of the set to check. If `Z` is `NULL` or missing, the
+#'   empty set is checked.
+#' @param X_index,Y_index,Z_index Optional 1-based indices (exclusive with name
+#'   args).
+#' @param type One of `"adjustment"` (default) or `"backdoor"`.
+#'
+#' @returns `TRUE` if `Z` satisfies the criterion of `type`, `FALSE` otherwise.
 #'
 #' @references
 #' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
 #' \emph{The Annals of Statistics}, 43(3), 1060--1088.
 #' \doi{10.1214/14-AOS1295}.
 #'
-#' @param cg A `caugi` object.
+#' Perković, E., Textor, J., Kalisch, M. & Maathuis, M. H. (2018). Complete
+#' graphical characterization and construction of adjustment sets in Markov
+#' equivalence classes of ancestral graphs. \emph{Journal of Machine Learning
+#' Research}, 18(220), 1--62. \url{https://jmlr.org/papers/v18/16-319.html}.
 #'
-#' @param X,Y Node names; one or more each, and disjoint.
-#' @param Z Optional node set for conditioning
-#' @param X_index,Y_index,Z_index Optional 1-based indices.
-#'
-#' @returns Logical value indicating if backdoor is valid or not.
+#' Shpitser, I., VanderWeele, T. & Robins, J. M. (2010). On the validity of
+#' covariate adjustment for estimating causal effects. In \emph{Proceedings of
+#' the 26th Conference on Uncertainty in Artificial Intelligence (UAI 2010)},
+#' 527--536.
 #'
 #' @examples
 #' cg <- caugi(
@@ -232,17 +265,77 @@ adjustment_set <- function(
 #'   class = "DAG"
 #' )
 #'
-#' is_valid_backdoor(cg, X = "X", Y = "Y", Z = NULL) # FALSE
-#' is_valid_backdoor(cg, X = "X", Y = "Y", Z = "K") # TRUE
-#' is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("A", "C")) # TRUE
+#' is_valid_adjustment(cg, X = "X", Y = "Y", Z = NULL) # FALSE
+#' is_valid_adjustment(cg, X = "X", Y = "Y", Z = "K") # TRUE
+#' is_valid_adjustment(cg, X = "X", Y = "Y", Z = c("A", "C")) # TRUE
+#' is_valid_adjustment(cg, X = "X", Y = "Y", Z = "K", type = "backdoor") # TRUE
+#'
+#' # W is a descendant of X off the causal path: a valid adjustment set, but
+#' # not a back-door set
+#' cg2 <- caugi(X %-->% Y + W, class = "DAG")
+#' is_valid_adjustment(cg2, "X", "Y", Z = "W") # TRUE
+#' is_valid_adjustment(cg2, "X", "Y", Z = "W", type = "backdoor") # FALSE
 #'
 #' # Several treatments: X2 blocks X1 <-- X2 --> Y, so no adjustment is needed
-#' cg2 <- caugi(X2 %-->% X1 + Y, X1 %-->% Y, class = "DAG")
-#' is_valid_backdoor(cg2, X = c("X1", "X2"), Y = "Y", Z = NULL) # TRUE
+#' cg3 <- caugi(X2 %-->% X1 + Y, X1 %-->% Y, class = "DAG")
+#' is_valid_adjustment(
+#'   cg3,
+#'   X = c("X1", "X2"),
+#'   Y = "Y",
+#'   Z = NULL,
+#'   type = "backdoor"
+#' ) # TRUE
+#'
+#' # ADMGs: classic confounding
+#' admg <- caugi(
+#'   L %-->% X,
+#'   X %-->% Y,
+#'   L %-->% Y,
+#'   class = "ADMG"
+#' )
+#' is_valid_adjustment(admg, X = "X", Y = "Y", Z = NULL) # FALSE
+#' is_valid_adjustment(admg, X = "X", Y = "Y", Z = "L") # TRUE
 #'
 #' @family adjustment
 #' @concept adjustment
 #'
+#' @export
+is_valid_adjustment <- function(
+  cg,
+  X = NULL,
+  Y = NULL,
+  Z = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  Z_index = NULL,
+  type = c("adjustment", "backdoor")
+) {
+  is_caugi(cg, throw_error = TRUE)
+  type <- match.arg(type)
+  .check_adjustment_class(cg, type, "is_valid_adjustment")
+
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
+  if (any(X_idx0 %in% Y_idx0)) {
+    stop("X and Y must be disjoint.", call. = FALSE)
+  }
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  # Both criteria take X, Y and Z disjoint. The Rust ADMG check does not test
+  # Z against Y (is_valid_adjustment_admg() relies on that), so it is tested
+  # here.
+  if (any(Z_idx0 %in% Y_idx0)) {
+    return(FALSE)
+  }
+
+  rs_is_valid <- switch(
+    type,
+    adjustment = rs_is_valid_adjustment_set,
+    backdoor = rs_is_valid_backdoor_set
+  )
+  rs_is_valid(cg@session, X_idx0, Y_idx0, Z_idx0)
+}
+
+#' @rdname is_valid_adjustment
 #' @export
 is_valid_backdoor <- function(
   cg,
@@ -253,15 +346,57 @@ is_valid_backdoor <- function(
   Y_index = NULL,
   Z_index = NULL
 ) {
-  is_caugi(cg, throw_error = TRUE)
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  if (any(X_idx0 %in% Y_idx0)) {
-    stop("X and Y must be disjoint.", call. = FALSE)
-  }
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  .Deprecated('is_valid_adjustment(type = "backdoor")')
+  is_valid_adjustment(
+    cg = cg,
+    X = X,
+    Y = Y,
+    Z = Z,
+    X_index = X_index,
+    Y_index = Y_index,
+    Z_index = Z_index,
+    type = "backdoor"
+  )
+}
 
-  rs_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
+#' @rdname is_valid_adjustment
+#' @export
+is_valid_adjustment_admg <- function(
+  cg,
+  X = NULL,
+  Y = NULL,
+  Z = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  Z_index = NULL
+) {
+  .Deprecated("is_valid_adjustment")
+  is_caugi(cg, throw_error = TRUE)
+  # Calls Rust directly rather than is_valid_adjustment(), which errors on an
+  # empty or overlapping X and Y and rejects every Z that holds a node of Y.
+  # This keeps the old results for such input.
+  if (is.null(X) && is.null(X_index)) {
+    stop("X (or X_index) must be provided.", call. = FALSE)
+  }
+  if (is.null(Y) && is.null(Y_index)) {
+    stop("Y (or Y_index) must be provided.", call. = FALSE)
+  }
+
+  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  # The Rust check also runs on DAGs, but this function never did.
+  if (!identical(cg@graph_class, "ADMG")) {
+    stop(
+      "`is_valid_adjustment_admg()` is only defined for ADMGs. ",
+      "The graph has class \"",
+      cg@graph_class,
+      "\".",
+      call. = FALSE
+    )
+  }
+
+  rs_is_valid_adjustment_set(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 #' @title Get all adjustment sets up to a certain size
@@ -281,14 +416,16 @@ is_valid_backdoor <- function(
 #'   Shpitser, VanderWeele & Robins (2010), with m-separation in place of
 #'   d-separation.
 #' - `"backdoor"`: the sets that satisfy the generalized back-door criterion
-#'   (Maathuis & Colombo, 2015), i.e. the sets that [is_valid_backdoor()]
-#'   accepts. Every such set is a valid adjustment set, but `Z` may hold no
-#'   descendant of `X`, so some valid adjustment sets are left out. Defined for
-#'   DAGs only.
+#'   (Maathuis & Colombo, 2015). Every such set is a valid adjustment set,
+#'   but `Z` may hold no descendant of `X`, so some valid adjustment sets are
+#'   left out. Defined for DAGs only.
 #'
 #' The two types differ when a descendant of `X` lies off every causal path.
 #' In `X --> Y, X --> W`, `{W}` is a valid adjustment set but not a back-door
 #' set, because `W` is a descendant of `X`.
+#'
+#' With `minimal = FALSE`, the sets returned are exactly the sets of at most
+#' `max_size` nodes that [is_valid_adjustment()] with the same `type` accepts.
 #'
 #' `all_backdoor_sets()` and `all_adjustment_sets_admg()` are deprecated; use
 #' `all_adjustment_sets()` with `type = "backdoor"` and `type = "adjustment"`.
@@ -379,19 +516,7 @@ all_adjustment_sets <- function(
   is_caugi(cg, throw_error = TRUE)
   type <- match.arg(type)
 
-  classes <- switch(type, adjustment = c("DAG", "ADMG"), backdoor = "DAG")
-  if (!cg@graph_class %in% classes) {
-    stop(
-      "`all_adjustment_sets()` with type = \"",
-      type,
-      "\" is only defined for ",
-      paste0(classes, "s", collapse = " and "),
-      ". The graph has class \"",
-      cg@graph_class,
-      "\".",
-      call. = FALSE
-    )
-  }
+  .check_adjustment_class(cg, type, "all_adjustment_sets")
 
   if (is.null(X) && is.null(X_index)) {
     stop("X (or X_index) must be provided.", call. = FALSE)
@@ -652,65 +777,6 @@ minimal_d_separator <- function(
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ──────────────────────── ADMG Adjustment Functions ───────────────────────────
-# ──────────────────────────────────────────────────────────────────────────────
-
-#' @title Is a set a valid adjustment set in an ADMG?
-#'
-#' @description Checks whether `Z` is a valid adjustment set for estimating
-#' the causal effect of `X` on `Y` in an ADMG using the generalized adjustment
-#' criterion.
-#'
-#' @param cg A `caugi` object of class ADMG.
-#' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
-#' @param Z Conditioning set (character vector of node names).
-#' @param X_index,Y_index,Z_index Optional 1-based indices.
-#'
-#' @returns Logical value indicating if the adjustment set is valid.
-#'
-#' @examples
-#' # Classic confounding
-#' cg <- caugi(
-#'   L %-->% X,
-#'   X %-->% Y,
-#'   L %-->% Y,
-#'   class = "ADMG"
-#' )
-#'
-#' is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = NULL) # FALSE
-#' is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = "L") # TRUE
-#'
-#' @family adjustment
-#' @concept adjustment
-#'
-#' @export
-is_valid_adjustment_admg <- function(
-  cg,
-  X = NULL,
-  Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
-) {
-  is_caugi(cg, throw_error = TRUE)
-  # Validate that X and Y are provided
-
-  if (is.null(X) && is.null(X_index)) {
-    stop("X (or X_index) must be provided.", call. = FALSE)
-  }
-  if (is.null(Y) && is.null(Y_index)) {
-    stop("Y (or Y_index) must be provided.", call. = FALSE)
-  }
-
-  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-
-  rs_is_valid_adjustment_set_admg(cg@session, X_idx0, Y_idx0, Z_idx0)
-}
-
-# ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────────── Helpers ────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -769,5 +835,25 @@ is_valid_adjustment_admg <- function(
     as.integer(node_index - 1L)
   } else if (!is.null(node_name)) {
     rs_indices_of(session, node_name)
+  }
+}
+
+# Errors unless the criterion `type` is defined for the class of `cg`. `fn`
+# names the calling function in the message.
+.check_adjustment_class <- function(cg, type, fn) {
+  classes <- switch(type, adjustment = c("DAG", "ADMG"), backdoor = "DAG")
+  if (!cg@graph_class %in% classes) {
+    stop(
+      "`",
+      fn,
+      "()` with type = \"",
+      type,
+      "\" is only defined for ",
+      paste0(classes, "s", collapse = " and "),
+      ". The graph has class \"",
+      cg@graph_class,
+      "\".",
+      call. = FALSE
+    )
   }
 }

@@ -73,15 +73,17 @@ Defined for DAGs and ADMGs; on an ADMG it is the adjustment criterion of
 Shpitser, VanderWeele & Robins (2010), with m-separation in place of
 d-separation.
 \item \code{"backdoor"}: the sets that satisfy the generalized back-door criterion
-(Maathuis & Colombo, 2015), i.e. the sets that \code{\link[=is_valid_backdoor]{is_valid_backdoor()}}
-accepts. Every such set is a valid adjustment set, but \code{Z} may hold no
-descendant of \code{X}, so some valid adjustment sets are left out. Defined for
-DAGs only.
+(Maathuis & Colombo, 2015). Every such set is a valid adjustment set,
+but \code{Z} may hold no descendant of \code{X}, so some valid adjustment sets are
+left out. Defined for DAGs only.
 }
 
 The two types differ when a descendant of \code{X} lies off every causal path.
 In \verb{X --> Y, X --> W}, \code{{W}} is a valid adjustment set but not a back-door
 set, because \code{W} is a descendant of \code{X}.
+
+With \code{minimal = FALSE}, the sets returned are exactly the sets of at most
+\code{max_size} nodes that \code{\link[=is_valid_adjustment]{is_valid_adjustment()}} with the same \code{type} accepts.
 
 \code{all_backdoor_sets()} and \code{all_adjustment_sets_admg()} are deprecated; use
 \code{all_adjustment_sets()} with \code{type = "backdoor"} and \code{type = "adjustment"}.
@@ -148,8 +150,7 @@ the 26th Conference on Uncertainty in Artificial Intelligence (UAI 2010)},
 Other adjustment:
 \code{\link[=adjustment_set]{adjustment_set()}},
 \code{\link[=d_separated]{d_separated()}},
-\code{\link[=is_valid_adjustment_admg]{is_valid_adjustment_admg()}},
-\code{\link[=is_valid_backdoor]{is_valid_backdoor()}},
+\code{\link[=is_valid_adjustment]{is_valid_adjustment()}},
 \code{\link[=minimal_separator]{minimal_separator()}}
 }
 \concept{adjustment}

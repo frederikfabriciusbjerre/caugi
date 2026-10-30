@@ -22,14 +22,16 @@
   dropped with a warning, since the total effect on them is zero. A dropped
   node can itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
-* `is_valid_backdoor()`, `all_backdoor_sets()` and `d_separated()` now accept
-  several treatments `X` and outcomes `Y` on DAGs. The back-door functions use
-  the generalized back-door criterion of Maathuis & Colombo (2015, Def. 3.7):
-  `Z` contains no descendant of `X`, and for each treatment `Xi`, `Z` together
+* `is_valid_adjustment(type = "backdoor")`,
+  `all_adjustment_sets(type = "backdoor")` and `d_separated()` accept several
+  treatments `X` and outcomes `Y` on DAGs. The back-door functions use the
+  generalized back-door criterion of Maathuis & Colombo (2015, Def. 3.7): `Z`
+  contains no descendant of `X`, and for each treatment `Xi`, `Z` together
   with the other treatments blocks every back-door path from `Xi` to `Y`. With
   one treatment and one outcome this is Pearl's back-door criterion, so
-  single-pair results are unchanged. `is_valid_backdoor()` is now linear in
-  the graph size; it was cubic in the number of parents of `X`.
+  single-pair results are unchanged from `is_valid_backdoor()` and
+  `all_backdoor_sets()`. The back-door check is now linear in the graph size;
+  it was cubic in the number of parents of `X`.
 
 * `all_adjustment_sets()` enumerates the adjustment sets of at most
   `max_size` nodes for the effect of `X` on `Y`. `type = "adjustment"` (the
@@ -39,6 +41,16 @@
   & Colombo (2015) on DAGs, which leaves out sets that hold a descendant of
   `X`: for `X --> Y, X --> W`, `{W}` is an adjustment set but not a back-door
   set (#354).
+
+* `is_valid_adjustment()` checks whether `Z` is a valid set for adjusting for
+  the effect of `X` on `Y`. `type = "adjustment"` (the default) uses the
+  generalized adjustment criterion of Perković et al. (2018) on DAGs and
+  ADMGs, which is complete; on DAGs this is new. `type = "backdoor"` uses the
+  generalized back-door criterion of Maathuis & Colombo (2015) on DAGs, which
+  is sufficient but not complete: for `X --> Y, X --> W`, `Z = "W"` is valid
+  for `type = "adjustment"` but not for `type = "backdoor"`. `Z` is accepted
+  exactly when `all_adjustment_sets()` with the same `type` and
+  `minimal = FALSE` returns it (#355).
 
 ## Bug Fixes
 
@@ -225,6 +237,16 @@
   `all_adjustment_sets(cg, X, Y, type = "backdoor")` instead of
   `all_backdoor_sets(cg, X, Y)`, and `all_adjustment_sets(cg, X, Y)` instead
   of `all_adjustment_sets_admg(cg, X, Y)` (#354).
+
+* `is_valid_backdoor()` and `is_valid_adjustment_admg()` are deprecated in
+  favour of `is_valid_adjustment()`. Write
+  `is_valid_adjustment(cg, X, Y, Z, type = "backdoor")` instead of
+  `is_valid_backdoor(cg, X, Y, Z)`, and `is_valid_adjustment(cg, X, Y, Z)`
+  instead of `is_valid_adjustment_admg(cg, X, Y, Z)`. Unlike
+  `is_valid_adjustment_admg()`, `is_valid_adjustment()` errors when `X` or `Y`
+  is empty or they overlap, and returns `FALSE` for every `Z` that contains a
+  node of `Y`; `is_valid_adjustment_admg()` keeps its old results for such
+  input (#355).
 
 # caugi 1.4.0
 
