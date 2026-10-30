@@ -1,6 +1,8 @@
 test_that("errors: n invalid", {
   expect_error(generate_graph(0, m = 0), "n must be a single integer > 0")
   expect_error(generate_graph(c(2, 3), m = 1), "n must be a single integer > 0")
+  expect_error(generate_graph(2.5, m = 1), "n must be a single integer > 0")
+  expect_error(generate_graph("3", m = 1), "n must be a single integer > 0")
 })
 
 test_that("errors: supply exactly one of m or p", {
@@ -18,9 +20,16 @@ test_that("errors: p invalid", {
 test_that("errors: m invalid", {
   n <- 4
   tot <- n * (n - 1) / 2
-  expect_error(generate_graph(n, m = -1L), "m must be in 0..")
-  expect_error(generate_graph(n, m = tot + 1L), "m must be in 0..")
-  expect_error(generate_graph(n, m = c(1L, 2L)), "m must be in 0..")
+  expect_error(generate_graph(n, m = -1L), "m must be a whole number in 0..")
+  expect_error(
+    generate_graph(n, m = tot + 1L),
+    "m must be a whole number in 0.."
+  )
+  expect_error(
+    generate_graph(n, m = c(1L, 2L)),
+    "m must be a whole number in 0.."
+  )
+  expect_error(generate_graph(n, m = 2.7), "m must be a whole number")
 })
 
 test_that("large n does not overflow the pair count", {

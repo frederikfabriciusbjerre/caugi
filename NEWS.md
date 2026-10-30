@@ -33,6 +33,9 @@
 
 ## Bug Fixes
 
+- `generate_graph()` now errors on a non-whole or non-numeric `n` or `m`
+  instead of silently truncating it (e.g. `m = 2.7` gave 2 edges).
+
 - Edge operators used on their own no longer keep the quotes on a string
   `from` node: `"my var" %-->% B` now has `from` `"my var"`, not `"\"my var\""`.
 
