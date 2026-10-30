@@ -2,6 +2,10 @@
 
 ## New Features
 
+* `as_caugi()` now reads a data.frame or data.table edge list with columns
+  `from`, `edge` and `to`, such as the output of `as.data.frame()` or
+  `edges()`. Rows with an `NA` edge are read as isolated nodes.
+
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a
   plain data.frame with one extra row per isolated node (`edge` and `to` are
   `NA`). `caugi()` reads such rows back as isolated nodes, so

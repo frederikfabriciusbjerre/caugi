@@ -665,3 +665,16 @@ test_that("class-specific branches for optional backends are covered", {
     "PAG class is not supported for bnlearn objects."
   )
 })
+
+
+test_that("as_caugi reads data.frame and data.table edge lists", {
+  cg <- caugi(A %-->% B, B %---% C, D, class = "PDAG")
+  from_df <- as_caugi(as.data.frame(cg), class = "PDAG")
+  expect_equal(from_df@graph_class, "PDAG")
+  expect_setequal(nodes(from_df)$name, c("A", "B", "C", "D"))
+  expect_equal(edges(from_df), edges(cg))
+
+  from_dt <- as_caugi(edges(cg), class = "PDAG")
+  expect_equal(edges(from_dt), edges(cg))
+  expect_error(as_caugi(data.frame(a = 1)), "must contain columns")
+})
