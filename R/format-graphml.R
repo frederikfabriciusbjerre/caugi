@@ -99,7 +99,8 @@ to_graphml <- function(x) {
 #' @export
 write_graphml <- function(x, path) {
   graphml <- to_graphml(x)
-  writeLines(graphml@content, path)
+  # The XML declares UTF-8, so write UTF-8 bytes whatever the locale.
+  writeLines(enc2utf8(graphml@content), path, useBytes = TRUE)
   invisible(NULL)
 }
 
@@ -148,7 +149,10 @@ read_graphml <- function(path, class = NULL) {
     stop("File not found: ", path, call. = FALSE)
   }
 
-  xml_content <- paste(readLines(path, warn = FALSE), collapse = "\n")
+  xml_content <- paste(
+    readLines(path, warn = FALSE, encoding = "UTF-8"),
+    collapse = "\n"
+  )
   reg <- caugi_registry()
   result <- deserialize_graphml(xml_content, reg)
 
