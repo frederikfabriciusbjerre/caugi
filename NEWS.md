@@ -40,6 +40,10 @@
 
 ## Bug Fixes
 
+- `write_graphml()` and `read_graphml()` now write and read UTF-8, as the file
+  declares. In a non-UTF-8 locale a node name such as `"æø"` came back as
+  `"<U+00E6><U+00F8>"`.
+
 - `to_dot()` now writes a directed graph class with no edges (e.g. a DAG of
   isolated nodes) as `digraph`, not `graph`.
 

@@ -204,3 +204,11 @@ test_that("read_graphml trims whitespace-padded glyphs (#416)", {
   writeLines(padded, g)
   expect_equal(read_graphml(g)@edges$edge, "-->")
 })
+
+test_that("GraphML keeps non-ASCII node names in a non-UTF-8 locale", {
+  cg <- caugi(from = "æø", edge = "-->", to = "b", class = "DAG")
+  f <- withr::local_tempfile(fileext = ".graphml")
+  withr::local_locale(c(LC_CTYPE = "C"))
+  write_graphml(cg, f)
+  expect_true(read_graphml(f) == cg)
+})
