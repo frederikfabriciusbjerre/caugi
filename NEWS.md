@@ -51,8 +51,8 @@
   `max_size` in R, with a plain error instead of a message about the input
   having "been subtracted with 1".
 
-- `remove_nodes()` and `remove_edges()` now warn about nodes that are not in
-  the graph instead of silently ignoring them.
+- `remove_nodes()` and `remove_edges()` now error on nodes that are not in the
+  graph, as `subgraph()` does, instead of silently ignoring them.
 
 - `generate_graph()` now errors on a non-whole or non-numeric `n` or `m`
   instead of silently truncating it (e.g. `m = 2.7` gave 2 edges).
