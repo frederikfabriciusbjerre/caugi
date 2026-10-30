@@ -209,7 +209,14 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+- `shd()` now compares the mark at each end of an edge. It counted `A --o B`
+  and `B --o A` as the same edge, since it only checked for an arrowhead
+  (#362).
+
 ## Deprecations
+
+* The `cg1` and `cg2` arguments of `shd()` and `hd()` are deprecated in favour
+  of `truth` and `guess`, the names `aid()` uses (#362).
 
 * The graph argument of `caugi_layout()`, `caugi_layout_sugiyama()`,
   `caugi_layout_fruchterman_reingold()`, `caugi_layout_kamada_kawai()`,
