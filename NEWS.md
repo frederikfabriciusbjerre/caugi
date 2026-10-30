@@ -33,6 +33,9 @@
 
 ## Bug Fixes
 
+- `to_dot()` now writes a directed graph class with no edges (e.g. a DAG of
+  isolated nodes) as `digraph`, not `graph`.
+
 - `read_caugi()` and `caugi_deserialize()` now say the input is not a valid
   caugi JSON document, and `read_caugi()` names the file, instead of only
   passing on the JSON parser's message.

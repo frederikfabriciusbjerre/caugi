@@ -99,6 +99,10 @@ to_dot <- function(
   has_directed <- any(
     edges_df$edge %in% c("-->", "o->", "<->", "--o", "o-o")
   )
+  # With no edges, fall back on the class: only UG and UNKNOWN are undirected
+  if (nrow(edges_df) == 0L) {
+    has_directed <- !x@graph_class %in% c("UG", "UNKNOWN")
+  }
 
   # Use digraph if any directed edges, otherwise graph
   graph_type <- if (has_directed) "digraph" else "graph"
