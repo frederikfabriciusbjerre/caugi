@@ -16,11 +16,7 @@
 #'
 #' @keywords internal
 .edge_spec <- function(from_sym, to_expr, glyph) {
-  from <- if (is.numeric(from_sym)) {
-    .dsl_number(from_sym)
-  } else {
-    deparse1(from_sym)
-  }
+  from <- .expand_targets(from_sym)
   to <- .expand_targets(to_expr)
   .edge_constructor(from = from, edge = glyph, to = to)
 }

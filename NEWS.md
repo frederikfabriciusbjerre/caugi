@@ -33,6 +33,9 @@
 
 ## Bug Fixes
 
+- Edge operators used on their own no longer keep the quotes on a string
+  `from` node: `"my var" %-->% B` now has `from` `"my var"`, not `"\"my var\""`.
+
 - `as_caugi(collapse = TRUE)` no longer mixes up node names that contain `.`
   (e.g. `"A.B"`+`"C"` and `"A"`+`"B.C"`), which dropped edges.
 
