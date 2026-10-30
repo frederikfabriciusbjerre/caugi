@@ -51,6 +51,7 @@ Other operations:
 \code{\link[=condition_marginalize]{condition_marginalize()}},
 \code{\link[=count_dags]{count_dags()}},
 \code{\link[=dag_from_pdag]{dag_from_pdag()}},
+\code{\link[=dag_to_pag]{dag_to_pag()}},
 \code{\link[=enumerate_dags]{enumerate_dags()}},
 \code{\link[=exogenize]{exogenize()}},
 \code{\link[=mag_to_pag]{mag_to_pag()}},

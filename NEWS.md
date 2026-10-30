@@ -9,6 +9,9 @@
   which `as_caugi()` uses when `class` is not given, so
   `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
 
+* `dag_to_pag()` returns the PAG a DAG induces over its observed nodes after
+  marginalizing `latents` and conditioning on `selection`.
+
 * `m_separated()` and `minimal_separator()` accept PAGs. Both run on a member
   MAG from `pag_to_mag()`, which is exact since every member encodes the same
   m-separations.

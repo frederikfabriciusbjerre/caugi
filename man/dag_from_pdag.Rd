@@ -41,6 +41,7 @@ extension of a partially directed acyclic graph".
 Other operations:
 \code{\link[=condition_marginalize]{condition_marginalize()}},
 \code{\link[=count_dags]{count_dags()}},
+\code{\link[=dag_to_pag]{dag_to_pag()}},
 \code{\link[=enumerate_dags]{enumerate_dags()}},
 \code{\link[=exogenize]{exogenize()}},
 \code{\link[=latent_project]{latent_project()}},
