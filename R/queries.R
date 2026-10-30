@@ -744,7 +744,8 @@ edge_types <- function(cg) {
 #'
 #' @param cg A `caugi` object.
 #' @param nodes A character vector of node names.
-#' @param index A vector of node indexes.
+#' @param index Deprecated; pass node names to `nodes` instead, e.g.
+#'   `nodes(cg)$name[index]`. A vector of 1-based node indices.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a named list of character vectors (if multiple nodes are
@@ -759,7 +760,6 @@ edge_types <- function(cg) {
 #'   class = "DAG"
 #' )
 #' parents(cg, "A") # NULL
-#' parents(cg, index = 2) # "A"
 #' parents(cg, "B") # "A"
 #' lapply(c("B", "C"), function(x) parents(cg, x))
 #' #> [[1]]
@@ -775,6 +775,9 @@ edge_types <- function(cg) {
 # Implemented in Rust via `parents()` in `src/rust/src/lib.rs`.
 parents <- function(cg, nodes = NULL, index = NULL) {
   out <- .Call(wrap__parents, cg, nodes, index)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("parents")
   }
@@ -803,7 +806,6 @@ parents <- function(cg, nodes = NULL, index = NULL) {
 #'   class = "DAG"
 #' )
 #' children(cg, "A") # "B"
-#' children(cg, index = 2) # "C"
 #' children(cg, "B") # "C"
 #' lapply(c("B", "C"), function(x) children(cg, x))
 #' #> [[1]]
@@ -819,6 +821,9 @@ parents <- function(cg, nodes = NULL, index = NULL) {
 # Implemented in Rust via `children()` in `src/rust/src/lib.rs`.
 children <- function(cg, nodes = NULL, index = NULL) {
   out <- .Call(wrap__children, cg, nodes, index)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("children")
   }
@@ -868,7 +873,6 @@ children <- function(cg, nodes = NULL, index = NULL) {
 #'   class = "DAG"
 #' )
 #' neighbors(cg, "A") # "B"
-#' neighbors(cg, index = 2) # "A" "C"
 #' neighbors(cg, "B") # "A" "C"
 #' lapply(c("B", "C"), function(x) neighbors(cg, x))
 #' #> [[1]]
@@ -899,6 +903,9 @@ children <- function(cg, nodes = NULL, index = NULL) {
 # Implemented in Rust via `neighbors()` in `src/rust/src/lib.rs`.
 neighbors <- function(cg, nodes = NULL, index = NULL, mode = "all") {
   out <- .Call(wrap__neighbors, cg, nodes, index, mode)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("neighbors")
   }
@@ -930,7 +937,6 @@ neighbours <- neighbors
 #' )
 #' ancestors(cg, "A") # NULL
 #' ancestors(cg, "A", open = FALSE) # A
-#' ancestors(cg, index = 2) # "A"
 #' ancestors(cg, "B") # "A"
 #' lapply(c("B", "C"), function(x) ancestors(cg, x))
 #' #> [[1]]
@@ -951,6 +957,9 @@ ancestors <- function(
   open = caugi_options("use_open_graph_definition")
 ) {
   out <- .Call(wrap__ancestors, cg, nodes, index, open)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("ancestors")
   }
@@ -978,7 +987,6 @@ ancestors <- function(
 #' )
 #' descendants(cg, "A") # "B" "C"
 #' descendants(cg, "A", open = FALSE) # "A" "B" "C"
-#' descendants(cg, index = 2) # "C"
 #' descendants(cg, "B") # "C"
 #' lapply(c("B", "C"), function(x) descendants(cg, x))
 #' #> [[1]]
@@ -999,6 +1007,9 @@ descendants <- function(
   open = caugi_options("use_open_graph_definition")
 ) {
   out <- .Call(wrap__descendants, cg, nodes, index, open)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("descendants")
   }
@@ -1063,6 +1074,9 @@ anteriors <- function(
   open = caugi_options("use_open_graph_definition")
 ) {
   out <- .Call(wrap__anteriors, cg, nodes, index, open)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("anteriors")
   }
@@ -1125,6 +1139,9 @@ posteriors <- function(
   open = caugi_options("use_open_graph_definition")
 ) {
   out <- .Call(wrap__posteriors, cg, nodes, index, open)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("posteriors")
   }
@@ -1148,7 +1165,6 @@ posteriors <- function(
 #'   class = "DAG"
 #' )
 #' markov_blanket(cg, "A") # "B"
-#' markov_blanket(cg, index = 2) # "A" "C"
 #' markov_blanket(cg, "B") # "A" "C"
 #' lapply(c("B", "C"), function(x) markov_blanket(cg, x))
 #' #> [[1]]
@@ -1164,6 +1180,9 @@ posteriors <- function(
 # Implemented in Rust via `markov_blanket()` in `src/rust/src/lib.rs`.
 markov_blanket <- function(cg, nodes = NULL, index = NULL) {
   out <- .Call(wrap__markov_blanket, cg, nodes, index)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("markov_blanket")
   }
@@ -1308,6 +1327,9 @@ components <- function(cg, mode = c("weak", "strong")) {
 # Implemented in Rust via `spouses()` in `src/rust/src/lib.rs`.
 spouses <- function(cg, nodes = NULL, index = NULL) {
   out <- .Call(wrap__spouses, cg, nodes, index)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out)) {
     .warn_node_list_deprecated("spouses")
   }
@@ -1323,8 +1345,9 @@ spouses <- function(cg, nodes = NULL, index = NULL) {
 #' @param cg A `caugi` object of class ADMG or AG.
 #' @param nodes Optional character vector of node names. If supplied, returns
 #' district(s) containing these nodes.
-#' @param index Optional numeric vector of 1-based node indices. If supplied,
-#' returns district(s) containing these indices.
+#' @param index Deprecated; pass node names to `nodes` instead, e.g.
+#' `nodes(cg)$name[index]`. Optional numeric vector of 1-based node indices.
+#' If supplied, returns district(s) containing these indices.
 #' @param all DEPRECATED (If `TRUE`, return all districts explicitly.
 #' Cannot be combined with `nodes` or `index`.)
 #'
@@ -1364,6 +1387,9 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
   }
 
   out <- .Call(wrap__districts, cg, nodes, index, all)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
   if (is.list(out) && (!is.null(nodes) || !is.null(index))) {
     .warn_node_list_deprecated("districts")
   }
@@ -1380,11 +1406,11 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
 #' passes through `Z`.
 #'
 #' @param cg A `caugi` object of class AG, ADMG, DAG, or UG.
-#' @param X,Y,Z Character vectors of node names, or `NULL`. Use `*_index` to
-#'   pass 1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
-#'   on.
-#' @param X_index,Y_index,Z_index Optional numeric 1-based indices (exclusive
-#'   with `X`,`Y`,`Z` respectively).
+#' @param X,Y,Z Character vectors of node names, or `NULL`. If `Z` is `NULL`
+#'   or missing, no nodes are conditioned on.
+#' @param X_index,Y_index,Z_index Deprecated; pass node names to `X`, `Y` and
+#'   `Z` instead, e.g. `nodes(cg)$name[X_index]`. Optional numeric 1-based
+#'   indices (exclusive with `X`,`Y`,`Z` respectively).
 #'
 #' @returns A logical value; `TRUE` if `X` and `Y` are m-separated given `Z`.
 #'
@@ -1414,9 +1440,9 @@ m_separated <- function(
 ) {
   is_caugi(cg, throw_error = TRUE)
 
-  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index, "X")
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index, "Y")
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index, "Z")
 
   rs_m_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -1446,6 +1472,11 @@ m_separated <- function(
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `subgraph()` in `src/rust/src/lib.rs`.
-subgraph <- subgraph
-formals(subgraph) <- alist(cg = , nodes = NULL, index = NULL)
+# Implemented in Rust via `subgraph()` in `src/rust/src/lib.rs`.
+subgraph <- function(cg, nodes = NULL, index = NULL) {
+  out <- .Call(wrap__subgraph, cg, nodes, index)
+  if (!is.null(index)) {
+    .warn_index_deprecated("index", "nodes")
+  }
+  out
+}

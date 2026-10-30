@@ -20,38 +20,43 @@ test_that("d-separation checks", {
   expect_true(d_separated(adjustment_set_cg, "X", "Y", Z = c("A", "D"))) # backdoor and causal both blocked
   expect_true(d_separated(adjustment_set_cg, "X", "Y", Z = c("K", "D"))) # backdoor and causal both blocked
 
-  # now with indexes
-  expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L)) # backdoor via A-->K-->Y and causal X-->D-->Y
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 3L
-  )) # causal path still open
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 4L
-  )) # causal path still open
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 5L
-  )) # backdoor still open
-  expect_true(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = c(3L, 5L)
-  ))
-  expect_true(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = c(4L, 5L)
-  ))
+  # now with indexes (deprecated)
+  expect_warning(
+    {
+      expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L)) # backdoor via A-->K-->Y and causal X-->D-->Y
+      expect_false(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = 3L
+      )) # causal path still open
+      expect_false(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = 4L
+      )) # causal path still open
+      expect_false(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = 5L
+      )) # backdoor still open
+      expect_true(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = c(3L, 5L)
+      ))
+      expect_true(d_separated(
+        adjustment_set_cg,
+        X_index = 2L,
+        Y_index = 6L,
+        Z_index = c(4L, 5L)
+      ))
+    },
+    "argument is deprecated"
+  )
 })
 
 test_that("adjustment_set(type = 'parents') returns Pa(X) \\ {X,Y}", {
@@ -212,7 +217,7 @@ test_that("backdoor and d-separation functions check X and Y", {
     "X and Y must be disjoint."
   )
   expect_error(
-    d_separated(adjustment_set_cg, X_index = c(1L, 2L), Z = "A"),
+    d_separated(adjustment_set_cg, X = c("C", "X"), Z = "A"),
     "Y \\(or Y_index\\) must be provided."
   )
   for (fn in list(is_valid_adjustment, all_adjustment_sets, d_separated)) {
@@ -220,9 +225,13 @@ test_that("backdoor and d-separation functions check X and Y", {
       fn(adjustment_set_cg, X = character(0), Y = "Y"),
       "`X` must name at least one node"
     )
-    expect_error(
-      fn(adjustment_set_cg, X = "X", Y_index = integer(0)),
-      "`Y` must name at least one node"
+    expect_warning(
+      expect_error(
+        fn(adjustment_set_cg, X = "X", Y_index = integer(0)),
+        "`Y` must name at least one node"
+      ),
+      "`Y_index` argument is deprecated",
+      fixed = TRUE
     )
   }
 })
@@ -264,9 +273,13 @@ test_that("adjust functions fails with faulty input", {
       "`Y` must name at least one node"
     )
   }
-  expect_error(
-    adjustment_set(adjustment_set_cg, X = "X", Y_index = integer(0)),
-    "`Y` must name at least one node"
+  expect_warning(
+    expect_error(
+      adjustment_set(adjustment_set_cg, X = "X", Y_index = integer(0)),
+      "`Y` must name at least one node"
+    ),
+    "`Y_index` argument is deprecated",
+    fixed = TRUE
   )
   expect_error(
     adjustment_set(

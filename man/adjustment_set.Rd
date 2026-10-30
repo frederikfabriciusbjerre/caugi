@@ -18,7 +18,8 @@ adjustment_set(
 
 \item{X, Y}{Node names; one or more each, and disjoint.}
 
-\item{X_index, Y_index}{Optional numeric 1-based indices.}
+\item{X_index, Y_index}{Deprecated; pass node names to \code{X} and \code{Y} instead,
+e.g. \code{nodes(cg)$name[X_index]}. Optional numeric 1-based indices.}
 
 \item{type}{One of \code{"parents"}, \code{"backdoor"}, \code{"optimal"}.
 The \code{optimal} option computes the O-set.}

@@ -43,7 +43,9 @@ all_adjustment_sets_admg(
 
 \item{X, Y}{Node names; one or more each, and disjoint.}
 
-\item{X_index, Y_index}{Optional 1-based indices (exclusive with name args).}
+\item{X_index, Y_index}{Deprecated; pass node names to \code{X} and \code{Y} instead,
+e.g. \code{nodes(cg)$name[X_index]}. Optional 1-based indices (exclusive with
+name args).}
 
 \item{type}{One of \code{"adjustment"} (default) or \code{"backdoor"}.}
 

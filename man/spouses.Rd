@@ -11,7 +11,8 @@ spouses(cg, nodes = NULL, index = NULL)
 
 \item{nodes}{A character vector of node names.}
 
-\item{index}{A vector of node indexes.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. A vector of 1-based node indices.}
 }
 \value{
 Either a character vector of node names (if a single node is

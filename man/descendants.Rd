@@ -16,7 +16,8 @@ descendants(
 
 \item{nodes}{A character vector of node names.}
 
-\item{index}{A vector of node indexes.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. A vector of 1-based node indices.}
 
 \item{open}{Boolean. Determines how the graph is interpreted when retrieving descendants.
 Default is taken from \code{caugi_options("use_open_graph_definition")},
@@ -40,7 +41,6 @@ cg <- caugi(
 )
 descendants(cg, "A") # "B" "C"
 descendants(cg, "A", open = FALSE) # "A" "B" "C"
-descendants(cg, index = 2) # "C"
 descendants(cg, "B") # "C"
 lapply(c("B", "C"), function(x) descendants(cg, x))
 #> [[1]]

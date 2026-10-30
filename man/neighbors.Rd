@@ -14,7 +14,8 @@ neighbours(cg, nodes = NULL, index = NULL, mode = "all")
 
 \item{nodes}{A character vector of node names.}
 
-\item{index}{A vector of node indexes.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. A vector of 1-based node indices.}
 
 \item{mode}{Character; specifies which types of neighbors to return:
 \describe{
@@ -57,7 +58,6 @@ cg <- caugi(
   class = "DAG"
 )
 neighbors(cg, "A") # "B"
-neighbors(cg, index = 2) # "A" "C"
 neighbors(cg, "B") # "A" "C"
 lapply(c("B", "C"), function(x) neighbors(cg, x))
 #> [[1]]

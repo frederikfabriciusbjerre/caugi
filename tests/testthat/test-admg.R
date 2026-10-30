@@ -202,7 +202,11 @@ test_that("m_separated opens paths through multiple bidirected colliders", {
       expect_identical(m_separated(admg, "d", "a", Z = z), expected)
     }
   }
-  expect_false(m_separated(admg, X_index = 1, Y_index = 4, Z_index = 2:3))
+  expect_warning(
+    sep <- m_separated(admg, X_index = 1, Y_index = 4, Z_index = 2:3),
+    "argument is deprecated"
+  )
+  expect_false(sep)
 })
 
 test_that("m_separated activates multiple colliders through their descendants", {
@@ -338,13 +342,12 @@ test_that("is_valid_adjustment errors when X or Y is missing", {
     "X \\(or X_index\\) must be provided"
   )
 
-  # Using indices should also work
-  expect_true(is_valid_adjustment(
-    admg,
-    X_index = 2L,
-    Y_index = 3L,
-    Z = "L"
-  ))
+  # Using indices still works, with a deprecation warning
+  expect_warning(
+    valid <- is_valid_adjustment(admg, X_index = 2L, Y_index = 3L, Z = "L"),
+    "argument is deprecated"
+  )
+  expect_true(valid)
 })
 
 test_that("all_adjustment_sets errors when X or Y is missing", {
@@ -373,12 +376,15 @@ test_that("all_adjustment_sets errors when X or Y is missing", {
     "X \\(or X_index\\) must be provided"
   )
 
-  # Using indices should also work
-  sets <- all_adjustment_sets(
-    admg,
-    X_index = 2L,
-    Y_index = 3L,
-    minimal = TRUE
+  # Using indices still works, with a deprecation warning
+  expect_warning(
+    sets <- all_adjustment_sets(
+      admg,
+      X_index = 2L,
+      Y_index = 3L,
+      minimal = TRUE
+    ),
+    "argument is deprecated"
   )
   expect_true(any(sapply(sets, function(s) identical(s, "L"))))
 })

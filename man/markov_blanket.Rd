@@ -11,7 +11,8 @@ markov_blanket(cg, nodes = NULL, index = NULL)
 
 \item{nodes}{A character vector of node names.}
 
-\item{index}{A vector of node indexes.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. A vector of 1-based node indices.}
 }
 \value{
 Either a character vector of node names (if a single node is
@@ -30,7 +31,6 @@ cg <- caugi(
   class = "DAG"
 )
 markov_blanket(cg, "A") # "B"
-markov_blanket(cg, index = 2) # "A" "C"
 markov_blanket(cg, "B") # "A" "C"
 lapply(c("B", "C"), function(x) markov_blanket(cg, x))
 #> [[1]]

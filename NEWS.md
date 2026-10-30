@@ -262,6 +262,21 @@
   `parents(cg, nodes)`. Single-node queries and `districts(cg)` without nodes
   are unchanged (#359).
 
+* The arguments that take 1-based node indices instead of node names are
+  deprecated: `index` in `parents()`, `children()`,
+  `neighbors()`/`neighbours()`, `ancestors()`, `descendants()`, `anteriors()`,
+  `posteriors()`, `markov_blanket()`, `spouses()`, `districts()` and
+  `subgraph()`, and `X_index`, `Y_index`, `Z_index`, `I_index` and `R_index`
+  in `d_separated()`, `m_separated()`, `adjustment_set()`,
+  `is_valid_adjustment()`, `all_adjustment_sets()`, `minimal_separator()` and
+  the deprecated `is_valid_backdoor()`, `is_valid_adjustment_admg()`,
+  `all_backdoor_sets()`, `all_adjustment_sets_admg()` and
+  `minimal_d_separator()`. They still work and give the same results, but now
+  warn. Pass node names instead: write `parents(cg, nodes(cg)$name[i])`
+  instead of `parents(cg, index = i)`, and
+  `d_separated(cg, X = nodes(cg)$name[i], ...)` instead of
+  `d_separated(cg, X_index = i, ...)` (#360).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.

@@ -46,8 +46,9 @@ is_valid_adjustment_admg(
 \item{Z}{Node names of the set to check. If \code{Z} is \code{NULL} or missing, the
 empty set is checked.}
 
-\item{X_index, Y_index, Z_index}{Optional 1-based indices (exclusive with name
-args).}
+\item{X_index, Y_index, Z_index}{Deprecated; pass node names to \code{X}, \code{Y} and
+\code{Z} instead, e.g. \code{nodes(cg)$name[X_index]}. Optional 1-based indices
+(exclusive with name args).}
 
 \item{type}{One of \code{"adjustment"} (default) or \code{"backdoor"}.}
 }

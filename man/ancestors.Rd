@@ -16,7 +16,8 @@ ancestors(
 
 \item{nodes}{A character vector of node names.}
 
-\item{index}{A vector of node indexes.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. A vector of 1-based node indices.}
 
 \item{open}{Boolean. Determines how the graph is interpreted when retrieving ancestors.
 Default is taken from \code{caugi_options("use_open_graph_definition")},
@@ -40,7 +41,6 @@ cg <- caugi(
 )
 ancestors(cg, "A") # NULL
 ancestors(cg, "A", open = FALSE) # A
-ancestors(cg, index = 2) # "A"
 ancestors(cg, "B") # "A"
 lapply(c("B", "C"), function(x) ancestors(cg, x))
 #> [[1]]

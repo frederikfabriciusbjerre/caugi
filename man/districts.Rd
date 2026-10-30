@@ -12,8 +12,9 @@ districts(cg, nodes = NULL, index = NULL, all = NULL)
 \item{nodes}{Optional character vector of node names. If supplied, returns
 district(s) containing these nodes.}
 
-\item{index}{Optional numeric vector of 1-based node indices. If supplied,
-returns district(s) containing these indices.}
+\item{index}{Deprecated; pass node names to \code{nodes} instead, e.g.
+\code{nodes(cg)$name[index]}. Optional numeric vector of 1-based node indices.
+If supplied, returns district(s) containing these indices.}
 
 \item{all}{DEPRECATED (If \code{TRUE}, return all districts explicitly.
 Cannot be combined with \code{nodes} or \code{index}.)}
