@@ -17,9 +17,9 @@ is_simple(cg, force_check = FALSE)
 
 - force_check:
 
-  Ignored. Since caugi 1.4.0 the check always runs against the graph
-  itself, since the deprecated `simple` flag no longer tells whether a
-  graph has parallel edges or self-loops.
+  Deprecated and will be removed in caugi 2.0.0. A graph's class is
+  validated when the graph is built, so the class is trusted and there
+  is nothing to force.
 
 ## Value
 

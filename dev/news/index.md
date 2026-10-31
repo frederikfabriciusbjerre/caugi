@@ -448,6 +448,49 @@
   because the effect is zero, pointing to `type = "backdoor"`, which
   returns `U`.
 
+### Deprecations
+
+- The `force_check` argument of
+  [`is_acyclic()`](https://caugi.org/dev/reference/is_acyclic.md),
+  [`is_simple()`](https://caugi.org/dev/reference/is_simple.md),
+  [`is_dag()`](https://caugi.org/dev/reference/is_dag.md),
+  [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
+  [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),
+  [`is_admg()`](https://caugi.org/dev/reference/is_admg.md),
+  [`is_ag()`](https://caugi.org/dev/reference/is_ag.md) and
+  [`is_mag()`](https://caugi.org/dev/reference/is_mag.md) is deprecated
+  and will be removed in caugi 2.0.0. A graph’s class is validated when
+  the graph is built, so there is nothing to force. Supplying it still
+  works but warns.
+
+- The `*_index` twin arguments of
+  [`d_separated()`](https://caugi.org/dev/reference/d_separated.md),
+  [`m_separated()`](https://caugi.org/dev/reference/m_separated.md),
+  [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md),
+  [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md),
+  [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md),
+  [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md),
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md),
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  and
+  [`is_visible_edge()`](https://caugi.org/dev/reference/is_visible_edge.md)
+  (`X_index`, `Y_index`, `Z_index`, `I_index`, `R_index`, `from_index`,
+  `to_index`) are deprecated and will be removed in caugi 2.0.0. Pass
+  node names instead, e.g. `X = nodes(cg)$name[i]`. Supplying them still
+  works but warns
+  ([\#360](https://github.com/frederikfabriciusbjerre/caugi/issues/360)).
+
+- The `use_open_graph_definition` option of
+  [`caugi_options()`](https://caugi.org/dev/reference/caugi_options.md)
+  is deprecated and will be removed in caugi 2.0.0. Pass the `open`
+  argument to
+  [`ancestors()`](https://caugi.org/dev/reference/ancestors.md),
+  [`descendants()`](https://caugi.org/dev/reference/descendants.md),
+  [`anteriors()`](https://caugi.org/dev/reference/anteriors.md) and
+  [`posteriors()`](https://caugi.org/dev/reference/posteriors.md)
+  instead. Setting it to `FALSE` still works but warns
+  ([\#364](https://github.com/frederikfabriciusbjerre/caugi/issues/364)).
+
 ## caugi 1.4.0
 
 CRAN release: 2026-10-27

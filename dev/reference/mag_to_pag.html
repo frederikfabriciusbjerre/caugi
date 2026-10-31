@@ -110,7 +110,7 @@ discovery in the presence of latent confounders and selection bias.
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">mag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">C</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, class <span class="op">=</span> <span class="st">"AG"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">mag_to_pag</span><span class="op">(</span><span class="va">mag</span><span class="op">)</span> <span class="co"># A o-&gt; B &lt;-o C: both arrowheads are invariant</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5b8a91e88720&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x56087e853260&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: PAG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, C, B</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: Ao-&gt;B, Co-&gt;B</span>
@@ -118,7 +118,7 @@ discovery in the presence of latent confounders and selection bias.
 <span class="r-in"><span><span class="co"># A chain has no invariant marks: it is equivalent to the reversed chain</span></span></span>
 <span class="r-in"><span><span class="co"># and to the fork.</span></span></span>
 <span class="r-in"><span><span class="fu">mag_to_pag</span><span class="op">(</span><span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"AG"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5b8a9215a7b0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x560884a39b30&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: PAG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, C</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: Ao-oB, Bo-oC</span>

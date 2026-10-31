@@ -114,14 +114,14 @@ PAG of its Markov equivalence class.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">dag</span> <span class="op">&lt;-</span> <span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">U</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">X</span>, <span class="va">U</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span>, <span class="va">X</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">Y</span>, <span class="va">W</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">X</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">dag_to_pag</span><span class="op">(</span><span class="va">dag</span>, latents <span class="op">=</span> <span class="st">"U"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x5b8a90a80600&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x56087ae3dc80&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: PAG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: X, W, Y</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: Wo-oY, Xo-oW, Xo-oY</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Selection bias: conditioning on a common child.</span></span></span>
 <span class="r-in"><span><span class="fu">dag_to_pag</span><span class="op">(</span><span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">X</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">S</span>, <span class="va">Y</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">S</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span>, selection <span class="op">=</span> <span class="st">"S"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x5b8a8bcd4a50&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x56088343eba0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: PAG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: X, Y</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: Xo-oY</span>

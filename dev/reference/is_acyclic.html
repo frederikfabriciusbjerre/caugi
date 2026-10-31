@@ -60,22 +60,14 @@
 
 
 <dt id="arg-force-check">force_check<a class="anchor" aria-label="anchor" href="#arg-force-check"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, the function will test if the graph is
-acyclic, if <code>FALSE</code> (default), it will look at the graph class and match
-it, if possible.</p></dd>
+<dd><p>Deprecated and will be removed in caugi 2.0.0. A
+graph's class is validated when the graph is built, so the class is
+trusted and there is nothing to force.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A logical value indicating whether the graph is acyclic.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Logically, it should not be possible to have a graph class of "DAG", "PDAG",
-"MPDAG", or "CPDAG"
-that has cycles, but in case the user modified the graph after creation in
-some unforeseen way that could have introduced cycles, this function allows
-to force a check of acyclicity, if needed.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

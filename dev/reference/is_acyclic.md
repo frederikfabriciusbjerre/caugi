@@ -16,21 +16,13 @@ is_acyclic(cg, force_check = FALSE)
 
 - force_check:
 
-  Logical; if `TRUE`, the function will test if the graph is acyclic, if
-  `FALSE` (default), it will look at the graph class and match it, if
-  possible.
+  Deprecated and will be removed in caugi 2.0.0. A graph's class is
+  validated when the graph is built, so the class is trusted and there
+  is nothing to force.
 
 ## Value
 
 A logical value indicating whether the graph is acyclic.
-
-## Details
-
-Logically, it should not be possible to have a graph class of "DAG",
-"PDAG", "MPDAG", or "CPDAG" that has cycles, but in case the user
-modified the graph after creation in some unforeseen way that could have
-introduced cycles, this function allows to force a check of acyclicity,
-if needed.
 
 ## See also
 

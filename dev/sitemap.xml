@@ -88,7 +88,7 @@
 <url><loc>https://caugi.org/dev/reference/dot-not_m_separated_for_all_subsets.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dot-parse_edge_arg.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dot-register_edge.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/dot-resolve_idx0_get.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/dot-resolve_idx0_mget.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dot-segment_units.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dot-session_to_caugi.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dot-set_names.html</loc></url>

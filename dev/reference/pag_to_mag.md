@@ -59,14 +59,14 @@ Other operations:
 ``` r
 pag <- caugi(A %-->% B, C %o->% A, D %o->% A, class = "PAG")
 pag_to_mag(pag)
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5b8a90de3240>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x56088829ec60>
 #>   graph_class: AG
 #>   nodes: A, C, D, B
 #>   edges: A-->B, C-->A, D-->A
 
 # An all-circle graph is oriented into a DAG with no unshielded colliders.
 pag_to_mag(caugi(A %o-o% B, A %o-o% C, C %o-o% D, class = "PAG"))
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5b8a933fb220>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5608835e77d0>
 #>   graph_class: AG
 #>   nodes: A, C, B, D
 #>   edges: A-->B, C-->A, D-->C

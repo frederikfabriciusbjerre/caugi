@@ -31,7 +31,7 @@ all_backdoor_sets(
 
 - X_index, Y_index:
 
-  Optional 1-based indices (exclusive with name args).
+  Deprecated; pass node names instead.
 
 - minimal:
 

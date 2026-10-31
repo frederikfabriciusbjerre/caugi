@@ -31,8 +31,8 @@ where an invariant mark belongs), which no structural check can detect.
 The maximality test is exponential in the worst case, as for
 [`is_mag()`](https://caugi.org/dev/reference/is_mag.md).
 
-Building a graph with `class = "PAG"` runs the same check, so there is
-no `force_check` argument: the class is a guarantee.
+Building a graph with `class = "PAG"` runs the same check, so the class
+is a guarantee.
 
 ## References
 

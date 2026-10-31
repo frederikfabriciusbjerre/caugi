@@ -29,7 +29,7 @@ all_adjustment_sets_admg(
 
 - X_index, Y_index:
 
-  Optional 1-based indices.
+  Deprecated; pass node names instead.
 
 - minimal:
 

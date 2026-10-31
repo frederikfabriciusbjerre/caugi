@@ -29,10 +29,10 @@ descendants(
 
 - open:
 
-  Boolean. Determines how the graph is interpreted when retrieving
-  descendants. Default is taken from
-  `caugi_options("use_open_graph_definition")`, which by default is
-  TRUE.
+  Logical; if `TRUE` (default), each queried node is left out of its own
+  descendants; if `FALSE`, it is included. The default comes from the
+  deprecated `use_open_graph_definition` option of
+  [`caugi_options()`](https://caugi.org/dev/reference/caugi_options.md).
 
 ## Value
 

@@ -49,8 +49,7 @@ Research 115:637-647 Available from
 
 - X, Y:
 
-  Character vectors of node names. Use `*_index` to pass 1-based
-  indices.
+  Character vectors of node names.
 
 - I:
 
@@ -63,8 +62,7 @@ Research 115:637-647 Available from
 
 - X_index, Y_index, I_index, R_index:
 
-  Optional numeric 1-based indices (exclusive with corresponding name
-  parameters).
+  Deprecated; pass node names instead.
 
 ## Value
 

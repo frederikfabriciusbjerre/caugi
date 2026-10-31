@@ -28,7 +28,7 @@ adjustment_set(
 
 - X_index, Y_index:
 
-  Optional numeric 1-based indices.
+  Deprecated; pass node names instead.
 
 - type:
 

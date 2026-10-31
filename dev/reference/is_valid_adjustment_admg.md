@@ -34,7 +34,7 @@ is_valid_adjustment_admg(
 
 - X_index, Y_index, Z_index:
 
-  Optional 1-based indices.
+  Deprecated; pass node names instead.
 
 ## Value
 

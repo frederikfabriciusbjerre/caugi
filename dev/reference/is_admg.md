@@ -20,9 +20,9 @@ is_admg(cg, force_check = FALSE)
 
 - force_check:
 
-  Logical; if `TRUE`, the function will test if the graph is an ADMG, if
-  `FALSE` (default), it will look at the graph class and match it, if
-  possible.
+  Deprecated and will be removed in caugi 2.0.0. A graph's class is
+  validated when the graph is built, so the class is trusted and there
+  is nothing to force.
 
 ## Value
 

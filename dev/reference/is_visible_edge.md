@@ -19,12 +19,11 @@ is_visible_edge(cg, from = NULL, to = NULL, from_index = NULL, to_index = NULL)
 
 - from, to:
 
-  Node names. Use `from_index`/`to_index` to pass 1-based indices
-  instead.
+  Node names.
 
 - from_index, to_index:
 
-  Optional 1-based indices, exclusive with `from` and `to` respectively.
+  Deprecated; pass node names instead.
 
 ## Value
 

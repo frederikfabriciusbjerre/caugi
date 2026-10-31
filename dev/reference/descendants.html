@@ -73,9 +73,10 @@
 
 
 <dt id="arg-open">open<a class="anchor" aria-label="anchor" href="#arg-open"></a></dt>
-<dd><p>Boolean. Determines how the graph is interpreted when retrieving descendants.
-Default is taken from <code>caugi_options("use_open_graph_definition")</code>,
-which by default is TRUE.</p></dd>
+<dd><p>Logical; if <code>TRUE</code> (default), each queried node is left out
+of its own descendants; if <code>FALSE</code>, it is included. The default comes
+from the deprecated <code>use_open_graph_definition</code> option of
+<code><a href="caugi_options.html">caugi_options()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

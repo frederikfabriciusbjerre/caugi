@@ -32,14 +32,13 @@ arguments or unnamed character vector), returns the requested options.
 ## Details
 
 The `use_open_graph_definition` option (`TRUE`/`FALSE`, default `TRUE`)
-controls how graph queries interpret reachability relations. When `TRUE`
-(open definition), queries such as
+is deprecated and will be removed in caugi 2.0.0; setting it to `FALSE`
+warns. It is the default of the `open` argument of
 [`ancestors()`](https://caugi.org/dev/reference/ancestors.md),
 [`descendants()`](https://caugi.org/dev/reference/descendants.md),
-[`posteriors()`](https://caugi.org/dev/reference/posteriors.md),and
-[`anteriors()`](https://caugi.org/dev/reference/anteriors.md) exclude
-the queried node itself. When `FALSE` (closed definition), the queried
-node is included in the results.
+[`anteriors()`](https://caugi.org/dev/reference/anteriors.md) and
+[`posteriors()`](https://caugi.org/dev/reference/posteriors.md), so pass
+`open` to those instead.
 
 The plot options are nested under the `plot` key:
 
@@ -167,9 +166,6 @@ caugi_options()
 #> 
 #> 
 #> 
-
-# Use closed graph definition
-caugi_options(use_open_graph_definition = FALSE)
 
 # Query specific option
 caugi_options("plot")
