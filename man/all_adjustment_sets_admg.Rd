@@ -17,7 +17,8 @@ all_adjustment_sets_admg(
 \arguments{
 \item{cg}{A \code{caugi} object of class ADMG.}
 
-\item{X, Y}{Node names (can be vectors for multiple treatments/outcomes).}
+\item{X, Y}{Disjoint node names (can be vectors for multiple
+treatments/outcomes).}
 
 \item{X_index, Y_index}{Deprecated; pass node names instead.}
 

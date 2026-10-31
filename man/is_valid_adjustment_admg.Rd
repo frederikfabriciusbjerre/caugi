@@ -17,9 +17,11 @@ is_valid_adjustment_admg(
 \arguments{
 \item{cg}{A \code{caugi} object of class ADMG.}
 
-\item{X, Y}{Node names (can be vectors for multiple treatments/outcomes).}
+\item{X, Y}{Disjoint node names (can be vectors for multiple
+treatments/outcomes).}
 
-\item{Z}{Conditioning set (character vector of node names).}
+\item{Z}{Conditioning set (character vector of node names), disjoint from
+\code{X} and \code{Y}.}
 
 \item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }

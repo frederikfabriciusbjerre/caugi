@@ -135,8 +135,11 @@
   `class = "AG"` used to come back as `-->` edges in both directions. A matrix
   with circle marks can now be read with `class = "UNKNOWN"`.
 
-- `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
-  accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
+- The separation and adjustment functions error when `X` and `Y` overlap, or
+  when `Z` (`I` in `minimal_separator()`) contains a node of `X` or `Y`, instead
+  of answering for an ill-posed question (#387). `minimal_separator(dag, "X",
+  "X")` returned a set, and `is_valid_backdoor()` accepted, for example,
+  `Z = "Y"` for `X <-- U --> Y`.
 
 - caugi's JSON output now validates against its published schema: the schema
   allows the top-level `$schema` key that every file has, and its class list
