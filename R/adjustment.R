@@ -8,11 +8,9 @@
 #' in `Y` given `Z` in a DAG.
 #'
 #' @param cg A `caugi` object.
-#' @param X,Y,Z Character vectors of node names, or `NULL`. Use `*_index` to
-#'   pass 1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
-#'   on.
-#' @param X_index,Y_index,Z_index Optional numeric 1-based indices (exclusive
-#'   with `X`,`Y`,`Z` respectively).
+#' @param X,Y,Z Character vectors of node names, or `NULL`. If `Z` is `NULL`
+#'   or missing, no nodes are conditioned on.
+#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns `TRUE` if d-separated, `FALSE` otherwise.
 #'
@@ -48,6 +46,7 @@ d_separated <- function(
   Z_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
@@ -95,7 +94,7 @@ d_separated <- function(
 #'
 #' @param cg A `caugi` object.
 #' @param X,Y Node names; one or more each, and disjoint.
-#' @param X_index,Y_index Optional numeric 1-based indices.
+#' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param type One of `"parents"`, `"backdoor"`, `"optimal"`.
 #' The `optimal` option computes the O-set.
 #'
@@ -136,13 +135,14 @@ adjustment_set <- function(
   type = c("optimal", "parents", "backdoor")
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
   type <- match.arg(type)
 
   if (is.null(X) && is.null(X_index)) {
-    stop("X (or X_index) must be provided.", call. = FALSE)
+    stop("X must be provided.", call. = FALSE)
   }
   if (is.null(Y) && is.null(Y_index)) {
-    stop("Y (or Y_index) must be provided.", call. = FALSE)
+    stop("Y must be provided.", call. = FALSE)
   }
   X_idx0 <- unique(.resolve_idx0_mget(cg@session, X, X_index))
   Y_idx0 <- unique(.resolve_idx0_mget(cg@session, Y, Y_index))
@@ -214,7 +214,7 @@ adjustment_set <- function(
 #'
 #' @param X,Y Node names; one or more each, and disjoint.
 #' @param Z Optional node set for conditioning
-#' @param X_index,Y_index,Z_index Optional 1-based indices.
+#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns Logical value indicating if backdoor is valid or not.
 #'
@@ -254,6 +254,7 @@ is_valid_backdoor <- function(
   Z_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   if (any(X_idx0 %in% Y_idx0)) {
@@ -273,7 +274,7 @@ is_valid_backdoor <- function(
 #'
 #' @param cg A `caugi`.
 #' @param X,Y Node names; one or more each, and disjoint.
-#' @param X_index,Y_index Optional 1-based indices (exclusive with name args).
+#' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
@@ -334,6 +335,7 @@ all_backdoor_sets <- function(
   max_size = 3L
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   if (any(X_idx0 %in% Y_idx0)) {
@@ -375,13 +377,11 @@ all_backdoor_sets <- function(
 #' member encodes the same m-separations.
 #'
 #' @param cg A `caugi` object (DAG, ADMG, AG, or PAG).
-#' @param X,Y Character vectors of node names. Use `*_index` to pass 1-based
-#'   indices.
+#' @param X,Y Character vectors of node names.
 #' @param I Nodes that must be included in the separator.
 #' @param R Nodes allowed in the separator. If `NULL`, uses all nodes excluding
 #'   X and Y.
-#' @param X_index,Y_index,I_index,R_index Optional numeric 1-based indices
-#'   (exclusive with corresponding name parameters).
+#' @param X_index,Y_index,I_index,R_index Deprecated; pass node names instead.
 #'
 #' @returns A character vector of node names representing the minimal separator,
 #' or `NULL` if no valid separator exists within the restriction R.
@@ -443,6 +443,7 @@ minimal_separator <- function(
   R_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
 
   if (
     !is_dag(cg) &&
@@ -547,7 +548,7 @@ minimal_d_separator <- function(
 #' @param cg A `caugi` object of class ADMG.
 #' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
 #' @param Z Conditioning set (character vector of node names).
-#' @param X_index,Y_index,Z_index Optional 1-based indices.
+#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns Logical value indicating if the adjustment set is valid.
 #'
@@ -577,13 +578,14 @@ is_valid_adjustment_admg <- function(
   Z_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
   # Validate that X and Y are provided
 
   if (is.null(X) && is.null(X_index)) {
-    stop("X (or X_index) must be provided.", call. = FALSE)
+    stop("X must be provided.", call. = FALSE)
   }
   if (is.null(Y) && is.null(Y_index)) {
-    stop("Y (or Y_index) must be provided.", call. = FALSE)
+    stop("Y must be provided.", call. = FALSE)
   }
 
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
@@ -600,7 +602,7 @@ is_valid_adjustment_admg <- function(
 #'
 #' @param cg A `caugi` object of class ADMG.
 #' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
-#' @param X_index,Y_index Optional 1-based indices.
+#' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
@@ -633,12 +635,13 @@ all_adjustment_sets_admg <- function(
   max_size = 3L
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
   # Validate that X and Y are provided
   if (is.null(X) && is.null(X_index)) {
-    stop("X (or X_index) must be provided.", call. = FALSE)
+    stop("X must be provided.", call. = FALSE)
   }
   if (is.null(Y) && is.null(Y_index)) {
-    stop("Y (or Y_index) must be provided.", call. = FALSE)
+    stop("Y must be provided.", call. = FALSE)
   }
 
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
@@ -659,41 +662,22 @@ all_adjustment_sets_admg <- function(
 # ───────────────────────────────── Helpers ────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-#' @title Resolve node name or index to 0-based index.
+#' @title Resolve node names or indices to 0-based indices.
 #'
-#' @description Internal helper function to resolve either a node name or a
-#' node index to a 0-based index using the Rust session.
-#' `.resolve_idx0_get` expects a single value,
-#' while `.resolve_idx0_mget` can return multiple values.
+#' @description Internal helpers that resolve node names, or 1-based node
+#' indices, to 0-based indices using the Rust session.
+#' `.resolve_idx0_xy` also requires at least one node.
 #'
 #' @param session A GraphSession pointer.
 #' @param node_name Optional character vector of node names.
 #' @param node_index Optional numeric vector of 1-based node indices.
 #'
-#' @name .resolve_idx0_get
+#' @name .resolve_idx0_mget
 #'
-#' @keywords internal
-.resolve_idx0_get <- function(session, node_name = NULL, node_index = NULL) {
-  if (!is.null(node_index)) {
-    if (!is.null(node_name)) {
-      stop("Provide either a node name or node index.", call. = FALSE)
-    }
-    as.integer(node_index - 1L)
-  } else if (!is.null(node_name)) {
-    rs_index_of(session, node_name)
-  } else {
-    stop(
-      "Either the node name or the node index must be provided.",
-      call. = FALSE
-    )
-  }
-}
-
-#' @name .resolve_idx0_get
 #' @keywords internal
 .resolve_idx0_xy <- function(session, node_name, node_index, arg) {
   if (is.null(node_name) && is.null(node_index)) {
-    stop(arg, " (or ", arg, "_index) must be provided.", call. = FALSE)
+    stop(arg, " must be provided.", call. = FALSE)
   }
   idx0 <- .resolve_idx0_mget(session, node_name, node_index)
   if (length(idx0) == 0L) {
@@ -702,18 +686,37 @@ all_adjustment_sets_admg <- function(
   idx0
 }
 
-#' @name .resolve_idx0_get
+#' @name .resolve_idx0_mget
 #' @keywords internal
 .resolve_idx0_mget <- function(session, node_name = NULL, node_index = NULL) {
   if (is.null(node_name) && is.null(node_index)) {
     integer(0)
   } else if (!is.null(node_index)) {
     if (!is.null(node_name)) {
-      stop("Provide either a node name or node index.", call. = FALSE)
+      stop("Pass node names only, not also an index.", call. = FALSE)
     }
     as.integer(node_index - 1L)
   } else if (!is.null(node_name)) {
     rs_indices_of(session, node_name)
+  }
+}
+
+#' Warn, once per call, about the deprecated `*_index` arguments the caller
+#' was given.
+#' @keywords internal
+#' @noRd
+.warn_index_deprecated <- function(env = parent.frame()) {
+  args <- grep("_index$", ls(env), value = TRUE)
+  used <- args[!vapply(args, function(a) is.null(env[[a]]), logical(1L))]
+  if (length(used) > 0L) {
+    warning(
+      "The `*_index` arguments are deprecated and will be removed in caugi ",
+      "2.0.0. Pass node names instead, e.g. `X = nodes(cg)$name[X_index]`. ",
+      "Supplied: ",
+      paste0("`", used, "`", collapse = ", "),
+      ".",
+      call. = FALSE
+    )
   }
 }
 

@@ -25,8 +25,8 @@ under-oriented ones (a circle where an invariant mark belongs), which no
 structural check can detect. The maximality test is exponential in the
 worst case, as for \code{\link[=is_mag]{is_mag()}}.
 
-Building a graph with \code{class = "PAG"} runs the same check, so there is no
-\code{force_check} argument: the class is a guarantee.
+Building a graph with \code{class = "PAG"} runs the same check, so the class is
+a guarantee.
 }
 \examples{
 is_pag(mag_to_pag(caugi(A \%-->\% B, C \%-->\% B, class = "AG"))) # TRUE

@@ -78,13 +78,10 @@ caugi_default_options <- function() {
 #'   the requested options.
 #'
 #' @details
-#' The `use_open_graph_definition` option (`TRUE`/`FALSE`, default `TRUE`)
-#' controls how graph queries interpret reachability relations.
-#' When `TRUE` (open definition), queries such as `ancestors()`,
-#' `descendants()`, `posteriors()`,and `anteriors()`
-#' exclude the queried node itself.
-#' When `FALSE` (closed definition), the queried node is included in the
-#' results.
+#' The `use_open_graph_definition` option (`TRUE`/`FALSE`, default `TRUE`) is
+#' deprecated and will be removed in caugi 2.0.0; setting it to `FALSE` warns.
+#' It is the default of the `open` argument of [ancestors()], [descendants()],
+#' [anteriors()] and [posteriors()], so pass `open` to those instead.
 #'
 #' The plot options are nested under the `plot` key:
 #'
@@ -117,9 +114,6 @@ caugi_default_options <- function() {
 #' @examples
 #' # Query all options
 #' caugi_options()
-#'
-#' # Use closed graph definition
-#' caugi_options(use_open_graph_definition = FALSE)
 #'
 #' # Query specific option
 #' caugi_options("plot")
@@ -155,9 +149,6 @@ caugi_options <- function(..., reset = FALSE) {
     }
     out <- get0("options", .caugi_env, ifnotfound = .caugi_default_options())
     .caugi_env$options <- .caugi_default_options()
-    .caugi_env$open_graph_def <- isTRUE(
-      .caugi_env$options$use_open_graph_definition
-    )
     return(invisible(out))
   }
 
@@ -211,12 +202,20 @@ caugi_options <- function(..., reset = FALSE) {
     return(result)
   }
 
+  # Restoring the default (e.g. `caugi_options(old)`) stays silent.
+  open_def <- new[["use_open_graph_definition"]]
+  if (!is.null(open_def) && !isTRUE(open_def)) {
+    warning(
+      "The `use_open_graph_definition` option is deprecated and will be ",
+      "removed in caugi 2.0.0. Pass `open` to `ancestors()`, ",
+      "`descendants()`, `anteriors()` or `posteriors()` instead.",
+      call. = FALSE
+    )
+  }
+
   out <- old[nm]
   names(out) <- nm
 
   .caugi_env$options <- utils::modifyList(old, new)
-  .caugi_env$open_graph_def <- isTRUE(
-    .caugi_env$options$use_open_graph_definition
-  )
   invisible(out)
 }

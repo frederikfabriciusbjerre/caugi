@@ -10,11 +10,9 @@ is_visible_edge(cg, from = NULL, to = NULL, from_index = NULL, to_index = NULL)
 \item{cg}{A \code{caugi} object of class \code{"AG"} that is a MAG, or of class
 \code{"PAG"}.}
 
-\item{from, to}{Node names. Use \code{from_index}/\code{to_index} to pass 1-based
-indices instead.}
+\item{from, to}{Node names.}
 
-\item{from_index, to_index}{Optional 1-based indices, exclusive with \code{from}
-and \code{to} respectively.}
+\item{from_index, to_index}{Deprecated; pass node names instead.}
 }
 \value{
 \code{TRUE} if the edge \verb{from --> to} is visible, otherwise \code{FALSE}.

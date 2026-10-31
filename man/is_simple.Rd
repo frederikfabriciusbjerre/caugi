@@ -9,9 +9,9 @@ is_simple(cg, force_check = FALSE)
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{force_check}{Ignored. Since caugi 1.4.0 the check always runs
-against the graph itself, since the deprecated \code{simple} flag no longer
-tells whether a graph has parallel edges or self-loops.}
+\item{force_check}{Deprecated and will be removed in caugi 2.0.0. A
+graph's class is validated when the graph is built, so the class is
+trusted and there is nothing to force.}
 }
 \value{
 A logical value indicating whether the graph is simple.

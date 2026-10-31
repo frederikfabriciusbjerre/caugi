@@ -7,7 +7,7 @@
 test_that("is_admg correctly identifies ADMG graphs", {
   # Pure DAG is also a valid ADMG
   dag <- caugi(A %-->% B %-->% C, class = "DAG")
-  expect_true(is_admg(dag, force_check = TRUE))
+  expect_true(is_admg(dag))
 
   # ADMG with bidirected edges
   admg <- caugi(
@@ -202,7 +202,6 @@ test_that("m_separated opens paths through multiple bidirected colliders", {
       expect_identical(m_separated(admg, "d", "a", Z = z), expected)
     }
   }
-  expect_false(m_separated(admg, X_index = 1, Y_index = 4, Z_index = 2:3))
 })
 
 test_that("m_separated activates multiple colliders through their descendants", {
@@ -323,28 +322,20 @@ test_that("is_valid_adjustment_admg errors when X or Y is missing", {
 
   expect_error(
     is_valid_adjustment_admg(admg, Y = "Y", Z = "L"),
-    "X \\(or X_index\\) must be provided"
+    "X must be provided"
   )
 
   # Missing Y
   expect_error(
     is_valid_adjustment_admg(admg, X = "X", Z = "L"),
-    "Y \\(or Y_index\\) must be provided"
+    "Y must be provided"
   )
 
   # Missing both X and Y
   expect_error(
     is_valid_adjustment_admg(admg, Z = "L"),
-    "X \\(or X_index\\) must be provided"
+    "X must be provided"
   )
-
-  # Using indices should also work
-  expect_true(is_valid_adjustment_admg(
-    admg,
-    X_index = 2L,
-    Y_index = 3L,
-    Z = "L"
-  ))
 })
 
 test_that("all_adjustment_sets_admg errors when X or Y is missing", {
@@ -358,29 +349,20 @@ test_that("all_adjustment_sets_admg errors when X or Y is missing", {
   # Missing X
   expect_error(
     all_adjustment_sets_admg(admg, Y = "Y"),
-    "X \\(or X_index\\) must be provided"
+    "X must be provided"
   )
 
   # Missing Y
   expect_error(
     all_adjustment_sets_admg(admg, X = "X"),
-    "Y \\(or Y_index\\) must be provided"
+    "Y must be provided"
   )
 
   # Missing both X and Y
   expect_error(
     all_adjustment_sets_admg(admg),
-    "X \\(or X_index\\) must be provided"
+    "X must be provided"
   )
-
-  # Using indices should also work
-  sets <- all_adjustment_sets_admg(
-    admg,
-    X_index = 2L,
-    Y_index = 3L,
-    minimal = TRUE
-  )
-  expect_true(any(sapply(sets, function(s) identical(s, "L"))))
 })
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -410,7 +392,7 @@ test_that("dagitty ADMG can be converted to caugi", {
   dg <- dagitty::dagitty("mag { A -> B ; A <-> C }")
   cg <- as_caugi(dg, class = "ADMG")
 
-  expect_true(is_admg(cg, force_check = TRUE))
+  expect_true(is_admg(cg))
   expect_equal(cg@graph_class, "ADMG")
 })
 

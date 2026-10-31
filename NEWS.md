@@ -304,6 +304,27 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+## Deprecations
+
+* The `force_check` argument of `is_acyclic()`, `is_simple()`, `is_dag()`,
+  `is_pdag()`, `is_ug()`, `is_admg()`, `is_ag()` and `is_mag()` is deprecated
+  and will be removed in caugi 2.0.0. A graph's class is validated when the
+  graph is built, so there is nothing to force. Supplying it still works but
+  warns.
+
+* The `*_index` twin arguments of `d_separated()`, `m_separated()`,
+  `adjustment_set()`, `is_valid_backdoor()`, `all_backdoor_sets()`,
+  `minimal_separator()`, `is_valid_adjustment_admg()`,
+  `all_adjustment_sets_admg()` and `is_visible_edge()` (`X_index`, `Y_index`,
+  `Z_index`, `I_index`, `R_index`, `from_index`, `to_index`) are deprecated
+  and will be removed in caugi 2.0.0. Pass node names instead, e.g.
+  `X = nodes(cg)$name[i]`. Supplying them still works but warns (#360).
+
+* The `use_open_graph_definition` option of `caugi_options()` is deprecated
+  and will be removed in caugi 2.0.0. Pass the `open` argument to
+  `ancestors()`, `descendants()`, `anteriors()` and `posteriors()` instead.
+  Setting it to `FALSE` still works but warns (#364).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.
