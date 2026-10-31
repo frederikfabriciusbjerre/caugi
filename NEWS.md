@@ -9,6 +9,45 @@
   which `as_caugi()` uses when `class` is not given, so
   `as_caugi(as.data.frame(cg)) == cg` (#529, #530).
 
+* `as_caugi()` keeps `class = "PAG"` for mark-coded matrices and dagitty objects
+  instead of returning `"UNKNOWN"`, and reads PAGs from data.frames. PAGs
+  round-trip through `as.data.frame()`, `write_caugi()`, `write_graphml()` and
+  their readers. The JSON schema lists the `"PAG"` class.
+
+* `dag_to_pag()` returns the PAG a DAG induces over its observed nodes after
+  marginalizing `latents` and conditioning on `selection`.
+
+* `m_separated()` and `minimal_separator()` accept PAGs. Both run on a member
+  MAG from `pag_to_mag()`, which is exact since every member encodes the same
+  m-separations.
+
+* Queries work on `"PAG"` graphs: `parents()`, `children()`, `neighbors()`
+  (every mode), `ancestors()`, `descendants()`, `anteriors()`, `posteriors()`
+  and `exogenous()` follow definite marks, so edges with a circle endpoint only
+  count for `mode = "partial"`.
+
+* `pag_to_mag()` returns a MAG from the Markov equivalence class a PAG
+  represents (Zhang 2008, Theorem 2).
+
+* New `"PAG"` (Partial Ancestral Graph) class, with selection bias in scope, so
+  all six edge types `-->`, `---`, `<->`, `o-o`, `--o` and `o->` are allowed.
+  The class is validated completely: a graph carries it only if its marks are
+  exactly the invariant marks of some MAG's Markov equivalence class, which
+  `is_pag()` checks. `mag_to_pag()` returns this class, and `subgraph()` drops
+  it to `"UNKNOWN"` when the induced subgraph is no longer a PAG.
+
+* `mag_to_pag()` returns the PAG of a MAG's Markov equivalence class, using
+  Zhang's complete orientation rules R1-R10.
+
+* `is_visible_edge()` checks whether a directed edge in a MAG is visible (Zhang
+  2008, Definition 8), which rules out latent confounding of its two ends. On
+  a PAG it checks definite visibility, i.e. visibility in every member MAG.
+
+* `as_adjacency()` gains `coding = "marks"`, which writes the `amat.pag` mark
+  coding that `as_caugi()` reads back, so graphs with `<->`, `o->`, `--o` and
+  `o-o` edges can go through a matrix. Self-loops and parallel edges, which one
+  matrix entry cannot hold, are an error.
+
 * `as.data.frame()` method for `caugi` objects, returning the edge list as a
   plain data.frame with one extra row per isolated node (`edge` and `to` are
   `NA`). `caugi()` reads such rows back as isolated nodes, so
@@ -83,6 +122,11 @@
 
 - `as_caugi(collapse = TRUE)` no longer mixes up node names that contain `.`
   (e.g. `"A.B"`+`"C"` and `"A"`+`"B.C"`), which dropped edges.
+
+- `as_caugi()` reads a matrix containing the mark codes `2` or `3` in the
+  `amat.pag` coding for every `class`, not only `"PAG"`. A MAG passed with
+  `class = "AG"` used to come back as `-->` edges in both directions. A matrix
+  with circle marks can now be read with `class = "UNKNOWN"`.
 
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
   accepted, for example, `Z = "Y"` for `X <-- U --> Y`.

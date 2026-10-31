@@ -19,6 +19,7 @@ pub mod dag;
 pub mod error;
 pub mod mpdag;
 pub mod packed;
+pub mod pag;
 pub mod pdag;
 pub mod session;
 pub mod traits;

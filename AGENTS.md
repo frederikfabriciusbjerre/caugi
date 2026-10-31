@@ -114,8 +114,10 @@ caugi/
 
 ### Graph Classes
 
-- Supported: `"UNKNOWN"`, `"DAG"`, `"PDAG"`, `"ADMG"`, `"UG"`
-- Planned: `"PAG"`, `"MAG"`, `"SWIG"`
+- Supported: `"UNKNOWN"`, `"DAG"`, `"PDAG"`, `"MPDAG"`, `"CPDAG"`, `"ADMG"`,
+  `"AG"`, `"PAG"`, `"UG"`
+- Planned: `"MAG"` (as a class of its own; MAGs are `"AG"` checked with
+  `is_mag()`), `"SWIG"`
 - Always validate graph class invariants when adding new graph types
 
 ### Performance

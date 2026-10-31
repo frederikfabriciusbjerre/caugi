@@ -17,8 +17,9 @@ as_caugi(
 \item{x}{An object to convert to a \code{caugi}.}
 
 \item{class}{Character; one of \code{"DAG"}, \code{"UG"}, \code{"PDAG"}, \code{"MPDAG"},
-\code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"PAG"} is only supported for
-integer coded matrices. For a data.frame, it defaults to the data.frame's
+\code{"CPDAG"}, \code{"ADMG"}, \code{"AG"}, or \code{"UNKNOWN"}. \code{"PAG"} is supported for
+integer coded matrices, data.frames and \code{dagitty} objects, and is validated
+as in \code{\link[=caugi]{caugi()}}. For a data.frame, it defaults to the data.frame's
 \code{"graph_class"} attribute, which \code{\link[=as.data.frame]{as.data.frame()}} sets, if present.}
 
 \item{simple}{Deprecated; see \code{\link[=caugi]{caugi()}}. If omitted (recommended), it is
@@ -45,13 +46,18 @@ Convert an object to a \code{caugi}. The object can be a
 For matrices, \code{as_caugi} assumes that the rows are the \code{from} nodes
 and the columns are the \code{to} nodes. Thus, for a graph, G: A --> B, we would
 have that \code{G["A", "B"] == 1} and \code{G["B", "A"] == 0}.
-For PAGs, the integer codes are as follows (as used in \code{pcalg}):
+A matrix that contains the codes \code{2} or \code{3}, or any matrix passed with
+\code{class = "PAG"}, is instead read in \code{pcalg}'s \code{amat.pag} mark coding, where
+\code{G[i, j]} is the mark at node \code{j} on the edge between \code{i} and \code{j}:
 \itemize{
 \item 0: no edge
 \item 1: circle (e.g., \verb{A o-o B} or \verb{A --o B})
 \item 2: arrowhead (e.g., \verb{A --> B} or \verb{A o-> B})
 \item 3: tail (e.g., \verb{A --o B} or \code{A --- B})
 }
+
+This holds for every \code{class}, so a MAG coded this way can be read with
+\code{class = "AG"}, and a graph with circle marks with \code{class = "UNKNOWN"}.
 }
 \examples{
 # igraph
@@ -96,25 +102,27 @@ cg_df <- as_caugi(as.data.frame(cg), class = "DAG")
 ig2 <- igraph::graph_from_literal(A - +B, B - +A, C - +D)
 cg2 <- as_caugi(ig2, class = "PDAG", collapse = TRUE, collapse_to = "---")
 
-# coded integer matrix for PAGs (pcalg style)
+# coded integer matrix for PAGs (pcalg style). `class = "PAG"` is fully
+# validated, so the marks must be the invariant marks of a Markov
+# equivalence class; these are.
 nm <- c("A", "B", "C", "D")
 M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
 
 # A --> B
-M["A", "B"] <- 2L # mark at B end
-M["B", "A"] <- 3L # mark at A end
+M["A", "B"] <- 2L # arrowhead at B
+M["B", "A"] <- 3L # tail at A
 
-# A --- C
-M["A", "C"] <- 3L
-M["C", "A"] <- 3L
+# A o-> C
+M["A", "C"] <- 2L # arrowhead at C
+M["C", "A"] <- 1L # circle at A
 
-# B o-> C
-M["B", "C"] <- 2L
-M["C", "B"] <- 1L
+# C --> B
+M["C", "B"] <- 2L # arrowhead at B
+M["B", "C"] <- 3L # tail at C
 
-# C o-o D
-M["C", "D"] <- 1L
-M["D", "C"] <- 1L
+# D o-> C
+M["D", "C"] <- 2L # arrowhead at C
+M["C", "D"] <- 1L # circle at D
 
 cg <- as_caugi(M, class = "PAG")
 

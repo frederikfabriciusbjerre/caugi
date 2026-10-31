@@ -375,6 +375,7 @@ fn graph_class_label_from_view(view: &GraphView) -> &'static str {
         GraphView::Ug(_) => "UG",
         GraphView::Admg(_) => "ADMG",
         GraphView::Ag(_) => "AG",
+        GraphView::Pag(_) => "PAG",
         GraphView::Raw(_) => "UNKNOWN",
     }
 }
@@ -1666,6 +1667,14 @@ fn rs_is_ag_type(mut session: ExternalPtr<GraphSession>) -> bool {
 }
 
 #[extendr]
+fn rs_is_pag_type(mut session: ExternalPtr<GraphSession>) -> bool {
+    session
+        .as_mut()
+        .is_pag_type()
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
 fn rs_is_mag(mut session: ExternalPtr<GraphSession>) -> bool {
     session
         .as_mut()
@@ -1764,6 +1773,26 @@ fn rs_moralize(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSessi
 }
 
 #[extendr]
+fn rs_mag_to_pag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .mag_to_pag()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
+fn rs_pag_to_mag(mut session: ExternalPtr<GraphSession>) -> ExternalPtr<GraphSession> {
+    let view = session
+        .as_mut()
+        .pag_to_mag()
+        .unwrap_or_else(|e| throw_r_error(e));
+    let names: Vec<String> = session.as_ref().names().to_vec();
+    ExternalPtr::new(session_from_view(view, names))
+}
+
+#[extendr]
 fn rs_latent_project(
     mut session: ExternalPtr<GraphSession>,
     latents: Integers,
@@ -1843,12 +1872,14 @@ fn rs_normalize_latent_structure(
     ExternalPtr::new(session_from_view(view, names))
 }
 
-/// Removing nodes can break CPDAG strong protection, so re-check the class of
-/// an induced subgraph and keep the strongest one it still satisfies.
+/// Removing nodes can break CPDAG strong protection, or leave a PAG with marks
+/// that are no longer invariant, so re-check the class of an induced subgraph
+/// and keep the strongest one it still satisfies.
 fn downgrade_subgraph_class(mut out: GraphSession) -> ExternalPtr<GraphSession> {
     let candidates: &[GraphClass] = match out.class() {
         GraphClass::Cpdag => &[GraphClass::Cpdag, GraphClass::Mpdag, GraphClass::Pdag],
         GraphClass::Mpdag => &[GraphClass::Mpdag, GraphClass::Pdag],
+        GraphClass::Pag => &[GraphClass::Pag, GraphClass::Unknown],
         _ => &[],
     };
     if let Some(&c) = candidates.iter().find(|&&c| out.resolve_class(c).is_ok()) {
@@ -2096,6 +2127,20 @@ fn rs_m_separated(
     session
         .as_mut()
         .m_separated(&xs_u, &ys_u, &z_u)
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
+fn rs_is_visible_edge(mut session: ExternalPtr<GraphSession>, from: i32, to: i32) -> bool {
+    let n = session.as_ref().n();
+    for (i, field) in [(from, "from"), (to, "to")] {
+        if rint_to_u32(Rint::from(i), field) >= n {
+            throw_r_error(format!("Index {} is out of bounds", i + 1));
+        }
+    }
+    session
+        .as_mut()
+        .is_visible_edge(from as u32, to as u32)
         .unwrap_or_else(|e| throw_r_error(e))
 }
 
@@ -2358,6 +2403,7 @@ extendr_module! {
     fn rs_is_ug_type;
     fn rs_is_admg_type;
     fn rs_is_ag_type;
+    fn rs_is_pag_type;
     fn rs_is_mag;
     fn rs_is_cpdag;
     fn rs_is_mpdag;
@@ -2368,6 +2414,8 @@ extendr_module! {
     fn rs_count_dags;
     fn rs_skeleton;
     fn rs_moralize;
+    fn rs_mag_to_pag;
+    fn rs_pag_to_mag;
     fn rs_latent_project;
     fn rs_exogenize;
     fn rs_normalize_latent_structure;
@@ -2376,6 +2424,7 @@ extendr_module! {
     fn rs_d_separated;
     fn rs_minimal_separator;
     fn rs_m_separated;
+    fn rs_is_visible_edge;
     fn rs_not_m_separated_for_all_subsets;
     fn rs_adjustment_set_parents;
     fn rs_adjustment_set_backdoor;

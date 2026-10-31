@@ -9,16 +9,22 @@
 #' For matrices, `as_caugi` assumes that the rows are the `from` nodes
 #' and the columns are the `to` nodes. Thus, for a graph, G: A --> B, we would
 #' have that `G["A", "B"] == 1` and `G["B", "A"] == 0`.
-#' For PAGs, the integer codes are as follows (as used in `pcalg`):
+#' A matrix that contains the codes `2` or `3`, or any matrix passed with
+#' `class = "PAG"`, is instead read in `pcalg`'s `amat.pag` mark coding, where
+#' `G[i, j]` is the mark at node `j` on the edge between `i` and `j`:
 #' - 0: no edge
 #' - 1: circle (e.g., `A o-o B` or `A --o B`)
 #' - 2: arrowhead (e.g., `A --> B` or `A o-> B`)
 #' - 3: tail (e.g., `A --o B` or `A --- B`)
 #'
+#' This holds for every `class`, so a MAG coded this way can be read with
+#' `class = "AG"`, and a graph with circle marks with `class = "UNKNOWN"`.
+#'
 #' @param x An object to convert to a `caugi`.
 #' @param class Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
-#'  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
-#'  integer coded matrices. For a data.frame, it defaults to the data.frame's
+#'  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is supported for
+#'  integer coded matrices, data.frames and `dagitty` objects, and is validated
+#'  as in [caugi()]. For a data.frame, it defaults to the data.frame's
 #'  `"graph_class"` attribute, which [as.data.frame()] sets, if present.
 #' @param simple Deprecated; see [caugi()]. If omitted (recommended), it is
 #' derived from `class`.
@@ -73,25 +79,27 @@
 #' ig2 <- igraph::graph_from_literal(A - +B, B - +A, C - +D)
 #' cg2 <- as_caugi(ig2, class = "PDAG", collapse = TRUE, collapse_to = "---")
 #'
-#' # coded integer matrix for PAGs (pcalg style)
+#' # coded integer matrix for PAGs (pcalg style). `class = "PAG"` is fully
+#' # validated, so the marks must be the invariant marks of a Markov
+#' # equivalence class; these are.
 #' nm <- c("A", "B", "C", "D")
 #' M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
 #'
 #' # A --> B
-#' M["A", "B"] <- 2L # mark at B end
-#' M["B", "A"] <- 3L # mark at A end
+#' M["A", "B"] <- 2L # arrowhead at B
+#' M["B", "A"] <- 3L # tail at A
 #'
-#' # A --- C
-#' M["A", "C"] <- 3L
-#' M["C", "A"] <- 3L
+#' # A o-> C
+#' M["A", "C"] <- 2L # arrowhead at C
+#' M["C", "A"] <- 1L # circle at A
 #'
-#' # B o-> C
-#' M["B", "C"] <- 2L
-#' M["C", "B"] <- 1L
+#' # C --> B
+#' M["C", "B"] <- 2L # arrowhead at B
+#' M["B", "C"] <- 3L # tail at C
 #'
-#' # C o-o D
-#' M["C", "D"] <- 1L
-#' M["D", "C"] <- 1L
+#' # D o-> C
+#' M["D", "C"] <- 2L # arrowhead at C
+#' M["C", "D"] <- 1L # circle at D
 #'
 #' cg <- as_caugi(M, class = "PAG")
 #'
@@ -352,21 +360,12 @@ S7::method(
         call. = FALSE
       )
     }
-    if (class == "PAG" && any(!(x %in% 0:3))) {
+    if (any(!(x %in% 0:3))) {
       stop(
-        "PAG class is only supported for integer codes 0-3.",
-        "This is meant to represent PAG edge types as used in `pcalg`.",
+        "Matrix entries must be 0/1 (adjacency) or the `amat.pag` mark ",
+        "codes 0-3.",
         call. = FALSE
       )
-    }
-    if (class != "PAG" && (any(!(x %in% 0:1)))) {
-      if (any(!(x %in% c(0, 2, 3)))) {
-        stop(
-          "Only either 0:1 are allowed or 0,2,3 for PAG edge codes in a ",
-          "non-PAG matrix.",
-          call. = FALSE
-        )
-      }
     }
   } else {
     stop("`x` must be logical or numeric matrix.", call. = FALSE)
@@ -384,8 +383,14 @@ S7::method(
     if (n > 0) nm <- paste0("V", seq_len(n))
   }
 
+  # The codes 2 (arrowhead) and 3 (tail) only occur in the mark coding, so a
+  # matrix containing them is decoded by endpoint marks whatever class was
+  # requested. A 0/1 matrix is ambiguous, so it keeps adjacency semantics
+  # unless a PAG was asked for.
+  mark_coded <- class == "PAG" || any(x == 2 | x == 3)
+
   # build edge list
-  if (class %in% "PAG") {
+  if (mark_coded) {
     # Correct pcalg PAG code mapping:
     # 1 = circle, 2 = arrowhead, 3 = tail (codes refer to the COLUMN end)
     mark_sym <- function(k) {
@@ -394,7 +399,7 @@ S7::method(
         "1" = "o", # circle
         "2" = ">", # arrowhead
         "3" = "-", # tail
-        stop("Invalid PAG code: ", k, call. = FALSE)
+        as.character(k) # not a mark; reported by the glyph lookup below
       )
     }
 
@@ -449,7 +454,18 @@ S7::method(
           "o>" = "o->",
           "oo" = "o-o",
           ">>" = "<->",
-          stop("Unsupported PAG endpoints: ", lf, " .. ", rt, call. = FALSE)
+          stop(
+            "Unsupported endpoint marks: ",
+            b,
+            " at ",
+            nm[i],
+            " and ",
+            a,
+            " at ",
+            nm[j],
+            ".",
+            call. = FALSE
+          )
         )
 
         from <- c(from, nm[li])
@@ -493,11 +509,6 @@ S7::method(
       edge <- ifelse(has_rev & keep, collapse_to, edge)[keep]
     }
   }
-
-  # todo:
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
-  class <- if (class == "PAG") "UNKNOWN" else class
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
 
   caugi(
     from = from,
@@ -697,7 +708,7 @@ S7::method(
       to = character(),
       nodes = nm,
       simple = simple,
-      class = if (class == "PAG") "UNKNOWN" else class
+      class = class
     ))
   }
 
@@ -750,11 +761,6 @@ S7::method(
   from <- v[keep]
   to <- w[keep]
   edge <- edge[keep]
-
-  # todo:
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
-  class <- if (class == "PAG") "UNKNOWN" else class
-  ### NEEDS TO BE FIXED ONCE PAG IS SUPPORTED IN CAUGI ###
 
   if (collapse) {
     is_edge_symmetric(collapse_to)
@@ -885,9 +891,6 @@ S7::method(as_caugi, S7::class_data.frame) <- function(
     class <- attr(x, "graph_class")
   }
   class <- match.arg(class)
-  if (class == "PAG") {
-    stop("PAG class is not supported for data.frames.", call. = FALSE)
-  }
   if (!isFALSE(collapse)) {
     stop("`collapse` is not supported for data.frames.", call. = FALSE)
   }

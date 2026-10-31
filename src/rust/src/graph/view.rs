@@ -3,6 +3,7 @@ use super::ag::Ag;
 use super::cpdag::Cpdag;
 use super::dag::Dag;
 use super::mpdag::Mpdag;
+use super::pag::Pag;
 use super::pdag::Pdag;
 use super::ug::Ug;
 use super::CaugiGraph;
@@ -49,6 +50,7 @@ pub enum GraphView {
     Ug(Arc<Ug>),
     Admg(Arc<Admg>),
     Ag(Arc<Ag>),
+    Pag(Arc<Pag>),
     Raw(Arc<CaugiGraph>),
 }
 
@@ -63,6 +65,7 @@ impl GraphView {
             GraphView::Ug(u) => u.core_ref(),
             GraphView::Admg(a) => a.core_ref(),
             GraphView::Ag(g) => g.core_ref(),
+            GraphView::Pag(g) => g.core_ref(),
             GraphView::Raw(c) => c,
         }
     }
@@ -77,6 +80,7 @@ impl GraphView {
             GraphView::Ug(g) => g.n(),
             GraphView::Admg(g) => g.n(),
             GraphView::Ag(g) => g.n(),
+            GraphView::Pag(g) => g.n(),
             GraphView::Raw(core) => core.n(),
         }
     }
@@ -222,6 +226,14 @@ impl GraphView {
                 Err("mode 'partial' not valid for AG (no partial edges)".into())
             }
 
+            // PAG: in, out, undirected, bidirected, partial, all
+            (GraphView::Pag(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::In) => Ok(g.parents_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Out) => Ok(g.children_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Undirected) => Ok(g.undirected_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Bidirected) => Ok(g.spouses_of(i).to_vec()),
+            (GraphView::Pag(g), NeighborMode::Partial) => Ok(g.partial_of(i)),
+
             // Raw (UNKNOWN): all modes allowed, iterate CSR
             (GraphView::Raw(_), _) => self.neighbors_mode_of_raw(i, mode),
         }
@@ -332,6 +344,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.ancestors_of(i)),
             GraphView::Ug(_) => Ok(Vec::new()),
+            GraphView::Pag(g) => Ok(g.ancestors_of(i)),
             GraphView::Raw(_) => self.reach_raw(i, true, false),
         }
     }
@@ -344,6 +357,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.descendants_of(i)),
             GraphView::Ug(_) => Ok(Vec::new()),
+            GraphView::Pag(g) => Ok(g.descendants_of(i)),
             GraphView::Raw(_) => self.reach_raw(i, false, false),
         }
     }
@@ -356,6 +370,7 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.ancestors_of(i)),
             GraphView::Ag(g) => Ok(g.anteriors_of(i)),
             GraphView::Ug(g) => Ok(g.component_of(i)),
+            GraphView::Pag(g) => Ok(g.anteriors_of(i)),
             GraphView::Raw(_) => self.reach_raw(i, true, true),
         }
     }
@@ -368,9 +383,21 @@ impl GraphView {
             GraphView::Admg(g) => Ok(g.descendants_of(i)),
             GraphView::Ag(g) => Ok(g.posteriors_of(i)),
             GraphView::Ug(g) => Ok(g.component_of(i)),
+            GraphView::Pag(g) => Ok(g.posteriors_of(i)),
             GraphView::Raw(_) => self.reach_raw(i, false, true),
         }
     }
+    /// Is the directed edge `a --> b` visible (Zhang 2008, Def. 8)? The same
+    /// criterion on a PAG gives definite visibility.
+    pub fn is_visible_edge(&self, a: u32, b: u32) -> Result<bool, String> {
+        match self {
+            GraphView::Ag(_) | GraphView::Pag(_) => {
+                Ok(super::pag::MarkedGraph::from_core(self.core())?.visible_edge(a, b))
+            }
+            _ => Err("is_visible_edge is only defined for MAGs and PAGs".into()),
+        }
+    }
+
     pub fn markov_blanket_of(&self, i: u32) -> Result<Vec<u32>, String> {
         match self {
             GraphView::Dag(g) => Ok(g.markov_blanket_of(i)),
@@ -380,6 +407,7 @@ impl GraphView {
             GraphView::Ug(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Admg(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Ag(g) => Ok(g.markov_blanket_of(i)),
+            GraphView::Pag(_) => Err("markov_blanket_of is not yet implemented for PAG".into()),
             GraphView::Raw(_) => Err("markov_blanket_of not implemented for UNKNOWN class".into()),
         }
     }
@@ -400,6 +428,12 @@ impl GraphView {
                     Ok(g.exogenous_nodes())
                 }
             }
+            GraphView::Pag(g) => Ok((0..g.n())
+                .filter(|&i| {
+                    g.parents_of(i).is_empty()
+                        && !(undirected_as_parents && !g.undirected_of(i).is_empty())
+                })
+                .collect()),
             GraphView::Raw(_) => Err("exogenous_nodes not implemented for UNKNOWN class".into()),
         }
     }
@@ -417,6 +451,7 @@ impl GraphView {
             GraphView::Cpdag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ug(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Ag(_) => Err("topological_sort is only defined for DAGs".into()),
+            GraphView::Pag(_) => Err("topological_sort is only defined for DAGs".into()),
             GraphView::Raw(_) => Err("topological_sort is only defined for DAGs".into()),
         }
     }
@@ -453,7 +488,9 @@ impl GraphView {
             GraphView::Dag(d) => Ok(d.d_separated(xs, ys, z)), // d-sep is m-sep for DAGs
             GraphView::Ag(g) => Ok(g.m_separated(xs, ys, z)),
             GraphView::Ug(g) => Ok(g.separated(xs, ys, z)),
-            _ => Err("m_separated is only defined for ADMGs, AGs, DAGs, and UGs".into()),
+            // Exact: every member MAG encodes the same m-separations.
+            GraphView::Pag(g) => Ok(g.to_mag()?.m_separated(xs, ys, z)),
+            _ => Err("m_separated is only defined for ADMGs, AGs, PAGs, DAGs, and UGs".into()),
         }
     }
 
@@ -476,7 +513,8 @@ impl GraphView {
             GraphView::Dag(d) => d.minimal_d_separator(xs, ys, include, restrict),
             GraphView::Admg(a) => a.minimal_m_separator(xs, ys, include, restrict),
             GraphView::Ag(g) => g.minimal_m_separator(xs, ys, include, restrict),
-            _ => Err("minimal_separator is only defined for DAGs, ADMGs, and AGs".into()),
+            GraphView::Pag(g) => g.to_mag()?.minimal_m_separator(xs, ys, include, restrict),
+            _ => Err("minimal_separator is only defined for DAGs, ADMGs, AGs, and PAGs".into()),
         }
     }
 
@@ -596,6 +634,14 @@ impl GraphView {
                 let g = super::ag::Ag::new(std::sync::Arc::new(core2))?;
                 GraphView::Ag(std::sync::Arc::new(g))
             }
+            GraphView::Pag(_) => {
+                // An induced subgraph of a PAG need not be a PAG.
+                let core2 = std::sync::Arc::new(core2);
+                match Pag::new(std::sync::Arc::clone(&core2)) {
+                    Ok(g) => GraphView::Pag(std::sync::Arc::new(g)),
+                    Err(_) => GraphView::Raw(core2),
+                }
+            }
             GraphView::Raw(_) => GraphView::Raw(std::sync::Arc::new(core2)),
         };
         Ok(gv)
@@ -653,6 +699,31 @@ impl GraphView {
             GraphView::Mpdag(m) => Ok(GraphView::Mpdag(std::sync::Arc::clone(m))),
             GraphView::Cpdag(c) => Ok(GraphView::Mpdag(std::sync::Arc::new(c.as_mpdag().clone()))),
             _ => Err("to_mpdag is only defined for DAGs, PDAGs, and MPDAGs".into()),
+        }
+    }
+
+    /// A MAG from the Markov equivalence class this PAG represents.
+    pub fn pag_to_mag(&self) -> Result<GraphView, String> {
+        match self {
+            GraphView::Pag(g) => Ok(GraphView::Ag(Arc::new(g.to_mag()?))),
+            _ => Err("pag_to_mag is only defined for PAGs".into()),
+        }
+    }
+
+    /// The PAG of this MAG's Markov equivalence class.
+    ///
+    /// Maximality is checked here, since the construction assumes it.
+    pub fn mag_to_pag(&self) -> Result<GraphView, String> {
+        match self {
+            GraphView::Ag(g) => {
+                if !g.is_mag() {
+                    return Err("mag_to_pag requires a maximal ancestral graph; this \
+                                ancestral graph is not maximal"
+                        .into());
+                }
+                Ok(GraphView::Pag(Arc::new(Pag::from_mag(g)?)))
+            }
+            _ => Err("mag_to_pag is only defined for MAGs (class 'AG')".into()),
         }
     }
 
@@ -1245,7 +1316,7 @@ mod tests {
         assert_eq!(v_ag.m_separated(&[0], &[1], &[]).unwrap(), false);
         assert_eq!(
             v_pdag.m_separated(&[0], &[2], &[]).unwrap_err(),
-            "m_separated is only defined for ADMGs, AGs, DAGs, and UGs"
+            "m_separated is only defined for ADMGs, AGs, PAGs, DAGs, and UGs"
         );
         assert_eq!(v_pdag.anteriors_of(1).unwrap(), vec![0, 2]);
         assert_eq!(v_pdag.posteriors_of(1).unwrap(), vec![2]);

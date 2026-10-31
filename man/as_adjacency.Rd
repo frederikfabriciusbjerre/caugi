@@ -4,18 +4,31 @@
 \alias{as_adjacency}
 \title{Convert a caugi to an adjacency matrix}
 \usage{
-as_adjacency(x)
+as_adjacency(x, coding = c("binary", "marks"))
 }
 \arguments{
 \item{x}{A \code{caugi} object.}
+
+\item{coding}{Either \code{"binary"} for a 0/1 adjacency matrix or \code{"marks"}
+for the mark-coded \code{amat.pag} form.}
 }
 \value{
-An integer 0/1 adjacency matrix with row/col names.
+An integer matrix with row/col names.
 }
 \description{
-Only supports the edge types found in a PDAG (\verb{-->} and \verb{---}). A \verb{---} edge
-is written as \code{1} in both directions, so other symmetric edges such as \verb{<->}
-are rejected rather than encoded the same way.
+With \code{coding = "binary"} (the default), only supports the edge types found
+in a PDAG (\verb{-->} and \verb{---}). A \verb{---} edge is written as \code{1} in both
+directions, so other symmetric edges such as \verb{<->} are rejected rather than
+encoded the same way.
+
+With \code{coding = "marks"}, writes \code{pcalg}'s \code{amat.pag} coding, which covers
+\verb{-->}, \verb{<->}, \verb{---}, \verb{o->}, \code{--o} and \code{o-o}: \code{0} no edge, \code{1} circle, \code{2}
+arrowhead, \code{3} tail, where \code{m[i, j]} is the mark at node \code{j} on the edge
+between \code{i} and \code{j}. So \code{m[i, j] == 2} with \code{m[j, i] == 3} means \verb{i --> j}.
+One pair of entries holds one edge, so self-loops and parallel edges are
+rejected.
+
+\code{\link[=as_caugi]{as_caugi()}} reads both codings back.
 }
 \examples{
 cg <- caugi(
@@ -23,6 +36,12 @@ cg <- caugi(
   class = "DAG"
 )
 adj <- as_adjacency(cg)
+
+# Edges with circle or bidirected endpoints need the mark coding.
+g <- caugi(A \%o->\% B, B \%<->\% C, class = "UNKNOWN")
+m <- as_adjacency(g, coding = "marks")
+m
+as_caugi(m, class = "UNKNOWN")
 
 }
 \seealso{

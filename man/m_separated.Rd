@@ -2,7 +2,7 @@
 % Please edit documentation in R/queries.R
 \name{m_separated}
 \alias{m_separated}
-\title{M-separation test for AGs and ADMGs}
+\title{M-separation test for AGs, PAGs and ADMGs}
 \usage{
 m_separated(
   cg,
@@ -15,7 +15,7 @@ m_separated(
 )
 }
 \arguments{
-\item{cg}{A \code{caugi} object of class AG, ADMG, DAG, or UG.}
+\item{cg}{A \code{caugi} object of class AG, PAG, ADMG, DAG, or UG.}
 
 \item{X, Y, Z}{Character vectors of node names, or \code{NULL}. Use \verb{*_index} to
 pass 1-based indices. If \code{Z} is \code{NULL} or missing, no nodes are conditioned
@@ -29,9 +29,11 @@ A logical value; \code{TRUE} if \code{X} and \code{Y} are m-separated given \cod
 }
 \description{
 Test whether two sets of nodes are m-separated given a
-conditioning set in an ancestral graph (AG) or an ADMG.
+conditioning set in an ancestral graph (AG), a PAG, or an ADMG.
 
-M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs.
+M-separation generalizes d-separation to AGs/ADMGs and applies to DAGs. In
+a PAG it is decided on a member MAG from \code{\link[=pag_to_mag]{pag_to_mag()}}, which is exact
+since every member encodes the same m-separations.
 On a UG it reduces to plain graph separation: every path from \code{X} to \code{Y}
 passes through \code{Z}.
 }
@@ -67,9 +69,11 @@ Other queries:
 \code{\link[=is_empty_caugi]{is_empty_caugi()}},
 \code{\link[=is_mag]{is_mag()}},
 \code{\link[=is_mpdag]{is_mpdag()}},
+\code{\link[=is_pag]{is_pag()}},
 \code{\link[=is_pdag]{is_pdag()}},
 \code{\link[=is_simple]{is_simple()}},
 \code{\link[=is_ug]{is_ug()}},
+\code{\link[=is_visible_edge]{is_visible_edge()}},
 \code{\link[=markov_blanket]{markov_blanket()}},
 \code{\link[=neighbors]{neighbors()}},
 \code{\link[=nodes]{nodes()}},

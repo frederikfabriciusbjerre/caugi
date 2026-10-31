@@ -109,6 +109,8 @@ rs_is_admg_type <- function(session) .Call(wrap__rs_is_admg_type, session)
 
 rs_is_ag_type <- function(session) .Call(wrap__rs_is_ag_type, session)
 
+rs_is_pag_type <- function(session) .Call(wrap__rs_is_pag_type, session)
+
 rs_is_mag <- function(session) .Call(wrap__rs_is_mag, session)
 
 rs_is_cpdag <- function(session) .Call(wrap__rs_is_cpdag, session)
@@ -129,6 +131,10 @@ rs_skeleton <- function(session) .Call(wrap__rs_skeleton, session)
 
 rs_moralize <- function(session) .Call(wrap__rs_moralize, session)
 
+rs_mag_to_pag <- function(session) .Call(wrap__rs_mag_to_pag, session)
+
+rs_pag_to_mag <- function(session) .Call(wrap__rs_pag_to_mag, session)
+
 rs_latent_project <- function(session, latents) .Call(wrap__rs_latent_project, session, latents)
 
 rs_exogenize <- function(session, nodes) .Call(wrap__rs_exogenize, session, nodes)
@@ -144,6 +150,8 @@ rs_d_separated <- function(session, xs, ys, z) .Call(wrap__rs_d_separated, sessi
 rs_minimal_separator <- function(session, xs, ys, include, restrict) .Call(wrap__rs_minimal_separator, session, xs, ys, include, restrict)
 
 rs_m_separated <- function(session, xs, ys, z) .Call(wrap__rs_m_separated, session, xs, ys, z)
+
+rs_is_visible_edge <- function(session, from, to) .Call(wrap__rs_is_visible_edge, session, from, to)
 
 rs_not_m_separated_for_all_subsets <- function(session, node_a, node_b, other_nodes, cond_vars) .Call(wrap__rs_not_m_separated_for_all_subsets, session, node_a, node_b, other_nodes, cond_vars)
 

@@ -36,6 +36,7 @@ Not all modes are valid for all graph classes:
 \item PDAG: \code{"in"}, \code{"out"}, \code{"undirected"}, \code{"all"}
 \item UG: \code{"undirected"}, \code{"all"} only
 \item ADMG: \code{"in"}, \code{"out"}, \code{"bidirected"}, \code{"all"}
+\item PAG: all modes; \code{"in"} and \code{"out"} follow \verb{-->} edges only
 \item UNKNOWN: all modes allowed
 }}
 }
@@ -99,9 +100,11 @@ Other queries:
 \code{\link[=is_empty_caugi]{is_empty_caugi()}},
 \code{\link[=is_mag]{is_mag()}},
 \code{\link[=is_mpdag]{is_mpdag()}},
+\code{\link[=is_pag]{is_pag()}},
 \code{\link[=is_pdag]{is_pdag()}},
 \code{\link[=is_simple]{is_simple()}},
 \code{\link[=is_ug]{is_ug()}},
+\code{\link[=is_visible_edge]{is_visible_edge()}},
 \code{\link[=m_separated]{m_separated()}},
 \code{\link[=markov_blanket]{markov_blanket()}},
 \code{\link[=nodes]{nodes()}},
