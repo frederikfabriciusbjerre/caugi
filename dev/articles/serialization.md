@@ -114,14 +114,14 @@ The caugi format uses a simple, human-readable JSON structure:
 
 The format supports all caugi edge types using their DSL operators:
 
-| Operator | Description            | Graph Types              |
-|:---------|:-----------------------|:-------------------------|
-| `-->`    | Directed edge          | DAG, PDAG, ADMG, UNKNOWN |
-| `---`    | Undirected edge        | UG, PDAG, UNKNOWN        |
-| `<->`    | Bidirected edge        | ADMG, UNKNOWN            |
-| `o->`    | Partially directed     | UNKNOWN                  |
-| `--o`    | Partially undirected   | UNKNOWN                  |
-| `o-o`    | Partial (both circles) | UNKNOWN                  |
+| Operator | Description            | Graph Types                       |
+|:---------|:-----------------------|:----------------------------------|
+| `-->`    | Directed edge          | DAG, PDAG, ADMG, AG, PAG, UNKNOWN |
+| `---`    | Undirected edge        | UG, PDAG, AG, PAG, UNKNOWN        |
+| `<->`    | Bidirected edge        | ADMG, AG, PAG, UNKNOWN            |
+| `o->`    | Partially directed     | PAG, UNKNOWN                      |
+| `--o`    | Partially undirected   | PAG, UNKNOWN                      |
+| `o-o`    | Partial (both circles) | PAG, UNKNOWN                      |
 
 ## Working with the Format
 
@@ -181,11 +181,17 @@ admg <- caugi(X %-->% Y, Y %<->% Z, class = "ADMG")
 # UG (undirected graph)
 ug <- caugi(X %---% Y, Y %---% Z, class = "UG")
 
+# PAG: circles mark endpoints that differ across the represented Markov
+# equivalence class. `"PAG"` is fully validated; this is the PAG of
+# X --> Z <-- Y.
+pag <- caugi(X %o->% Z, Y %o->% Z, class = "PAG")
+
 # Save them all
 write_caugi(dag, tempfile(fileext = ".caugi.json"))
 write_caugi(pdag, tempfile(fileext = ".caugi.json"))
 write_caugi(admg, tempfile(fileext = ".caugi.json"))
 write_caugi(ug, tempfile(fileext = ".caugi.json"))
+write_caugi(pag, tempfile(fileext = ".caugi.json"))
 ```
 
 ## File Extension Convention

@@ -39,13 +39,16 @@ Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
 Other operations:
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
+[`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
+[`mag_to_pag()`](https://caugi.org/dev/reference/mag_to_pag.md),
 [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md),
 [`moralize()`](https://caugi.org/dev/reference/moralize.md),
 [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
 [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md),
+[`pag_to_mag()`](https://caugi.org/dev/reference/pag_to_mag.md),
 [`skeleton()`](https://caugi.org/dev/reference/skeleton.md)
 
 ## Examples
@@ -59,12 +62,12 @@ mg <- caugi(
 )
 
 condition_marginalize(mg, marg_vars = "U") # ADMG
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x61ed83a96cf0>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5b8a90de0b00>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y, X<->Y
 condition_marginalize(mg, cond_vars = "U") # DAG
-#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x61ed7e49ba90>
+#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x5b8a93a37210>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y

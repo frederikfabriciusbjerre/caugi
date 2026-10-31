@@ -32,7 +32,8 @@ caugi(
   edges_df = NULL,
   simple = NULL,
   build = NULL,
-  class = c("AUTO", "DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "UNKNOWN"),
+  class = c("AUTO", "DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "PAG",
+    "UNKNOWN"),
   state = NULL,
   .session = NULL
 )
@@ -102,12 +103,16 @@ caugi(
 - class:
 
   Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
-  `"CPDAG"`, `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"AUTO"` will
+  `"CPDAG"`, `"ADMG"`, `"AG"`, `"PAG"`, or `"UNKNOWN"`. `"AUTO"` will
   automatically pick the appropriate class based on the first match in
-  the order of `"DAG"`, `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, and
-  `"AG"`. It will default to `"UNKNOWN"` if no match is found. A graph
-  with parallel edges or self-loops resolves to `"ADMG"` if it is a
-  valid ADMG (e.g. a bow) and to `"UNKNOWN"` otherwise.
+  the order of `"DAG"`, `"UG"`, `"MPDAG"`, `"PDAG"`, `"ADMG"`, `"AG"`,
+  and `"PAG"`. `"PAG"` is validated completely (see
+  [`is_pag()`](https://caugi.org/dev/reference/is_pag.md)), which is
+  exponential in the worst case, so partially oriented output that is
+  not a complete PAG, such as an RFCI graph, belongs in `"UNKNOWN"`. It
+  will default to `"UNKNOWN"` if no match is found. A graph with
+  parallel edges or self-loops resolves to `"ADMG"` if it is a valid
+  ADMG (e.g. a bow) and to `"UNKNOWN"` otherwise.
 
 - state:
 

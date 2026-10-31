@@ -28,11 +28,12 @@ as_caugi(
 - class:
 
   Character; one of `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`, `"CPDAG"`,
-  `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is only supported for
-  integer coded matrices. For a data.frame, it defaults to the
-  data.frame's `"graph_class"` attribute, which
-  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) sets,
-  if present.
+  `"ADMG"`, `"AG"`, or `"UNKNOWN"`. `"PAG"` is supported for integer
+  coded matrices, data.frames and `dagitty` objects, and is validated as
+  in [`caugi()`](https://caugi.org/dev/reference/caugi.md). For a
+  data.frame, it defaults to the data.frame's `"graph_class"` attribute,
+  which [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
+  sets, if present.
 
 - simple:
 
@@ -61,8 +62,10 @@ A `caugi` object.
 
 For matrices, `as_caugi` assumes that the rows are the `from` nodes and
 the columns are the `to` nodes. Thus, for a graph, G: A –\> B, we would
-have that `G["A", "B"] == 1` and `G["B", "A"] == 0`. For PAGs, the
-integer codes are as follows (as used in `pcalg`):
+have that `G["A", "B"] == 1` and `G["B", "A"] == 0`. A matrix that
+contains the codes `2` or `3`, or any matrix passed with
+`class = "PAG"`, is instead read in `pcalg`'s `amat.pag` mark coding,
+where `G[i, j]` is the mark at node `j` on the edge between `i` and `j`:
 
 - 0: no edge
 
@@ -71,6 +74,9 @@ integer codes are as follows (as used in `pcalg`):
 - 2: arrowhead (e.g., `A --> B` or `A o-> B`)
 
 - 3: tail (e.g., `A --o B` or `A --- B`)
+
+This holds for every `class`, so a MAG coded this way can be read with
+`class = "AG"`, and a graph with circle marks with `class = "UNKNOWN"`.
 
 ## See also
 
@@ -125,25 +131,27 @@ cg_df <- as_caugi(as.data.frame(cg), class = "DAG")
 ig2 <- igraph::graph_from_literal(A - +B, B - +A, C - +D)
 cg2 <- as_caugi(ig2, class = "PDAG", collapse = TRUE, collapse_to = "---")
 
-# coded integer matrix for PAGs (pcalg style)
+# coded integer matrix for PAGs (pcalg style). `class = "PAG"` is fully
+# validated, so the marks must be the invariant marks of a Markov
+# equivalence class; these are.
 nm <- c("A", "B", "C", "D")
 M <- matrix(0L, 4, 4, dimnames = list(nm, nm))
 
 # A --> B
-M["A", "B"] <- 2L # mark at B end
-M["B", "A"] <- 3L # mark at A end
+M["A", "B"] <- 2L # arrowhead at B
+M["B", "A"] <- 3L # tail at A
 
-# A --- C
-M["A", "C"] <- 3L
-M["C", "A"] <- 3L
+# A o-> C
+M["A", "C"] <- 2L # arrowhead at C
+M["C", "A"] <- 1L # circle at A
 
-# B o-> C
-M["B", "C"] <- 2L
-M["C", "B"] <- 1L
+# C --> B
+M["C", "B"] <- 2L # arrowhead at B
+M["B", "C"] <- 3L # tail at C
 
-# C o-o D
-M["C", "D"] <- 1L
-M["D", "C"] <- 1L
+# D o-> C
+M["D", "C"] <- 2L # arrowhead at C
+M["C", "D"] <- 1L # circle at D
 
 cg <- as_caugi(M, class = "PAG")
 ```

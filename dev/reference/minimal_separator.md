@@ -2,8 +2,8 @@
 
 Computes a minimal separator Z for sets X and Y, optionally with
 mandatory inclusions and restrictions on the separator. Supports DAGs
-(where the result is a d-separator), ADMGs, and ancestral graphs (where
-the result is an m-separator).
+(where the result is a d-separator), ADMGs, ancestral graphs and PAGs
+(where the result is an m-separator).
 
 ## Usage
 
@@ -45,7 +45,7 @@ Research 115:637-647 Available from
 
 - cg:
 
-  A `caugi` object (DAG, ADMG, or AG).
+  A `caugi` object (DAG, ADMG, AG, or PAG).
 
 - X, Y:
 
@@ -81,7 +81,9 @@ The algorithm runs in linear time O(n + m) and is unified across graph
 classes via the Bayes-ball reachability of van der Zander & Liśkiewicz
 (2020). For DAGs the algorithm specializes to FINDMINSEPINDAG; for ADMGs
 and AGs (including MAGs) it uses the general FINDMINSEP over mixed
-graphs.
+graphs. For a PAG it runs on a member MAG from
+[`pag_to_mag()`](https://caugi.org/dev/reference/pag_to_mag.md), which
+is exact since every member encodes the same m-separations.
 
 ## References
 

@@ -30,12 +30,15 @@ Other operations:
 [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md),
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
+[`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
+[`mag_to_pag()`](https://caugi.org/dev/reference/mag_to_pag.md),
 [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md),
 [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md),
 [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md),
+[`pag_to_mag()`](https://caugi.org/dev/reference/pag_to_mag.md),
 [`skeleton()`](https://caugi.org/dev/reference/skeleton.md)
 
 ## Examples
@@ -43,7 +46,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% C, B %-->% C, class = "DAG")
 moralize(cg) # A -- B, A -- C, B -- C
-#> <caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x61ed861d0260>
+#> <caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x5b8a8c6ba5f0>
 #>   graph_class: UG
 #>   nodes: A, B, C
 #>   edges: A---B, A---C, B---C

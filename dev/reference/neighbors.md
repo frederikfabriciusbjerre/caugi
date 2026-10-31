@@ -71,6 +71,8 @@ neighbours(cg, nodes = NULL, index = NULL, mode = "all")
 
   - ADMG: `"in"`, `"out"`, `"bidirected"`, `"all"`
 
+  - PAG: all modes; `"in"` and `"out"` follow `-->` edges only
+
   - UNKNOWN: all modes allowed
 
 ## Value
@@ -99,9 +101,11 @@ Other queries:
 [`is_empty_caugi()`](https://caugi.org/dev/reference/is_empty_caugi.md),
 [`is_mag()`](https://caugi.org/dev/reference/is_mag.md),
 [`is_mpdag()`](https://caugi.org/dev/reference/is_mpdag.md),
+[`is_pag()`](https://caugi.org/dev/reference/is_pag.md),
 [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md),
 [`is_simple()`](https://caugi.org/dev/reference/is_simple.md),
 [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),
+[`is_visible_edge()`](https://caugi.org/dev/reference/is_visible_edge.md),
 [`m_separated()`](https://caugi.org/dev/reference/m_separated.md),
 [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md),
 [`nodes()`](https://caugi.org/dev/reference/nodes.md),

@@ -77,8 +77,9 @@ as.data.frame() (rows with an NA edge are isolated nodes)."><meta property="og:i
 
 <dt id="arg-class">class<a class="anchor" aria-label="anchor" href="#arg-class"></a></dt>
 <dd><p>Character; one of <code>"DAG"</code>, <code>"UG"</code>, <code>"PDAG"</code>, <code>"MPDAG"</code>,
-<code>"CPDAG"</code>, <code>"ADMG"</code>, <code>"AG"</code>, or <code>"UNKNOWN"</code>. <code>"PAG"</code> is only supported for
-integer coded matrices. For a data.frame, it defaults to the data.frame's
+<code>"CPDAG"</code>, <code>"ADMG"</code>, <code>"AG"</code>, or <code>"UNKNOWN"</code>. <code>"PAG"</code> is supported for
+integer coded matrices, data.frames and <code>dagitty</code> objects, and is validated
+as in <code><a href="caugi.html">caugi()</a></code>. For a data.frame, it defaults to the data.frame's
 <code>"graph_class"</code> attribute, which <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> sets, if present.</p></dd>
 
 
@@ -110,11 +111,15 @@ Should be a registered symmetrical edge glyph. Default is <code>"---"</code>.</p
     <p>For matrices, <code>as_caugi</code> assumes that the rows are the <code>from</code> nodes
 and the columns are the <code>to</code> nodes. Thus, for a graph, G: A –&gt; B, we would
 have that <code>G["A", "B"] == 1</code> and <code>G["B", "A"] == 0</code>.
-For PAGs, the integer codes are as follows (as used in <code>pcalg</code>):</p><ul><li><p>0: no edge</p></li>
+A matrix that contains the codes <code>2</code> or <code>3</code>, or any matrix passed with
+<code>class = "PAG"</code>, is instead read in <code>pcalg</code>'s <code>amat.pag</code> mark coding, where
+<code>G[i, j]</code> is the mark at node <code>j</code> on the edge between <code>i</code> and <code>j</code>:</p><ul><li><p>0: no edge</p></li>
 <li><p>1: circle (e.g., <code>A o-o B</code> or <code>A --o B</code>)</p></li>
 <li><p>2: arrowhead (e.g., <code>A --&gt; B</code> or <code>A o-&gt; B</code>)</p></li>
 <li><p>3: tail (e.g., <code>A --o B</code> or <code>A --- B</code>)</p></li>
-</ul></div>
+</ul><p>This holds for every <code>class</code>, so a MAG coded this way can be read with
+<code>class = "AG"</code>, and a graph with circle marks with <code>class = "UNKNOWN"</code>.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other conversions:
@@ -168,25 +173,27 @@ For PAGs, the integer codes are as follows (as used in <code>pcalg</code>):</p><
 <span class="r-in"><span><span class="va">ig2</span> <span class="op">&lt;-</span> <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/graph_from_literal.html" class="external-link">graph_from_literal</a></span><span class="op">(</span><span class="va">A</span> <span class="op">-</span> <span class="op">+</span><span class="va">B</span>, <span class="va">B</span> <span class="op">-</span> <span class="op">+</span><span class="va">A</span>, <span class="va">C</span> <span class="op">-</span> <span class="op">+</span><span class="va">D</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cg2</span> <span class="op">&lt;-</span> <span class="fu">as_caugi</span><span class="op">(</span><span class="va">ig2</span>, class <span class="op">=</span> <span class="st">"PDAG"</span>, collapse <span class="op">=</span> <span class="cn">TRUE</span>, collapse_to <span class="op">=</span> <span class="st">"---"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># coded integer matrix for PAGs (pcalg style)</span></span></span>
+<span class="r-in"><span><span class="co"># coded integer matrix for PAGs (pcalg style). `class = "PAG"` is fully</span></span></span>
+<span class="r-in"><span><span class="co"># validated, so the marks must be the invariant marks of a Markov</span></span></span>
+<span class="r-in"><span><span class="co"># equivalence class; these are.</span></span></span>
 <span class="r-in"><span><span class="va">nm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">4</span>, <span class="fl">4</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">nm</span>, <span class="va">nm</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A --&gt; B</span></span></span>
-<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2L</span> <span class="co"># mark at B end</span></span></span>
-<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"B"</span>, <span class="st">"A"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">3L</span> <span class="co"># mark at A end</span></span></span>
+<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2L</span> <span class="co"># arrowhead at B</span></span></span>
+<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"B"</span>, <span class="st">"A"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">3L</span> <span class="co"># tail at A</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># A --- C</span></span></span>
-<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"A"</span>, <span class="st">"C"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">3L</span></span></span>
-<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"C"</span>, <span class="st">"A"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">3L</span></span></span>
+<span class="r-in"><span><span class="co"># A o-&gt; C</span></span></span>
+<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"A"</span>, <span class="st">"C"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2L</span> <span class="co"># arrowhead at C</span></span></span>
+<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"C"</span>, <span class="st">"A"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span> <span class="co"># circle at A</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># B o-&gt; C</span></span></span>
-<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"B"</span>, <span class="st">"C"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2L</span></span></span>
-<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"C"</span>, <span class="st">"B"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span></span></span>
+<span class="r-in"><span><span class="co"># C --&gt; B</span></span></span>
+<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"C"</span>, <span class="st">"B"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2L</span> <span class="co"># arrowhead at B</span></span></span>
+<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"B"</span>, <span class="st">"C"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">3L</span> <span class="co"># tail at C</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># C o-o D</span></span></span>
-<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span></span></span>
-<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"D"</span>, <span class="st">"C"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span></span></span>
+<span class="r-in"><span><span class="co"># D o-&gt; C</span></span></span>
+<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"D"</span>, <span class="st">"C"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2L</span> <span class="co"># arrowhead at C</span></span></span>
+<span class="r-in"><span><span class="va">M</span><span class="op">[</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span> <span class="co"># circle at D</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu">as_caugi</span><span class="op">(</span><span class="va">M</span>, class <span class="op">=</span> <span class="st">"PAG"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

@@ -80,6 +80,10 @@
 
   Is the `caugi` graph an MPDAG?
 
+- [`is_pag()`](https://caugi.org/dev/reference/is_pag.md) :
+
+  Is the `caugi` graph a PAG?
+
 - [`is_pdag()`](https://caugi.org/dev/reference/is_pdag.md) :
 
   Is the `caugi` graph a PDAG?
@@ -92,8 +96,11 @@
 
   Is the `caugi` graph an UG?
 
+- [`is_visible_edge()`](https://caugi.org/dev/reference/is_visible_edge.md)
+  : Is a directed edge in a MAG or PAG visible?
+
 - [`m_separated()`](https://caugi.org/dev/reference/m_separated.md) :
-  M-separation test for AGs and ADMGs
+  M-separation test for AGs, PAGs and ADMGs
 
 - [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md)
   :
@@ -248,6 +255,9 @@
 - [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
   : Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
 
+- [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md) :
+  Construct the PAG of a DAG with latent variables
+
 - [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md)
   : Enumerate all DAGs in a Markov equivalence class
 
@@ -256,6 +266,9 @@
 
 - [`latent_project()`](https://caugi.org/dev/reference/latent_project.md)
   : Project latent variables from a DAG to an ADMG
+
+- [`mag_to_pag()`](https://caugi.org/dev/reference/mag_to_pag.md) :
+  Construct the PAG of a MAG's Markov equivalence class
 
 - [`meek_closure()`](https://caugi.org/dev/reference/meek_closure.md) :
   Apply Meek closure to a PDAG
@@ -269,6 +282,9 @@
 
 - [`normalize_latent_structure()`](https://caugi.org/dev/reference/normalize_latent_structure.md)
   : Normalize latent structure in a DAG
+
+- [`pag_to_mag()`](https://caugi.org/dev/reference/pag_to_mag.md) :
+  Construct a MAG from a PAG
 
 - [`skeleton()`](https://caugi.org/dev/reference/skeleton.md) : Get the
   skeleton of a graph
