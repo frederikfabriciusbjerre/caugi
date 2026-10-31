@@ -178,15 +178,13 @@ test_that("the class decides the default for multi-edges and self-loops", {
   expect_s7_class(caugi(A %-->% B, A %<->% B, class = "UNKNOWN"), caugi)
   expect_s7_class(caugi(A %-->% B, A %o->% A, class = "UNKNOWN"), caugi)
   expect_s7_class(caugi(A %-->% B, B %-->% A, class = "UNKNOWN"), caugi)
-  expect_error(
-    caugi(
-      from = c("A", "A"),
-      edge = c("-->", "-->"),
-      to = c("B", "B"),
-      class = "UNKNOWN"
-    ),
-    "Duplicate edge"
+  dup <- caugi(
+    from = c("A", "A"),
+    edge = c("-->", "-->"),
+    to = c("B", "B"),
+    class = "UNKNOWN"
   )
+  expect_equal(nrow(edges(dup)), 1L)
 
   # ADMG: bows are fine, self-loops are not
   bow <- caugi(A %-->% B, A %<->% B, class = "ADMG")
