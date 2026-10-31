@@ -304,6 +304,14 @@
   `X`: for `X <-- U --> Y` it returned the empty set, and now errors because
   the effect is zero, pointing to `type = "backdoor"`, which returns `U`.
 
+## Deprecations
+
+* The `force_check` argument of `is_acyclic()`, `is_simple()`, `is_dag()`,
+  `is_pdag()`, `is_ug()`, `is_admg()`, `is_ag()` and `is_mag()` is deprecated
+  and will be removed in caugi 2.0.0. A graph's class is validated when the
+  graph is built, so there is nothing to force. Supplying it still works but
+  warns.
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.

@@ -1043,7 +1043,7 @@ test_that("meek_closure matches causal-learn style multi-rule regression", {
     norm_edges(skeleton(g_closed)),
     norm_edges(skeleton(g))
   )
-  expect_true(is_acyclic(g_closed, force_check = TRUE))
+  expect_true(is_acyclic(g_closed))
   expect_true(is_mpdag(g_closed))
 })
 

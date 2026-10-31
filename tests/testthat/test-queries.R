@@ -28,13 +28,6 @@ test_that("acyclicity check works", {
   expect_true(is_acyclic(cg))
 })
 
-test_that("is_acyclic forces check when requested", {
-  cg <- caugi(A %-->% B, B %-->% C, C %-->% D, class = "DAG")
-
-  expect_true(is_acyclic(cg))
-  expect_true(is_acyclic(cg, force_check = TRUE))
-})
-
 test_that("is_acyclic fast path handles MPDAG class", {
   cg <- caugi(
     A %---% B,
@@ -43,13 +36,11 @@ test_that("is_acyclic fast path handles MPDAG class", {
     class = "MPDAG"
   )
   expect_true(is_acyclic(cg))
-  expect_true(is_acyclic(cg, force_check = TRUE))
 })
 
 test_that("is_simple checks the graph structure", {
   cg_simple <- caugi(A %-->% B, class = "DAG")
   expect_true(is_simple(cg_simple))
-  expect_true(is_simple(cg_simple, force_check = TRUE))
 
   cg_nonsimple <- caugi(
     A %-->% B,
@@ -57,7 +48,6 @@ test_that("is_simple checks the graph structure", {
     class = "UNKNOWN"
   )
   expect_false(is_simple(cg_nonsimple))
-  expect_false(is_simple(cg_nonsimple, force_check = TRUE))
 
   # UNKNOWN allows multi-edges, but this graph has none
   cg_unknown <- caugi(A %-->% B, class = "UNKNOWN")
@@ -482,7 +472,7 @@ test_that("same_nodes works", {
 test_that("is_ug works", {
   cg <- caugi(A %---% B, B %---% C, C %---% D, class = "UG")
   expect_true(is_ug(cg))
-  expect_true(is_ug(cg, force_check = TRUE))
+  expect_true(is_ug(cg))
 
   cg <- caugi(A %-->% B, B %---% C, C %---% D, class = "PDAG")
   expect_false(is_ug(cg))
