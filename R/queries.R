@@ -1341,11 +1341,9 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
 #' passes through `Z`.
 #'
 #' @param cg A `caugi` object of class AG, PAG, ADMG, DAG, or UG.
-#' @param X,Y,Z Character vectors of node names, or `NULL`. Use `*_index` to
-#'   pass 1-based indices. If `Z` is `NULL` or missing, no nodes are conditioned
-#'   on.
-#' @param X_index,Y_index,Z_index Optional numeric 1-based indices (exclusive
-#'   with `X`,`Y`,`Z` respectively).
+#' @param X,Y,Z Character vectors of node names, or `NULL`. If `Z` is `NULL`
+#'   or missing, no nodes are conditioned on.
+#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns A logical value; `TRUE` if `X` and `Y` are m-separated given `Z`.
 #'
@@ -1374,6 +1372,7 @@ m_separated <- function(
   Z_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
 
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
@@ -1408,10 +1407,8 @@ m_separated <- function(
 #'
 #' @param cg A `caugi` object of class `"AG"` that is a MAG, or of class
 #'   `"PAG"`.
-#' @param from,to Node names. Use `from_index`/`to_index` to pass 1-based
-#'   indices instead.
-#' @param from_index,to_index Optional 1-based indices, exclusive with `from`
-#'   and `to` respectively.
+#' @param from,to Node names.
+#' @param from_index,to_index Deprecated; pass node names instead.
 #'
 #' @returns `TRUE` if the edge `from --> to` is visible, otherwise `FALSE`.
 #'
@@ -1445,6 +1442,7 @@ is_visible_edge <- function(
   to_index = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
   from_idx0 <- .resolve_idx0_mget(cg@session, from, from_index)
   to_idx0 <- .resolve_idx0_mget(cg@session, to, to_index)
   if (length(from_idx0) != 1L || length(to_idx0) != 1L) {

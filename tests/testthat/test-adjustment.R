@@ -19,39 +19,6 @@ test_that("d-separation checks", {
   expect_false(d_separated(adjustment_set_cg, "X", "Y", Z = "D")) # backdoor still open
   expect_true(d_separated(adjustment_set_cg, "X", "Y", Z = c("A", "D"))) # backdoor and causal both blocked
   expect_true(d_separated(adjustment_set_cg, "X", "Y", Z = c("K", "D"))) # backdoor and causal both blocked
-
-  # now with indexes
-  expect_false(d_separated(adjustment_set_cg, X_index = 2L, Y_index = 6L)) # backdoor via A-->K-->Y and causal X-->D-->Y
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 3L
-  )) # causal path still open
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 4L
-  )) # causal path still open
-  expect_false(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = 5L
-  )) # backdoor still open
-  expect_true(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = c(3L, 5L)
-  ))
-  expect_true(d_separated(
-    adjustment_set_cg,
-    X_index = 2L,
-    Y_index = 6L,
-    Z_index = c(4L, 5L)
-  ))
 })
 
 test_that("adjustment_set(type = 'parents') returns Pa(X) \\ {X,Y}", {
@@ -196,8 +163,8 @@ test_that("backdoor and d-separation functions check X and Y", {
     "X and Y must be disjoint."
   )
   expect_error(
-    d_separated(adjustment_set_cg, X_index = c(1L, 2L), Z = "A"),
-    "Y \\(or Y_index\\) must be provided."
+    d_separated(adjustment_set_cg, X = c("C", "X"), Z = "A"),
+    "Y must be provided."
   )
   for (fn in list(is_valid_backdoor, all_backdoor_sets, d_separated)) {
     expect_error(
@@ -205,7 +172,7 @@ test_that("backdoor and d-separation functions check X and Y", {
       "`X` must name at least one node"
     )
     expect_error(
-      fn(adjustment_set_cg, X = "X", Y_index = integer(0)),
+      fn(adjustment_set_cg, X = "X", Y = character(0)),
       "`Y` must name at least one node"
     )
   }
@@ -221,7 +188,7 @@ test_that("is_valid_backdoor rejects a Z that contains the outcome", {
 test_that("adjust functions fails with faulty input", {
   expect_error(
     adjustment_set(adjustment_set_cg, X = "X", Y = NULL, type = "parents"),
-    "Y \\(or Y_index\\) must be provided"
+    "Y must be provided"
   )
   expect_error(
     adjustment_set(adjustment_set_cg, X = c("X", "Y"), Y = "Y"),
@@ -237,24 +204,6 @@ test_that("adjust functions fails with faulty input", {
       "`Y` must name at least one node"
     )
   }
-  expect_error(
-    adjustment_set(adjustment_set_cg, X = "X", Y_index = integer(0)),
-    "`Y` must name at least one node"
-  )
-  expect_error(
-    adjustment_set(
-      adjustment_set_cg,
-      X = "X",
-      Y = "Y",
-      Y_index = 6L,
-      type = "parent"
-    ),
-    "Provide either a node name or node index"
-  )
-  expect_error(
-    d_separated(adjustment_set_cg, X = "X", Y = "Y", Z = "A", Z_index = 3L),
-    "Provide either a node name or node index"
-  )
 })
 
 test_that("mediator-only graph keeps empty adjustment set and rejects mediator", {

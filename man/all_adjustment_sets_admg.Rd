@@ -19,7 +19,7 @@ all_adjustment_sets_admg(
 
 \item{X, Y}{Node names (can be vectors for multiple treatments/outcomes).}
 
-\item{X_index, Y_index}{Optional 1-based indices.}
+\item{X_index, Y_index}{Deprecated; pass node names instead.}
 
 \item{minimal}{Logical; if \code{TRUE} (default), only minimal sets are returned.}
 

@@ -21,7 +21,7 @@ is_valid_backdoor(
 
 \item{Z}{Optional node set for conditioning}
 
-\item{X_index, Y_index, Z_index}{Optional 1-based indices.}
+\item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
 Logical value indicating if backdoor is valid or not.

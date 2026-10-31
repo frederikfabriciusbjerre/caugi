@@ -21,7 +21,7 @@ is_valid_adjustment_admg(
 
 \item{Z}{Conditioning set (character vector of node names).}
 
-\item{X_index, Y_index, Z_index}{Optional 1-based indices.}
+\item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
 Logical value indicating if the adjustment set is valid.

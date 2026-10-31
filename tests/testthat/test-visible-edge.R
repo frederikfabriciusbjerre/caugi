@@ -53,7 +53,6 @@ test_that("is_visible_edge reads the pcalg example", {
   expect_false(is_visible_edge(mag, "A", "B"))
   expect_true(is_visible_edge(mag, "B", "D"))
   expect_true(is_visible_edge(mag, "C", "D"))
-  expect_true(is_visible_edge(mag, from_index = 3, to_index = 4))
   expect_false(is_visible_edge(mag, "D", "C"))
 })
 
@@ -70,7 +69,6 @@ test_that("is_visible_edge validates its input", {
   mag <- caugi(A %-->% B, class = "AG")
   expect_error(is_visible_edge(mag, c("A", "B"), "B"), "exactly one node")
   expect_error(is_visible_edge(mag, "A"), "exactly one node")
-  expect_error(is_visible_edge(mag, from_index = 3, to_index = 1), "Index 3")
   expect_error(
     is_visible_edge(caugi(A %-->% B, class = "DAG"), "A", "B"),
     "only defined for MAGs and PAGs"

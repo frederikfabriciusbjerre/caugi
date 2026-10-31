@@ -19,7 +19,7 @@ all_backdoor_sets(
 
 \item{X, Y}{Node names; one or more each, and disjoint.}
 
-\item{X_index, Y_index}{Optional 1-based indices (exclusive with name args).}
+\item{X_index, Y_index}{Deprecated; pass node names instead.}
 
 \item{minimal}{Logical; if \code{TRUE} (default), only minimal sets are returned.}
 
