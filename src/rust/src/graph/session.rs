@@ -441,20 +441,54 @@ impl GraphSession {
     }
 
     pub fn set_edges(&mut self, edges: EdgeBuffer) {
-        self.edges = edges;
+        self.edges = self.canonical_edges(&edges);
         self.invalidate_core();
+    }
+
+    fn is_symmetric(&self, etype: u8) -> bool {
+        self.registry
+            .specs
+            .get(etype as usize)
+            .is_some_and(|s| s.symmetric)
+    }
+
+    /// A symmetric edge runs from its lower to its higher node, so both ways
+    /// of writing it compare equal.
+    fn canonical(&self, u: u32, v: u32, etype: u8) -> (u32, u32, u8) {
+        if v < u && self.is_symmetric(etype) {
+            (v, u, etype)
+        } else {
+            (u, v, etype)
+        }
+    }
+
+    /// `edges` in canonical form, without duplicates.
+    fn canonical_edges(&self, edges: &EdgeBuffer) -> EdgeBuffer {
+        let mut out = EdgeBuffer::with_capacity(edges.len());
+        let mut seen = FxHashSet::with_capacity_and_hasher(edges.len(), Default::default());
+        for i in 0..edges.len() {
+            let (u, v, t) = self.canonical(edges.from[i], edges.to[i], edges.etype[i]);
+            if seen.insert((u, v, t)) {
+                out.push(u, v, t);
+            }
+        }
+        out
     }
 
     /// Copy the session without the requested edges, validating its graph class.
     ///
-    /// Typed requests match the stored orientation. Untyped pairs remove every
-    /// edge between the endpoints in either direction, as in R's `remove_edges`.
+    /// Typed requests match a symmetric edge whichever way it is written.
+    /// Untyped pairs remove every edge between the endpoints in either
+    /// direction, as in R's `remove_edges`.
     pub fn without_edges(
         &self,
         typed: &[(u32, u32, u8)],
         pairs: &[(u32, u32)],
     ) -> Result<Self, String> {
-        let typed: FxHashSet<_> = typed.iter().copied().collect();
+        let typed: FxHashSet<_> = typed
+            .iter()
+            .map(|&(u, v, t)| self.canonical(u, v, t))
+            .collect();
         let pairs: FxHashSet<_> = pairs
             .iter()
             .map(|&(u, v)| if u <= v { (u, v) } else { (v, u) })
@@ -462,9 +496,8 @@ impl GraphSession {
         let mut kept = EdgeBuffer::with_capacity(self.edges.len());
         let mut seen = FxHashSet::default();
         for i in 0..self.edges.len() {
-            let u = self.edges.from[i];
-            let v = self.edges.to[i];
-            let t = self.edges.etype[i];
+            let (u, v, t) =
+                self.canonical(self.edges.from[i], self.edges.to[i], self.edges.etype[i]);
             let pair = if u <= v { (u, v) } else { (v, u) };
             if !typed.contains(&(u, v, t)) && !pairs.contains(&pair) && seen.insert((u, v, t)) {
                 kept.push(u, v, t);
@@ -493,19 +526,19 @@ impl GraphSession {
         Ok(out)
     }
 
+    /// Replace the edges between the endpoints of each new edge: all of them in
+    /// a simple graph or for a symmetric new edge, else those from `u` to `v`,
+    /// so `v --> u` survives setting `u --> v`. An existing symmetric edge runs
+    /// both ways, so it is always replaced.
     pub fn replace_edges_for_pairs(&mut self, new_edges: EdgeBuffer) {
-        let mut remove_pairs: FxHashSet<(u32, u32)> =
-            FxHashSet::with_capacity_and_hasher(new_edges.len(), Default::default());
-        if self.simple {
-            for i in 0..new_edges.len() {
-                let u = new_edges.from[i];
-                let v = new_edges.to[i];
-                let pair = if u <= v { (u, v) } else { (v, u) };
-                remove_pairs.insert(pair);
-            }
-        } else {
-            for i in 0..new_edges.len() {
-                remove_pairs.insert((new_edges.from[i], new_edges.to[i]));
+        let new_edges = self.canonical_edges(&new_edges);
+        let mut occupied: FxHashSet<(u32, u32)> =
+            FxHashSet::with_capacity_and_hasher(2 * new_edges.len(), Default::default());
+        for i in 0..new_edges.len() {
+            let (u, v) = (new_edges.from[i], new_edges.to[i]);
+            occupied.insert((u, v));
+            if self.simple || self.is_symmetric(new_edges.etype[i]) {
+                occupied.insert((v, u));
             }
         }
 
@@ -516,15 +549,10 @@ impl GraphSession {
         );
 
         for i in 0..self.edges.len() {
-            let u = self.edges.from[i];
-            let v = self.edges.to[i];
-            let t = self.edges.etype[i];
-            let remove = if self.simple {
-                let pair = if u <= v { (u, v) } else { (v, u) };
-                remove_pairs.contains(&pair)
-            } else {
-                remove_pairs.contains(&(u, v))
-            };
+            let (u, v, t) =
+                self.canonical(self.edges.from[i], self.edges.to[i], self.edges.etype[i]);
+            let remove =
+                occupied.contains(&(u, v)) || (self.is_symmetric(t) && occupied.contains(&(v, u)));
             if !remove && seen.insert((u, v, t)) {
                 kept.push(u, v, t);
             }
@@ -544,8 +572,7 @@ impl GraphSession {
     }
 
     pub fn set_edges_from_vecs(&mut self, from: Vec<u32>, to: Vec<u32>, etype: Vec<u8>) {
-        self.edges = EdgeBuffer { from, to, etype };
-        self.invalidate_core();
+        self.set_edges(EdgeBuffer { from, to, etype });
     }
 
     /// The cached view stays if it is of the new class, as after
@@ -590,7 +617,7 @@ impl GraphSession {
         self.simple = simple;
         self.graph_class = class;
         self.registry = registry;
-        self.edges = edges;
+        self.edges = self.canonical_edges(&edges);
         self.name_to_index = Self::build_name_to_index(&names);
         self.names = names;
         self.invalidate_core();
@@ -1009,25 +1036,6 @@ impl GraphSession {
                     self.format_index(from),
                     self.format_index(to)
                 ));
-            }
-        }
-
-        if let Some(rest) = err.strip_prefix("Duplicate edge ") {
-            let parts: Vec<&str> = rest.split(" -> ").collect();
-            if parts.len() == 2 {
-                let from: u32 = parts[0].parse().ok()?;
-                let tail = parts[1];
-                let parts2: Vec<&str> = tail.split(" (type ").collect();
-                if parts2.len() == 2 {
-                    let to: u32 = parts2[0].parse().ok()?;
-                    let edge_type = parts2[1].trim_end_matches(')');
-                    return Some(format!(
-                        "Duplicate edge {} -> {} (type {})",
-                        self.format_index(from),
-                        self.format_index(to),
-                        edge_type
-                    ));
-                }
             }
         }
 
@@ -1457,10 +1465,11 @@ mod tests {
         repl.push(1, 0, u);
         repl.push(1, 0, u); // duplicate in replacement input
         simple.replace_edges_for_pairs(repl);
-        assert_eq!(simple.edge_buffer().from, vec![1, 1]);
-        assert_eq!(simple.edge_buffer().to, vec![2, 0]);
+        assert_eq!(simple.edge_buffer().from, vec![1, 0]);
+        assert_eq!(simple.edge_buffer().to, vec![2, 1]);
         assert_eq!(simple.edge_buffer().etype, vec![d, u]);
 
+        let c = reg.code_of("o->").unwrap();
         let mut non_simple = GraphSession::new(&reg, 3, false, GraphClass::Unknown);
         let mut old2 = EdgeBuffer::new();
         old2.push(0, 1, d);
@@ -1468,12 +1477,21 @@ mod tests {
         old2.push(0, 1, d); // duplicate to exercise dedup
         non_simple.set_edges(old2);
 
+        // A directed replacement keeps the edge in the opposite direction...
         let mut repl2 = EdgeBuffer::new();
-        repl2.push(0, 1, u);
+        repl2.push(0, 1, c);
         non_simple.replace_edges_for_pairs(repl2);
         assert_eq!(non_simple.edge_buffer().from, vec![1, 0]);
         assert_eq!(non_simple.edge_buffer().to, vec![0, 1]);
-        assert_eq!(non_simple.edge_buffer().etype, vec![d, u]);
+        assert_eq!(non_simple.edge_buffer().etype, vec![d, c]);
+
+        // ...but a symmetric one runs both ways, so it replaces both.
+        let mut repl3 = EdgeBuffer::new();
+        repl3.push(1, 0, u);
+        non_simple.replace_edges_for_pairs(repl3);
+        assert_eq!(non_simple.edge_buffer().from, vec![0]);
+        assert_eq!(non_simple.edge_buffer().to, vec![1]);
+        assert_eq!(non_simple.edge_buffer().etype, vec![u]);
     }
 
     #[test]
@@ -1499,7 +1517,7 @@ mod tests {
         assert!(s.built_view().is_some());
 
         let reversed = s.without_edges(&[(1, 0, b)], &[]).unwrap();
-        assert_eq!(reversed.edge_buffer().len(), 3);
+        assert_eq!(reversed.edge_buffer().etype, vec![d, d]);
         let empty = s.without_edges(&[], &[(1, 0)]).unwrap();
         assert!(empty.edge_buffer().is_empty());
         assert_eq!(empty.n(), 3);
@@ -1804,12 +1822,6 @@ mod tests {
         );
         assert_eq!(
             session
-                .map_error_str("Duplicate edge 0 -> 1 (type -->)")
-                .unwrap(),
-            "Duplicate edge A -> B (type -->)"
-        );
-        assert_eq!(
-            session
                 .map_error_str(
                     "Anterior constraint violated: node 1 has arrowhead from 0 but is an anterior of 2"
                 )
@@ -1838,13 +1850,6 @@ mod tests {
         assert!(session.map_error_str("Node 1 out of range").is_none());
         assert!(session
             .map_error_str("Parallel edges not allowed in simple graphs (0->1)")
-            .is_none());
-        assert!(session.map_error_str("Duplicate edge 0 -> 1").is_none());
-        assert!(session
-            .map_error_str("Duplicate edge 0 -> 1 (kind -->)")
-            .is_none());
-        assert!(session
-            .map_error_str("Duplicate edge 0=>1 (type -->)")
             .is_none());
         assert!(session
             .map_error_str("Anterior constraint violated: node 1 has arrowhead from 0")
@@ -1922,15 +1927,6 @@ mod tests {
         parallel.set_edges(e2);
         let err2 = parallel.core().unwrap_err();
         assert!(err2.contains("Parallel edges not allowed in simple graphs (A -> B)"));
-
-        let mut duplicate = GraphSession::new(&reg, 2, false, GraphClass::Unknown);
-        duplicate.set_names(vec!["A".into(), "B".into()]);
-        let mut e3 = EdgeBuffer::new();
-        e3.push(0, 1, d);
-        e3.push(0, 1, d);
-        duplicate.set_edges(e3);
-        let err3 = duplicate.core().unwrap_err();
-        assert!(err3.contains("Duplicate edge A -> B (type"));
 
         let mut oob = GraphSession::new(&reg, 2, true, GraphClass::Unknown);
         oob.set_names(vec!["A".into(), "B".into()]);

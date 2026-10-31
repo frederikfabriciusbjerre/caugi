@@ -185,7 +185,10 @@ test_that("edge removal preserves bows, directions, nodes, and its input", {
       edges(out),
       original[which(!(original$from == "A" & original$edge == "-->"))]
     )
-    expect_equal(edges(remove_edges(cg, A %<->% B)), original)
+    expect_equal(
+      edges(remove_edges(cg, A %<->% B)),
+      original[which(original$edge == "-->")]
+    )
   }
 })
 
@@ -710,12 +713,22 @@ test_that("set_edges should not replace other edges when non-symmetric edge adde
 })
 
 test_that("set_edges preserves opposite-direction edges in non-simple graphs", {
-  cg <- caugi(A %-->% B, B %<->% A, class = "UNKNOWN")
+  # B <-> A runs both ways, so setting A o-> B replaces it; B --> A survives.
+  cg <- caugi(A %-->% B, B %-->% A, B %<->% A, class = "UNKNOWN")
   cg_new <- set_edges(cg, A %o->% B)
 
-  cg_correct <- caugi(A %o->% B, B %<->% A, class = "UNKNOWN")
+  cg_correct <- caugi(A %o->% B, B %-->% A, class = "UNKNOWN")
 
   expect_equivalent(cg_new, cg_correct)
+})
+
+test_that("symmetric edges match whichever way they are written", {
+  ug <- caugi(A %---% B, class = "UG")
+  expect_equal(edges(add_edges(ug, B %---% A)), edges(ug))
+  expect_equal(edges(caugi(A %---% B, B %---% A, class = "UG")), edges(ug))
+  expect_equal(nrow(edges(remove_edges(ug, B %---% A))), 0L)
+  admg <- caugi(A %<->% B, class = "ADMG")
+  expect_equal(edges(set_edges(admg, B %<->% A)), edges(admg))
 })
 
 test_that("replace-action branches in .update_caugi are covered", {
