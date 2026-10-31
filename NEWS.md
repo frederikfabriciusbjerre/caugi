@@ -320,6 +320,11 @@
   and will be removed in caugi 2.0.0. Pass node names instead, e.g.
   `X = nodes(cg)$name[i]`. Supplying them still works but warns (#360).
 
+* The `use_open_graph_definition` option of `caugi_options()` is deprecated
+  and will be removed in caugi 2.0.0. Pass the `open` argument to
+  `ancestors()`, `descendants()`, `anteriors()` and `posteriors()` instead.
+  Setting it to `FALSE` still works but warns (#364).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.

@@ -513,7 +513,7 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 
   # Pre-compute anteriors for all relevant nodes
   nodes_for_anteriors <- union(remaining_nodes, cond_vars)
-  anteriors_list <- anteriors(cg, nodes_for_anteriors)
+  anteriors_list <- anteriors(cg, nodes_for_anteriors, open = TRUE)
   if (!is.list(anteriors_list)) {
     # Single node case: wrap in named list
     anteriors_list <- .set_names(list(anteriors_list), nodes_for_anteriors)

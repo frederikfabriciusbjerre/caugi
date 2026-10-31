@@ -926,9 +926,10 @@ neighbours <- neighbors
 #' @title Get ancestors of nodes in a `caugi`
 #'
 #' @inheritParams parents
-#' @param open Boolean. Determines how the graph is interpreted when retrieving ancestors.
-#'   Default is taken from `caugi_options("use_open_graph_definition")`,
-#'   which by default is `r caugi_options("use_open_graph_definition")`.
+#' @param open Logical; if `TRUE` (default), each queried node is left out
+#'   of its own ancestors; if `FALSE`, it is included. The default comes
+#'   from the deprecated `use_open_graph_definition` option of
+#'   [caugi_options()].
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -966,9 +967,10 @@ formals(ancestors) <- alist(
 #' @title Get descendants of nodes in a `caugi`
 #'
 #' @inheritParams parents
-#' @param open Boolean. Determines how the graph is interpreted when retrieving descendants.
-#'   Default is taken from `caugi_options("use_open_graph_definition")`,
-#'   which by default is `r caugi_options("use_open_graph_definition")`.
+#' @param open Logical; if `TRUE` (default), each queried node is left out
+#'   of its own descendants; if `FALSE`, it is included. The default comes
+#'   from the deprecated `use_open_graph_definition` option of
+#'   [caugi_options()].
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -1016,9 +1018,10 @@ formals(descendants) <- alist(
 #'
 #' @inheritParams parents
 #' @param cg A `caugi` object of class DAG or PDAG.
-#' @param open Boolean. Determines how the graph is interpreted when retrieving anteriors.
-#'   Default is taken from `caugi_options("use_open_graph_definition")`,
-#'   which by default is `r caugi_options("use_open_graph_definition")`.
+#' @param open Logical; if `TRUE` (default), each queried node is left out
+#'   of its own anteriors; if `FALSE`, it is included. The default comes
+#'   from the deprecated `use_open_graph_definition` option of
+#'   [caugi_options()].
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -1073,9 +1076,10 @@ formals(anteriors) <- alist(
 #'
 #' @inheritParams parents
 #' @param cg A `caugi` object of class DAG, PDAG, or AG.
-#' @param open Boolean. Determines how the graph is interpreted when retrieving posteriors.
-#'   Default is taken from `caugi_options("use_open_graph_definition")`,
-#'   which by default is `r caugi_options("use_open_graph_definition")`.
+#' @param open Logical; if `TRUE` (default), each queried node is left out
+#'   of its own posteriors; if `FALSE`, it is included. The default comes
+#'   from the deprecated `use_open_graph_definition` option of
+#'   [caugi_options()].
 #'
 #' @returns Either a character vector of node names (if a single node is
 #'   requested) or a list of character vectors (if multiple nodes are requested).

@@ -18,9 +18,10 @@ ancestors(
 
 \item{index}{A vector of node indexes.}
 
-\item{open}{Boolean. Determines how the graph is interpreted when retrieving ancestors.
-Default is taken from \code{caugi_options("use_open_graph_definition")},
-which by default is TRUE.}
+\item{open}{Logical; if \code{TRUE} (default), each queried node is left out
+of its own ancestors; if \code{FALSE}, it is included. The default comes
+from the deprecated \code{use_open_graph_definition} option of
+\code{\link[=caugi_options]{caugi_options()}}.}
 }
 \value{
 Either a character vector of node names (if a single node is
