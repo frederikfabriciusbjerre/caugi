@@ -1345,8 +1345,8 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
 #' passes through `Z`.
 #'
 #' @param cg A `caugi` object of class AG, PAG, ADMG, DAG, or UG.
-#' @param X,Y,Z Character vectors of node names, or `NULL`. If `Z` is `NULL`
-#'   or missing, no nodes are conditioned on.
+#' @param X,Y,Z Disjoint character vectors of node names, or `NULL`. If `Z`
+#'   is `NULL` or missing, no nodes are conditioned on.
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns A logical value; `TRUE` if `X` and `Y` are m-separated given `Z`.
@@ -1381,6 +1381,7 @@ m_separated <- function(
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  .check_disjoint(X_idx0, Y_idx0, Z_idx0)
 
   rs_m_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }

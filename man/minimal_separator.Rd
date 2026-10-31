@@ -39,9 +39,10 @@ minimal_d_separator(
 \arguments{
 \item{cg}{A \code{caugi} object (DAG, ADMG, AG, or PAG).}
 
-\item{X, Y}{Character vectors of node names.}
+\item{X, Y}{Disjoint character vectors of node names.}
 
-\item{I}{Nodes that must be included in the separator.}
+\item{I}{Nodes that must be included in the separator, disjoint from \code{X}
+and \code{Y}.}
 
 \item{R}{Nodes allowed in the separator. If \code{NULL}, uses all nodes excluding
 X and Y.}

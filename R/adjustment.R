@@ -8,8 +8,8 @@
 #' in `Y` given `Z` in a DAG.
 #'
 #' @param cg A `caugi` object.
-#' @param X,Y,Z Character vectors of node names, or `NULL`. If `Z` is `NULL`
-#'   or missing, no nodes are conditioned on.
+#' @param X,Y,Z Disjoint character vectors of node names, or `NULL`. If `Z`
+#'   is `NULL` or missing, no nodes are conditioned on.
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns `TRUE` if d-separated, `FALSE` otherwise.
@@ -50,6 +50,7 @@ d_separated <- function(
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  .check_disjoint(X_idx0, Y_idx0, Z_idx0)
 
   rs_d_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -152,9 +153,7 @@ adjustment_set <- function(
   if (length(Y_idx0) == 0L) {
     stop("`Y` must name at least one node.", call. = FALSE)
   }
-  if (any(X_idx0 %in% Y_idx0)) {
-    stop("X and Y must be disjoint.", call. = FALSE)
-  }
+  .check_disjoint(X_idx0, Y_idx0)
 
   idx0 <- switch(
     type,
@@ -202,8 +201,7 @@ adjustment_set <- function(
 #' rejects, since that version requires `Z` alone to block every back-door
 #' path of each treatment. Every set accepted here is a valid adjustment set,
 #' but a valid adjustment set may be rejected, for example one containing a
-#' descendant of `X` off the causal paths. A `Z` that contains a node of `X`
-#' or `Y` is never valid.
+#' descendant of `X` off the causal paths.
 #'
 #' @references
 #' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
@@ -213,7 +211,7 @@ adjustment_set <- function(
 #' @param cg A `caugi` object.
 #'
 #' @param X,Y Node names; one or more each, and disjoint.
-#' @param Z Optional node set for conditioning
+#' @param Z Optional node set for conditioning, disjoint from `X` and `Y`.
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns Logical value indicating if backdoor is valid or not.
@@ -257,10 +255,8 @@ is_valid_backdoor <- function(
   .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  if (any(X_idx0 %in% Y_idx0)) {
-    stop("X and Y must be disjoint.", call. = FALSE)
-  }
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  .check_disjoint(X_idx0, Y_idx0, Z_idx0)
 
   rs_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -338,9 +334,7 @@ all_backdoor_sets <- function(
   .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  if (any(X_idx0 %in% Y_idx0)) {
-    stop("X and Y must be disjoint.", call. = FALSE)
-  }
+  .check_disjoint(X_idx0, Y_idx0)
 
   sets_idx0 <- rs_all_backdoor_sets(
     cg@session,
@@ -377,8 +371,9 @@ all_backdoor_sets <- function(
 #' member encodes the same m-separations.
 #'
 #' @param cg A `caugi` object (DAG, ADMG, AG, or PAG).
-#' @param X,Y Character vectors of node names.
-#' @param I Nodes that must be included in the separator.
+#' @param X,Y Disjoint character vectors of node names.
+#' @param I Nodes that must be included in the separator, disjoint from `X`
+#'   and `Y`.
 #' @param R Nodes allowed in the separator. If `NULL`, uses all nodes excluding
 #'   X and Y.
 #' @param X_index,Y_index,I_index,R_index Deprecated; pass node names instead.
@@ -479,6 +474,7 @@ minimal_separator <- function(
   }
   # Resolve I indices (default to empty)
   I_idx0 <- .resolve_idx0_mget(cg@session, I, I_index)
+  .check_disjoint(X_idx0, Y_idx0, I_idx0, "I")
 
   # Resolve R indices (default to all nodes except X and Y)
   if (is.null(R) && is.null(R_index)) {
@@ -546,8 +542,10 @@ minimal_d_separator <- function(
 #' criterion.
 #'
 #' @param cg A `caugi` object of class ADMG.
-#' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
-#' @param Z Conditioning set (character vector of node names).
+#' @param X,Y Disjoint node names (can be vectors for multiple
+#'   treatments/outcomes).
+#' @param Z Conditioning set (character vector of node names), disjoint from
+#'   `X` and `Y`.
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns Logical value indicating if the adjustment set is valid.
@@ -591,6 +589,7 @@ is_valid_adjustment_admg <- function(
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  .check_disjoint(X_idx0, Y_idx0, Z_idx0)
 
   rs_is_valid_adjustment_set_admg(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -601,7 +600,8 @@ is_valid_adjustment_admg <- function(
 #' effect of `X` on `Y` in an ADMG, up to a specified maximum size.
 #'
 #' @param cg A `caugi` object of class ADMG.
-#' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
+#' @param X,Y Disjoint node names (can be vectors for multiple
+#'   treatments/outcomes).
 #' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
@@ -646,6 +646,7 @@ all_adjustment_sets_admg <- function(
 
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  .check_disjoint(X_idx0, Y_idx0)
 
   sets_idx0 <- rs_all_adjustment_sets_admg(
     cg@session,
@@ -717,6 +718,18 @@ all_adjustment_sets_admg <- function(
       ".",
       call. = FALSE
     )
+  }
+}
+
+#' Error unless `X` and `Y` are disjoint and `Z` avoids both.
+#' @keywords internal
+#' @noRd
+.check_disjoint <- function(X_idx0, Y_idx0, Z_idx0 = integer(0), z = "Z") {
+  if (any(X_idx0 %in% Y_idx0)) {
+    stop("X and Y must be disjoint.", call. = FALSE)
+  }
+  if (any(Z_idx0 %in% c(X_idx0, Y_idx0))) {
+    stop(z, " must not contain a node of X or Y.", call. = FALSE)
   }
 }
 

@@ -19,7 +19,7 @@ is_valid_backdoor(
 
 \item{X, Y}{Node names; one or more each, and disjoint.}
 
-\item{Z}{Optional node set for conditioning}
+\item{Z}{Optional node set for conditioning, disjoint from \code{X} and \code{Y}.}
 
 \item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
@@ -46,8 +46,7 @@ With several treatments it can accept sets that Pearl's set version
 rejects, since that version requires \code{Z} alone to block every back-door
 path of each treatment. Every set accepted here is a valid adjustment set,
 but a valid adjustment set may be rejected, for example one containing a
-descendant of \code{X} off the causal paths. A \code{Z} that contains a node of \code{X}
-or \code{Y} is never valid.
+descendant of \code{X} off the causal paths.
 }
 \examples{
 cg <- caugi(
