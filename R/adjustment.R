@@ -8,11 +8,13 @@
 #' in `Y` given `Z` in a DAG.
 #'
 #' @param cg A `caugi` object.
-#' @param X,Y,Z Disjoint character vectors of node names, or `NULL`. If `Z`
-#'   is `NULL` or missing, no nodes are conditioned on.
+#' @param X,Y,Z Character vectors of node names, or `NULL`. If `Z` is `NULL`
+#'   or missing, no nodes are conditioned on.
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
-#' @returns `TRUE` if d-separated, `FALSE` otherwise.
+#' @returns `TRUE` if d-separated, `FALSE` otherwise. Overlapping sets give
+#'   `FALSE`: a node is not separated from itself, and a separator holds no
+#'   node of `X` or `Y`.
 #'
 #' @examples
 #' cg <- caugi(
@@ -50,7 +52,9 @@ d_separated <- function(
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-  .check_disjoint(X_idx0, Y_idx0, Z_idx0)
+  if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
+    return(FALSE)
+  }
 
   rs_d_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -201,7 +205,8 @@ adjustment_set <- function(
 #' rejects, since that version requires `Z` alone to block every back-door
 #' path of each treatment. Every set accepted here is a valid adjustment set,
 #' but a valid adjustment set may be rejected, for example one containing a
-#' descendant of `X` off the causal paths.
+#' descendant of `X` off the causal paths. A `Z` that contains a node of `X`
+#' or `Y` is never valid.
 #'
 #' @references
 #' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
@@ -211,7 +216,7 @@ adjustment_set <- function(
 #' @param cg A `caugi` object.
 #'
 #' @param X,Y Node names; one or more each, and disjoint.
-#' @param Z Optional node set for conditioning, disjoint from `X` and `Y`.
+#' @param Z Optional node set for conditioning
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns Logical value indicating if backdoor is valid or not.
@@ -255,8 +260,11 @@ is_valid_backdoor <- function(
   .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
+  .check_disjoint(X_idx0, Y_idx0)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-  .check_disjoint(X_idx0, Y_idx0, Z_idx0)
+  if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
+    return(FALSE)
+  }
 
   rs_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -371,15 +379,15 @@ all_backdoor_sets <- function(
 #' member encodes the same m-separations.
 #'
 #' @param cg A `caugi` object (DAG, ADMG, AG, or PAG).
-#' @param X,Y Disjoint character vectors of node names.
-#' @param I Nodes that must be included in the separator, disjoint from `X`
-#'   and `Y`.
+#' @param X,Y Character vectors of node names.
+#' @param I Nodes that must be included in the separator.
 #' @param R Nodes allowed in the separator. If `NULL`, uses all nodes excluding
 #'   X and Y.
 #' @param X_index,Y_index,I_index,R_index Deprecated; pass node names instead.
 #'
 #' @returns A character vector of node names representing the minimal separator,
-#' or `NULL` if no valid separator exists within the restriction R.
+#' or `NULL` if no valid separator exists within the restriction R, such as
+#' when `X` and `Y` overlap or `I` contains a node of either.
 #'
 #' @source van der Zander, B. & Liśkiewicz, M. (2020). Finding Minimal
 #'   d-separators in Linear Time and Applications. Proceedings of The 35th
@@ -474,7 +482,9 @@ minimal_separator <- function(
   }
   # Resolve I indices (default to empty)
   I_idx0 <- .resolve_idx0_mget(cg@session, I, I_index)
-  .check_disjoint(X_idx0, Y_idx0, I_idx0, "I")
+  if (!.disjoint(X_idx0, Y_idx0, I_idx0)) {
+    return(NULL)
+  }
 
   # Resolve R indices (default to all nodes except X and Y)
   if (is.null(R) && is.null(R_index)) {
@@ -544,11 +554,11 @@ minimal_d_separator <- function(
 #' @param cg A `caugi` object of class ADMG.
 #' @param X,Y Disjoint node names (can be vectors for multiple
 #'   treatments/outcomes).
-#' @param Z Conditioning set (character vector of node names), disjoint from
-#'   `X` and `Y`.
+#' @param Z Conditioning set (character vector of node names).
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
-#' @returns Logical value indicating if the adjustment set is valid.
+#' @returns Logical value indicating if the adjustment set is valid. A `Z`
+#'   that contains a node of `X` or `Y` is never valid.
 #'
 #' @examples
 #' # Classic confounding
@@ -589,7 +599,10 @@ is_valid_adjustment_admg <- function(
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-  .check_disjoint(X_idx0, Y_idx0, Z_idx0)
+  .check_disjoint(X_idx0, Y_idx0)
+  if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
+    return(FALSE)
+  }
 
   rs_is_valid_adjustment_set_admg(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -721,15 +734,20 @@ all_adjustment_sets_admg <- function(
   }
 }
 
-#' Error unless `X` and `Y` are disjoint and `Z` avoids both.
+#' Whether the node sets are pairwise disjoint.
 #' @keywords internal
 #' @noRd
-.check_disjoint <- function(X_idx0, Y_idx0, Z_idx0 = integer(0), z = "Z") {
-  if (any(X_idx0 %in% Y_idx0)) {
+.disjoint <- function(...) {
+  !anyDuplicated(unlist(lapply(list(...), unique)))
+}
+
+#' Error unless `X` and `Y` are disjoint: there is no effect of `X` on itself
+#' to adjust for.
+#' @keywords internal
+#' @noRd
+.check_disjoint <- function(X_idx0, Y_idx0) {
+  if (!.disjoint(X_idx0, Y_idx0)) {
     stop("X and Y must be disjoint.", call. = FALSE)
-  }
-  if (any(Z_idx0 %in% c(X_idx0, Y_idx0))) {
-    stop(z, " must not contain a node of X or Y.", call. = FALSE)
   }
 }
 

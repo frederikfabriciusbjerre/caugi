@@ -135,11 +135,18 @@
   `class = "AG"` used to come back as `-->` edges in both directions. A matrix
   with circle marks can now be read with `class = "UNKNOWN"`.
 
-- The separation and adjustment functions error when `X` and `Y` overlap, or
-  when `Z` (`I` in `minimal_separator()`) contains a node of `X` or `Y`, instead
-  of answering for an ill-posed question (#387). `minimal_separator(dag, "X",
-  "X")` returned a set, and `is_valid_backdoor()` accepted, for example,
-  `Z = "Y"` for `X <-- U --> Y`.
+- `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
+  accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
+
+- Overlapping node sets no longer give wrong answers (#387). A `Z` that
+  contains a node of `X` or `Y` is not a separator, so `d_separated()`,
+  `m_separated()` and `is_valid_adjustment_admg()` return `FALSE` for it; they
+  returned `TRUE`, the last when `X` has no effect on `Y`. `d_separated()` and
+  `m_separated()` also return `FALSE` when `X` and `Y` overlap, and
+  `minimal_separator()` returns `NULL` when they do or when `I` contains a node
+  of either, where it returned a set. `is_valid_adjustment_admg()` and
+  `all_adjustment_sets_admg()` error when `X` and `Y` overlap, as the other
+  adjustment functions already did.
 
 - caugi's JSON output now validates against its published schema: the schema
   allows the top-level `$schema` key that every file has, and its class list

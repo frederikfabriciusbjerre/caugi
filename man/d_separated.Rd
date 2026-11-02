@@ -17,13 +17,15 @@ d_separated(
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{X, Y, Z}{Disjoint character vectors of node names, or \code{NULL}. If \code{Z}
-is \code{NULL} or missing, no nodes are conditioned on.}
+\item{X, Y, Z}{Character vectors of node names, or \code{NULL}. If \code{Z} is \code{NULL}
+or missing, no nodes are conditioned on.}
 
 \item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
-\code{TRUE} if d-separated, \code{FALSE} otherwise.
+\code{TRUE} if d-separated, \code{FALSE} otherwise. Overlapping sets give
+\code{FALSE}: a node is not separated from itself, and a separator holds no
+node of \code{X} or \code{Y}.
 }
 \description{
 Checks whether every node in \code{X} is d-separated from every node

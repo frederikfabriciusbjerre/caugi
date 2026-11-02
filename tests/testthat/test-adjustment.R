@@ -178,24 +178,19 @@ test_that("backdoor and d-separation functions check X and Y", {
   }
 })
 
-test_that("separation and adjustment reject overlapping node sets", {
+test_that("overlapping node sets are not separators", {
   dag <- caugi(U %-->% X + Y, X %-->% Y, class = "DAG")
-  admg <- caugi(U %-->% X + Y, X %-->% Y, class = "ADMG")
-  xy <- "X and Y must be disjoint"
-  z <- "Z must not contain a node of X or Y"
-  expect_error(d_separated(dag, "X", "X"), xy)
-  expect_error(m_separated(admg, "X", c("X", "Y")), xy)
-  expect_error(minimal_separator(dag, "X", "X"), xy)
-  expect_error(is_valid_adjustment_admg(admg, "X", "X"), xy)
-  expect_error(all_adjustment_sets_admg(admg, "X", "X"), xy)
-  expect_error(d_separated(dag, "U", "Y", Z = "U"), z)
-  expect_error(m_separated(admg, "U", "Y", Z = "Y"), z)
-  expect_error(is_valid_backdoor(dag, "X", "Y", Z = c("U", "Y")), z)
-  expect_error(is_valid_adjustment_admg(admg, "X", "Y", Z = c("U", "Y")), z)
-  expect_error(
-    minimal_separator(dag, "U", "Y", I = "Y"),
-    "I must not contain a node of X or Y"
-  )
+  # X has no effect on Y, so only Y in Z could make the ADMG check accept it
+  admg <- caugi(U %-->% X + Y, class = "ADMG")
+  expect_false(d_separated(dag, "X", "X"))
+  expect_false(d_separated(dag, "U", "Y", Z = "U"))
+  expect_false(m_separated(admg, "U", "Y", Z = "Y"))
+  expect_false(is_valid_backdoor(dag, "X", "Y", Z = c("U", "Y")))
+  expect_false(is_valid_adjustment_admg(admg, "X", "Y", Z = c("U", "Y")))
+  expect_null(minimal_separator(dag, "X", "X"))
+  expect_null(minimal_separator(admg, "X", "Y", I = "Y"))
+  expect_error(is_valid_adjustment_admg(admg, "X", "X"), "must be disjoint")
+  expect_error(all_adjustment_sets_admg(admg, "X", "X"), "must be disjoint")
 })
 
 test_that("adjust functions fails with faulty input", {
