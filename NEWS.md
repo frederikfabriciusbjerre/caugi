@@ -91,6 +91,15 @@
   so the first query built and validated it again. The view is now kept. This
   halves the cost of graphs whose check is expensive, such as CPDAGs and MPDAGs.
 
+## Improvements
+
+* `adjustment_set()` returns `NULL` with a warning saying why, instead of an
+  error, when the requested construction finds no valid set: none exists, the
+  parents of `X` are not valid (`type = "parents"`), or no node of `Y` is a
+  descendant of `X` (`type = "optimal"`). Every "no set" answer is now `NULL`,
+  as for overlapping `X` and `Y`, while `character(0)` still means adjusting
+  for nothing is valid.
+
 ## Bug Fixes
 
 - Symmetric edges (`---`, `<->`, `o-o`) match whichever way they are written

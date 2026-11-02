@@ -82,14 +82,15 @@ d_separated <- function(
 #'   their Remark 3.14, nodes of `Y` that are not descendants of `X` are
 #'   dropped with a warning, since the total effect on them is zero, and the
 #'   O-set is computed for the rest of `Y`. It is then valid whenever any valid
-#'   set exists. If no node of `Y` is a descendant of `X`, an error is raised.
+#'   set exists. If no node of `Y` is a descendant of `X`, there is no O-set.
 #'   A dropped node can itself be in the O-set: for `X --> Y1 <-- Y2` with
 #'   `Y = c("Y1", "Y2")`, `Y2` is dropped from `Y` and returned as the O-set,
 #'   since it is a parent of `Y1`.
 #'
 #' Every result is checked against the generalized adjustment criterion
-#' (Perković et al., 2018). An error is raised when the requested set is not
-#' valid. In particular, a valid set need not exist with several treatments:
+#' (Perković et al., 2018). When the requested set is not valid, or does not
+#' exist, `NULL` is returned with a warning saying why. In particular, a valid
+#' set need not exist with several treatments:
 #' in `X1 --> L --> X2`, `L --> Y`, only `L` blocks `X2 <-- L --> Y`, but it
 #' lies on the causal path `X1 --> L --> Y`. With a single treatment, no valid
 #' set exists only when a node of `Y` is a parent of `X`.
@@ -101,8 +102,10 @@ d_separated <- function(
 #' The `optimal` option computes the O-set.
 #'
 #' @returns A character vector of node names representing the adjustment set
-#'   (`character(0)` if none is needed), or `NULL` if `X` and `Y` overlap:
-#'   adjustment sets are defined for disjoint `X` and `Y`, so none exists.
+#'   (`character(0)` if none is needed), or `NULL` if there is none: the
+#'   requested construction found no valid set (with a warning saying why), or
+#'   `X` and `Y` overlap, as adjustment sets are defined for disjoint `X` and
+#'   `Y`.
 #'
 #' @examples
 #' cg <- caugi(
@@ -160,31 +163,32 @@ adjustment_set <- function(
     return(NULL)
   }
 
-  idx0 <- switch(
+  # Rust returns the reason instead of a set when the construction finds
+  # none. For "optimal" it drops the nodes of Y that are not descendants of X
+  # (Henckel et al., 2022, Remark 3.14) and reports them.
+  res <- switch(
     type,
     parents = rs_adjustment_set_parents(cg@session, X_idx0, Y_idx0),
-    backdoor = rs_adjustment_set_backdoor(
-      cg@session,
-      X_idx0,
-      Y_idx0
-    ),
-    optimal = {
-      # Rust drops the nodes of Y that are not descendants of X (Henckel et
-      # al., 2022, Remark 3.14) and reports them.
-      res <- rs_adjustment_set_optimal(cg@session, X_idx0, Y_idx0, TRUE)
-      if (length(res$dropped) > 0) {
-        warning(
-          "Not a descendant of X, so dropped from Y (the effect on it is ",
-          "zero): ",
-          paste(cg@nodes$name[res$dropped + 1L], collapse = ", "),
-          ". The O-set is for the rest of Y.",
-          call. = FALSE
-        )
-      }
-      res$set
-    }
+    backdoor = rs_adjustment_set_backdoor(cg@session, X_idx0, Y_idx0),
+    optimal = rs_adjustment_set_optimal(cg@session, X_idx0, Y_idx0, TRUE)
   )
-  cg@nodes$name[idx0 + 1L]
+  if (is.character(res)) {
+    warning(res, call. = FALSE)
+    return(NULL)
+  }
+  if (identical(type, "optimal")) {
+    if (length(res$dropped) > 0) {
+      warning(
+        "Not a descendant of X, so dropped from Y (the effect on it is ",
+        "zero): ",
+        paste(cg@nodes$name[res$dropped + 1L], collapse = ", "),
+        ". The O-set is for the rest of Y.",
+        call. = FALSE
+      )
+    }
+    res <- res$set
+  }
+  cg@nodes$name[res + 1L]
 }
 
 #' @title Is a backdoor set valid?

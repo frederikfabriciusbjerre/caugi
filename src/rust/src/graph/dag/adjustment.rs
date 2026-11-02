@@ -7,6 +7,17 @@ use crate::graph::CaugiGraph;
 use std::sync::Arc;
 
 const NO_VALID_SET: &str = "No valid adjustment set exists for this X and Y.";
+const PARENTS_NOT_VALID: &str = "The parents of X are not a valid adjustment set here; \
+     use type = \"backdoor\" or \"optimal\".";
+const NO_EFFECT: &str = "No node in Y is a descendant of X, so the total effect of X \
+     on Y is zero; use type = \"backdoor\" for an adjustment set.";
+
+/// Whether `err` says an adjustment construction found no valid set: a
+/// well-defined answer, which R returns as `NULL` with `err` as a warning,
+/// rather than a failure.
+pub fn finds_no_set(err: &str) -> bool {
+    [NO_VALID_SET, PARENTS_NOT_VALID, NO_EFFECT].contains(&err)
+}
 
 impl Dag {
     /// Parent-based adjustment set `Z = (⋃ Pa(X)) \ (X ∪ Y)`.
@@ -44,9 +55,7 @@ impl Dag {
         } else if self.adjustment_set_backdoor(xs, ys).is_err() {
             Err(NO_VALID_SET.into())
         } else {
-            Err("The parents of X are not a valid adjustment set here; \
-                 use type = \"backdoor\" or \"optimal\"."
-                .into())
+            Err(PARENTS_NOT_VALID.into())
         }
     }
 
@@ -136,11 +145,7 @@ impl Dag {
         let (ys, dropped): (Vec<u32>, Vec<u32>) =
             ys.iter().copied().partition(|&y| de_x[y as usize]);
         if ys.is_empty() {
-            return Err(
-                "No node in Y is a descendant of X, so the total effect of X \
-                 on Y is zero; use type = \"backdoor\" for an adjustment set."
-                    .into(),
-            );
+            return Err(NO_EFFECT.into());
         }
         // Every y is now in cn, so De(cn) ∪ Xs = forb(Xs,Ys) already covers Ys.
         let cn = self.causal_nodes(xs, &ys);

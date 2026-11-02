@@ -493,24 +493,26 @@ test_that("adjustment_set() takes several treatments", {
   X <- c("X1", "X2")
   expect_equal(adjustment_set(cg, X, "Y", type = "optimal"), "U")
   expect_equal(adjustment_set(cg, X, "Y", type = "backdoor"), "U")
-  expect_error(
-    adjustment_set(cg, X, "Y", type = "parents"),
+  expect_warning(
+    z <- adjustment_set(cg, X, "Y", type = "parents"),
     "parents of X are not a valid adjustment set"
   )
+  expect_null(z)
 })
 
-test_that("adjustment_set() errors when no valid set exists", {
+test_that("adjustment_set() returns NULL when no valid set exists", {
   # Only L blocks X2 <-- L --> Y, but L is on the causal path X1 --> L --> Y.
   cg <- caugi(X1 %-->% L, L %-->% X2 + Y, X2 %-->% Y, class = "DAG")
   for (type in c("optimal", "parents", "backdoor")) {
-    expect_error(
-      adjustment_set(cg, c("X1", "X2"), "Y", type = type),
+    expect_warning(
+      z <- adjustment_set(cg, c("X1", "X2"), "Y", type = type),
       "No valid adjustment set exists"
     )
+    expect_null(z)
   }
   # Y is a parent of X.
-  expect_error(
-    adjustment_set(
+  expect_warning(
+    z <- adjustment_set(
       caugi(Y %-->% X, class = "DAG"),
       "X",
       "Y",
@@ -518,6 +520,7 @@ test_that("adjustment_set() errors when no valid set exists", {
     ),
     "No valid adjustment set exists"
   )
+  expect_null(z)
 })
 
 test_that("adjustment_set(type = 'optimal') drops Y not descending from X", {
@@ -528,10 +531,11 @@ test_that("adjustment_set(type = 'optimal') drops Y not descending from X", {
     "dropped from Y.*Y2"
   )
   expect_equal(z, character(0))
-  expect_error(
-    adjustment_set(cg, "X", "Y2", type = "optimal"),
+  expect_warning(
+    z <- adjustment_set(cg, "X", "Y2", type = "optimal"),
     "No node in Y is a descendant of X"
   )
+  expect_null(z)
   expect_equal(adjustment_set(cg, "X", c("Y1", "Y2"), type = "backdoor"), "U")
 
   # A dropped node can be in the O-set: Y2 is a parent of Y1.
@@ -542,6 +546,19 @@ test_that("adjustment_set(type = 'optimal') drops Y not descending from X", {
   )
   expect_equal(z, "Y2")
 })
+
+# The set adjustment_set() returns, or the warning saying why it found none.
+.set_or_reason <- function(...) {
+  reason <- NULL
+  z <- withCallingHandlers(
+    adjustment_set(...),
+    warning = function(w) {
+      reason <<- conditionMessage(w)
+      invokeRestart("muffleWarning")
+    }
+  )
+  if (is.null(z)) reason else z
+}
 
 test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
   set.seed(20261027)
@@ -582,10 +599,7 @@ test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
     label <- paste("rep", rep)
 
     for (type in c("parents", "backdoor")) {
-      z <- tryCatch(
-        adjustment_set(cg, X, Y, type = type),
-        error = conditionMessage
-      )
+      z <- .set_or_reason(cg, X, Y, type = type)
       if (!grepl("adjustment set", z[1])) {
         expect_true(oracle(z), label = paste(label, type))
       } else if (grepl("No valid adjustment set exists", z)) {
@@ -599,10 +613,7 @@ test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
 
     # "optimal" answers for Y ∩ De(X) (Henckel et al. 2022, Remark 3.14).
     Yd <- intersect(Y, de_x)
-    z <- tryCatch(
-      suppressWarnings(adjustment_set(cg, X, Y, type = "optimal")),
-      error = conditionMessage
-    )
+    z <- .set_or_reason(cg, X, Y, type = "optimal")
     if (length(Yd) == 0) {
       expect_match(z, "No node in Y is a descendant of X", label = label)
       next
@@ -686,10 +697,7 @@ test_that("adjustment agrees with exact do-calculus in random binary models", {
       label <- paste("DAG rep", rep, type)
       # "optimal" answers for Y ∩ De(X) (Henckel et al. 2022, Remark 3.14).
       Yt <- if (type == "optimal") intersect(Y, de_x) else Y
-      z <- tryCatch(
-        suppressWarnings(adjustment_set(cg, X, Y, type = type)),
-        error = conditionMessage
-      )
+      z <- .set_or_reason(cg, X, Y, type = type)
       if (length(Yt) == 0) {
         expect_match(z, "No node in Y is a descendant of X", label = label)
         next
