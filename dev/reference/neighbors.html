@@ -96,13 +96,10 @@ OUT from the target node (equivalent to <code><a href="children.html">children()
 endpoints: <code>o-o</code>, <code>o-&gt;</code>, <code>--o</code>)</p></dd>
 
 
-</dl><p>Not all modes are valid for all graph classes:</p><ul><li><p>DAG: <code>"in"</code>, <code>"out"</code>, <code>"all"</code> only</p></li>
-<li><p>PDAG: <code>"in"</code>, <code>"out"</code>, <code>"undirected"</code>, <code>"all"</code></p></li>
-<li><p>UG: <code>"undirected"</code>, <code>"all"</code> only</p></li>
-<li><p>ADMG: <code>"in"</code>, <code>"out"</code>, <code>"bidirected"</code>, <code>"all"</code></p></li>
-<li><p>PAG: all modes; <code>"in"</code> and <code>"out"</code> follow <code>--&gt;</code> edges only</p></li>
-<li><p>UNKNOWN: all modes allowed</p></li>
-</ul></dd>
+</dl><p>Each neighbor is listed once, even when several edges join it to the node.</p>
+<p>Every mode works for every graph class. A mode the class has no edges for,
+such as <code>"undirected"</code> in a DAG, gives <code>NULL</code>. In a PAG, <code>"in"</code> and <code>"out"</code>
+follow <code>--&gt;</code> edges only.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -46,7 +46,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% C, B %-->% C, class = "DAG")
 moralize(cg) # A -- B, A -- C, B -- C
-#> <caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x593193c3acd0>
+#> <caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x5b451d4cc560>
 #>   graph_class: UG
 #>   nodes: A, B, C
 #>   edges: A---B, A---C, B---C

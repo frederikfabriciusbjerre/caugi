@@ -150,6 +150,26 @@
   overlapping `X` and `Y`, while `character(0)` still means adjusting
   for nothing is valid.
 
+- [`neighbors()`](https://caugi.org/dev/reference/neighbors.md) defines
+  every mode from edge endpoints
+  ([\#385](https://github.com/frederikfabriciusbjerre/caugi/issues/385)).
+  On UNKNOWN graphs, `"in"` and `"out"` no longer return the other end
+  of `<->`, `o->` or `--o`, as a parent or child needs a tail at one end
+  and an arrowhead at the other. `"partial"` takes a circle at either
+  end, so it finds `o->` and `--o` seen from the end without the circle.
+  Parallel edges, such as a bow, no longer list a neighbor twice. A mode
+  the graph class has no edges for, such as `"undirected"` in a DAG,
+  gives `NULL` instead of an error, in
+  [`neighbors()`](https://caugi.org/dev/reference/neighbors.md),
+  [`parents()`](https://caugi.org/dev/reference/parents.md),
+  [`children()`](https://caugi.org/dev/reference/children.md) and
+  [`spouses()`](https://caugi.org/dev/reference/spouses.md).
+  [`parents()`](https://caugi.org/dev/reference/parents.md) and
+  [`children()`](https://caugi.org/dev/reference/children.md) now work
+  on UNKNOWN graphs, as
+  [`neighbors()`](https://caugi.org/dev/reference/neighbors.md) with
+  `mode = "in"` and `"out"`.
+
 ### Bug Fixes
 
 - Plot compositions using `+`, `|`, and `/` now give equal space to all

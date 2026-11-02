@@ -61,19 +61,12 @@ neighbours(cg, nodes = NULL, index = NULL, mode = "all")
   :   Nodes connected via partial edges (edges with circle endpoints:
       `o-o`, `o->`, `--o`)
 
-  Not all modes are valid for all graph classes:
+  Each neighbor is listed once, even when several edges join it to the
+  node.
 
-  - DAG: `"in"`, `"out"`, `"all"` only
-
-  - PDAG: `"in"`, `"out"`, `"undirected"`, `"all"`
-
-  - UG: `"undirected"`, `"all"` only
-
-  - ADMG: `"in"`, `"out"`, `"bidirected"`, `"all"`
-
-  - PAG: all modes; `"in"` and `"out"` follow `-->` edges only
-
-  - UNKNOWN: all modes allowed
+  Every mode works for every graph class. A mode the class has no edges
+  for, such as `"undirected"` in a DAG, gives `NULL`. In a PAG, `"in"`
+  and `"out"` follow `-->` edges only.
 
 ## Value
 
