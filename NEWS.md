@@ -93,6 +93,10 @@
 
 ## Improvements
 
+* "contains a directed cycle" errors for DAGs, PDAGs, ADMGs and ancestral
+  graphs now print the cycle, e.g.
+  `DAG contains a directed cycle: A -> B -> C -> A` (#439).
+
 * Errors from caugi's Rust code and internal helpers no longer name the
   internal function that raised them, such as
   `Error in rs_resolve_class(session, class)`; they show only the message

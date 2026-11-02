@@ -1,13 +1,22 @@
 // SPDX-License-Identifier: MIT
 //! Error types for graph operations.
 
+/// `0 -> 1 -> 0`, with node indices the session maps to names.
+fn fmt_cycle(cycle: &[u32]) -> String {
+    cycle
+        .iter()
+        .map(u32::to_string)
+        .collect::<Vec<_>>()
+        .join(" -> ")
+}
+
 // ── ADMG Errors ───────────────────────────────────────────────────────────────
 
 /// Errors that can occur when constructing or validating an ADMG.
 #[derive(Debug, Clone)]
 pub enum AdmgError {
-    /// The directed part of the graph contains a cycle.
-    DirectedCycle,
+    /// The directed part of the graph contains this cycle.
+    DirectedCycle { cycle: Vec<u32> },
     /// An invalid edge type was found (only directed and bidirected are allowed).
     InvalidEdgeType { found: String },
     /// A node index is out of bounds.
@@ -19,7 +28,9 @@ pub enum AdmgError {
 impl std::fmt::Display for AdmgError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::DirectedCycle => write!(f, "ADMG contains a directed cycle"),
+            Self::DirectedCycle { cycle } => {
+                write!(f, "ADMG contains a directed cycle: {}", fmt_cycle(cycle))
+            }
             Self::InvalidEdgeType { found } => write!(
                 f,
                 "ADMG can only contain directed and bidirected edges, found: {}",
@@ -40,8 +51,8 @@ impl std::error::Error for AdmgError {}
 /// Errors that can occur when constructing or validating a DAG.
 #[derive(Debug, Clone)]
 pub enum DagError {
-    /// The graph contains a directed cycle.
-    DirectedCycle,
+    /// The graph contains this directed cycle.
+    DirectedCycle { cycle: Vec<u32> },
     /// An invalid edge type was found (only directed edges are allowed).
     InvalidEdgeType { found: String },
 }
@@ -49,7 +60,9 @@ pub enum DagError {
 impl std::fmt::Display for DagError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::DirectedCycle => write!(f, "DAG contains a directed cycle"),
+            Self::DirectedCycle { cycle } => {
+                write!(f, "DAG contains a directed cycle: {}", fmt_cycle(cycle))
+            }
             Self::InvalidEdgeType { found } => {
                 write!(f, "DAG can only contain directed edges, found: {}", found)
             }
@@ -64,8 +77,8 @@ impl std::error::Error for DagError {}
 /// Errors that can occur when constructing or validating a PDAG.
 #[derive(Debug, Clone)]
 pub enum PdagError {
-    /// The directed part of the graph contains a cycle.
-    DirectedCycle,
+    /// The directed part of the graph contains this cycle.
+    DirectedCycle { cycle: Vec<u32> },
     /// An invalid edge type was found (only directed and undirected are allowed).
     InvalidEdgeType { found: String },
 }
@@ -73,7 +86,9 @@ pub enum PdagError {
 impl std::fmt::Display for PdagError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::DirectedCycle => write!(f, "PDAG contains a directed cycle"),
+            Self::DirectedCycle { cycle } => {
+                write!(f, "PDAG contains a directed cycle: {}", fmt_cycle(cycle))
+            }
             Self::InvalidEdgeType { found } => write!(
                 f,
                 "PDAG can only contain directed and undirected edges, found: {}",
@@ -111,8 +126,8 @@ impl std::error::Error for UgError {}
 /// Errors that can occur when constructing or validating an Ancestral Graph.
 #[derive(Debug, Clone)]
 pub enum AgError {
-    /// The directed part of the graph contains a cycle.
-    DirectedCycle,
+    /// The directed part of the graph contains this cycle.
+    DirectedCycle { cycle: Vec<u32> },
     /// An invalid edge type was found (only directed, bidirected, and undirected are allowed).
     InvalidEdgeType { found: String },
     /// Anterior constraint violated: a node with an arrowhead is an anterior of the source.
@@ -124,7 +139,9 @@ pub enum AgError {
 impl std::fmt::Display for AgError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::DirectedCycle => write!(f, "Ancestral graph contains a directed cycle"),
+            Self::DirectedCycle { cycle } => {
+                write!(f, "Ancestral graph contains a directed cycle: {}", fmt_cycle(cycle))
+            }
             Self::InvalidEdgeType { found } => write!(
                 f,
                 "Ancestral graph can only contain directed, bidirected, and undirected edges, found: {}",
@@ -259,8 +276,13 @@ mod tests {
 
     #[test]
     fn admg_error_display_directed_cycle() {
-        let err = AdmgError::DirectedCycle;
-        assert_eq!(err.to_string(), "ADMG contains a directed cycle");
+        let err = AdmgError::DirectedCycle {
+            cycle: vec![0, 1, 0],
+        };
+        assert_eq!(
+            err.to_string(),
+            "ADMG contains a directed cycle: 0 -> 1 -> 0"
+        );
     }
 
     #[test]
@@ -285,8 +307,13 @@ mod tests {
 
     #[test]
     fn dag_error_display_directed_cycle() {
-        let err = DagError::DirectedCycle;
-        assert_eq!(err.to_string(), "DAG contains a directed cycle");
+        let err = DagError::DirectedCycle {
+            cycle: vec![0, 1, 0],
+        };
+        assert_eq!(
+            err.to_string(),
+            "DAG contains a directed cycle: 0 -> 1 -> 0"
+        );
     }
 
     #[test]
@@ -304,8 +331,13 @@ mod tests {
 
     #[test]
     fn pdag_error_display_directed_cycle() {
-        let err = PdagError::DirectedCycle;
-        assert_eq!(err.to_string(), "PDAG contains a directed cycle");
+        let err = PdagError::DirectedCycle {
+            cycle: vec![0, 1, 0],
+        };
+        assert_eq!(
+            err.to_string(),
+            "PDAG contains a directed cycle: 0 -> 1 -> 0"
+        );
     }
 
     #[test]
@@ -336,8 +368,13 @@ mod tests {
 
     #[test]
     fn ag_error_display_directed_cycle() {
-        let err = AgError::DirectedCycle;
-        assert_eq!(err.to_string(), "Ancestral graph contains a directed cycle");
+        let err = AgError::DirectedCycle {
+            cycle: vec![0, 1, 0],
+        };
+        assert_eq!(
+            err.to_string(),
+            "Ancestral graph contains a directed cycle: 0 -> 1 -> 0"
+        );
     }
 
     #[test]

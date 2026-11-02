@@ -1092,3 +1092,11 @@ test_that("errors do not show the internal function that raised them", {
   )
   expect_null(conditionCall(err))
 })
+
+test_that("a directed cycle error names the cycle", {
+  expect_error(
+    caugi(A %-->% B, B %-->% C, C %-->% A, class = "DAG"),
+    "DAG contains a directed cycle: A -> B -> C -> A",
+    fixed = TRUE
+  )
+})

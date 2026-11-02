@@ -1063,6 +1063,18 @@ impl GraphSession {
             }
         }
 
+        if let Some((graph, cycle)) = err.split_once(" contains a directed cycle: ") {
+            let nodes: Vec<String> = cycle
+                .split(" -> ")
+                .map(|i| i.parse().ok().map(|i| self.format_index(i)))
+                .collect::<Option<_>>()?;
+            return Some(format!(
+                "{} contains a directed cycle: {}",
+                graph,
+                nodes.join(" -> ")
+            ));
+        }
+
         if let Some(rest) = err.strip_prefix("Anterior constraint violated: node ") {
             let parts: Vec<&str> = rest.split(" has arrowhead from ").collect();
             if parts.len() == 2 {
@@ -1902,6 +1914,15 @@ mod tests {
             .map_error_str(
                 "Anterior constraint violated: node 1 has arrowheadfrom 0 but is an anterior of 2"
             )
+            .is_none());
+        assert_eq!(
+            session
+                .map_error_str("DAG contains a directed cycle: 0 -> 1 -> 0")
+                .unwrap(),
+            "DAG contains a directed cycle: A -> B -> A"
+        );
+        assert!(session
+            .map_error_str("DAG contains a directed cycle: 0 -> x")
             .is_none());
         assert!(session.map_error_str("unmapped error").is_none());
     }
