@@ -93,6 +93,11 @@
 
 ## Improvements
 
+* Errors from caugi's Rust code and internal helpers no longer name the
+  internal function that raised them, such as
+  `Error in rs_resolve_class(session, class)`; they show only the message
+  (#438).
+
 * `adjustment_set()` returns `NULL` instead of an error when the requested
   construction finds no valid set: none exists, the parents of `X` are not
   valid (`type = "parents"`), or no node of `Y` is a descendant of `X`
