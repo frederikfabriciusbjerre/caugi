@@ -2,6 +2,9 @@
 
 ## New Features
 
+* `"A" %in% cg` tests whether a graph has a node named `A`, and
+  `match("A", cg)` gives its position in `nodes(cg)` (#450).
+
 * `as_caugi()` now reads a data.frame or data.table edge list with columns
   `from`, `edge` and `to`, such as the output of `as.data.frame()` or
   `edges()`. Rows with an `NA` edge are read as isolated nodes.

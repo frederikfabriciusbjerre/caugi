@@ -38,6 +38,30 @@ length.caugi <- function(x) {
 }
 S7::method(length, caugi) <- length.caugi
 
+#' Node membership in a `caugi`
+#'
+#' @description `"A" %in% cg` tests whether the graph has a node named `A`,
+#'   and `match("A", cg)` gives its position in `nodes(cg)`.
+#'
+#' @param x A `caugi` object.
+#'
+#' @returns The node names, which [match()] and `%in%` compare against.
+#'
+#' @examples
+#' cg <- caugi(A %-->% B, class = "DAG")
+#' "A" %in% cg # TRUE
+#' c("B", "Z") %in% cg # TRUE FALSE
+#' match("B", cg) # 2
+#'
+#' @family caugi methods
+#' @concept methods
+#'
+#' @name caugi-membership
+#' @export
+`mtfrm.caugi::caugi` <- function(x) {
+  x@nodes$name
+}
+
 #' Print a `caugi`
 #'
 #' @param x A `caugi` object.
