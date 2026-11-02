@@ -75,12 +75,14 @@
 #' @name edge_operators
 #'
 #' @keywords internal
+#' @export
 `%-->%` <- function(lhs, rhs) {
   .edge_spec(substitute(lhs), substitute(rhs), "-->")
 }
 
 #' @rdname edge_operators
 #' @keywords internal
+#' @export
 `%---%` <- function(lhs, rhs) {
   .edge_spec(substitute(lhs), substitute(rhs), "---")
 }
@@ -88,24 +90,28 @@
 
 #' @rdname edge_operators
 #' @keywords internal
+#' @export
 `%<->%` <- function(lhs, rhs) {
   .edge_spec(substitute(lhs), substitute(rhs), "<->")
 }
 
 #' @rdname edge_operators
 #' @keywords internal
+#' @export
 `%o-o%` <- function(lhs, rhs) {
   .edge_spec(substitute(lhs), substitute(rhs), "o-o")
 }
 
 #' @rdname edge_operators
 #' @keywords internal
+#' @export
 `%--o%` <- function(lhs, rhs) {
   .edge_spec(substitute(lhs), substitute(rhs), "--o")
 }
 
 #' @rdname edge_operators
 #' @keywords internal
+#' @export
 `%o->%` <- function(lhs, rhs) {
   .edge_spec(substitute(lhs), substitute(rhs), "o->")
 }

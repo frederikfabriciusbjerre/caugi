@@ -2,6 +2,11 @@
 
 ## New Features
 
+* `cg + A %-->% D` adds the edge, as `add_edges()` does (#448). It needs R
+  4.3 or later, which lets the method win over the edge table's own `+`. The
+  built-in edge operators are now exported, so `A %-->% D` on its own returns
+  its edge table.
+
 * `cg - "Z"` removes node `Z`, as `remove_nodes()` does (#449).
 
 * `cg[c("A", "B")]` gives the subgraph on nodes `A` and `B`, as `subgraph()`
