@@ -25,6 +25,8 @@ rs_clone <- function(session) .Call(wrap__rs_clone, session)
 
 rs_set_edges <- function(session, from, to, etype) invisible(.Call(wrap__rs_set_edges, session, from, to, etype))
 
+rs_add_edges <- function(session, from, to, etype) invisible(.Call(wrap__rs_add_edges, session, from, to, etype))
+
 rs_replace_edges <- function(session, from, to, etype) invisible(.Call(wrap__rs_replace_edges, session, from, to, etype))
 
 rs_remove_edges <- function(session, from, to, glyphs) .Call(wrap__rs_remove_edges, session, from, to, glyphs)
@@ -159,7 +161,7 @@ rs_adjustment_set_parents <- function(session, xs, ys) .Call(wrap__rs_adjustment
 
 rs_adjustment_set_backdoor <- function(session, xs, ys) .Call(wrap__rs_adjustment_set_backdoor, session, xs, ys)
 
-rs_adjustment_set_optimal <- function(session, xs, ys, return_dropped) .Call(wrap__rs_adjustment_set_optimal, session, xs, ys, return_dropped)
+rs_adjustment_set_optimal <- function(session, xs, ys) .Call(wrap__rs_adjustment_set_optimal, session, xs, ys)
 
 rs_is_valid_backdoor_set <- function(session, xs, ys, z) .Call(wrap__rs_is_valid_backdoor_set, session, xs, ys, z)
 

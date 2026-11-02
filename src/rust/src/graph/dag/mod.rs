@@ -2,6 +2,7 @@
 //! DAG wrapper with O(1) slice queries via packed neighborhoods.
 
 mod adjustment;
+pub use adjustment::finds_no_set;
 mod separation;
 mod transforms;
 

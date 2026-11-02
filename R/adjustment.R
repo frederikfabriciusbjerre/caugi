@@ -12,7 +12,9 @@
 #'   or missing, no nodes are conditioned on.
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
-#' @returns `TRUE` if d-separated, `FALSE` otherwise.
+#' @returns `TRUE` if d-separated, `FALSE` otherwise. Nodes of `Z` are
+#'   dropped from `X` and `Y` first, so `X` within `Z` gives `TRUE`, and `X`
+#'   and `Y` sharing a node outside `Z` gives `FALSE`.
 #'
 #' @examples
 #' cg <- caugi(
@@ -78,27 +80,33 @@ d_separated <- function(
 #' - `"optimal"`: the O-set \eqn{\mathrm{Pa}(\mathrm{cn}(X, Y)) \setminus
 #'   \mathrm{forb}(X, Y)} (Henckel, Perković & Maathuis, 2022). Following
 #'   their Remark 3.14, nodes of `Y` that are not descendants of `X` are
-#'   dropped with a warning, since the total effect on them is zero, and the
+#'   dropped, since the total effect on them is zero, and the
 #'   O-set is computed for the rest of `Y`. It is then valid whenever any valid
-#'   set exists. If no node of `Y` is a descendant of `X`, an error is raised.
+#'   set exists. If no node of `Y` is a descendant of `X`, there is no O-set.
 #'   A dropped node can itself be in the O-set: for `X --> Y1 <-- Y2` with
 #'   `Y = c("Y1", "Y2")`, `Y2` is dropped from `Y` and returned as the O-set,
 #'   since it is a parent of `Y1`.
 #'
 #' Every result is checked against the generalized adjustment criterion
-#' (Perković et al., 2018). An error is raised when the requested set is not
-#' valid. In particular, a valid set need not exist with several treatments:
+#' (Perković et al., 2018). When the requested set is not valid, or does not
+#' exist, `NULL` is returned: for `"parents"`, the parents of `X` are not a
+#' valid set, though another set may be; for `"backdoor"`, no valid set exists;
+#' for `"optimal"`, no valid set exists or no node of `Y` is a descendant of
+#' `X`. In particular, a valid set need not exist with several treatments:
 #' in `X1 --> L --> X2`, `L --> Y`, only `L` blocks `X2 <-- L --> Y`, but it
 #' lies on the causal path `X1 --> L --> Y`. With a single treatment, no valid
 #' set exists only when a node of `Y` is a parent of `X`.
 #'
 #' @param cg A `caugi` object.
-#' @param X,Y Node names; one or more each, and disjoint.
+#' @param X,Y Node names; one or more each.
 #' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param type One of `"parents"`, `"backdoor"`, `"optimal"`.
 #' The `optimal` option computes the O-set.
 #'
-#' @returns A character vector of node names representing the adjustment set.
+#' @returns A character vector of node names representing the adjustment set
+#'   (`character(0)` if none is needed), or `NULL` if there is none: the
+#'   requested construction found no valid set, or `X` and `Y` overlap, as
+#'   adjustment sets are defined for disjoint `X` and `Y`.
 #'
 #' @examples
 #' cg <- caugi(
@@ -152,34 +160,22 @@ adjustment_set <- function(
   if (length(Y_idx0) == 0L) {
     stop("`Y` must name at least one node.", call. = FALSE)
   }
-  if (any(X_idx0 %in% Y_idx0)) {
-    stop("X and Y must be disjoint.", call. = FALSE)
+  if (!.disjoint(X_idx0, Y_idx0)) {
+    return(NULL)
   }
 
+  # Rust returns NULL when the construction finds no valid set. For
+  # "optimal" it first drops the nodes of Y that are not descendants of X
+  # (Henckel et al., 2022, Remark 3.14).
   idx0 <- switch(
     type,
     parents = rs_adjustment_set_parents(cg@session, X_idx0, Y_idx0),
-    backdoor = rs_adjustment_set_backdoor(
-      cg@session,
-      X_idx0,
-      Y_idx0
-    ),
-    optimal = {
-      # Rust drops the nodes of Y that are not descendants of X (Henckel et
-      # al., 2022, Remark 3.14) and reports them.
-      res <- rs_adjustment_set_optimal(cg@session, X_idx0, Y_idx0, TRUE)
-      if (length(res$dropped) > 0) {
-        warning(
-          "Not a descendant of X, so dropped from Y (the effect on it is ",
-          "zero): ",
-          paste(cg@nodes$name[res$dropped + 1L], collapse = ", "),
-          ". The O-set is for the rest of Y.",
-          call. = FALSE
-        )
-      }
-      res$set
-    }
+    backdoor = rs_adjustment_set_backdoor(cg@session, X_idx0, Y_idx0),
+    optimal = rs_adjustment_set_optimal(cg@session, X_idx0, Y_idx0)
   )
+  if (is.null(idx0)) {
+    return(NULL)
+  }
   cg@nodes$name[idx0 + 1L]
 }
 
@@ -202,8 +198,8 @@ adjustment_set <- function(
 #' rejects, since that version requires `Z` alone to block every back-door
 #' path of each treatment. Every set accepted here is a valid adjustment set,
 #' but a valid adjustment set may be rejected, for example one containing a
-#' descendant of `X` off the causal paths. A `Z` that contains a node of `X`
-#' or `Y` is never valid.
+#' descendant of `X` off the causal paths. `X`, `Y` and `Z` must be pairwise
+#' disjoint, so overlapping sets give `FALSE`.
 #'
 #' @references
 #' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
@@ -212,7 +208,7 @@ adjustment_set <- function(
 #'
 #' @param cg A `caugi` object.
 #'
-#' @param X,Y Node names; one or more each, and disjoint.
+#' @param X,Y Node names; one or more each.
 #' @param Z Optional node set for conditioning
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
@@ -257,10 +253,10 @@ is_valid_backdoor <- function(
   .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  if (any(X_idx0 %in% Y_idx0)) {
-    stop("X and Y must be disjoint.", call. = FALSE)
-  }
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
+    return(FALSE)
+  }
 
   rs_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -273,13 +269,14 @@ is_valid_backdoor <- function(
 #' back-door criterion.
 #'
 #' @param cg A `caugi`.
-#' @param X,Y Node names; one or more each, and disjoint.
+#' @param X,Y Node names; one or more each.
 #' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
 #' @returns A list of character vectors, each an adjustment set
-#' (possibly empty).
+#' (possibly empty). The list is empty if no set qualifies, as when `X` and
+#' `Y` overlap.
 #'
 #' @examples
 #' cg <- caugi(
@@ -338,8 +335,8 @@ all_backdoor_sets <- function(
   .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  if (any(X_idx0 %in% Y_idx0)) {
-    stop("X and Y must be disjoint.", call. = FALSE)
+  if (!.disjoint(X_idx0, Y_idx0)) {
+    return(list())
   }
 
   sets_idx0 <- rs_all_backdoor_sets(
@@ -365,8 +362,9 @@ all_backdoor_sets <- function(
 #' result is an m-separator).
 #'
 #' @details
-#' A separator Z for X and Y is a set of nodes such that conditioning on Z
-#' d- or m-separates X from Y in the graph. This function returns a minimal
+#' A separator Z for X and Y is a set of nodes, holding no node of X or Y, such
+#' that conditioning on Z d- or m-separates X from Y in the graph. Nodes of X
+#' and Y in `R` are ignored. This function returns a minimal
 #' separator: no proper subset of Z (excluding I) still separates X and Y.
 #'
 #' The algorithm runs in linear time O(n + m) and is unified across graph
@@ -384,7 +382,8 @@ all_backdoor_sets <- function(
 #' @param X_index,Y_index,I_index,R_index Deprecated; pass node names instead.
 #'
 #' @returns A character vector of node names representing the minimal separator,
-#' or `NULL` if no valid separator exists within the restriction R.
+#' or `NULL` if no valid separator exists within the restriction R, such as
+#' when `X` and `Y` overlap or `I` contains a node of either.
 #'
 #' @source van der Zander, B. & Liśkiewicz, M. (2020). Finding Minimal
 #'   d-separators in Linear Time and Applications. Proceedings of The 35th
@@ -479,6 +478,9 @@ minimal_separator <- function(
   }
   # Resolve I indices (default to empty)
   I_idx0 <- .resolve_idx0_mget(cg@session, I, I_index)
+  if (!.disjoint(X_idx0, Y_idx0, I_idx0)) {
+    return(NULL)
+  }
 
   # Resolve R indices (default to all nodes except X and Y)
   if (is.null(R) && is.null(R_index)) {
@@ -550,7 +552,8 @@ minimal_d_separator <- function(
 #' @param Z Conditioning set (character vector of node names).
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
-#' @returns Logical value indicating if the adjustment set is valid.
+#' @returns Logical value indicating if the adjustment set is valid; `FALSE`
+#'   unless `X`, `Y` and `Z` are pairwise disjoint.
 #'
 #' @examples
 #' # Classic confounding
@@ -591,6 +594,9 @@ is_valid_adjustment_admg <- function(
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
+    return(FALSE)
+  }
 
   rs_is_valid_adjustment_set_admg(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -607,7 +613,7 @@ is_valid_adjustment_admg <- function(
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
 #' @returns A list of character vectors, each a valid adjustment set
-#' (possibly empty list if none exist).
+#' (an empty list if none exist, as when `X` and `Y` overlap).
 #'
 #' @examples
 #' cg <- caugi(
@@ -646,6 +652,9 @@ all_adjustment_sets_admg <- function(
 
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  if (!.disjoint(X_idx0, Y_idx0)) {
+    return(list())
+  }
 
   sets_idx0 <- rs_all_adjustment_sets_admg(
     cg@session,
@@ -718,6 +727,13 @@ all_adjustment_sets_admg <- function(
       call. = FALSE
     )
   }
+}
+
+#' Whether the node sets are pairwise disjoint.
+#' @keywords internal
+#' @noRd
+.disjoint <- function(...) {
+  !anyDuplicated(unlist(lapply(list(...), unique)))
 }
 
 #' Validate `max_size` and return it as an integer.

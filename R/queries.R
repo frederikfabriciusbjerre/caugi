@@ -1350,6 +1350,8 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns A logical value; `TRUE` if `X` and `Y` are m-separated given `Z`.
+#'   Nodes of `Z` are dropped from `X` and `Y` first, so `X` within `Z` gives
+#'   `TRUE`, and `X` and `Y` sharing a node outside `Z` gives `FALSE`.
 #'
 #' @examples
 #' # Classic confounding example

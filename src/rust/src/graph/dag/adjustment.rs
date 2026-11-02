@@ -7,6 +7,16 @@ use crate::graph::CaugiGraph;
 use std::sync::Arc;
 
 const NO_VALID_SET: &str = "No valid adjustment set exists for this X and Y.";
+const PARENTS_NOT_VALID: &str = "The parents of X are not a valid adjustment set here; \
+     use type = \"backdoor\" or \"optimal\".";
+const NO_EFFECT: &str = "No node in Y is a descendant of X, so the total effect of X \
+     on Y is zero; use type = \"backdoor\" for an adjustment set.";
+
+/// Whether `err` says an adjustment construction found no valid set: a
+/// well-defined answer, which R returns as `NULL`, rather than a failure.
+pub fn finds_no_set(err: &str) -> bool {
+    [NO_VALID_SET, PARENTS_NOT_VALID, NO_EFFECT].contains(&err)
+}
 
 impl Dag {
     /// Parent-based adjustment set `Z = (⋃ Pa(X)) \ (X ∪ Y)`.
@@ -44,9 +54,7 @@ impl Dag {
         } else if self.adjustment_set_backdoor(xs, ys).is_err() {
             Err(NO_VALID_SET.into())
         } else {
-            Err("The parents of X are not a valid adjustment set here; \
-                 use type = \"backdoor\" or \"optimal\"."
-                .into())
+            Err(PARENTS_NOT_VALID.into())
         }
     }
 
@@ -117,30 +125,18 @@ impl Dag {
     /// it is valid whenever any valid adjustment set exists, and among those it
     /// gives the smallest asymptotic variance in linear models.
     ///
-    /// Returns the O-set and, when `return_dropped` is true, the dropped nodes
-    /// of `Ys`, so a caller can tell its user which outcomes were left out.
     /// A dropped node can itself be in the O-set (`Y2` in `X -> Y1 <- Y2`).
     ///
     /// # Errors
     ///
     /// When no node of `Ys` is a descendant of `Xs`, or no valid adjustment set
     /// exists.
-    pub fn adjustment_set_optimal(
-        &self,
-        xs: &[u32],
-        ys: &[u32],
-        return_dropped: bool,
-    ) -> Result<(Vec<u32>, Option<Vec<u32>>), String> {
+    pub fn adjustment_set_optimal(&self, xs: &[u32], ys: &[u32]) -> Result<Vec<u32>, String> {
         let n = self.n() as usize;
         let de_x = self.descendants_mask(xs);
-        let (ys, dropped): (Vec<u32>, Vec<u32>) =
-            ys.iter().copied().partition(|&y| de_x[y as usize]);
+        let ys: Vec<u32> = ys.iter().copied().filter(|&y| de_x[y as usize]).collect();
         if ys.is_empty() {
-            return Err(
-                "No node in Y is a descendant of X, so the total effect of X \
-                 on Y is zero; use type = \"backdoor\" for an adjustment set."
-                    .into(),
-            );
+            return Err(NO_EFFECT.into());
         }
         // Every y is now in cn, so De(cn) ∪ Xs = forb(Xs,Ys) already covers Ys.
         let cn = self.causal_nodes(xs, &ys);
@@ -160,7 +156,7 @@ impl Dag {
         // (Henckel et al., 2022, Theorem 3.13). A valid set for the full Ys is
         // also valid for this subset, so none exists for the full Ys either.
         if self.is_valid_adjustment_set(xs, &ys, &z) {
-            Ok((z, return_dropped.then_some(dropped)))
+            Ok(z)
         } else {
             Err(NO_VALID_SET.into())
         }
@@ -344,10 +340,7 @@ mod tests {
         b.add_edge(3, 1, d).unwrap();
 
         let g = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        assert_eq!(
-            g.adjustment_set_optimal(&[1], &[2], false).unwrap().0,
-            vec![0]
-        );
+        assert_eq!(g.adjustment_set_optimal(&[1], &[2]).unwrap(), vec![0]);
     }
 
     #[test]
@@ -566,11 +559,7 @@ mod tests {
         let g = dag_from(4, &[(0, 1), (1, 2), (2, 3)]);
         assert_eq!(g.adjustment_set_parents(&[0, 2], &[3]).unwrap(), vec![1]);
         assert!(g.adjustment_set_backdoor(&[0, 2], &[3]).unwrap().is_empty());
-        assert!(g
-            .adjustment_set_optimal(&[0, 2], &[3], false)
-            .unwrap()
-            .0
-            .is_empty());
+        assert!(g.adjustment_set_optimal(&[0, 2], &[3]).unwrap().is_empty());
         assert!(g.is_valid_adjustment_set(&[0, 2], &[3], &[1]));
     }
 
@@ -606,7 +595,7 @@ mod tests {
         for err in [
             g.adjustment_set_parents(&[0, 2], &[3]).unwrap_err(),
             g.adjustment_set_backdoor(&[0, 2], &[3]).unwrap_err(),
-            g.adjustment_set_optimal(&[0, 2], &[3], false).unwrap_err(),
+            g.adjustment_set_optimal(&[0, 2], &[3]).unwrap_err(),
         ] {
             assert_eq!(err, NO_VALID_SET);
         }
@@ -624,19 +613,16 @@ mod tests {
         // Remark 3.14) and the O-set for Y1 is empty.
         let g = dag_from(4, &[(0, 1), (2, 0), (2, 3)]);
         assert_eq!(
-            g.adjustment_set_optimal(&[0], &[1, 3], true).unwrap(),
-            (vec![], Some(vec![3]))
+            g.adjustment_set_optimal(&[0], &[1, 3]).unwrap(),
+            Vec::<u32>::new()
         );
-        let err = g.adjustment_set_optimal(&[0], &[3], false).unwrap_err();
+        let err = g.adjustment_set_optimal(&[0], &[3]).unwrap_err();
         assert!(err.contains("No node in Y is a descendant of X"));
 
         // X=0 -> Y1=1 <- Y2=2: the dropped Y2 is a parent of Y1, so it is in
         // the O-set for Y1.
         let g = dag_from(3, &[(0, 1), (2, 1)]);
-        assert_eq!(
-            g.adjustment_set_optimal(&[0], &[1, 2], true).unwrap(),
-            (vec![2], Some(vec![2]))
-        );
+        assert_eq!(g.adjustment_set_optimal(&[0], &[1, 2]).unwrap(), vec![2]);
     }
 
     #[test]
@@ -664,7 +650,7 @@ mod tests {
                         |u| g.children_of(u),
                     );
                     assert_eq!(
-                        g.adjustment_set_optimal(&[x], &[y], false).unwrap().0,
+                        g.adjustment_set_optimal(&[x], &[y]).unwrap(),
                         single,
                         "edges {edges:?}, x {x}, y {y}"
                     );
@@ -775,11 +761,7 @@ mod tests {
         let mut edges: Vec<(u32, u32)> = (0..k).map(|u| (u, x)).collect();
         edges.push((x, y));
         let g = dag_from(k + 2, &edges);
-        assert!(g
-            .adjustment_set_optimal(&[x], &[y], false)
-            .unwrap()
-            .0
-            .is_empty());
+        assert!(g.adjustment_set_optimal(&[x], &[y]).unwrap().is_empty());
         assert_eq!(
             g.adjustment_set_parents(&[x], &[y]).unwrap().len(),
             k as usize

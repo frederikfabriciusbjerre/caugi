@@ -50,7 +50,8 @@ X and Y.}
 }
 \value{
 A character vector of node names representing the minimal separator,
-or \code{NULL} if no valid separator exists within the restriction R.
+or \code{NULL} if no valid separator exists within the restriction R, such as
+when \code{X} and \code{Y} overlap or \code{I} contains a node of either.
 }
 \description{
 Computes a minimal separator Z for sets X and Y, optionally with
@@ -59,8 +60,9 @@ the result is a d-separator), ADMGs, ancestral graphs and PAGs (where the
 result is an m-separator).
 }
 \details{
-A separator Z for X and Y is a set of nodes such that conditioning on Z
-d- or m-separates X from Y in the graph. This function returns a minimal
+A separator Z for X and Y is a set of nodes, holding no node of X or Y, such
+that conditioning on Z d- or m-separates X from Y in the graph. Nodes of X
+and Y in \code{R} are ignored. This function returns a minimal
 separator: no proper subset of Z (excluding I) still separates X and Y.
 
 The algorithm runs in linear time O(n + m) and is unified across graph

@@ -24,7 +24,8 @@ is_valid_adjustment_admg(
 \item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
-Logical value indicating if the adjustment set is valid.
+Logical value indicating if the adjustment set is valid; \code{FALSE}
+unless \code{X}, \code{Y} and \code{Z} are pairwise disjoint.
 }
 \description{
 Checks whether \code{Z} is a valid adjustment set for estimating

@@ -155,14 +155,6 @@ test_that("all_backdoor_sets includes empty set, if valid", {
 
 test_that("backdoor and d-separation functions check X and Y", {
   expect_error(
-    is_valid_backdoor(adjustment_set_cg, X = "X", Y = c("Y", "X"), Z = "A"),
-    "X and Y must be disjoint."
-  )
-  expect_error(
-    all_backdoor_sets(adjustment_set_cg, X = "X", Y = c("Y", "X")),
-    "X and Y must be disjoint."
-  )
-  expect_error(
     d_separated(adjustment_set_cg, X = c("C", "X"), Z = "A"),
     "Y must be provided."
   )
@@ -178,21 +170,30 @@ test_that("backdoor and d-separation functions check X and Y", {
   }
 })
 
-test_that("is_valid_backdoor rejects a Z that contains the outcome", {
-  cg <- caugi(U %-->% X + Y, class = "DAG")
-  expect_true(is_valid_backdoor(cg, "X", "Y", Z = "U"))
-  expect_false(is_valid_backdoor(cg, "X", "Y", Z = "Y"))
-  expect_false(is_valid_backdoor(cg, "X", "Y", Z = c("U", "Y")))
+test_that("separation and adjustment handle overlapping node sets", {
+  dag <- caugi(U %-->% X + Y, X %-->% Y, class = "DAG")
+  # X has no effect on Y, so only Y in Z could make the ADMG check accept it
+  admg <- caugi(U %-->% X + Y, class = "ADMG")
+  # Nodes of Z are dropped from X and Y before testing separation
+  expect_false(d_separated(dag, "X", "X"))
+  expect_true(d_separated(dag, "U", "Y", Z = "U"))
+  expect_true(m_separated(admg, "U", "Y", Z = "Y"))
+  expect_false(is_valid_backdoor(dag, "X", "Y", Z = c("U", "Y")))
+  expect_false(is_valid_adjustment_admg(admg, "X", "Y", Z = c("U", "Y")))
+  expect_null(minimal_separator(dag, "X", "X"))
+  expect_null(minimal_separator(admg, "X", "Y", I = "Y"))
+  # Overlapping X and Y leave no admissible adjustment set
+  expect_false(is_valid_backdoor(dag, "X", c("X", "Y")))
+  expect_false(is_valid_adjustment_admg(admg, "X", "X"))
+  expect_null(adjustment_set(dag, c("X", "Y"), "Y"))
+  expect_identical(all_backdoor_sets(dag, "X", c("X", "Y")), list())
+  expect_identical(all_adjustment_sets_admg(admg, "X", "X"), list())
 })
 
 test_that("adjust functions fails with faulty input", {
   expect_error(
     adjustment_set(adjustment_set_cg, X = "X", Y = NULL, type = "parents"),
     "Y must be provided"
-  )
-  expect_error(
-    adjustment_set(adjustment_set_cg, X = c("X", "Y"), Y = "Y"),
-    "X and Y must be disjoint"
   )
   for (type in c("optimal", "parents", "backdoor")) {
     expect_error(
@@ -492,54 +493,34 @@ test_that("adjustment_set() takes several treatments", {
   X <- c("X1", "X2")
   expect_equal(adjustment_set(cg, X, "Y", type = "optimal"), "U")
   expect_equal(adjustment_set(cg, X, "Y", type = "backdoor"), "U")
-  expect_error(
-    adjustment_set(cg, X, "Y", type = "parents"),
-    "parents of X are not a valid adjustment set"
-  )
+  expect_null(adjustment_set(cg, X, "Y", type = "parents"))
 })
 
-test_that("adjustment_set() errors when no valid set exists", {
+test_that("adjustment_set() returns NULL when no valid set exists", {
   # Only L blocks X2 <-- L --> Y, but L is on the causal path X1 --> L --> Y.
   cg <- caugi(X1 %-->% L, L %-->% X2 + Y, X2 %-->% Y, class = "DAG")
   for (type in c("optimal", "parents", "backdoor")) {
-    expect_error(
-      adjustment_set(cg, c("X1", "X2"), "Y", type = type),
-      "No valid adjustment set exists"
-    )
+    expect_null(adjustment_set(cg, c("X1", "X2"), "Y", type = type))
   }
   # Y is a parent of X.
-  expect_error(
-    adjustment_set(
-      caugi(Y %-->% X, class = "DAG"),
-      "X",
-      "Y",
-      type = "backdoor"
-    ),
-    "No valid adjustment set exists"
+  expect_null(
+    adjustment_set(caugi(Y %-->% X, class = "DAG"), "X", "Y", type = "backdoor")
   )
 })
 
 test_that("adjustment_set(type = 'optimal') drops Y not descending from X", {
   # Henckel, Perković & Maathuis (2022), Remark 3.14, as in pcalg::optAdjSet.
   cg <- caugi(U %-->% X + Y2, X %-->% Y1, class = "DAG")
-  expect_warning(
-    z <- adjustment_set(cg, "X", c("Y1", "Y2"), type = "optimal"),
-    "dropped from Y.*Y2"
+  expect_equal(
+    adjustment_set(cg, "X", c("Y1", "Y2"), type = "optimal"),
+    character(0)
   )
-  expect_equal(z, character(0))
-  expect_error(
-    adjustment_set(cg, "X", "Y2", type = "optimal"),
-    "No node in Y is a descendant of X"
-  )
+  expect_null(adjustment_set(cg, "X", "Y2", type = "optimal"))
   expect_equal(adjustment_set(cg, "X", c("Y1", "Y2"), type = "backdoor"), "U")
 
   # A dropped node can be in the O-set: Y2 is a parent of Y1.
   cg <- caugi(X %-->% Y1, Y2 %-->% Y1, class = "DAG")
-  expect_warning(
-    z <- adjustment_set(cg, "X", c("Y1", "Y2"), type = "optimal"),
-    "dropped from Y.*Y2"
-  )
-  expect_equal(z, "Y2")
+  expect_equal(adjustment_set(cg, "X", c("Y1", "Y2"), type = "optimal"), "Y2")
 })
 
 test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
@@ -581,29 +562,23 @@ test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
     label <- paste("rep", rep)
 
     for (type in c("parents", "backdoor")) {
-      z <- tryCatch(
-        adjustment_set(cg, X, Y, type = type),
-        error = conditionMessage
-      )
-      if (!grepl("adjustment set", z[1])) {
+      z <- adjustment_set(cg, X, Y, type = type)
+      if (!is.null(z)) {
         expect_true(oracle(z), label = paste(label, type))
-      } else if (grepl("No valid adjustment set exists", z)) {
+      } else if (type == "backdoor") {
         expect_false(any_valid, label = paste(label, type))
       } else {
-        # "parents" was not valid, but another set is.
-        expect_true(any_valid, label = paste(label, type))
-        expect_false(type == "backdoor", label = paste(label, type))
+        # The parents of X are not valid, though another set may be.
+        pa <- setdiff(edges$from[edges$to %in% X], c(X, Y))
+        expect_false(oracle(pa), label = paste(label, type))
       }
     }
 
     # "optimal" answers for Y ∩ De(X) (Henckel et al. 2022, Remark 3.14).
     Yd <- intersect(Y, de_x)
-    z <- tryCatch(
-      suppressWarnings(adjustment_set(cg, X, Y, type = "optimal")),
-      error = conditionMessage
-    )
+    z <- adjustment_set(cg, X, Y, type = "optimal")
     if (length(Yd) == 0) {
-      expect_match(z, "No node in Y is a descendant of X", label = label)
+      expect_null(z, label = label)
       next
     }
     oracle_d <- .gac_oracle(edges, X, Yd)
@@ -618,7 +593,7 @@ test_that("adjustment_set() agrees with a brute-force oracle on random DAGs", {
       oracle_d,
       logical(1)
     ))
-    if (grepl("No valid adjustment set exists", z[1])) {
+    if (is.null(z)) {
       expect_false(any_valid_d, label = paste(label, "optimal"))
     } else {
       expect_true(oracle_d(z), label = paste(label, "optimal"))
@@ -685,23 +660,22 @@ test_that("adjustment agrees with exact do-calculus in random binary models", {
       label <- paste("DAG rep", rep, type)
       # "optimal" answers for Y ∩ De(X) (Henckel et al. 2022, Remark 3.14).
       Yt <- if (type == "optimal") intersect(Y, de_x) else Y
-      z <- tryCatch(
-        suppressWarnings(adjustment_set(cg, X, Y, type = type)),
-        error = conditionMessage
-      )
+      z <- adjustment_set(cg, X, Y, type = type)
       if (length(Yt) == 0) {
-        expect_match(z, "No node in Y is a descendant of X", label = label)
+        expect_null(z, label = label)
         next
       }
       Zs <- subsets_of(setdiff(nodes, c(X, Yt)))
       truth <- .exact_adjustment_gap(edges, nodes, X, Yt, Zs) < 1e-10
-      if (length(z) == 1 && grepl("No valid adjustment set exists", z)) {
+      keys <- vapply(Zs, key, "")
+      if (is.null(z) && type == "parents") {
+        # The parents of X are not valid, though another set may be.
+        pa <- setdiff(edges$from[edges$to %in% X], c(X, Yt))
+        expect_false(truth[match(key(pa), keys)], label = label)
+      } else if (is.null(z)) {
         expect_false(any(truth), label = label)
-      } else if (length(z) == 1 && grepl("adjustment set", z)) {
-        # "parents" is not valid here, but another set is.
-        expect_true(any(truth), label = label)
       } else {
-        expect_true(truth[match(key(z), vapply(Zs, key, ""))], label = label)
+        expect_true(truth[match(key(z), keys)], label = label)
       }
     }
   }

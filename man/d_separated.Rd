@@ -23,7 +23,9 @@ or missing, no nodes are conditioned on.}
 \item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
-\code{TRUE} if d-separated, \code{FALSE} otherwise.
+\code{TRUE} if d-separated, \code{FALSE} otherwise. Nodes of \code{Z} are
+dropped from \code{X} and \code{Y} first, so \code{X} within \code{Z} gives \code{TRUE}, and \code{X}
+and \code{Y} sharing a node outside \code{Z} gives \code{FALSE}.
 }
 \description{
 Checks whether every node in \code{X} is d-separated from every node

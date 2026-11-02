@@ -27,7 +27,7 @@ all_adjustment_sets_admg(
 }
 \value{
 A list of character vectors, each a valid adjustment set
-(possibly empty list if none exist).
+(an empty list if none exist, as when \code{X} and \code{Y} overlap).
 }
 \description{
 Enumerates all valid adjustment sets for estimating the causal

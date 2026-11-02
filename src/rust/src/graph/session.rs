@@ -441,20 +441,69 @@ impl GraphSession {
     }
 
     pub fn set_edges(&mut self, edges: EdgeBuffer) {
-        self.edges = edges;
+        self.edges = self.canonical_edges(&edges);
+        self.invalidate_core();
+    }
+
+    fn is_symmetric(&self, etype: u8) -> bool {
+        self.registry
+            .specs
+            .get(etype as usize)
+            .is_some_and(|s| s.symmetric)
+    }
+
+    /// A symmetric edge runs from its lower to its higher node, so both ways
+    /// of writing it compare equal.
+    fn canonical(&self, u: u32, v: u32, etype: u8) -> (u32, u32, u8) {
+        if v < u && self.is_symmetric(etype) {
+            (v, u, etype)
+        } else {
+            (u, v, etype)
+        }
+    }
+
+    /// `edges` in canonical form. Repeats are kept, so building the graph
+    /// reports them as duplicates.
+    fn canonical_edges(&self, edges: &EdgeBuffer) -> EdgeBuffer {
+        let mut out = EdgeBuffer::with_capacity(edges.len());
+        for i in 0..edges.len() {
+            let (u, v, t) = self.canonical(edges.from[i], edges.to[i], edges.etype[i]);
+            out.push(u, v, t);
+        }
+        out
+    }
+
+    /// Add `new_edges`, skipping those already in the graph; a symmetric edge
+    /// matches whichever way it is written. Repeats within `new_edges` are
+    /// kept, so building the graph reports them as duplicates.
+    pub fn add_edges(&mut self, new_edges: EdgeBuffer) {
+        let present: FxHashSet<(u32, u32, u8)> = (0..self.edges.len())
+            .map(|i| self.canonical(self.edges.from[i], self.edges.to[i], self.edges.etype[i]))
+            .collect();
+        let new_edges = self.canonical_edges(&new_edges);
+        for i in 0..new_edges.len() {
+            let (u, v, t) = (new_edges.from[i], new_edges.to[i], new_edges.etype[i]);
+            if !present.contains(&(u, v, t)) {
+                self.edges.push(u, v, t);
+            }
+        }
         self.invalidate_core();
     }
 
     /// Copy the session without the requested edges, validating its graph class.
     ///
-    /// Typed requests match the stored orientation. Untyped pairs remove every
-    /// edge between the endpoints in either direction, as in R's `remove_edges`.
+    /// Typed requests match a symmetric edge whichever way it is written.
+    /// Untyped pairs remove every edge between the endpoints in either
+    /// direction, as in R's `remove_edges`.
     pub fn without_edges(
         &self,
         typed: &[(u32, u32, u8)],
         pairs: &[(u32, u32)],
     ) -> Result<Self, String> {
-        let typed: FxHashSet<_> = typed.iter().copied().collect();
+        let typed: FxHashSet<_> = typed
+            .iter()
+            .map(|&(u, v, t)| self.canonical(u, v, t))
+            .collect();
         let pairs: FxHashSet<_> = pairs
             .iter()
             .map(|&(u, v)| if u <= v { (u, v) } else { (v, u) })
@@ -462,9 +511,8 @@ impl GraphSession {
         let mut kept = EdgeBuffer::with_capacity(self.edges.len());
         let mut seen = FxHashSet::default();
         for i in 0..self.edges.len() {
-            let u = self.edges.from[i];
-            let v = self.edges.to[i];
-            let t = self.edges.etype[i];
+            let (u, v, t) =
+                self.canonical(self.edges.from[i], self.edges.to[i], self.edges.etype[i]);
             let pair = if u <= v { (u, v) } else { (v, u) };
             if !typed.contains(&(u, v, t)) && !pairs.contains(&pair) && seen.insert((u, v, t)) {
                 kept.push(u, v, t);
@@ -493,50 +541,35 @@ impl GraphSession {
         Ok(out)
     }
 
+    /// Replace the edges between the endpoints of each new edge: all of them in
+    /// a simple graph or for a symmetric new edge, else those from `u` to `v`,
+    /// so `v --> u` survives setting `u --> v`. An existing symmetric edge runs
+    /// both ways, so it is always replaced. Repeats within `new_edges` are
+    /// kept, so building the graph reports them as duplicates.
     pub fn replace_edges_for_pairs(&mut self, new_edges: EdgeBuffer) {
-        let mut remove_pairs: FxHashSet<(u32, u32)> =
-            FxHashSet::with_capacity_and_hasher(new_edges.len(), Default::default());
-        if self.simple {
-            for i in 0..new_edges.len() {
-                let u = new_edges.from[i];
-                let v = new_edges.to[i];
-                let pair = if u <= v { (u, v) } else { (v, u) };
-                remove_pairs.insert(pair);
-            }
-        } else {
-            for i in 0..new_edges.len() {
-                remove_pairs.insert((new_edges.from[i], new_edges.to[i]));
+        let new_edges = self.canonical_edges(&new_edges);
+        let mut occupied: FxHashSet<(u32, u32)> =
+            FxHashSet::with_capacity_and_hasher(2 * new_edges.len(), Default::default());
+        for i in 0..new_edges.len() {
+            let (u, v) = (new_edges.from[i], new_edges.to[i]);
+            occupied.insert((u, v));
+            if self.simple || self.is_symmetric(new_edges.etype[i]) {
+                occupied.insert((v, u));
             }
         }
 
         let mut kept = EdgeBuffer::with_capacity(self.edges.len() + new_edges.len());
-        let mut seen: FxHashSet<(u32, u32, u8)> = FxHashSet::with_capacity_and_hasher(
-            self.edges.len() + new_edges.len(),
-            Default::default(),
-        );
-
         for i in 0..self.edges.len() {
-            let u = self.edges.from[i];
-            let v = self.edges.to[i];
-            let t = self.edges.etype[i];
-            let remove = if self.simple {
-                let pair = if u <= v { (u, v) } else { (v, u) };
-                remove_pairs.contains(&pair)
-            } else {
-                remove_pairs.contains(&(u, v))
-            };
-            if !remove && seen.insert((u, v, t)) {
+            let (u, v, t) =
+                self.canonical(self.edges.from[i], self.edges.to[i], self.edges.etype[i]);
+            let remove =
+                occupied.contains(&(u, v)) || (self.is_symmetric(t) && occupied.contains(&(v, u)));
+            if !remove {
                 kept.push(u, v, t);
             }
         }
-
         for i in 0..new_edges.len() {
-            let u = new_edges.from[i];
-            let v = new_edges.to[i];
-            let t = new_edges.etype[i];
-            if seen.insert((u, v, t)) {
-                kept.push(u, v, t);
-            }
+            kept.push(new_edges.from[i], new_edges.to[i], new_edges.etype[i]);
         }
 
         self.edges = kept;
@@ -544,8 +577,7 @@ impl GraphSession {
     }
 
     pub fn set_edges_from_vecs(&mut self, from: Vec<u32>, to: Vec<u32>, etype: Vec<u8>) {
-        self.edges = EdgeBuffer { from, to, etype };
-        self.invalidate_core();
+        self.set_edges(EdgeBuffer { from, to, etype });
     }
 
     /// The cached view stays if it is of the new class, as after
@@ -590,7 +622,7 @@ impl GraphSession {
         self.simple = simple;
         self.graph_class = class;
         self.registry = registry;
-        self.edges = edges;
+        self.edges = self.canonical_edges(&edges);
         self.name_to_index = Self::build_name_to_index(&names);
         self.names = names;
         self.invalidate_core();
@@ -730,7 +762,7 @@ impl GraphSession {
         m_separated(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
         adjustment_set_parents(xs: &[u32], ys: &[u32]) -> Vec<u32>;
         adjustment_set_backdoor(xs: &[u32], ys: &[u32]) -> Vec<u32>;
-        adjustment_set_optimal(xs: &[u32], ys: &[u32], return_dropped: bool) -> (Vec<u32>, Option<Vec<u32>>);
+        adjustment_set_optimal(xs: &[u32], ys: &[u32]) -> Vec<u32>;
         is_valid_adjustment_set_admg(xs: &[u32], ys: &[u32], z: &[u32]) -> bool;
         all_adjustment_sets_admg(xs: &[u32], ys: &[u32], minimal: bool, max_size: u32) -> Vec<Vec<u32>>;
     }
@@ -1455,25 +1487,40 @@ mod tests {
 
         let mut repl = EdgeBuffer::new();
         repl.push(1, 0, u);
-        repl.push(1, 0, u); // duplicate in replacement input
         simple.replace_edges_for_pairs(repl);
-        assert_eq!(simple.edge_buffer().from, vec![1, 1]);
-        assert_eq!(simple.edge_buffer().to, vec![2, 0]);
+        assert_eq!(simple.edge_buffer().from, vec![1, 0]);
+        assert_eq!(simple.edge_buffer().to, vec![2, 1]);
         assert_eq!(simple.edge_buffer().etype, vec![d, u]);
 
+        // A symmetric edge written both ways is a repeat, which the build rejects.
+        let mut repeat = EdgeBuffer::new();
+        repeat.push(1, 2, u);
+        repeat.push(2, 1, u);
+        simple.replace_edges_for_pairs(repeat);
+        assert!(simple.core().is_err());
+
+        let c = reg.code_of("o->").unwrap();
         let mut non_simple = GraphSession::new(&reg, 3, false, GraphClass::Unknown);
         let mut old2 = EdgeBuffer::new();
         old2.push(0, 1, d);
         old2.push(1, 0, d);
-        old2.push(0, 1, d); // duplicate to exercise dedup
         non_simple.set_edges(old2);
 
+        // A directed replacement keeps the edge in the opposite direction...
         let mut repl2 = EdgeBuffer::new();
-        repl2.push(0, 1, u);
+        repl2.push(0, 1, c);
         non_simple.replace_edges_for_pairs(repl2);
         assert_eq!(non_simple.edge_buffer().from, vec![1, 0]);
         assert_eq!(non_simple.edge_buffer().to, vec![0, 1]);
-        assert_eq!(non_simple.edge_buffer().etype, vec![d, u]);
+        assert_eq!(non_simple.edge_buffer().etype, vec![d, c]);
+
+        // ...but a symmetric one runs both ways, so it replaces both.
+        let mut repl3 = EdgeBuffer::new();
+        repl3.push(1, 0, u);
+        non_simple.replace_edges_for_pairs(repl3);
+        assert_eq!(non_simple.edge_buffer().from, vec![0]);
+        assert_eq!(non_simple.edge_buffer().to, vec![1]);
+        assert_eq!(non_simple.edge_buffer().etype, vec![u]);
     }
 
     #[test]
@@ -1499,7 +1546,7 @@ mod tests {
         assert!(s.built_view().is_some());
 
         let reversed = s.without_edges(&[(1, 0, b)], &[]).unwrap();
-        assert_eq!(reversed.edge_buffer().len(), 3);
+        assert_eq!(reversed.edge_buffer().etype, vec![d, d]);
         let empty = s.without_edges(&[], &[(1, 0)]).unwrap();
         assert!(empty.edge_buffer().is_empty());
         assert_eq!(empty.n(), 3);
@@ -1604,7 +1651,7 @@ mod tests {
         let backdoor = session.adjustment_set_backdoor(&[0], &[1]).unwrap();
         assert!(backdoor.iter().all(|&z| z < 3 && z != 0 && z != 1));
 
-        let (optimal, _) = session.adjustment_set_optimal(&[0], &[1], false).unwrap();
+        let optimal = session.adjustment_set_optimal(&[0], &[1]).unwrap();
         assert!(optimal.iter().all(|&z| z < 3 && z != 0 && z != 1));
 
         assert!(session
@@ -1617,10 +1664,7 @@ mod tests {
 
         // Several treatments are supported; Y as a parent of X has no valid set.
         assert_eq!(
-            session
-                .adjustment_set_optimal(&[0, 2], &[1], false)
-                .unwrap()
-                .0,
+            session.adjustment_set_optimal(&[0, 2], &[1]).unwrap(),
             Vec::<u32>::new()
         );
         assert!(session.adjustment_set_backdoor(&[0], &[2]).is_err());
@@ -1667,7 +1711,7 @@ mod tests {
         assert!(ug.minimal_separator(&[0], &[1], &[], &[]).is_err());
         assert!(ug.adjustment_set_parents(&[0], &[1]).is_err());
         assert!(ug.adjustment_set_backdoor(&[0], &[1]).is_err());
-        assert!(ug.adjustment_set_optimal(&[0], &[1], false).is_err());
+        assert!(ug.adjustment_set_optimal(&[0], &[1]).is_err());
         assert!(ug.is_valid_backdoor_set(&[0], &[1], &[]).is_err());
         assert!(ug.all_backdoor_sets(&[0], &[1], true, 2).is_err());
 
@@ -2139,7 +2183,7 @@ mod tests {
         assert!(pdag.districts().is_err());
         assert!(pdag.adjustment_set_parents(&[0], &[2]).is_err());
         assert!(pdag.adjustment_set_backdoor(&[0], &[2]).is_err());
-        assert!(pdag.adjustment_set_optimal(&[0], &[2], false).is_err());
+        assert!(pdag.adjustment_set_optimal(&[0], &[2]).is_err());
         assert!(pdag.is_valid_backdoor_set(&[0], &[2], &[1]).is_err());
         assert!(pdag.all_backdoor_sets(&[0], &[2], true, 2).is_err());
         assert!(pdag.is_valid_adjustment_set_admg(&[0], &[2], &[1]).is_err());
@@ -2250,7 +2294,7 @@ mod tests {
         assert!(dag.m_separated(&[0], &[1], &[]).is_err());
         assert!(dag.adjustment_set_parents(&[0], &[1]).is_err());
         assert!(dag.adjustment_set_backdoor(&[0], &[1]).is_err());
-        assert!(dag.adjustment_set_optimal(&[0], &[1], false).is_err());
+        assert!(dag.adjustment_set_optimal(&[0], &[1]).is_err());
         assert!(dag.is_valid_backdoor_set(&[0], &[1], &[]).is_err());
         assert!(dag.all_backdoor_sets(&[0], &[1], false, 10).is_err());
         assert!(dag.is_valid_adjustment_set_admg(&[0], &[1], &[]).is_err());

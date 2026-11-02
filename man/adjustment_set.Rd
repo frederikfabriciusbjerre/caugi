@@ -16,7 +16,7 @@ adjustment_set(
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{X, Y}{Node names; one or more each, and disjoint.}
+\item{X, Y}{Node names; one or more each.}
 
 \item{X_index, Y_index}{Deprecated; pass node names instead.}
 
@@ -24,7 +24,10 @@ adjustment_set(
 The \code{optimal} option computes the O-set.}
 }
 \value{
-A character vector of node names representing the adjustment set.
+A character vector of node names representing the adjustment set
+(\code{character(0)} if none is needed), or \code{NULL} if there is none: the
+requested construction found no valid set, or \code{X} and \code{Y} overlap, as
+adjustment sets are defined for disjoint \code{X} and \code{Y}.
 }
 \description{
 Computes an adjustment set for the effect of \code{X} on \code{Y} in a
@@ -47,17 +50,20 @@ path. Note that minimal is not the same as statistically optimal; use
 \item \code{"optimal"}: the O-set \eqn{\mathrm{Pa}(\mathrm{cn}(X, Y)) \setminus
   \mathrm{forb}(X, Y)} (Henckel, Perković & Maathuis, 2022). Following
 their Remark 3.14, nodes of \code{Y} that are not descendants of \code{X} are
-dropped with a warning, since the total effect on them is zero, and the
+dropped, since the total effect on them is zero, and the
 O-set is computed for the rest of \code{Y}. It is then valid whenever any valid
-set exists. If no node of \code{Y} is a descendant of \code{X}, an error is raised.
+set exists. If no node of \code{Y} is a descendant of \code{X}, there is no O-set.
 A dropped node can itself be in the O-set: for \verb{X --> Y1 <-- Y2} with
 \code{Y = c("Y1", "Y2")}, \code{Y2} is dropped from \code{Y} and returned as the O-set,
 since it is a parent of \code{Y1}.
 }
 
 Every result is checked against the generalized adjustment criterion
-(Perković et al., 2018). An error is raised when the requested set is not
-valid. In particular, a valid set need not exist with several treatments:
+(Perković et al., 2018). When the requested set is not valid, or does not
+exist, \code{NULL} is returned: for \code{"parents"}, the parents of \code{X} are not a
+valid set, though another set may be; for \code{"backdoor"}, no valid set exists;
+for \code{"optimal"}, no valid set exists or no node of \code{Y} is a descendant of
+\code{X}. In particular, a valid set need not exist with several treatments:
 in \verb{X1 --> L --> X2}, \verb{L --> Y}, only \code{L} blocks \verb{X2 <-- L --> Y}, but it
 lies on the causal path \verb{X1 --> L --> Y}. With a single treatment, no valid
 set exists only when a node of \code{Y} is a parent of \code{X}.

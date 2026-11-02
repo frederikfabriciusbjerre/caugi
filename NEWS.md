@@ -65,7 +65,7 @@
   every `type`. `type = "optimal"` returns the O-set of Henckel, Perković &
   Maathuis (2022) for node sets. As in their Remark 3.14 and
   `pcalg::optAdjSet()`, nodes of `Y` that are not descendants of `X` are
-  dropped with a warning, since the total effect on them is zero. A dropped
+  dropped, since the total effect on them is zero. A dropped
   node can itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
 * `is_valid_backdoor()`, `all_backdoor_sets()` and `d_separated()` now accept
@@ -91,10 +91,27 @@
   so the first query built and validated it again. The view is now kept. This
   halves the cost of graphs whose check is expensive, such as CPDAGs and MPDAGs.
 
+## Improvements
+
+* `adjustment_set()` returns `NULL` instead of an error when the requested
+  construction finds no valid set: none exists, the parents of `X` are not
+  valid (`type = "parents"`), or no node of `Y` is a descendant of `X`
+  (`type = "optimal"`). Every "no set" answer is now `NULL`, as for
+  overlapping `X` and `Y`, while `character(0)` still means adjusting for
+  nothing is valid.
+
 ## Bug Fixes
 
 * Plot compositions using `+`, `|`, and `/` now give equal space to all plots
   in the same row or column, while preserving mixed layouts (#434).
+
+- Symmetric edges (`---`, `<->`, `o-o`) match whichever way they are written
+  (#392). `remove_edges(cg, B %---% A)` removes `A --- B`, `add_edges()`
+  leaves an edge already in the graph unchanged whichever way it is written,
+  and `set_edges()` replaces a symmetric edge between the pair in any graph. A
+  symmetric edge is stored from the node that comes first in `nodes(cg)`.
+  Given both ways in one input, as in `caugi(A %---% B, B %---% A)`, it is
+  still a duplicate and errors.
 
 - `write_graphml()` and `read_graphml()` now write and read UTF-8, as the file
   declares. In a non-UTF-8 locale a node name such as `"æø"` came back as
@@ -133,6 +150,17 @@
 
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
   accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
+
+- Overlapping node sets are answered, not rejected (#387). `d_separated()`
+  and `m_separated()` document their convention: nodes of `Z` are dropped from
+  `X` and `Y` first. Adjustment sets are defined for pairwise disjoint `X`,
+  `Y` and `Z`, so the adjustment functions treat any other triple as not
+  admissible: `is_valid_backdoor()` and `is_valid_adjustment_admg()` return
+  `FALSE`, `adjustment_set()` returns `NULL`, and `all_backdoor_sets()` and
+  `all_adjustment_sets_admg()` return `list()`, where some of them errored and
+  `is_valid_adjustment_admg()` accepted a `Z` holding `Y` when `X` has no effect
+  on `Y`. `minimal_separator()` returns `NULL` when `X` and `Y` overlap or `I`
+  contains a node of either; it returned a set that does not separate them.
 
 - caugi's JSON output now validates against its published schema: the schema
   allows the top-level `$schema` key that every file has, and its class list

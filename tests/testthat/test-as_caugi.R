@@ -281,7 +281,7 @@ test_that("igraph dispatch works and respects directedness + collapse", {
   )
   e_rev <- edges(as_caugi(g_rev, class = "PDAG", collapse = TRUE))
   expect_equal(nrow(e_rev), 1L)
-  expect_equal(c(e_rev$from, e_rev$edge, e_rev$to), c("A", "---", "B"))
+  expect_equal(c(e_rev$from, e_rev$edge, e_rev$to), c("B", "---", "A"))
 })
 
 test_that("collapse does not mix up node names that contain `.`", {
@@ -618,9 +618,9 @@ test_that("as_caugi with bnlearn with both directed and undirected edges and col
   actual <- edges(cg)
 
   expected <- data.table::data.table(
-    from = c("v", "v", "w", "w", "z"),
+    from = c("x", "v", "x", "w", "z"),
     edge = c("---", "-->", "---", "-->", "-->"),
-    to = c("x", "z", "x", "z", "s")
+    to = c("v", "z", "w", "z", "s")
   )
 
   data.table::setorder(actual, from, to, edge)

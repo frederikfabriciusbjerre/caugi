@@ -432,15 +432,21 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   current_simple <- rs_simple(session)
   current_class <- rs_class(session)
 
-  if (identical(action, "replace")) {
-    if (!is.null(nodes)) {
+  # Rust adds or replaces the edges, matching a symmetric edge whichever way
+  # it is written. Exact repeats in the input merge.
+  if (
+    identical(action, "replace") ||
+      (identical(action, "add") && !is.null(edges))
+  ) {
+    if (identical(action, "replace") && !is.null(nodes)) {
       stop("nodes are not supported for `action = \"replace\"`.", call. = FALSE)
     }
     if (is.null(edges) || !nrow(edges)) {
       return(cg)
     }
+    edges <- unique(edges, by = c("from", "edge", "to"))
 
-    new_nodes <- unique(c(current_nodes, edges$from, edges$to))
+    new_nodes <- unique(c(current_nodes, nodes$name, edges$from, edges$to))
     target_session <- rs_clone(session)
 
     if (
@@ -454,7 +460,8 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
     id <- seq_len(length(new_nodes)) - 1L
     names(id) <- new_nodes
     codes <- rs_codes_of(target_session, edges$edge)
-    rs_replace_edges(
+    update <- if (identical(action, "add")) rs_add_edges else rs_replace_edges
+    update(
       target_session,
       as.integer(unname(id[edges$from])),
       as.integer(unname(id[edges$to])),
@@ -471,18 +478,7 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 
   # Apply modifications
   if (identical(action, "add")) {
-    if (!is.null(nodes)) {
-      current_nodes <- unique(c(current_nodes, nodes$name))
-    }
-    if (!is.null(edges)) {
-      # Add nodes from edges
-      current_nodes <- unique(c(current_nodes, edges$from, edges$to))
-      # Add edges
-      current_edges <- unique(
-        data.table::rbindlist(list(current_edges, edges), use.names = TRUE),
-        by = c("from", "edge", "to")
-      )
-    }
+    current_nodes <- unique(c(current_nodes, nodes$name))
   } else {
     # remove action
     if (!is.null(edges)) {

@@ -920,13 +920,13 @@ test_that("subgraph filters edges to kept names and sorts", {
     nodes = c("A", "B", "C", "D"),
     class = "UNKNOWN"
   )
-  # Keep C, A => should keep (A <-> C) and (C --- A), sorted by from,to,edge
+  # Keep C, A => should keep (A <-> C) and (A --- C), sorted by from,to,edge
   s <- subgraph(g, nodes = c("C", "A"))
   expect_identical(s@nodes$name, c("C", "A"))
   expect_equal(nrow(s@edges), 2L)
-  expect_identical(s@edges$from, c("A", "C"))
-  expect_identical(s@edges$to, c("C", "A"))
-  expect_identical(s@edges$edge, c("<->", "---"))
+  expect_identical(s@edges$from, c("A", "A"))
+  expect_identical(s@edges$to, c("C", "C"))
+  expect_identical(s@edges$edge, c("---", "<->"))
 })
 
 test_that("subgraph with index matches nodes variant", {
