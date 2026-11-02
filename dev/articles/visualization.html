@@ -798,6 +798,12 @@ package.</p>
 <div class="section level3">
 <h3 id="nested-compositions">Nested Compositions<a class="anchor" aria-label="anchor" href="#nested-compositions"></a>
 </h3>
+<p>Consecutive plots in the same direction share the available space
+equally: <code>p1 + p2 + p3</code> creates three equal-width columns,
+and <code>p1 / p2 / p3</code> creates three equal-height rows.
+Parentheses preserve groups when the direction changes, so
+<code>(p1 + p2) / p3</code> places two plots above one full-width
+plot.</p>
 <p>Compositions can be nested to create complex multi-plot layouts:</p>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span></span>

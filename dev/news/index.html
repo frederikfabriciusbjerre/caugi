@@ -68,7 +68,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li><p><code><a href="../reference/write_graphml.html">write_graphml()</a></code> and <code><a href="../reference/read_graphml.html">read_graphml()</a></code> now write and read UTF-8, as the file declares. In a non-UTF-8 locale a node name such as <code>"æø"</code> came back as <code>"&lt;U+00E6&gt;&lt;U+00F8&gt;"</code>.</p></li>
+<ul><li><p>Plot compositions using <code>+</code>, <code>|</code>, and <code>/</code> now give equal space to all plots in the same row or column, while preserving mixed layouts (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/434" class="external-link">#434</a>).</p></li>
+<li><p><code><a href="../reference/write_graphml.html">write_graphml()</a></code> and <code><a href="../reference/read_graphml.html">read_graphml()</a></code> now write and read UTF-8, as the file declares. In a non-UTF-8 locale a node name such as <code>"æø"</code> came back as <code>"&lt;U+00E6&gt;&lt;U+00F8&gt;"</code>.</p></li>
 <li><p><code><a href="../reference/to_dot.html">to_dot()</a></code> now writes a directed graph class with no edges (e.g. a DAG of isolated nodes) as <code>digraph</code>, not <code>graph</code>.</p></li>
 <li><p><code><a href="../reference/read_caugi.html">read_caugi()</a></code> and <code><a href="../reference/caugi_deserialize.html">caugi_deserialize()</a></code> now say the input is not a valid caugi JSON document, and <code><a href="../reference/read_caugi.html">read_caugi()</a></code> names the file, instead of only passing on the JSON parser’s message.</p></li>
 <li><p>Queries given an empty node vector, e.g. <code>descendants(cg, character(0))</code>, now say which argument is empty instead of “Expected non zero length”.</p></li>

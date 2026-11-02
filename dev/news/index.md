@@ -142,6 +142,10 @@
 
 ### Bug Fixes
 
+- Plot compositions using `+`, `|`, and `/` now give equal space to all
+  plots in the same row or column, while preserving mixed layouts
+  ([\#434](https://github.com/frederikfabriciusbjerre/caugi/issues/434)).
+
 - [`write_graphml()`](https://caugi.org/dev/reference/write_graphml.md)
   and
   [`read_graphml()`](https://caugi.org/dev/reference/read_graphml.md)
