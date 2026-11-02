@@ -912,6 +912,12 @@ test_that("subgraph on graph without edges keeps nodes and empty edges", {
   expect_identical(s@simple, g@simple)
 })
 
+test_that("cg[i] is subgraph()", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_equal(cg[c("B", "C")], subgraph(cg, c("B", "C")))
+  expect_equal(cg[2:3], subgraph(cg, index = 2:3))
+})
+
 test_that("subgraph filters edges to kept names and sorts", {
   g <- caugi(
     from = c("A", "B", "C", "A"),

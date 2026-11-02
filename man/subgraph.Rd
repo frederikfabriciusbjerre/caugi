@@ -2,9 +2,12 @@
 % Please edit documentation in R/queries.R
 \name{subgraph}
 \alias{subgraph}
+\alias{[.caugi::caugi}
 \title{Get the induced subgraph}
 \usage{
 subgraph(cg, nodes = NULL, index = NULL)
+
+\method{[}{`caugi::caugi`}(x, i)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
@@ -12,6 +15,10 @@ subgraph(cg, nodes = NULL, index = NULL)
 \item{nodes}{A character vector of node names.}
 
 \item{index}{A vector of node indexes.}
+
+\item{x}{A \code{caugi} object.}
+
+\item{i}{Node names or indices to keep: \code{x[i]} is \code{subgraph(x, i)}.}
 }
 \value{
 A new \code{caugi} that is a subgraph of the selected nodes.
@@ -29,6 +36,7 @@ sub_cg <- subgraph(cg, c("B", "C"))
 cg2 <- caugi(B \%-->\% C, class = "DAG")
 all(nodes(sub_cg) == nodes(cg2)) # TRUE
 all(edges(sub_cg) == edges(cg2)) # TRUE
+cg[c("B", "C")] # the same subgraph
 
 }
 \seealso{
