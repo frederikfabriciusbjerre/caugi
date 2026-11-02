@@ -29,16 +29,11 @@ OUT from the target node (equivalent to \code{children()})}
 \item{\code{"partial"}}{Nodes connected via partial edges (edges with circle
 endpoints: \code{o-o}, \verb{o->}, \code{--o})}
 }
+Each neighbor is listed once, even when several edges join it to the node.
 
-Not all modes are valid for all graph classes:
-\itemize{
-\item DAG: \code{"in"}, \code{"out"}, \code{"all"} only
-\item PDAG: \code{"in"}, \code{"out"}, \code{"undirected"}, \code{"all"}
-\item UG: \code{"undirected"}, \code{"all"} only
-\item ADMG: \code{"in"}, \code{"out"}, \code{"bidirected"}, \code{"all"}
-\item PAG: all modes; \code{"in"} and \code{"out"} follow \verb{-->} edges only
-\item UNKNOWN: all modes allowed
-}}
+Every mode works for every graph class. A mode the class has no edges for,
+such as \code{"undirected"} in a DAG, gives \code{NULL}. In a PAG, \code{"in"} and \code{"out"}
+follow \verb{-->} edges only.}
 }
 \value{
 Either a character vector of node names (if a single node is

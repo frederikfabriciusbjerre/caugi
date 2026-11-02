@@ -100,6 +100,18 @@
   overlapping `X` and `Y`, while `character(0)` still means adjusting for
   nothing is valid.
 
+- `neighbors()` defines every mode from edge endpoints (#385). On UNKNOWN
+  graphs, `"in"` and `"out"` no longer return the other end of `<->`, `o->` or
+  `--o`, as a parent or child needs a tail at one end and an arrowhead at the
+  other. `"partial"` takes a circle at either end, so it finds `o->` and `--o`
+  seen from the end without the circle. Parallel edges, such as a bow, no
+  longer list a neighbor twice. A mode the graph class has no edges for, such
+  as `"undirected"` in a DAG, gives `NULL` instead of an error, in
+  `neighbors()`, `parents()`, `children()` and `spouses()`. `parents()` and
+  `children()` now work on UNKNOWN graphs, as `neighbors()` with `mode = "in"`
+  and `"out"`.
+
+
 ## Bug Fixes
 
 * Plot compositions using `+`, `|`, and `/` now give equal space to all plots

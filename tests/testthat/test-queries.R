@@ -1059,21 +1059,30 @@ test_that("neighbors mode 'partial' works for UNKNOWN graphs", {
     class = "UNKNOWN"
   )
 
-  # Partial mode returns neighbors where the CURRENT node has a Circle mark.
-  # Edge marks:
-  # A --> B: A has Tail, B has Arrow
-  # B o-> C: B has Circle, C has Arrow
-  # C o-o D: both have Circle
-  # D --o E: D has Tail, E has Circle (head position has Circle)
-
-  expect_null(neighbors(cg, "A", mode = "partial")) # A has Tail (no Circle)
-  expect_identical(neighbors(cg, "B", mode = "partial"), "C") # B has Circle in B o-> C
-  expect_identical(neighbors(cg, "C", mode = "partial"), "D") # C has Circle in C o-o D (but Arrow in B o-> C)
-  expect_identical(neighbors(cg, "D", mode = "partial"), "C") # D has Circle in C o-o D (but Tail in D --o E)
-  expect_identical(neighbors(cg, "E", mode = "partial"), "D") # E has Circle in D --o E
+  # Partial mode returns neighbors joined by an edge with a circle at either
+  # end, so B o-> C counts from C and D --o E from D.
+  expect_null(neighbors(cg, "A", mode = "partial"))
+  expect_identical(neighbors(cg, "B", mode = "partial"), "C")
+  expect_identical(neighbors(cg, "C", mode = "partial"), c("B", "D"))
+  expect_identical(neighbors(cg, "D", mode = "partial"), c("C", "E"))
+  expect_identical(neighbors(cg, "E", mode = "partial"), "D")
 })
 
-test_that("parents and children error for UNKNOWN graphs", {
+test_that("neighbors 'in' and 'out' need a tail and an arrowhead", {
+  cg <- caugi(A %-->% B, B %<->% C, B %o->% D, class = "UNKNOWN")
+  expect_identical(neighbors(cg, "B", mode = "in"), "A")
+  expect_null(neighbors(cg, "B", mode = "out"))
+  expect_null(neighbors(cg, "D", mode = "in"))
+  # A bow joins A and B twice, but B is one neighbor.
+  for (class in c("UNKNOWN", "ADMG")) {
+    expect_identical(
+      neighbors(caugi(A %-->% B, A %<->% B, class = class), "A"),
+      "B"
+    )
+  }
+})
+
+test_that("parents and children follow neighbors() modes for UNKNOWN graphs", {
   cg <- caugi(
     A %-->% B,
     B %-->% C,
@@ -1081,15 +1090,11 @@ test_that("parents and children error for UNKNOWN graphs", {
     class = "UNKNOWN"
   )
 
-  # parents, children, and spouses should error for UNKNOWN graphs
-  # because only the structural neighbors() query should work
-  expect_error(parents(cg, "B"), "not defined for UNKNOWN")
-  expect_error(children(cg, "A"), "not defined for UNKNOWN")
+  expect_identical(parents(cg, "B"), "A")
+  expect_identical(children(cg, "B"), "C")
+  expect_identical(parents(cg, "B"), neighbors(cg, "B", mode = "in"))
+  expect_identical(children(cg, "B"), neighbors(cg, "B", mode = "out"))
   expect_error(spouses(cg, "A"), "not defined for UNKNOWN")
-
-  # Use neighbors() with explicit mode instead
-  expect_identical(neighbors(cg, "B", mode = "in"), "A")
-  expect_identical(neighbors(cg, "A", mode = "out"), "B")
 })
 
 test_that("neighbors mode with index works for UNKNOWN graphs", {
@@ -1145,9 +1150,9 @@ test_that("neighbors mode validation for DAG", {
   expect_setequal(neighbors(cg, "B", mode = "all"), c("A", "C"))
 
   # Invalid modes for DAG: undirected, bidirected, partial
-  expect_error(neighbors(cg, "B", mode = "undirected"), "not valid for DAG")
-  expect_error(neighbors(cg, "B", mode = "bidirected"), "not valid for DAG")
-  expect_error(neighbors(cg, "B", mode = "partial"), "not valid for DAG")
+  expect_null(neighbors(cg, "B", mode = "undirected"))
+  expect_null(neighbors(cg, "B", mode = "bidirected"))
+  expect_null(neighbors(cg, "B", mode = "partial"))
 })
 
 test_that("neighbors mode validation for PDAG", {
@@ -1164,8 +1169,8 @@ test_that("neighbors mode validation for PDAG", {
   expect_setequal(neighbors(cg, "B", mode = "all"), c("A", "C"))
 
   # Invalid modes for PDAG: bidirected, partial
-  expect_error(neighbors(cg, "B", mode = "bidirected"), "not valid for PDAG")
-  expect_error(neighbors(cg, "B", mode = "partial"), "not valid for PDAG")
+  expect_null(neighbors(cg, "B", mode = "bidirected"))
+  expect_null(neighbors(cg, "B", mode = "partial"))
 })
 
 test_that("neighbors mode validation for UG", {
@@ -1180,10 +1185,10 @@ test_that("neighbors mode validation for UG", {
   expect_setequal(neighbors(cg, "B", mode = "all"), c("A", "C"))
 
   # Invalid modes for UG: in, out, bidirected, partial
-  expect_error(neighbors(cg, "B", mode = "in"), "not defined for UG")
-  expect_error(neighbors(cg, "B", mode = "out"), "not defined for UG")
-  expect_error(neighbors(cg, "B", mode = "bidirected"), "not valid for UG")
-  expect_error(neighbors(cg, "B", mode = "partial"), "not valid for UG")
+  expect_null(neighbors(cg, "B", mode = "in"))
+  expect_null(neighbors(cg, "B", mode = "out"))
+  expect_null(neighbors(cg, "B", mode = "bidirected"))
+  expect_null(neighbors(cg, "B", mode = "partial"))
 })
 
 test_that("neighbors mode validation for ADMG", {
@@ -1200,8 +1205,8 @@ test_that("neighbors mode validation for ADMG", {
   expect_setequal(neighbors(cg, "B", mode = "all"), c("A", "C"))
 
   # Invalid modes for ADMG: undirected, partial
-  expect_error(neighbors(cg, "B", mode = "undirected"), "not valid for ADMG")
-  expect_error(neighbors(cg, "B", mode = "partial"), "not valid for ADMG")
+  expect_null(neighbors(cg, "B", mode = "undirected"))
+  expect_null(neighbors(cg, "B", mode = "partial"))
 })
 
 test_that("spouses errors for UNKNOWN graphs", {
@@ -1243,9 +1248,9 @@ test_that("spouses errors for graph types without bidirected edges", {
   cg_pdag <- caugi(A %-->% B, B %---% C, class = "PDAG")
   cg_ug <- caugi(A %---% B, class = "UG")
 
-  expect_error(spouses(cg_dag, "A"), "not valid for DAG")
-  expect_error(spouses(cg_pdag, "A"), "not valid for PDAG")
-  expect_error(spouses(cg_ug, "A"), "not valid for UG")
+  expect_null(spouses(cg_dag, "A"))
+  expect_null(spouses(cg_pdag, "A"))
+  expect_null(spouses(cg_ug, "A"))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
