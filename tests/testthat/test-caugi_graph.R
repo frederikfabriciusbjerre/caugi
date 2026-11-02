@@ -842,8 +842,8 @@ test_that("UG graph parents_of and children_of are not defined", {
     A %---% B,
     class = "UG"
   )
-  expect_error(parents(cg, "A"), "not defined for UG")
-  expect_error(children(cg, "B"), "not defined for UG")
+  expect_null(parents(cg, "A"))
+  expect_null(children(cg, "B"))
 })
 
 test_that("UG graph has no ancestors or descendants", {

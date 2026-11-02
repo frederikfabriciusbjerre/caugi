@@ -1590,7 +1590,7 @@ mod tests {
             sorted(session.neighbors_of(1, NeighborMode::All).unwrap()),
             vec![0, 2]
         );
-        assert!(session.undirected_of(1).is_err());
+        assert!(session.undirected_of(1).unwrap().is_empty());
         assert_eq!(sorted(session.ancestors_of(3).unwrap()), vec![0, 1, 2]);
         assert_eq!(sorted(session.descendants_of(0).unwrap()), vec![1, 2, 3]);
         assert_eq!(sorted(session.anteriors_of(3).unwrap()), vec![0, 1, 2]);
@@ -2114,16 +2114,16 @@ mod tests {
         assert!(ug.districts().is_err());
         assert!(ug.district_of(0).is_err());
 
-        // Error: spouses_of on UG (bidirected mode not valid)
-        assert!(ug.spouses_of(0).is_err());
+        // A UG has no spouses
+        assert!(ug.spouses_of(0).unwrap().is_empty());
 
         // A UG has no ancestors; its anteriors are the connected component
         assert!(ug.ancestors_of(0).unwrap().is_empty());
         assert!(ug.descendants_of(0).unwrap().is_empty());
         assert!(!ug.anteriors_of(0).unwrap().is_empty());
         assert!(!ug.posteriors_of(0).unwrap().is_empty());
-        assert!(ug.parents_of(0).is_err());
-        assert!(ug.children_of(0).is_err());
+        assert!(ug.parents_of(0).unwrap().is_empty());
+        assert!(ug.children_of(0).unwrap().is_empty());
 
         // m_separated on a UG is graph separation
         assert!(ug.m_separated(&[0], &[2], &[1]).is_ok());

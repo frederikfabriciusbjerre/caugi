@@ -7,6 +7,7 @@ use super::pag::Pag;
 use super::pdag::Pdag;
 use super::ug::Ug;
 use super::CaugiGraph;
+use rustc_hash::FxHashSet;
 use std::sync::Arc;
 
 /// Mode for neighbor queries, specifying which edge types to include.
@@ -87,19 +88,15 @@ impl GraphView {
 
     // ---- queries ----
 
-    /// Get parents of node `i` (nodes with directed edges pointing INTO `i`)..
+    /// Get parents of node `i` (nodes with directed edges pointing INTO `i`),
+    /// as `NeighborMode::In`.
     pub fn parents_of(&self, i: u32) -> Result<Vec<u32>, String> {
-        if matches!(self, GraphView::Raw(_)) {
-            return Err("parents_of is not defined for UNKNOWN graphs; use neighbors(..., mode = 'in') instead".into());
-        }
         self.neighbors_of(i, NeighborMode::In)
     }
 
-    /// Get children of node `i` (nodes with directed edges pointing OUT from `i`).
+    /// Get children of node `i` (nodes with directed edges pointing OUT from
+    /// `i`), as `NeighborMode::Out`.
     pub fn children_of(&self, i: u32) -> Result<Vec<u32>, String> {
-        if matches!(self, GraphView::Raw(_)) {
-            return Err("children_of is not defined for UNKNOWN graphs; use neighbors(..., mode = 'out') instead".into());
-        }
         self.neighbors_of(i, NeighborMode::Out)
     }
 
@@ -128,13 +125,8 @@ impl GraphView {
     ///
     /// Use `NeighborMode::All` to get all neighbors regardless of edge type.
     ///
-    /// Mode restrictions per graph type:
-    /// - DAG: in, out, all (no undirected or partial edges exist)
-    /// - PDAG: in, out, undirected, all (no partial edges exist)
-    /// - UG: undirected, all (no directed or partial edges exist)
-    /// - ADMG: in, out, undirected (bidirected/spouses), all (no partial edges exist)
-    /// - AG: in, out, undirected, bidirected, all (no partial edges exist)
-    /// - UNKNOWN (Raw): all modes allowed
+    /// A mode the class has no edges for, such as `Undirected` in a DAG, gives
+    /// an empty result.
     pub fn neighbors_of(&self, i: u32, mode: NeighborMode) -> Result<Vec<u32>, String> {
         // Validate mode for graph type and dispatch to optimized methods
         match (self, mode) {
@@ -142,15 +134,6 @@ impl GraphView {
             (GraphView::Dag(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
             (GraphView::Dag(g), NeighborMode::In) => Ok(g.parents_of(i).to_vec()),
             (GraphView::Dag(g), NeighborMode::Out) => Ok(g.children_of(i).to_vec()),
-            (GraphView::Dag(_), NeighborMode::Undirected) => {
-                Err("mode 'undirected' not valid for DAG (no undirected edges)".into())
-            }
-            (GraphView::Dag(_), NeighborMode::Bidirected) => {
-                Err("mode 'bidirected' not valid for DAG (no bidirected edges)".into())
-            }
-            (GraphView::Dag(_), NeighborMode::Partial) => {
-                Err("mode 'partial' not valid for DAG (no partial edges)".into())
-            }
 
             // PDAG: in, out, undirected, all (no bidirected or partial)
             (GraphView::Pdag(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
@@ -163,67 +146,28 @@ impl GraphView {
             (GraphView::Mpdag(m), NeighborMode::Undirected) => {
                 Ok(m.as_pdag().undirected_of(i).to_vec())
             }
-            (GraphView::Mpdag(_), NeighborMode::Bidirected) => {
-                Err("mode 'bidirected' not valid for MPDAG (no bidirected edges)".into())
-            }
-            (GraphView::Mpdag(_), NeighborMode::Partial) => {
-                Err("mode 'partial' not valid for MPDAG (no partial edges)".into())
-            }
             (GraphView::Cpdag(c), NeighborMode::All) => Ok(c.as_pdag().neighbors_of(i).to_vec()),
             (GraphView::Cpdag(c), NeighborMode::In) => Ok(c.as_pdag().parents_of(i).to_vec()),
             (GraphView::Cpdag(c), NeighborMode::Out) => Ok(c.as_pdag().children_of(i).to_vec()),
             (GraphView::Cpdag(c), NeighborMode::Undirected) => {
                 Ok(c.as_pdag().undirected_of(i).to_vec())
             }
-            (GraphView::Cpdag(_), NeighborMode::Bidirected) => {
-                Err("mode 'bidirected' not valid for CPDAG (no bidirected edges)".into())
-            }
-            (GraphView::Cpdag(_), NeighborMode::Partial) => {
-                Err("mode 'partial' not valid for CPDAG (no partial edges)".into())
-            }
-            (GraphView::Pdag(_), NeighborMode::Bidirected) => {
-                Err("mode 'bidirected' not valid for PDAG (no bidirected edges)".into())
-            }
-            (GraphView::Pdag(_), NeighborMode::Partial) => {
-                Err("mode 'partial' not valid for PDAG (no partial edges)".into())
-            }
 
             // UG: only undirected, all (no in, out, bidirected, or partial)
             (GraphView::Ug(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
-            (GraphView::Ug(_), NeighborMode::In) => {
-                Err("mode 'in' (parents) not defined for UG".into())
-            }
-            (GraphView::Ug(_), NeighborMode::Out) => {
-                Err("mode 'out' (children) not defined for UG".into())
-            }
             (GraphView::Ug(g), NeighborMode::Undirected) => Ok(g.neighbors_of(i).to_vec()),
-            (GraphView::Ug(_), NeighborMode::Bidirected) => {
-                Err("mode 'bidirected' not valid for UG (no bidirected edges)".into())
-            }
-            (GraphView::Ug(_), NeighborMode::Partial) => {
-                Err("mode 'partial' not valid for UG (no partial edges)".into())
-            }
 
             // ADMG: in, out, bidirected (spouses), all (no undirected or partial)
             // A bow lists its other end among the parents or children and
             // among the spouses, so keep only the first.
             (GraphView::Admg(g), NeighborMode::All) => {
-                let mut seen = vec![false; g.n() as usize];
-                Ok(g.neighbors_of(i)
-                    .iter()
-                    .copied()
-                    .filter(|&v| !std::mem::replace(&mut seen[v as usize], true))
-                    .collect())
+                let all = g.neighbors_of(i);
+                let mut seen = FxHashSet::with_capacity_and_hasher(all.len(), Default::default());
+                Ok(all.iter().copied().filter(|&v| seen.insert(v)).collect())
             }
             (GraphView::Admg(g), NeighborMode::In) => Ok(g.parents_of(i).to_vec()),
             (GraphView::Admg(g), NeighborMode::Out) => Ok(g.children_of(i).to_vec()),
-            (GraphView::Admg(_), NeighborMode::Undirected) => {
-                Err("mode 'undirected' not valid for ADMG (no undirected edges)".into())
-            }
             (GraphView::Admg(g), NeighborMode::Bidirected) => Ok(g.spouses_of(i).to_vec()),
-            (GraphView::Admg(_), NeighborMode::Partial) => {
-                Err("mode 'partial' not valid for ADMG (no partial edges)".into())
-            }
 
             // AG: in, out, undirected, bidirected, all (no partial edges)
             (GraphView::Ag(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
@@ -231,9 +175,6 @@ impl GraphView {
             (GraphView::Ag(g), NeighborMode::Out) => Ok(g.children_of(i).to_vec()),
             (GraphView::Ag(g), NeighborMode::Undirected) => Ok(g.undirected_of(i).to_vec()),
             (GraphView::Ag(g), NeighborMode::Bidirected) => Ok(g.spouses_of(i).to_vec()),
-            (GraphView::Ag(_), NeighborMode::Partial) => {
-                Err("mode 'partial' not valid for AG (no partial edges)".into())
-            }
 
             // PAG: in, out, undirected, bidirected, partial, all
             (GraphView::Pag(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
@@ -245,6 +186,9 @@ impl GraphView {
 
             // Raw (UNKNOWN): all modes allowed, iterate CSR
             (GraphView::Raw(_), _) => self.neighbors_mode_of_raw(i, mode),
+
+            // A mode the class has no edges for matches nothing.
+            _ => Ok(Vec::new()),
         }
     }
 
@@ -909,11 +853,7 @@ mod tests {
         );
         assert_eq!(v_dag.descendants_of(0).unwrap(), vec![1, 2]);
         assert_eq!(v_dag.ancestors_of(2).unwrap(), vec![0]);
-        let e = v_dag.undirected_of(0).unwrap_err();
-        assert_eq!(
-            e,
-            "mode 'undirected' not valid for DAG (no undirected edges)"
-        );
+        assert!(v_dag.undirected_of(0).unwrap().is_empty());
         let v_dag_core = v_dag.core();
         assert_eq!(v_dag_core.n(), 3);
 
@@ -938,14 +878,12 @@ mod tests {
         let v_pdag_core = v_pdag.core();
         assert_eq!(v_pdag_core.n(), 4);
 
-        // Raw view only supports neighbors_of and neighbors_mode_of
-        // The semantic wrappers (parents_of, children_of, etc.) should error for UNKNOWN graphs
+        // On a raw view, parents and children read the endpoints; the other
+        // semantic wrappers error for UNKNOWN graphs
         let v_raw = GraphView::Raw(pdag_core);
         assert_eq!(v_raw.n(), 4);
-
-        // Semantic wrappers should error for UNKNOWN graphs
-        assert!(v_raw.parents_of(1).is_err());
-        assert!(v_raw.children_of(0).is_err());
+        assert_eq!(v_raw.parents_of(1).unwrap(), vec![0]);
+        assert_eq!(v_raw.children_of(0).unwrap(), vec![1]);
         assert!(v_raw.undirected_of(1).is_err());
 
         // neighbors_of still works
@@ -1615,8 +1553,11 @@ mod tests {
         );
         assert_eq!(v.neighbors_of(0, NeighborMode::Out).unwrap(), vec![1, 2]);
         // DAG doesn't have undirected or partial edges - should error
-        assert!(v.neighbors_of(0, NeighborMode::Undirected).is_err());
-        assert!(v.neighbors_of(0, NeighborMode::Partial).is_err());
+        assert!(v
+            .neighbors_of(0, NeighborMode::Undirected)
+            .unwrap()
+            .is_empty());
+        assert!(v.neighbors_of(0, NeighborMode::Partial).unwrap().is_empty());
 
         // Node 1: has parent 0 (in), no children (out)
         assert_eq!(v.neighbors_of(1, NeighborMode::All).unwrap(), vec![0]);
@@ -1653,7 +1594,7 @@ mod tests {
             vec![2]
         );
         // PDAG doesn't have partial edges - should error
-        assert!(v.neighbors_of(1, NeighborMode::Partial).is_err());
+        assert!(v.neighbors_of(1, NeighborMode::Partial).unwrap().is_empty());
     }
 
     #[test]
@@ -1736,15 +1677,9 @@ mod tests {
         assert_eq!(v.neighbors_of(1, NeighborMode::All).unwrap(), vec![0, 2]);
 
         // Invalid modes for UG should error
-        assert!(v.neighbors_of(1, NeighborMode::In).is_err());
-        assert!(v.neighbors_of(1, NeighborMode::Out).is_err());
-        assert!(v.neighbors_of(1, NeighborMode::Partial).is_err());
-
-        // Check error messages
-        let e_in = v.neighbors_of(1, NeighborMode::In).unwrap_err();
-        assert!(e_in.contains("not defined for UG"));
-        let e_out = v.neighbors_of(1, NeighborMode::Out).unwrap_err();
-        assert!(e_out.contains("not defined for UG"));
+        assert!(v.neighbors_of(1, NeighborMode::In).unwrap().is_empty());
+        assert!(v.neighbors_of(1, NeighborMode::Out).unwrap().is_empty());
+        assert!(v.neighbors_of(1, NeighborMode::Partial).unwrap().is_empty());
     }
 
     #[test]
@@ -1781,12 +1716,11 @@ mod tests {
         assert!(all.contains(&2));
 
         // ADMG doesn't have undirected or partial edges - should error
-        assert!(v.neighbors_of(1, NeighborMode::Undirected).is_err());
-        assert!(v.neighbors_of(1, NeighborMode::Partial).is_err());
-        let e_und = v.neighbors_of(1, NeighborMode::Undirected).unwrap_err();
-        let e_part = v.neighbors_of(1, NeighborMode::Partial).unwrap_err();
-        assert!(e_und.contains("not valid for ADMG"));
-        assert!(e_part.contains("not valid for ADMG"));
+        assert!(v
+            .neighbors_of(1, NeighborMode::Undirected)
+            .unwrap()
+            .is_empty());
+        assert!(v.neighbors_of(1, NeighborMode::Partial).unwrap().is_empty());
 
         // Node 0: no parents, child 1, spouse 2
         assert_eq!(
@@ -1840,7 +1774,7 @@ mod tests {
         );
 
         // Partial should error
-        assert!(v.neighbors_of(0, NeighborMode::Partial).is_err());
+        assert!(v.neighbors_of(0, NeighborMode::Partial).unwrap().is_empty());
     }
 
     #[test]
@@ -1861,10 +1795,10 @@ mod tests {
         assert_eq!(v.neighbors_of(1, NeighborMode::All).unwrap(), vec![0, 2]);
 
         // undirected_of should error for DAG
-        assert!(v.undirected_of(1).is_err());
+        assert!(v.undirected_of(1).unwrap().is_empty());
 
         // spouses_of should error for DAG
-        assert!(v.spouses_of(1).is_err());
+        assert!(v.spouses_of(1).unwrap().is_empty());
     }
 
     #[test]
@@ -1889,7 +1823,7 @@ mod tests {
         assert_eq!(v.neighbors_of(1, NeighborMode::All).unwrap(), vec![0, 2]);
 
         // spouses_of should error for PDAG
-        assert!(v.spouses_of(1).is_err());
+        assert!(v.spouses_of(1).unwrap().is_empty());
     }
 
     #[test]
@@ -1909,11 +1843,11 @@ mod tests {
         assert_eq!(v.neighbors_of(1, NeighborMode::All).unwrap(), vec![0, 2]);
 
         // parents_of and children_of should error for UG
-        assert!(v.parents_of(1).is_err());
-        assert!(v.children_of(1).is_err());
+        assert!(v.parents_of(1).unwrap().is_empty());
+        assert!(v.children_of(1).unwrap().is_empty());
 
         // spouses_of should error for UG
-        assert!(v.spouses_of(1).is_err());
+        assert!(v.spouses_of(1).unwrap().is_empty());
     }
 
     #[test]
@@ -1938,7 +1872,7 @@ mod tests {
         assert_eq!(v.spouses_of(1).unwrap(), vec![2]);
 
         // undirected_of should error for ADMG
-        assert!(v.undirected_of(1).is_err());
+        assert!(v.undirected_of(1).unwrap().is_empty());
 
         let all = v.neighbors_of(1, NeighborMode::All).unwrap();
         assert_eq!(all.len(), 2);
@@ -1965,9 +1899,10 @@ mod tests {
         b.add_edge(1, 3, bi).unwrap();
         let v = GraphView::Raw(Arc::new(b.finalize().unwrap()));
 
-        // For UNKNOWN graphs, semantic wrappers should error
-        assert!(v.parents_of(1).is_err());
-        assert!(v.children_of(1).is_err());
+        // Parents and children read the endpoints; the other semantic wrappers
+        // error for UNKNOWN graphs
+        assert_eq!(v.parents_of(1).unwrap(), vec![0]);
+        assert!(v.children_of(1).unwrap().is_empty());
         assert!(v.undirected_of(1).is_err());
         assert!(v.bidirected_of(1).is_err());
         assert!(v.spouses_of(1).is_err());
@@ -2158,78 +2093,6 @@ mod tests {
 
         // Invalid mode should error
         assert!(NeighborMode::from_str("invalid").is_err());
-    }
-
-    #[test]
-    fn neighbors_mode_of_dag_bidirected_error() {
-        let mut r = EdgeRegistry::new();
-        r.register_builtins().unwrap();
-        let d = r.code_of("-->").unwrap();
-
-        let mut b = GraphBuilder::new_with_registry(2, true, &r);
-        b.add_edge(0, 1, d).unwrap();
-        let v = GraphView::Dag(Arc::new(Dag::new(Arc::new(b.finalize().unwrap())).unwrap()));
-
-        // DAG doesn't have bidirected edges - should error
-        assert!(v.neighbors_of(0, NeighborMode::Bidirected).is_err());
-        let e = v.neighbors_of(0, NeighborMode::Bidirected).unwrap_err();
-        assert!(e.contains("not valid for DAG"));
-    }
-
-    #[test]
-    fn neighbors_mode_of_pdag_bidirected_error() {
-        let mut r = EdgeRegistry::new();
-        r.register_builtins().unwrap();
-        let d = r.code_of("-->").unwrap();
-        let u = r.code_of("---").unwrap();
-
-        let mut b = GraphBuilder::new_with_registry(3, true, &r);
-        b.add_edge(0, 1, d).unwrap();
-        b.add_edge(1, 2, u).unwrap();
-        let v = GraphView::Pdag(Arc::new(
-            Pdag::new(Arc::new(b.finalize().unwrap())).unwrap(),
-        ));
-
-        // PDAG doesn't have bidirected edges - should error
-        assert!(v.neighbors_of(0, NeighborMode::Bidirected).is_err());
-        let e = v.neighbors_of(0, NeighborMode::Bidirected).unwrap_err();
-        assert!(e.contains("not valid for PDAG"));
-    }
-
-    #[test]
-    fn neighbors_mode_of_ug_bidirected_error() {
-        let mut r = EdgeRegistry::new();
-        r.register_builtins().unwrap();
-        let u = r.code_of("---").unwrap();
-
-        let mut b = GraphBuilder::new_with_registry(2, true, &r);
-        b.add_edge(0, 1, u).unwrap();
-        let v = GraphView::Ug(Arc::new(Ug::new(Arc::new(b.finalize().unwrap())).unwrap()));
-
-        // UG doesn't have bidirected edges - should error
-        assert!(v.neighbors_of(0, NeighborMode::Bidirected).is_err());
-        let e = v.neighbors_of(0, NeighborMode::Bidirected).unwrap_err();
-        assert!(e.contains("not valid for UG"));
-    }
-
-    #[test]
-    fn neighbors_mode_of_admg_undirected_error() {
-        let mut r = EdgeRegistry::new();
-        r.register_builtins().unwrap();
-        let d = r.code_of("-->").unwrap();
-        let bi = r.code_of("<->").unwrap();
-
-        let mut b = GraphBuilder::new_with_registry(3, true, &r);
-        b.add_edge(0, 1, d).unwrap();
-        b.add_edge(1, 2, bi).unwrap();
-        let v = GraphView::Admg(Arc::new(
-            Admg::new(Arc::new(b.finalize().unwrap())).unwrap(),
-        ));
-
-        // ADMG doesn't have undirected edges - should error
-        assert!(v.neighbors_of(1, NeighborMode::Undirected).is_err());
-        let e = v.neighbors_of(1, NeighborMode::Undirected).unwrap_err();
-        assert!(e.contains("not valid for ADMG"));
     }
 
     #[test]

@@ -868,15 +868,9 @@ formals(children) <- alist(cg = , nodes = NULL, index = NULL)
 #' }
 #' Each neighbor is listed once, even when several edges join it to the node.
 #'
-#' Not all modes are valid for all graph classes:
-#' \itemize{
-#'   \item DAG: `"in"`, `"out"`, `"all"` only
-#'   \item PDAG: `"in"`, `"out"`, `"undirected"`, `"all"`
-#'   \item UG: `"undirected"`, `"all"` only
-#'   \item ADMG: `"in"`, `"out"`, `"bidirected"`, `"all"`
-#'   \item PAG: all modes; `"in"` and `"out"` follow `-->` edges only
-#'   \item UNKNOWN: all modes allowed
-#' }
+#' Every mode works for every graph class. A mode the class has no edges for,
+#' such as `"undirected"` in a DAG, gives `NULL`. In a PAG, `"in"` and `"out"`
+#' follow `-->` edges only.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).

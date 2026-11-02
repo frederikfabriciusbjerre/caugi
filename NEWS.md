@@ -107,7 +107,11 @@
   `--o`, as a parent or child needs a tail at one end and an arrowhead at the
   other. `"partial"` takes a circle at either end, so it finds `o->` and `--o`
   seen from the end without the circle. Parallel edges, such as a bow, no
-  longer list a neighbor twice.
+  longer list a neighbor twice. A mode the graph class has no edges for, such
+  as `"undirected"` in a DAG, gives `NULL` instead of an error, in
+  `neighbors()`, `parents()`, `children()` and `spouses()`. `parents()` and
+  `children()` now work on UNKNOWN graphs, as `neighbors()` with `mode = "in"`
+  and `"out"`.
 
 * Plot compositions using `+`, `|`, and `/` now give equal space to all plots
   in the same row or column, while preserving mixed layouts (#434).
