@@ -39,7 +39,8 @@ pub fn build_ug_core_from_adj(core: &CaugiGraph, adj: &[Vec<u32>]) -> Result<Cau
         }
     }
 
-    CaugiGraph::from_csr(row_index, col_index, etype, side, core.simple, registry)
+    // One undirected edge per adjacency: simple, whatever `core` was.
+    CaugiGraph::from_csr(row_index, col_index, etype, side, true, registry)
 }
 
 /// Find an undirected edge code in the registry.

@@ -672,26 +672,24 @@ impl GraphView {
         }
     }
 
+    /// The skeleton: every edge becomes `---`, whatever its class, and
+    /// parallel edges and self-loops collapse.
     pub fn skeleton(&self) -> Result<GraphView, String> {
-        match self {
-            GraphView::Dag(d) => {
-                let ug = d.skeleton()?;
-                Ok(GraphView::Ug(Arc::new(ug)))
-            }
-            GraphView::Pdag(p) => {
-                let ug = p.skeleton()?;
-                Ok(GraphView::Ug(Arc::new(ug)))
-            }
-            GraphView::Mpdag(m) => {
-                let ug = m.as_pdag().skeleton()?;
-                Ok(GraphView::Ug(Arc::new(ug)))
-            }
-            GraphView::Cpdag(c) => {
-                let ug = c.as_pdag().skeleton()?;
-                Ok(GraphView::Ug(Arc::new(ug)))
-            }
-            _ => Err("skeleton is defined for DAGs and PDAGs only".into()),
-        }
+        let core = self.core();
+        let adj: Vec<Vec<u32>> = (0..core.n())
+            .map(|u| {
+                let mut nbrs: Vec<u32> = core
+                    .row_range(u)
+                    .map(|k| core.col_index[k])
+                    .filter(|&v| v != u)
+                    .collect();
+                nbrs.sort_unstable();
+                nbrs.dedup();
+                nbrs
+            })
+            .collect();
+        let ug = super::alg::csr::build_ug_core_from_adj(core, &adj)?;
+        Ok(GraphView::Ug(Arc::new(Ug::new(Arc::new(ug))?)))
     }
 
     pub fn moralize(&self) -> Result<GraphView, String> {
@@ -1428,7 +1426,6 @@ mod tests {
 
     #[test]
     fn graphview_skeleton_from_dag_and_pdag_and_errors() {
-        use crate::graph::ug::Ug;
         let mut r = EdgeRegistry::new();
         r.register_builtins().unwrap();
         let d = r.code_of("-->").unwrap();
@@ -1460,14 +1457,18 @@ mod tests {
         assert_eq!(ug2_gv.undirected_of(1).unwrap(), vec![0, 2]);
         assert_eq!(ug2_gv.undirected_of(2).unwrap(), vec![1]);
 
-        // UG: calling skeleton() must error
-        let mut bu = GraphBuilder::new_with_registry(2, true, &r);
-        bu.add_edge(0, 1, u).unwrap();
-        let v_ug = GraphView::Ug(Arc::new(Ug::new(Arc::new(bu.finalize().unwrap())).unwrap()));
-        assert_eq!(
-            v_ug.skeleton().unwrap_err(),
-            "skeleton is defined for DAGs and PDAGs only"
-        );
+        // UNKNOWN: 0 --> 1, the bow 0 <-> 1, 1 o-> 2 and the self-loop 2 --> 2
+        // become 0 --- 1 --- 2.
+        let (bi, po) = (r.code_of("<->").unwrap(), r.code_of("o->").unwrap());
+        let mut bu = GraphBuilder::new_with_registry(3, false, &r);
+        bu.add_edge(0, 1, d).unwrap();
+        bu.add_edge(0, 1, bi).unwrap();
+        bu.add_edge(1, 2, po).unwrap();
+        bu.add_edge(2, 2, d).unwrap();
+        let v_raw = GraphView::Raw(Arc::new(bu.finalize().unwrap()));
+        let ug3_gv = v_raw.skeleton().unwrap();
+        assert_eq!(ug3_gv.undirected_of(1).unwrap(), vec![0, 2]);
+        assert_eq!(ug3_gv.undirected_of(2).unwrap(), vec![1]);
     }
 
     #[test]
