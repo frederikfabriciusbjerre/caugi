@@ -114,6 +114,10 @@
 
 ## Bug Fixes
 
+* `skeleton()` works on every graph class, as its documentation said: every
+  edge becomes `---`, parallel edges become one and self-loops are dropped. It
+  only accepted DAGs and PDAGs (#444).
+
 * Plot compositions using `+`, `|`, and `/` now give equal space to all plots
   in the same row or column, while preserving mixed layouts (#434).
 

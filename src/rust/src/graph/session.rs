@@ -2026,8 +2026,8 @@ mod tests {
         // With undirected_as_parents, nodes with undirected edges are not exogenous
         assert!(!exo2.contains(&3));
 
-        // skeleton through AG errors
-        assert!(ag.skeleton().is_err());
+        // skeleton works on an AG
+        assert!(ag.skeleton().is_ok());
 
         // Test AG with only undirected edges for undirected_of
         let mut ag2 = GraphSession::new(&reg, 3, true, GraphClass::Ag);

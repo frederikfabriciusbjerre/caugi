@@ -38,20 +38,6 @@ impl Dag {
         csr::build_ug_core_from_adj(self.core_ref(), &adj)
     }
 
-    /// UG skeleton: undirect every edge in the DAG.
-    pub fn skeleton(&self) -> Result<Ug, String> {
-        let n = self.n() as usize;
-        let mut adj = vec![Vec::<u32>::new(); n];
-        for i in 0..n {
-            let mut v = self.neighbors_of(i as u32).to_vec();
-            v.sort_unstable();
-            v.dedup();
-            adj[i] = v;
-        }
-        let core = csr::build_ug_core_from_adj(self.core_ref(), &adj)?;
-        Ug::new(Arc::new(core))
-    }
-
     /// UG moral graph: undirect all edges and marry parents.
     pub fn moralize(&self) -> Result<Ug, String> {
         let mask = vec![true; self.n() as usize];
@@ -798,21 +784,6 @@ mod tests {
         assert_eq!(cpdag.parents_of(1), vec![0, 2]);
         assert_eq!(cpdag.children_of(0), vec![1]);
         assert_eq!(cpdag.children_of(2), vec![1]);
-    }
-
-    #[test]
-    fn dag_skeleton_basic() {
-        let mut reg = EdgeRegistry::new();
-        reg.register_builtins().unwrap();
-        let d = reg.code_of("-->").unwrap();
-        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
-        b.add_edge(0, 1, d).unwrap();
-        b.add_edge(0, 2, d).unwrap();
-        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
-        let ug = dag.skeleton().unwrap();
-        assert_eq!(ug.neighbors_of(0), &[1, 2]);
-        assert_eq!(ug.neighbors_of(1), &[0]);
-        assert_eq!(ug.neighbors_of(2), &[0]);
     }
 
     #[test]
