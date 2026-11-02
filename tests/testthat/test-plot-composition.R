@@ -206,3 +206,47 @@ test_that("plot composition branches are covered", {
     "`caugi_options\\(\\)\\$plot\\$spacing` must be a grid::unit\\(\\)"
   )
 })
+
+test_that("same-direction compositions allocate equal space to every plot", {
+  plots <- lapply(seq_len(4), function(i) {
+    caugi_plot(grob = grid::textGrob(as.character(i)))
+  })
+  for (op in list(`+`, `|`, `/`)) {
+    left <- Reduce(op, plots)
+    right <- op(plots[[1]], op(plots[[2]], op(plots[[3]], plots[[4]])))
+    balanced <- op(op(plots[[1]], plots[[2]]), op(plots[[3]], plots[[4]]))
+    for (p in list(left, right, balanced)) {
+      layout <- p@grob$vp$layout
+      horizontal <- layout$nrow == 1L
+      sizes <- if (horizontal) layout$widths else layout$heights
+      expect_length(p@grob$children, 4)
+      expect_equal(as.numeric(sizes[c(1, 3, 5, 7)]), rep(1, 4))
+      expect_equal(grid::unitType(sizes[c(1, 3, 5, 7)]), rep("null", 4))
+      expect_equal(
+        as.numeric(sizes[c(2, 4, 6)]),
+        rep(as.numeric(caugi_options()$plot$spacing), 3)
+      )
+      expect_equal(
+        grid::unitType(sizes[c(2, 4, 6)]),
+        rep(grid::unitType(caugi_options()$plot$spacing), 3)
+      )
+      for (i in seq_along(plots)) {
+        expect_equal(p@grob$children[[i]]$children[[1]], plots[[i]]@grob)
+      }
+    }
+  }
+})
+
+test_that("flattening preserves mixed-direction groups", {
+  p <- caugi_plot(grob = grid::textGrob("plot"))
+  for (composition in list((p + p) / p / p, (p / p) + p + p)) {
+    expect_length(composition@grob$children, 3)
+    group <- composition@grob$children[[1]]$children[[1]]
+    expect_length(group$children, 2)
+    expect_false(identical(
+      group$caugi_composition_direction,
+      composition@grob$caugi_composition_direction
+    ))
+  }
+  expect_length(((p | p) + p)@grob$children, 3)
+})
