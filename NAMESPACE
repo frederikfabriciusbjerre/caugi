@@ -2,6 +2,7 @@
 
 S3method("!=","caugi::caugi")
 S3method("+",caugi_plot)
+S3method("-","caugi::caugi")
 S3method("/",caugi_plot)
 S3method("==","caugi::caugi")
 S3method("[","caugi::caugi")
