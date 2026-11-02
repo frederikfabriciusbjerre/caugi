@@ -25,6 +25,8 @@ rs_clone <- function(session) .Call(wrap__rs_clone, session)
 
 rs_set_edges <- function(session, from, to, etype) invisible(.Call(wrap__rs_set_edges, session, from, to, etype))
 
+rs_add_edges <- function(session, from, to, etype) invisible(.Call(wrap__rs_add_edges, session, from, to, etype))
+
 rs_replace_edges <- function(session, from, to, etype) invisible(.Call(wrap__rs_replace_edges, session, from, to, etype))
 
 rs_remove_edges <- function(session, from, to, glyphs) .Call(wrap__rs_remove_edges, session, from, to, glyphs)

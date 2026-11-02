@@ -825,6 +825,12 @@ p1 / p2
 
 ### Nested Compositions
 
+Consecutive plots in the same direction share the available space equally:
+`p1 + p2 + p3` creates three equal-width columns, and `p1 / p2 / p3`
+creates three equal-height rows. Parentheses preserve groups when the
+direction changes, so `(p1 + p2) / p3` places two plots above one full-width
+plot.
+
 Compositions can be nested to create complex multi-plot layouts:
 
 ```{r}

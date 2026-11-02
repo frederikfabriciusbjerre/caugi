@@ -40,6 +40,7 @@ or per-type options via \code{directed}, \code{undirected}, \code{bidirected}, \
 Supports:
 \itemize{
 \item Appearance (passed to \code{gpar()}): \code{col}, \code{lwd}, \code{lty}, \code{alpha}, \code{fill}.
+Arrowhead \code{fill} defaults to the final edge \code{col} (or black if unset).
 \item Geometry: \code{arrow_size} (arrow length in mm, default 3), \code{circle_size}
 (radius of endpoint circles for partial edges in mm, default 1.5),
 \code{route} (logical, default \code{TRUE}; when \code{TRUE}, edges automatically bend

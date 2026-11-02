@@ -29,6 +29,7 @@
 #'   or per-type options via `directed`, `undirected`, `bidirected`, `partial`.
 #'   Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`, `fill`.
+#'     Arrowhead `fill` defaults to the final edge `col` (or black if unset).
 #'   * Geometry: `arrow_size` (arrow length in mm, default 3), `circle_size`
 #'     (radius of endpoint circles for partial edges in mm, default 1.5),
 #'     `route` (logical, default `TRUE`; when `TRUE`, edges automatically bend
@@ -633,67 +634,48 @@ compose_plots <- function(e1, e2, horizontal = TRUE) {
     stop("`caugi_options()$plot$spacing` must be a grid::unit()", call. = FALSE)
   }
 
-  if (horizontal) {
-    layout_vp <- grid::viewport(
-      layout = grid::grid.layout(
-        nrow = 1,
-        ncol = 3,
-        widths = grid::unit.c(
-          grid::unit(1, "null"),
-          spacing,
-          grid::unit(1, "null")
-        )
-      )
-    )
-
-    first <- grid::gTree(
-      children = grid::gList(e1@grob),
-      vp = grid::viewport(layout.pos.col = 1),
-      name = "caugi.composed.left"
-    )
-
-    spacer_grob <- grid::nullGrob(
-      vp = grid::viewport(layout.pos.col = 2)
-    )
-
-    second <- grid::gTree(
-      children = grid::gList(e2@grob),
-      vp = grid::viewport(layout.pos.col = 3),
-      name = "caugi.composed.right"
-    )
-  } else {
-    layout_vp <- grid::viewport(
-      layout = grid::grid.layout(
-        nrow = 3,
-        ncol = 1,
-        heights = grid::unit.c(
-          grid::unit(1, "null"),
-          spacing,
-          grid::unit(1, "null")
-        )
-      )
-    )
-
-    first <- grid::gTree(
-      children = grid::gList(e1@grob),
-      vp = grid::viewport(layout.pos.row = 1),
-      name = "caugi.composed.top"
-    )
-
-    spacer_grob <- grid::nullGrob(
-      vp = grid::viewport(layout.pos.row = 2)
-    )
-
-    second <- grid::gTree(
-      children = grid::gList(e2@grob),
-      vp = grid::viewport(layout.pos.row = 3),
-      name = "caugi.composed.bottom"
-    )
+  # Flatten only matching directions so mixed layouts retain their grouping.
+  direction <- if (horizontal) "horizontal" else "vertical"
+  grobs <- list()
+  for (plot in list(e1, e2)) {
+    grob <- plot@grob
+    if (identical(grob$caugi_composition_direction, direction)) {
+      grobs <- c(grobs, grob$caugi_composition_grobs)
+    } else {
+      grobs <- c(grobs, list(grob))
+    }
   }
 
+  n <- length(grobs)
+  sizes <- grid::unit(1, "null")
+  for (i in seq_len(n - 1L)) {
+    sizes <- grid::unit.c(sizes, spacing, grid::unit(1, "null"))
+  }
+  layout <- if (horizontal) {
+    grid::grid.layout(nrow = 1, ncol = 2L * n - 1L, widths = sizes)
+  } else {
+    grid::grid.layout(nrow = 2L * n - 1L, ncol = 1, heights = sizes)
+  }
+
+  children <- lapply(seq_along(grobs), function(i) {
+    position <- 2L * i - 1L
+    vp <- if (horizontal) {
+      grid::viewport(layout.pos.col = position)
+    } else {
+      grid::viewport(layout.pos.row = position)
+    }
+    grid::gTree(
+      children = grid::gList(grobs[[i]]),
+      vp = vp,
+      name = paste0("caugi.composed.panel.", i)
+    )
+  })
+
   final_grob <- grid::gTree(
-    children = grid::gList(first, spacer_grob, second),
-    vp = layout_vp,
+    children = do.call(grid::gList, children),
+    vp = grid::viewport(layout = layout),
+    caugi_composition_direction = direction,
+    caugi_composition_grobs = grobs,
     name = "caugi.composed"
   )
 
