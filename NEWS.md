@@ -347,6 +347,9 @@
 
 ## Improvements
 
+* `plot()` defaults arrowhead fill to the final edge `col`, while preserving
+  explicit `fill` settings (#435).
+
 * `is_simple()` now always checks the graph itself instead of returning the
   declared `simple` flag; `force_check` is ignored.
 * `remove_edges()` without `edge` now only errors when the given pair actually
