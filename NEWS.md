@@ -65,7 +65,7 @@
   every `type`. `type = "optimal"` returns the O-set of Henckel, Perković &
   Maathuis (2022) for node sets. As in their Remark 3.14 and
   `pcalg::optAdjSet()`, nodes of `Y` that are not descendants of `X` are
-  dropped with a warning, since the total effect on them is zero. A dropped
+  dropped, since the total effect on them is zero. A dropped
   node can itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
 * `is_valid_backdoor()`, `all_backdoor_sets()` and `d_separated()` now accept
@@ -93,12 +93,12 @@
 
 ## Improvements
 
-* `adjustment_set()` returns `NULL` with a warning saying why, instead of an
-  error, when the requested construction finds no valid set: none exists, the
-  parents of `X` are not valid (`type = "parents"`), or no node of `Y` is a
-  descendant of `X` (`type = "optimal"`). Every "no set" answer is now `NULL`,
-  as for overlapping `X` and `Y`, while `character(0)` still means adjusting
-  for nothing is valid.
+* `adjustment_set()` returns `NULL` instead of an error when the requested
+  construction finds no valid set: none exists, the parents of `X` are not
+  valid (`type = "parents"`), or no node of `Y` is a descendant of `X`
+  (`type = "optimal"`). Every "no set" answer is now `NULL`, as for
+  overlapping `X` and `Y`, while `character(0)` still means adjusting for
+  nothing is valid.
 
 ## Bug Fixes
 

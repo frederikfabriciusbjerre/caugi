@@ -2217,12 +2217,12 @@ fn rs_not_m_separated_for_all_subsets(
     true
 }
 
-/// The set an adjustment construction returns, or, when it finds none, the
-/// reason as a string for R to warn with. Any other error is raised.
-fn set_or_reason(res: Result<Robj, String>) -> Robj {
+/// The set an adjustment construction returns, or `NULL` when it finds none.
+/// Any other error is raised.
+fn set_or_null(res: Result<Vec<u32>, String>) -> Robj {
     match res {
-        Ok(set) => set,
-        Err(e) if graph::dag::finds_no_set(&e) => e.into_robj(),
+        Ok(set) => set.into_iter().map(|x| x as i32).collect_robj(),
+        Err(e) if graph::dag::finds_no_set(&e) => ().into_robj(),
         Err(e) => throw_r_error(e),
     }
 }
@@ -2235,12 +2235,7 @@ fn rs_adjustment_set_parents(
 ) -> Robj {
     let xs_u: Vec<u32> = xs.iter().map(|ri| rint_to_u32(ri, "xs")).collect();
     let ys_u: Vec<u32> = ys.iter().map(|ri| rint_to_u32(ri, "ys")).collect();
-    set_or_reason(
-        session
-            .as_mut()
-            .adjustment_set_parents(&xs_u, &ys_u)
-            .map(|v| v.into_iter().map(|x| x as i32).collect_robj()),
-    )
+    set_or_null(session.as_mut().adjustment_set_parents(&xs_u, &ys_u))
 }
 
 #[extendr]
@@ -2251,12 +2246,7 @@ fn rs_adjustment_set_backdoor(
 ) -> Robj {
     let xs_u: Vec<u32> = xs.iter().map(|ri| rint_to_u32(ri, "xs")).collect();
     let ys_u: Vec<u32> = ys.iter().map(|ri| rint_to_u32(ri, "ys")).collect();
-    set_or_reason(
-        session
-            .as_mut()
-            .adjustment_set_backdoor(&xs_u, &ys_u)
-            .map(|v| v.into_iter().map(|x| x as i32).collect_robj()),
-    )
+    set_or_null(session.as_mut().adjustment_set_backdoor(&xs_u, &ys_u))
 }
 
 #[extendr]
@@ -2264,23 +2254,10 @@ fn rs_adjustment_set_optimal(
     mut session: ExternalPtr<GraphSession>,
     xs: Integers,
     ys: Integers,
-    return_dropped: bool,
 ) -> Robj {
     let xs_u: Vec<u32> = xs.iter().map(|ri| rint_to_u32(ri, "xs")).collect();
     let ys_u: Vec<u32> = ys.iter().map(|ri| rint_to_u32(ri, "ys")).collect();
-    let to_robj = |v: Vec<u32>| v.into_iter().map(|x| x as i32).collect_robj();
-    set_or_reason(
-        session
-            .as_mut()
-            .adjustment_set_optimal(&xs_u, &ys_u, return_dropped)
-            .map(|(z, dropped)| match dropped {
-                Some(dropped) => named_list(
-                    vec![to_robj(z), to_robj(dropped)],
-                    vec!["set".into(), "dropped".into()],
-                ),
-                None => to_robj(z),
-            }),
-    )
+    set_or_null(session.as_mut().adjustment_set_optimal(&xs_u, &ys_u))
 }
 
 #[extendr]
