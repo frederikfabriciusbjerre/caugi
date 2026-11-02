@@ -2,6 +2,9 @@
 
 ## New Features
 
+* `cg[c("A", "B")]` gives the subgraph on nodes `A` and `B`, as `subgraph()`
+  does; numeric indices select by position (#447).
+
 * `"A" %in% cg` tests whether a graph has a node named `A`, and
   `match("A", cg)` gives its position in `nodes(cg)` (#450).
 
