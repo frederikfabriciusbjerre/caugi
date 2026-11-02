@@ -93,6 +93,9 @@
 
 ## Bug Fixes
 
+* Plot compositions using `+`, `|`, and `/` now give equal space to all plots
+  in the same row or column, while preserving mixed layouts (#434).
+
 - `write_graphml()` and `read_graphml()` now write and read UTF-8, as the file
   declares. In a non-UTF-8 locale a node name such as `"æø"` came back as
   `"<U+00E6><U+00F8>"`.
