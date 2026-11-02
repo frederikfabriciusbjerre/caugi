@@ -34,9 +34,9 @@ global instance of the registry throughout the R session.
 \details{
 The intended use of the \code{caugi} registry is mostly for advanced users and
 developers. The registry enables users who need to define their own custom
-edge types in \code{caugi} directly. . It currently mostly supports the
-\emph{representation} of new edges, but for users that might want to represent
-reverse edges, this preserves correctness of reason over these edges.
+edge types in \code{caugi} directly. It currently mostly supports the
+\emph{representation} of new edges. The reverse edges \verb{<--}, \verb{<-o} and \verb{o--} are
+built in: \code{B \%<--\% A} is stored as \code{A \%-->\% B}.
 }
 \section{Functions}{
 \itemize{
@@ -62,16 +62,16 @@ list_caugi_edges()
 
 # register an edge
 register_caugi_edge(
-  glyph = "<--",
-  tail_mark = "arrow",
-  head_mark = "tail",
+  glyph = "==>",
+  tail_mark = "tail",
+  head_mark = "arrow",
   class = "directed",
   symmetric = FALSE
 )
 
 # now, this edge is available for caugi graphs:
 list_caugi_edges()
-cg <- caugi(A \%-->\% B, B \%<--\% C, class = "DAG")
+cg <- caugi(A \%-->\% B, B \%==>\% C, class = "DAG")
 
 # reset the registry to default
 reset_caugi_registry()

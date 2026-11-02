@@ -2,6 +2,12 @@
 
 ## New Features
 
+* Built-in reverse edges `<--`, `<-o` and `o--` complete the nine endpoint
+  combinations (#443). They are stored as the mirrored `-->`, `o->` and `--o`,
+  so `caugi(B %<--% A) == caugi(A %-->% B)`, and every conversion and
+  comparison treats them alike. Registering a custom `<--` now errors, as it
+  is built in.
+
 * `as_caugi()` now reads a data.frame or data.table edge list with columns
   `from`, `edge` and `to`, such as the output of `as.data.frame()` or
   `edges()`. Rows with an `NA` edge are read as isolated nodes.

@@ -33,15 +33,15 @@ reg <- caugi_registry()
 
 # register an edge
 register_caugi_edge(
-  glyph = "<--",
-  tail_mark = "arrow",
-  head_mark = "tail",
+  glyph = "==>",
+  tail_mark = "tail",
+  head_mark = "arrow",
   class = "directed",
   symmetric = FALSE
 )
 
 # now, this edge is available for caugi graphs:
-cg <- caugi(A \%-->\% B, B \%<--\% C, class = "DAG")
+cg <- caugi(A \%-->\% B, B \%==>\% C, class = "DAG")
 
 # reset the registry to default
 reset_caugi_registry()

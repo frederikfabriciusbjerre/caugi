@@ -87,26 +87,27 @@ The available edges in `caugi` are listed below:
 - `%o->%` (partially directed)
 - `%--o%` (partially undirected)
 - `%o-o%` (partial)
+- `%<--%`, `%<-o%` and `%o--%`, the same edges written the other way round:
+  `B %<--% A` is stored as `A %-->% B`
 
 You can register more types with `register_caugi_edge()`, if you find
-that you need a more expressive set of edges. For example, if you want
-to represent a directed edge in the reverse direction, you can do so
-like this:
+that you need a more expressive set of edges. For example, to also write
+directed edges as `==>`:
 
 ``` r
 register_caugi_edge(
-  glyph = "<--",
-  tail_mark = "arrow",
-  head_mark = "tail",
+  glyph = "==>",
+  tail_mark = "tail",
+  head_mark = "arrow",
   class = "directed",
   symmetric = FALSE
 )
 
-caugi(A %-->% B, B %<--% C, class = "DAG")
+caugi(A %-->% B, B %==>% C, class = "DAG")
 #> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0xb4d198260>
 #>   graph_class: DAG
 #>   nodes: A, B, C
-#>   edges: A-->B, B<--C
+#>   edges: A-->B, B==>C
 
 # reset the registry to default with original edges
 reset_caugi_registry()

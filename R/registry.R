@@ -16,9 +16,9 @@
 #' @details
 #' The intended use of the `caugi` registry is mostly for advanced users and
 #' developers. The registry enables users who need to define their own custom
-#' edge types in `caugi` directly. . It currently mostly supports the
-#' _representation_ of new edges, but for users that might want to represent
-#' reverse edges, this preserves correctness of reason over these edges.
+#' edge types in `caugi` directly. It currently mostly supports the
+#' _representation_ of new edges. The reverse edges `<--`, `<-o` and `o--` are
+#' built in: `B %<--% A` is stored as `A %-->% B`.
 #'
 #' @name registry
 #'
@@ -34,16 +34,16 @@
 #'
 #' # register an edge
 #' register_caugi_edge(
-#'   glyph = "<--",
-#'   tail_mark = "arrow",
-#'   head_mark = "tail",
+#'   glyph = "==>",
+#'   tail_mark = "tail",
+#'   head_mark = "arrow",
 #'   class = "directed",
 #'   symmetric = FALSE
 #' )
 #'
 #' # now, this edge is available for caugi graphs:
 #' list_caugi_edges()
-#' cg <- caugi(A %-->% B, B %<--% C, class = "DAG")
+#' cg <- caugi(A %-->% B, B %==>% C, class = "DAG")
 #'
 #' # reset the registry to default
 #' reset_caugi_registry()
@@ -146,15 +146,15 @@ seal_caugi_registry <- function() {
 #'
 #' # register an edge
 #' register_caugi_edge(
-#'   glyph = "<--",
-#'   tail_mark = "arrow",
-#'   head_mark = "tail",
+#'   glyph = "==>",
+#'   tail_mark = "tail",
+#'   head_mark = "arrow",
 #'   class = "directed",
 #'   symmetric = FALSE
 #' )
 #'
 #' # now, this edge is available for caugi graphs:
-#' cg <- caugi(A %-->% B, B %<--% C, class = "DAG")
+#' cg <- caugi(A %-->% B, B %==>% C, class = "DAG")
 #'
 #' # reset the registry to default
 #' reset_caugi_registry()
