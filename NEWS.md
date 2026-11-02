@@ -93,6 +93,10 @@
 
 ## Improvements
 
+* `caugi_options()` checks what it sets: an unknown option name, or a value of
+  another kind than its default, such as a string for a number, now errors
+  instead of being stored and failing later (#437).
+
 * `adjustment_set()` returns `NULL` instead of an error when the requested
   construction finds no valid set: none exists, the parents of `X` are not
   valid (`type = "parents"`), or no node of `Y` is a descendant of `X`
