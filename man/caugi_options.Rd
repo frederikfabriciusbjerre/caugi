@@ -44,7 +44,8 @@ The plot options are nested under the \code{plot} key:
 \itemize{
 \item \code{arrow_size}: Arrow size in mm (default: \code{3})
 \item \code{circle_size}: Radius of endpoint circles for partial edges in mm (default: \code{1.5})
-\item \code{fill}: Arrow/line color (default: \code{"black"})
+\item \code{fill}: Arrowhead fill color (default: \code{NULL}, which uses the edge \code{col},
+or \code{"black"} if \code{col} is unset)
 \item \code{route}: Whether edges automatically bend around non-incident nodes they
 would otherwise cross (default: \code{TRUE})
 }

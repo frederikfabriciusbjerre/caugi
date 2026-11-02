@@ -731,6 +731,7 @@ make_edges <- function(
         NULL
       )
 
+      style$fill <- style$fill %||% style$col %||% "black"
       edge_gpar <- do.call(grid::gpar, get_gpar_params(style))
 
       edge_grobs[[i]] <- make_edge_grob(

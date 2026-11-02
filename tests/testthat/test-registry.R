@@ -177,8 +177,8 @@ test_that("new edge type, x-x, cannot create duplicate or parallel edges", {
   reset_caugi_registry()
   register_caugi_edge("x-x", "other", "other", "undirected", TRUE)
 
-  # duplicate edges, written either way, are one edge
-  expect_equal(nrow(edges(caugi(A %x-x% B, B %x-x% A, class = "Unknown"))), 1L)
+  # duplicate edges
+  expect_error(caugi(A %x-x% B, B %x-x% A, class = "Unknown"))
 
   # self loop (only UNKNOWN allows them)
   expect_error(caugi(A %x-x% A, class = "DAG"), "Self-loops")
