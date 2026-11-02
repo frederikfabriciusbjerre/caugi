@@ -1749,3 +1749,17 @@ test_that("queries with an empty node vector name the argument", {
   expect_error(descendants(cg, character(0)), msg, fixed = TRUE)
   expect_error(parents(cg, index = integer(0)), msg, fixed = TRUE)
 })
+
+test_that("markov_equivalent compares the CPDAGs of DAGs and CPDAGs", {
+  chain <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  fork <- caugi(B %-->% A, B %-->% C, class = "DAG")
+  collider <- caugi(A %-->% B, C %-->% B, class = "DAG")
+  expect_true(markov_equivalent(chain, fork))
+  expect_false(markov_equivalent(chain, collider))
+  expect_true(markov_equivalent(dag_to_cpdag(chain), fork))
+  expect_false(markov_equivalent(chain, caugi(A %-->% B, C, D, class = "DAG")))
+  expect_error(
+    markov_equivalent(chain, caugi(A %---% B, class = "UG")),
+    "DAGs or CPDAGs"
+  )
+})

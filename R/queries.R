@@ -1480,3 +1480,46 @@ is_visible_edge <- function(
 # Implemented directly in Rust via `subgraph()` in `src/rust/src/lib.rs`.
 subgraph <- subgraph
 formals(subgraph) <- alist(cg = , nodes = NULL, index = NULL)
+
+#' @title Are two graphs Markov equivalent?
+#'
+#' @description Checks whether two DAGs or CPDAGs encode the same conditional
+#' independencies. Two DAGs are Markov equivalent exactly when they share
+#' their skeleton and v-structures (Verma and Pearl, 1990), that is, when they
+#' have the same CPDAG, so a DAG is compared through [dag_to_cpdag()] and a
+#' CPDAG as it is.
+#'
+#' @param g1,g2 `caugi` objects of class `"DAG"` or `"CPDAG"`.
+#'
+#' @returns `TRUE` if `g1` and `g2` are Markov equivalent, `FALSE` otherwise,
+#'   including when their nodes differ.
+#'
+#' @references
+#' Verma, T. and Pearl, J. (1990). Equivalence and synthesis of causal models.
+#' In *Proceedings of the Sixth Conference on Uncertainty in Artificial
+#' Intelligence*, 220-227.
+#'
+#' @examples
+#' chain <- caugi(A %-->% B, B %-->% C, class = "DAG")
+#' fork <- caugi(B %-->% A, B %-->% C, class = "DAG")
+#' collider <- caugi(A %-->% B, C %-->% B, class = "DAG")
+#' markov_equivalent(chain, fork) # TRUE
+#' markov_equivalent(chain, collider) # FALSE
+#'
+#' @family queries
+#' @concept queries
+#'
+#' @export
+markov_equivalent <- function(g1, g2) {
+  is_caugi(g1, throw_error = TRUE)
+  is_caugi(g2, throw_error = TRUE)
+  cpdag_of <- function(cg) {
+    switch(
+      cg@graph_class,
+      DAG = dag_to_cpdag(cg),
+      CPDAG = cg,
+      stop("`g1` and `g2` must be DAGs or CPDAGs.", call. = FALSE)
+    )
+  }
+  cpdag_of(g1) == cpdag_of(g2)
+}

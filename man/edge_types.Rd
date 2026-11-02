@@ -53,6 +53,7 @@ Other queries:
 \code{\link[=is_visible_edge]{is_visible_edge()}},
 \code{\link[=m_separated]{m_separated()}},
 \code{\link[=markov_blanket]{markov_blanket()}},
+\code{\link[=markov_equivalent]{markov_equivalent()}},
 \code{\link[=neighbors]{neighbors()}},
 \code{\link[=nodes]{nodes()}},
 \code{\link[=parents]{parents()}},

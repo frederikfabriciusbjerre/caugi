@@ -2,6 +2,9 @@
 
 ## New Features
 
+* `markov_equivalent(g1, g2)` checks whether two DAGs or CPDAGs are Markov
+  equivalent, by comparing their CPDAGs (#442).
+
 * `dag_to_cpdag()` returns the CPDAG of a DAG's Markov equivalence class (#441).
 
 * `as_caugi()` now reads a data.frame or data.table edge list with columns
