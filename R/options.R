@@ -38,7 +38,7 @@ caugi_default_options <- function() {
       edge_style = list(
         arrow_size = 3,
         circle_size = 1.5,
-        fill = "black",
+        fill = NULL,
         route = TRUE
       ),
       label_style = list(),
@@ -94,7 +94,8 @@ caugi_default_options <- function() {
 #' - `edge_style`: List of default edge appearance parameters:
 #'   - `arrow_size`: Arrow size in mm (default: `3`)
 #'   - `circle_size`: Radius of endpoint circles for partial edges in mm (default: `1.5`)
-#'   - `fill`: Arrow/line color (default: `"black"`)
+#'   - `fill`: Arrowhead fill color (default: `NULL`, which uses the edge `col`,
+#'     or `"black"` if `col` is unset)
 #'   - `route`: Whether edges automatically bend around non-incident nodes they
 #'     would otherwise cross (default: `TRUE`)
 #' - `label_style`: List of label text parameters (see [grid::gpar()])

@@ -93,6 +93,9 @@
 
 ## Bug Fixes
 
+* Plot compositions using `+`, `|`, and `/` now give equal space to all plots
+  in the same row or column, while preserving mixed layouts (#434).
+
 - Symmetric edges (`---`, `<->`, `o-o`) match whichever way they are written
   (#392). `remove_edges(cg, B %---% A)` removes `A --- B`, `add_edges()`
   leaves an edge already in the graph unchanged whichever way it is written,
@@ -351,6 +354,9 @@
   graphs and retrieving `nodes()` and `edges()`.
 
 ## Improvements
+
+* `plot()` defaults arrowhead fill to the final edge `col`, while preserving
+  explicit `fill` settings (#435).
 
 * `is_simple()` now always checks the graph itself instead of returning the
   declared `simple` flag; `force_check` is ignored.
