@@ -724,8 +724,11 @@ test_that("set_edges preserves opposite-direction edges in non-simple graphs", {
 
 test_that("symmetric edges match whichever way they are written", {
   ug <- caugi(A %---% B, class = "UG")
+  # An edge already in the graph is not added again; written both ways in one
+  # input, it is a duplicate.
   expect_equal(edges(add_edges(ug, B %---% A)), edges(ug))
-  expect_equal(edges(caugi(A %---% B, B %---% A, class = "UG")), edges(ug))
+  expect_error(caugi(A %---% B, B %---% A, class = "UG"), "Parallel edges")
+  expect_error(add_edges(ug, C %---% D, D %---% C), "Parallel edges")
   expect_equal(nrow(edges(remove_edges(ug, B %---% A))), 0L)
   admg <- caugi(A %<->% B, class = "ADMG")
   expect_equal(edges(set_edges(admg, B %<->% A)), edges(admg))

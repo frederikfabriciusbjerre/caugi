@@ -94,11 +94,12 @@
 ## Bug Fixes
 
 - Symmetric edges (`---`, `<->`, `o-o`) match whichever way they are written
-  (#392). `remove_edges(cg, B %---% A)` removes `A --- B`, `add_edges()` and
-  `caugi()` accept both `A %---% B` and `B %---% A` as the same edge, and
-  `set_edges()` replaces a symmetric edge between the pair in any graph. A
-  symmetric edge is stored from the node that comes first in `nodes(cg)`, and
-  repeated edges are dropped, also when given through `from`, `edge` and `to`.
+  (#392). `remove_edges(cg, B %---% A)` removes `A --- B`, `add_edges()`
+  leaves an edge already in the graph unchanged whichever way it is written,
+  and `set_edges()` replaces a symmetric edge between the pair in any graph. A
+  symmetric edge is stored from the node that comes first in `nodes(cg)`.
+  Given both ways in one input, as in `caugi(A %---% B, B %---% A)`, it is
+  still a duplicate and errors.
 
 - `write_graphml()` and `read_graphml()` now write and read UTF-8, as the file
   declares. In a non-UTF-8 locale a node name such as `"æø"` came back as
