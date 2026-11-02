@@ -2,6 +2,8 @@
 
 ## New Features
 
+* `dag_to_cpdag()` returns the CPDAG of a DAG's Markov equivalence class (#441).
+
 * `as_caugi()` now reads a data.frame or data.table edge list with columns
   `from`, `edge` and `to`, such as the output of `as.data.frame()` or
   `edges()`. Rows with an `NA` edge are read as isolated nodes.

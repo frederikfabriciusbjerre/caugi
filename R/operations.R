@@ -712,6 +712,36 @@ dag_from_pdag <- function(cg, PDAG) {
   .session_to_caugi(rs_dag_extension(cg@session), node_names = cg@nodes$name)
 }
 
+#' @title Construct the CPDAG of a DAG
+#'
+#' @description
+#' Returns the CPDAG (essential graph) of a DAG's Markov equivalence class: the
+#' DAG's skeleton, with the edges that every DAG in the class orients the same
+#' way directed and the rest undirected.
+#'
+#' @param cg A `caugi` object of class `"DAG"`.
+#'
+#' @returns A `caugi` object of class `"CPDAG"`.
+#'
+#' @examples
+#' # A chain is equivalent to its reverse and to the fork, so no edge is fixed.
+#' dag_to_cpdag(caugi(A %-->% B, B %-->% C, class = "DAG")) # A --- B --- C
+#'
+#' # A v-structure is shared by every member of its class.
+#' dag_to_cpdag(caugi(A %-->% C, B %-->% C, class = "DAG")) # A --> C <-- B
+#'
+#' @family operations
+#' @concept operations
+#'
+#' @export
+dag_to_cpdag <- function(cg) {
+  is_caugi(cg, throw_error = TRUE)
+  if (!identical(cg@graph_class, "DAG")) {
+    stop("`cg` must be a caugi of class 'DAG'.", call. = FALSE)
+  }
+  .session_to_caugi(rs_to_cpdag(cg@session), node_names = cg@nodes$name)
+}
+
 #' @title Construct the PAG of a DAG with latent variables
 #'
 #' @description
