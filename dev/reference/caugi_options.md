@@ -61,7 +61,8 @@ The plot options are nested under the `plot` key:
   - `circle_size`: Radius of endpoint circles for partial edges in mm
     (default: `1.5`)
 
-  - `fill`: Arrow/line color (default: `"black"`)
+  - `fill`: Arrowhead fill color (default: `NULL`, which uses the edge
+    `col`, or `"black"` if `col` is unset)
 
   - `route`: Whether edges automatically bend around non-incident nodes
     they would otherwise cross (default: `TRUE`)
@@ -119,7 +120,7 @@ caugi_options()
 #> [1] 1.5
 #> 
 #> $plot$edge_style$fill
-#> [1] "black"
+#> NULL
 #> 
 #> $plot$edge_style$route
 #> [1] TRUE
@@ -191,7 +192,7 @@ caugi_options("plot")
 #> [1] 1.5
 #> 
 #> $edge_style$fill
-#> [1] "black"
+#> NULL
 #> 
 #> $edge_style$route
 #> [1] TRUE

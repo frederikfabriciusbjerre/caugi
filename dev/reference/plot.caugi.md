@@ -59,7 +59,8 @@ plot(x, layout = "auto", node_style = list(),
   `partial`. Supports:
 
   - Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`,
-    `fill`.
+    `fill`. Arrowhead `fill` defaults to the final edge `col` (or black
+    if unset).
 
   - Geometry: `arrow_size` (arrow length in mm, default 3),
     `circle_size` (radius of endpoint circles for partial edges in mm,

@@ -97,7 +97,8 @@ own style lists, e.g.
 <dt id="arg-edge-style">edge_style<a class="anchor" aria-label="anchor" href="#arg-edge-style"></a></dt>
 <dd><p>List of edge styling parameters. Can specify global options
 or per-type options via <code>directed</code>, <code>undirected</code>, <code>bidirected</code>, <code>partial</code>.
-Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>col</code>, <code>lwd</code>, <code>lty</code>, <code>alpha</code>, <code>fill</code>.</p></li>
+Supports:</p><ul><li><p>Appearance (passed to <code>gpar()</code>): <code>col</code>, <code>lwd</code>, <code>lty</code>, <code>alpha</code>, <code>fill</code>.
+Arrowhead <code>fill</code> defaults to the final edge <code>col</code> (or black if unset).</p></li>
 <li><p>Geometry: <code>arrow_size</code> (arrow length in mm, default 3), <code>circle_size</code>
 (radius of endpoint circles for partial edges in mm, default 1.5),
 <code>route</code> (logical, default <code>TRUE</code>; when <code>TRUE</code>, edges automatically bend

@@ -145,10 +145,9 @@
 </ul></div>
 <div class="section level3">
 <h3 id="improvements-1-4-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-4-0"></a></h3>
-<ul><li>
-<code><a href="../reference/is_simple.html">is_simple()</a></code> now always checks the graph itself instead of returning the declared <code>simple</code> flag; <code>force_check</code> is ignored.</li>
-<li>
-<code><a href="../reference/caugi_verbs.html">remove_edges()</a></code> without <code>edge</code> now only errors when the given pair actually holds several edges, instead of whenever the graph allows multi-edges.</li>
+<ul><li><p><code><a href="../reference/plot.caugi.html">plot()</a></code> defaults arrowhead fill to the final edge <code>col</code>, while preserving explicit <code>fill</code> settings (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/435" class="external-link">#435</a>).</p></li>
+<li><p><code><a href="../reference/is_simple.html">is_simple()</a></code> now always checks the graph itself instead of returning the declared <code>simple</code> flag; <code>force_check</code> is ignored.</p></li>
+<li><p><code><a href="../reference/caugi_verbs.html">remove_edges()</a></code> without <code>edge</code> now only errors when the given pair actually holds several edges, instead of whenever the graph allows multi-edges.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-1-4-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-4-0"></a></h3>

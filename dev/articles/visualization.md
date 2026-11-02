@@ -1007,7 +1007,7 @@ caugi_options()
 #> [1] 1.5
 #> 
 #> $plot$edge_style$fill
-#> [1] "black"
+#> NULL
 #> 
 #> $plot$edge_style$route
 #> [1] TRUE
@@ -1076,7 +1076,7 @@ caugi_options("plot")
 #> [1] 1.5
 #> 
 #> $edge_style$fill
-#> [1] "black"
+#> NULL
 #> 
 #> $edge_style$route
 #> [1] TRUE
