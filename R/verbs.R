@@ -265,6 +265,15 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   .update_caugi(cg, nodes = nodes, action = "remove")
 }
 
+#' @describeIn caugi_verbs Remove nodes: `cg - "Z"` is
+#'   `remove_nodes(cg, name = "Z")`.
+#' @param e1 A `caugi` object.
+#' @param e2 Node names to remove.
+#' @export
+`-.caugi::caugi` <- function(e1, e2) {
+  remove_nodes(e1, name = e2)
+}
+
 #' Error on nodes that are not in the graph.
 #' @keywords internal
 #' @noRd

@@ -2,6 +2,8 @@
 
 ## New Features
 
+* `cg - "Z"` removes node `Z`, as `remove_nodes()` does (#449).
+
 * `cg[c("A", "B")]` gives the subgraph on nodes `A` and `B`, as `subgraph()`
   does; numeric indices select by position (#447).
 

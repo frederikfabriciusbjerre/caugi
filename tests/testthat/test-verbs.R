@@ -770,3 +770,9 @@ test_that("replace-action branches in .update_caugi are covered", {
   expect_true("C" %in% out@nodes$name)
   expect_equal(out@graph_class, "DAG")
 })
+
+test_that("cg - nodes is remove_nodes()", {
+  cg <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_equal(cg - "B", remove_nodes(cg, name = "B"))
+  expect_equal(cg - c("A", "C"), remove_nodes(cg, name = c("A", "C")))
+})
