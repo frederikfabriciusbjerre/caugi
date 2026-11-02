@@ -96,7 +96,9 @@ or missing, no nodes are conditioned on.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A logical value; <code>TRUE</code> if <code>X</code> and <code>Y</code> are m-separated given <code>Z</code>.</p>
+    <p>A logical value; <code>TRUE</code> if <code>X</code> and <code>Y</code> are m-separated given <code>Z</code>.
+Nodes of <code>Z</code> are dropped from <code>X</code> and <code>Y</code> first, so <code>X</code> within <code>Z</code> gives
+<code>TRUE</code>, and <code>X</code> and <code>Y</code> sharing a node outside <code>Z</code> gives <code>FALSE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -26,7 +26,7 @@ is_valid_backdoor(
 
 - X, Y:
 
-  Node names; one or more each, and disjoint.
+  Node names; one or more each.
 
 - Z:
 
@@ -56,8 +56,8 @@ With several treatments it can accept sets that Pearl's set version
 rejects, since that version requires `Z` alone to block every back-door
 path of each treatment. Every set accepted here is a valid adjustment
 set, but a valid adjustment set may be rejected, for example one
-containing a descendant of `X` off the causal paths. A `Z` that contains
-a node of `X` or `Y` is never valid.
+containing a descendant of `X` off the causal paths. `X`, `Y` and `Z`
+must be pairwise disjoint, so overlapping sets give `FALSE`.
 
 ## References
 

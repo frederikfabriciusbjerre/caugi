@@ -70,7 +70,7 @@ DAG. <code>X</code> and <code>Y</code> can each hold one or more nodes.</p>
 
 
 <dt id="arg-x-y">X, Y<a class="anchor" aria-label="anchor" href="#arg-x-y"></a></dt>
-<dd><p>Node names; one or more each, and disjoint.</p></dd>
+<dd><p>Node names; one or more each.</p></dd>
 
 
 <dt id="arg-x-index-y-index">X_index, Y_index<a class="anchor" aria-label="anchor" href="#arg-x-index-y-index"></a></dt>
@@ -84,7 +84,10 @@ The <code>optimal</code> option computes the O-set.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A character vector of node names representing the adjustment set.</p>
+    <p>A character vector of node names representing the adjustment set
+(<code>character(0)</code> if none is needed), or <code>NULL</code> if there is none: the
+requested construction found no valid set, or <code>X</code> and <code>Y</code> overlap, as
+adjustment sets are defined for disjoint <code>X</code> and <code>Y</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -102,15 +105,18 @@ path. Note that minimal is not the same as statistically optimal; use
 <li><p><code>"optimal"</code>: the O-set \(\mathrm{Pa}(\mathrm{cn}(X, Y)) \setminus
   \mathrm{forb}(X, Y)\) (Henckel, Perković &amp; Maathuis, 2022). Following
 their Remark 3.14, nodes of <code>Y</code> that are not descendants of <code>X</code> are
-dropped with a warning, since the total effect on them is zero, and the
+dropped, since the total effect on them is zero, and the
 O-set is computed for the rest of <code>Y</code>. It is then valid whenever any valid
-set exists. If no node of <code>Y</code> is a descendant of <code>X</code>, an error is raised.
+set exists. If no node of <code>Y</code> is a descendant of <code>X</code>, there is no O-set.
 A dropped node can itself be in the O-set: for <code>X --&gt; Y1 &lt;-- Y2</code> with
 <code>Y = c("Y1", "Y2")</code>, <code>Y2</code> is dropped from <code>Y</code> and returned as the O-set,
 since it is a parent of <code>Y1</code>.</p></li>
 </ul><p>Every result is checked against the generalized adjustment criterion
-(Perković et al., 2018). An error is raised when the requested set is not
-valid. In particular, a valid set need not exist with several treatments:
+(Perković et al., 2018). When the requested set is not valid, or does not
+exist, <code>NULL</code> is returned: for <code>"parents"</code>, the parents of <code>X</code> are not a
+valid set, though another set may be; for <code>"backdoor"</code>, no valid set exists;
+for <code>"optimal"</code>, no valid set exists or no node of <code>Y</code> is a descendant of
+<code>X</code>. In particular, a valid set need not exist with several treatments:
 in <code>X1 --&gt; L --&gt; X2</code>, <code>L --&gt; Y</code>, only <code>L</code> blocks <code>X2 &lt;-- L --&gt; Y</code>, but it
 lies on the causal path <code>X1 --&gt; L --&gt; Y</code>. With a single treatment, no valid
 set exists only when a node of <code>Y</code> is a parent of <code>X</code>.</p>

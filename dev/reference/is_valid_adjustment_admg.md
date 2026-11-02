@@ -38,7 +38,8 @@ is_valid_adjustment_admg(
 
 ## Value
 
-Logical value indicating if the adjustment set is valid.
+Logical value indicating if the adjustment set is valid; `FALSE` unless
+`X`, `Y` and `Z` are pairwise disjoint.
 
 ## See also
 

@@ -105,9 +105,9 @@
   `type = "optimal"` returns the O-set of Henckel, Perković &
   Maathuis (2022) for node sets. As in their Remark 3.14 and
   [`pcalg::optAdjSet()`](https://rdrr.io/pkg/pcalg/man/optAdjSet.html),
-  nodes of `Y` that are not descendants of `X` are dropped with a
-  warning, since the total effect on them is zero. A dropped node can
-  itself be in the returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
+  nodes of `Y` that are not descendants of `X` are dropped, since the
+  total effect on them is zero. A dropped node can itself be in the
+  returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
 - [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md),
   [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
@@ -140,11 +140,33 @@
   view is now kept. This halves the cost of graphs whose check is
   expensive, such as CPDAGs and MPDAGs.
 
+### Improvements
+
+- [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
+  returns `NULL` instead of an error when the requested construction
+  finds no valid set: none exists, the parents of `X` are not valid
+  (`type = "parents"`), or no node of `Y` is a descendant of `X`
+  (`type = "optimal"`). Every “no set” answer is now `NULL`, as for
+  overlapping `X` and `Y`, while `character(0)` still means adjusting
+  for nothing is valid.
+
 ### Bug Fixes
 
 - Plot compositions using `+`, `|`, and `/` now give equal space to all
   plots in the same row or column, while preserving mixed layouts
   ([\#434](https://github.com/frederikfabriciusbjerre/caugi/issues/434)).
+
+- Symmetric edges (`---`, `<->`, `o-o`) match whichever way they are
+  written
+  ([\#392](https://github.com/frederikfabriciusbjerre/caugi/issues/392)).
+  `remove_edges(cg, B %---% A)` removes `A --- B`,
+  [`add_edges()`](https://caugi.org/dev/reference/caugi_verbs.md) leaves
+  an edge already in the graph unchanged whichever way it is written,
+  and [`set_edges()`](https://caugi.org/dev/reference/caugi_verbs.md)
+  replaces a symmetric edge between the pair in any graph. A symmetric
+  edge is stored from the node that comes first in `nodes(cg)`. Given
+  both ways in one input, as in `caugi(A %---% B, B %---% A)`, it is
+  still a duplicate and errors.
 
 - [`write_graphml()`](https://caugi.org/dev/reference/write_graphml.md)
   and
@@ -198,6 +220,31 @@
 - [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
   now rejects a `Z` that contains a node of `Y`. It accepted, for
   example, `Z = "Y"` for `X <-- U --> Y`.
+
+- Overlapping node sets are answered, not rejected
+  ([\#387](https://github.com/frederikfabriciusbjerre/caugi/issues/387)).
+  [`d_separated()`](https://caugi.org/dev/reference/d_separated.md) and
+  [`m_separated()`](https://caugi.org/dev/reference/m_separated.md)
+  document their convention: nodes of `Z` are dropped from `X` and `Y`
+  first. Adjustment sets are defined for pairwise disjoint `X`, `Y` and
+  `Z`, so the adjustment functions treat any other triple as not
+  admissible:
+  [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
+  and
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  return `FALSE`,
+  [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
+  returns `NULL`, and
+  [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
+  and
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  return [`list()`](https://rdrr.io/r/base/list.html), where some of
+  them errored and
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  accepted a `Z` holding `Y` when `X` has no effect on `Y`.
+  [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
+  returns `NULL` when `X` and `Y` overlap or `I` contains a node of
+  either; it returned a set that does not separate them.
 
 - caugi’s JSON output now validates against its published schema: the
   schema allows the top-level `$schema` key that every file has, and its

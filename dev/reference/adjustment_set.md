@@ -24,7 +24,7 @@ adjustment_set(
 
 - X, Y:
 
-  Node names; one or more each, and disjoint.
+  Node names; one or more each.
 
 - X_index, Y_index:
 
@@ -37,7 +37,10 @@ adjustment_set(
 
 ## Value
 
-A character vector of node names representing the adjustment set.
+A character vector of node names representing the adjustment set
+(`character(0)` if none is needed), or `NULL` if there is none: the
+requested construction found no valid set, or `X` and `Y` overlap, as
+adjustment sets are defined for disjoint `X` and `Y`.
 
 ## Details
 
@@ -59,17 +62,20 @@ Types supported:
 - `"optimal"`: the O-set \\\mathrm{Pa}(\mathrm{cn}(X, Y)) \setminus
   \mathrm{forb}(X, Y)\\ (Henckel, Perković & Maathuis, 2022). Following
   their Remark 3.14, nodes of `Y` that are not descendants of `X` are
-  dropped with a warning, since the total effect on them is zero, and
-  the O-set is computed for the rest of `Y`. It is then valid whenever
-  any valid set exists. If no node of `Y` is a descendant of `X`, an
-  error is raised. A dropped node can itself be in the O-set: for
-  `X --> Y1 <-- Y2` with `Y = c("Y1", "Y2")`, `Y2` is dropped from `Y`
-  and returned as the O-set, since it is a parent of `Y1`.
+  dropped, since the total effect on them is zero, and the O-set is
+  computed for the rest of `Y`. It is then valid whenever any valid set
+  exists. If no node of `Y` is a descendant of `X`, there is no O-set. A
+  dropped node can itself be in the O-set: for `X --> Y1 <-- Y2` with
+  `Y = c("Y1", "Y2")`, `Y2` is dropped from `Y` and returned as the
+  O-set, since it is a parent of `Y1`.
 
 Every result is checked against the generalized adjustment criterion
-(Perković et al., 2018). An error is raised when the requested set is
-not valid. In particular, a valid set need not exist with several
-treatments: in `X1 --> L --> X2`, `L --> Y`, only `L` blocks
+(Perković et al., 2018). When the requested set is not valid, or does
+not exist, `NULL` is returned: for `"parents"`, the parents of `X` are
+not a valid set, though another set may be; for `"backdoor"`, no valid
+set exists; for `"optimal"`, no valid set exists or no node of `Y` is a
+descendant of `X`. In particular, a valid set need not exist with
+several treatments: in `X1 --> L --> X2`, `L --> Y`, only `L` blocks
 `X2 <-- L --> Y`, but it lies on the causal path `X1 --> L --> Y`. With
 a single treatment, no valid set exists only when a node of `Y` is a
 parent of `X`.

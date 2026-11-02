@@ -41,8 +41,8 @@ all_adjustment_sets_admg(
 
 ## Value
 
-A list of character vectors, each a valid adjustment set (possibly empty
-list if none exist).
+A list of character vectors, each a valid adjustment set (an empty list
+if none exist, as when `X` and `Y` overlap).
 
 ## See also
 

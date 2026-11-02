@@ -67,12 +67,14 @@ Research 115:637-647 Available from
 ## Value
 
 A character vector of node names representing the minimal separator, or
-`NULL` if no valid separator exists within the restriction R.
+`NULL` if no valid separator exists within the restriction R, such as
+when `X` and `Y` overlap or `I` contains a node of either.
 
 ## Details
 
-A separator Z for X and Y is a set of nodes such that conditioning on Z
-d- or m-separates X from Y in the graph. This function returns a minimal
+A separator Z for X and Y is a set of nodes, holding no node of X or Y,
+such that conditioning on Z d- or m-separates X from Y in the graph.
+Nodes of X and Y in `R` are ignored. This function returns a minimal
 separator: no proper subset of Z (excluding I) still separates X and Y.
 
 The algorithm runs in linear time O(n + m) and is unified across graph

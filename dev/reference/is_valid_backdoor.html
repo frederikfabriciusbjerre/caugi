@@ -74,7 +74,7 @@ or more nodes.</p>
 
 
 <dt id="arg-x-y">X, Y<a class="anchor" aria-label="anchor" href="#arg-x-y"></a></dt>
-<dd><p>Node names; one or more each, and disjoint.</p></dd>
+<dd><p>Node names; one or more each.</p></dd>
 
 
 <dt id="arg-z">Z<a class="anchor" aria-label="anchor" href="#arg-z"></a></dt>
@@ -101,8 +101,8 @@ With several treatments it can accept sets that Pearl's set version
 rejects, since that version requires <code>Z</code> alone to block every back-door
 path of each treatment. Every set accepted here is a valid adjustment set,
 but a valid adjustment set may be rejected, for example one containing a
-descendant of <code>X</code> off the causal paths. A <code>Z</code> that contains a node of <code>X</code>
-or <code>Y</code> is never valid.</p>
+descendant of <code>X</code> off the causal paths. <code>X</code>, <code>Y</code> and <code>Z</code> must be pairwise
+disjoint, so overlapping sets give <code>FALSE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

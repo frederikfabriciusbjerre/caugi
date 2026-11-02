@@ -27,7 +27,7 @@ all_backdoor_sets(
 
 - X, Y:
 
-  Node names; one or more each, and disjoint.
+  Node names; one or more each.
 
 - X_index, Y_index:
 
@@ -44,6 +44,7 @@ all_backdoor_sets(
 ## Value
 
 A list of character vectors, each an adjustment set (possibly empty).
+The list is empty if no set qualifies, as when `X` and `Y` overlap.
 
 ## See also
 
