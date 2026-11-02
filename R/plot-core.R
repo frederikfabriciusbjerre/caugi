@@ -29,6 +29,7 @@
 #'   or per-type options via `directed`, `undirected`, `bidirected`, `partial`.
 #'   Supports:
 #'   * Appearance (passed to `gpar()`): `col`, `lwd`, `lty`, `alpha`, `fill`.
+#'     Arrowhead `fill` defaults to the final edge `col` (or black if unset).
 #'   * Geometry: `arrow_size` (arrow length in mm, default 3), `circle_size`
 #'     (radius of endpoint circles for partial edges in mm, default 1.5),
 #'     `route` (logical, default `TRUE`; when `TRUE`, edges automatically bend
