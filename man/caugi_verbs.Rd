@@ -8,6 +8,7 @@
 \alias{add_nodes}
 \alias{remove_nodes}
 \alias{-.caugi::caugi}
+\alias{+.caugi::caugi}
 \title{Manipulate nodes and edges of a \code{caugi}}
 \usage{
 add_edges(cg, ..., from = NULL, edge = NULL, to = NULL, inplace = FALSE)
@@ -21,6 +22,8 @@ add_nodes(cg, ..., name = NULL, inplace = FALSE)
 remove_nodes(cg, ..., name = NULL, inplace = FALSE)
 
 \method{-}{`caugi::caugi`}(e1, e2)
+
+\method{+}{`caugi::caugi`}(e1, e2)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
@@ -41,7 +44,8 @@ Graphs are always modified via copy-on-write.}
 
 \item{e1}{A \code{caugi} object.}
 
-\item{e2}{Node names to remove.}
+\item{e2}{For \code{-}, node names to remove; for \code{+}, edges such as
+\code{A \%-->\% D}.}
 }
 \value{
 The updated \code{caugi}.
@@ -69,6 +73,9 @@ Caugi graph verbs
 
 \item \code{ - }: Remove nodes: \code{cg - "Z"} is
 \code{remove_nodes(cg, name = "Z")}.
+
+\item \code{ + }: Add edges: \code{cg + A \%-->\% D} is
+\code{add_edges(cg, A \%-->\% D)}. Needs R 4.3 or later.
 
 }}
 \examples{

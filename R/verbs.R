@@ -268,10 +268,18 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 #' @describeIn caugi_verbs Remove nodes: `cg - "Z"` is
 #'   `remove_nodes(cg, name = "Z")`.
 #' @param e1 A `caugi` object.
-#' @param e2 Node names to remove.
+#' @param e2 For `-`, node names to remove; for `+`, edges such as
+#'   `A %-->% D`.
 #' @export
 `-.caugi::caugi` <- function(e1, e2) {
   remove_nodes(e1, name = e2)
+}
+
+#' @describeIn caugi_verbs Add edges: `cg + A %-->% D` is
+#'   `add_edges(cg, A %-->% D)`. Needs R 4.3 or later.
+#' @export
+`+.caugi::caugi` <- function(e1, e2) {
+  add_edges(e1, from = e2$from, edge = e2$edge, to = e2$to)
 }
 
 #' Error on nodes that are not in the graph.

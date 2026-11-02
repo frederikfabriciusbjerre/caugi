@@ -776,3 +776,8 @@ test_that("cg - nodes is remove_nodes()", {
   expect_equal(cg - "B", remove_nodes(cg, name = "B"))
   expect_equal(cg - c("A", "C"), remove_nodes(cg, name = c("A", "C")))
 })
+
+test_that("cg + edges is add_edges()", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_equal(cg + B %-->% C, add_edges(cg, B %-->% C))
+})

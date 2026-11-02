@@ -75,6 +75,14 @@
     `!=.caugi::caugi`,
     envir = asNamespace("base")
   )
+  # S7::method(`+`, ...) for caugi_plot binds `+` in this namespace, so the
+  # NAMESPACE directive files `+` methods here instead of with base.
+  registerS3method(
+    "+",
+    "caugi::caugi",
+    `+.caugi::caugi`,
+    envir = asNamespace("base")
+  )
   registerS3method(
     "print",
     "caugi_summary",
