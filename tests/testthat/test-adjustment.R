@@ -155,14 +155,6 @@ test_that("all_backdoor_sets includes empty set, if valid", {
 
 test_that("backdoor and d-separation functions check X and Y", {
   expect_error(
-    is_valid_backdoor(adjustment_set_cg, X = "X", Y = c("Y", "X"), Z = "A"),
-    "X and Y must be disjoint."
-  )
-  expect_error(
-    all_backdoor_sets(adjustment_set_cg, X = "X", Y = c("Y", "X")),
-    "X and Y must be disjoint."
-  )
-  expect_error(
     d_separated(adjustment_set_cg, X = c("C", "X"), Z = "A"),
     "Y must be provided."
   )
@@ -190,18 +182,18 @@ test_that("separation and adjustment handle overlapping node sets", {
   expect_false(is_valid_adjustment_admg(admg, "X", "Y", Z = c("U", "Y")))
   expect_null(minimal_separator(dag, "X", "X"))
   expect_null(minimal_separator(admg, "X", "Y", I = "Y"))
-  expect_error(is_valid_adjustment_admg(admg, "X", "X"), "must be disjoint")
-  expect_error(all_adjustment_sets_admg(admg, "X", "X"), "must be disjoint")
+  # Overlapping X and Y leave no admissible adjustment set
+  expect_false(is_valid_backdoor(dag, "X", c("X", "Y")))
+  expect_false(is_valid_adjustment_admg(admg, "X", "X"))
+  expect_null(adjustment_set(dag, c("X", "Y"), "Y"))
+  expect_identical(all_backdoor_sets(dag, "X", c("X", "Y")), list())
+  expect_identical(all_adjustment_sets_admg(admg, "X", "X"), list())
 })
 
 test_that("adjust functions fails with faulty input", {
   expect_error(
     adjustment_set(adjustment_set_cg, X = "X", Y = NULL, type = "parents"),
     "Y must be provided"
-  )
-  expect_error(
-    adjustment_set(adjustment_set_cg, X = c("X", "Y"), Y = "Y"),
-    "X and Y must be disjoint"
   )
   for (type in c("optimal", "parents", "backdoor")) {
     expect_error(

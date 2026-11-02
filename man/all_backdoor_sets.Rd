@@ -17,7 +17,7 @@ all_backdoor_sets(
 \arguments{
 \item{cg}{A \code{caugi}.}
 
-\item{X, Y}{Node names; one or more each, and disjoint.}
+\item{X, Y}{Node names; one or more each.}
 
 \item{X_index, Y_index}{Deprecated; pass node names instead.}
 
@@ -27,7 +27,8 @@ all_backdoor_sets(
 }
 \value{
 A list of character vectors, each an adjustment set
-(possibly empty).
+(possibly empty). The list is empty if no set qualifies, as when \code{X} and
+\code{Y} overlap.
 }
 \description{
 This function returns the backdoor sets up to size \code{max_size},

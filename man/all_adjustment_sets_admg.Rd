@@ -17,8 +17,7 @@ all_adjustment_sets_admg(
 \arguments{
 \item{cg}{A \code{caugi} object of class ADMG.}
 
-\item{X, Y}{Disjoint node names (can be vectors for multiple
-treatments/outcomes).}
+\item{X, Y}{Node names (can be vectors for multiple treatments/outcomes).}
 
 \item{X_index, Y_index}{Deprecated; pass node names instead.}
 
@@ -28,7 +27,7 @@ treatments/outcomes).}
 }
 \value{
 A list of character vectors, each a valid adjustment set
-(possibly empty list if none exist).
+(an empty list if none exist, as when \code{X} and \code{Y} overlap).
 }
 \description{
 Enumerates all valid adjustment sets for estimating the causal

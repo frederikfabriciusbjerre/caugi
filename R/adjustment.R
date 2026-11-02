@@ -95,12 +95,14 @@ d_separated <- function(
 #' set exists only when a node of `Y` is a parent of `X`.
 #'
 #' @param cg A `caugi` object.
-#' @param X,Y Node names; one or more each, and disjoint.
+#' @param X,Y Node names; one or more each.
 #' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param type One of `"parents"`, `"backdoor"`, `"optimal"`.
 #' The `optimal` option computes the O-set.
 #'
-#' @returns A character vector of node names representing the adjustment set.
+#' @returns A character vector of node names representing the adjustment set
+#'   (`character(0)` if none is needed), or `NULL` if `X` and `Y` overlap:
+#'   adjustment sets are defined for disjoint `X` and `Y`, so none exists.
 #'
 #' @examples
 #' cg <- caugi(
@@ -154,7 +156,9 @@ adjustment_set <- function(
   if (length(Y_idx0) == 0L) {
     stop("`Y` must name at least one node.", call. = FALSE)
   }
-  .check_disjoint(X_idx0, Y_idx0)
+  if (!.disjoint(X_idx0, Y_idx0)) {
+    return(NULL)
+  }
 
   idx0 <- switch(
     type,
@@ -202,8 +206,8 @@ adjustment_set <- function(
 #' rejects, since that version requires `Z` alone to block every back-door
 #' path of each treatment. Every set accepted here is a valid adjustment set,
 #' but a valid adjustment set may be rejected, for example one containing a
-#' descendant of `X` off the causal paths. A `Z` that contains a node of `X`
-#' or `Y` is never valid.
+#' descendant of `X` off the causal paths. `X`, `Y` and `Z` must be pairwise
+#' disjoint, so overlapping sets give `FALSE`.
 #'
 #' @references
 #' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
@@ -212,7 +216,7 @@ adjustment_set <- function(
 #'
 #' @param cg A `caugi` object.
 #'
-#' @param X,Y Node names; one or more each, and disjoint.
+#' @param X,Y Node names; one or more each.
 #' @param Z Optional node set for conditioning
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
@@ -257,7 +261,6 @@ is_valid_backdoor <- function(
   .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  .check_disjoint(X_idx0, Y_idx0)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
   if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
     return(FALSE)
@@ -274,13 +277,14 @@ is_valid_backdoor <- function(
 #' back-door criterion.
 #'
 #' @param cg A `caugi`.
-#' @param X,Y Node names; one or more each, and disjoint.
+#' @param X,Y Node names; one or more each.
 #' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
 #' @returns A list of character vectors, each an adjustment set
-#' (possibly empty).
+#' (possibly empty). The list is empty if no set qualifies, as when `X` and
+#' `Y` overlap.
 #'
 #' @examples
 #' cg <- caugi(
@@ -339,7 +343,9 @@ all_backdoor_sets <- function(
   .warn_index_deprecated()
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  .check_disjoint(X_idx0, Y_idx0)
+  if (!.disjoint(X_idx0, Y_idx0)) {
+    return(list())
+  }
 
   sets_idx0 <- rs_all_backdoor_sets(
     cg@session,
@@ -364,8 +370,9 @@ all_backdoor_sets <- function(
 #' result is an m-separator).
 #'
 #' @details
-#' A separator Z for X and Y is a set of nodes such that conditioning on Z
-#' d- or m-separates X from Y in the graph. This function returns a minimal
+#' A separator Z for X and Y is a set of nodes, holding no node of X or Y, such
+#' that conditioning on Z d- or m-separates X from Y in the graph. Nodes of X
+#' and Y in `R` are ignored. This function returns a minimal
 #' separator: no proper subset of Z (excluding I) still separates X and Y.
 #'
 #' The algorithm runs in linear time O(n + m) and is unified across graph
@@ -549,13 +556,12 @@ minimal_d_separator <- function(
 #' criterion.
 #'
 #' @param cg A `caugi` object of class ADMG.
-#' @param X,Y Disjoint node names (can be vectors for multiple
-#'   treatments/outcomes).
+#' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
 #' @param Z Conditioning set (character vector of node names).
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
-#' @returns Logical value indicating if the adjustment set is valid. A `Z`
-#'   that contains a node of `X` or `Y` is never valid.
+#' @returns Logical value indicating if the adjustment set is valid; `FALSE`
+#'   unless `X`, `Y` and `Z` are pairwise disjoint.
 #'
 #' @examples
 #' # Classic confounding
@@ -596,7 +602,6 @@ is_valid_adjustment_admg <- function(
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-  .check_disjoint(X_idx0, Y_idx0)
   if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
     return(FALSE)
   }
@@ -610,14 +615,13 @@ is_valid_adjustment_admg <- function(
 #' effect of `X` on `Y` in an ADMG, up to a specified maximum size.
 #'
 #' @param cg A `caugi` object of class ADMG.
-#' @param X,Y Disjoint node names (can be vectors for multiple
-#'   treatments/outcomes).
+#' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
 #' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
 #' @returns A list of character vectors, each a valid adjustment set
-#' (possibly empty list if none exist).
+#' (an empty list if none exist, as when `X` and `Y` overlap).
 #'
 #' @examples
 #' cg <- caugi(
@@ -656,7 +660,9 @@ all_adjustment_sets_admg <- function(
 
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
-  .check_disjoint(X_idx0, Y_idx0)
+  if (!.disjoint(X_idx0, Y_idx0)) {
+    return(list())
+  }
 
   sets_idx0 <- rs_all_adjustment_sets_admg(
     cg@session,
@@ -736,16 +742,6 @@ all_adjustment_sets_admg <- function(
 #' @noRd
 .disjoint <- function(...) {
   !anyDuplicated(unlist(lapply(list(...), unique)))
-}
-
-#' Error unless `X` and `Y` are disjoint: there is no effect of `X` on itself
-#' to adjust for.
-#' @keywords internal
-#' @noRd
-.check_disjoint <- function(X_idx0, Y_idx0) {
-  if (!.disjoint(X_idx0, Y_idx0)) {
-    stop("X and Y must be disjoint.", call. = FALSE)
-  }
 }
 
 #' Validate `max_size` and return it as an integer.

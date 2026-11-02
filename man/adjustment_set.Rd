@@ -16,7 +16,7 @@ adjustment_set(
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
-\item{X, Y}{Node names; one or more each, and disjoint.}
+\item{X, Y}{Node names; one or more each.}
 
 \item{X_index, Y_index}{Deprecated; pass node names instead.}
 
@@ -24,7 +24,9 @@ adjustment_set(
 The \code{optimal} option computes the O-set.}
 }
 \value{
-A character vector of node names representing the adjustment set.
+A character vector of node names representing the adjustment set
+(\code{character(0)} if none is needed), or \code{NULL} if \code{X} and \code{Y} overlap:
+adjustment sets are defined for disjoint \code{X} and \code{Y}, so none exists.
 }
 \description{
 Computes an adjustment set for the effect of \code{X} on \code{Y} in a

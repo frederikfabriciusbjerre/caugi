@@ -138,15 +138,16 @@
 - `is_valid_backdoor()` now rejects a `Z` that contains a node of `Y`. It
   accepted, for example, `Z = "Y"` for `X <-- U --> Y`.
 
-- Overlapping node sets no longer give wrong answers (#387).
-  `is_valid_adjustment_admg()` returns `FALSE` for a `Z` that contains a node
-  of `X` or `Y`; it accepted a `Z` holding `Y` when `X` has no effect on `Y`.
-  `minimal_separator()` returns `NULL` when `X` and `Y` overlap or `I` contains
-  a node of either, where it returned a set. `is_valid_adjustment_admg()` and
-  `all_adjustment_sets_admg()` error when `X` and `Y` overlap, as the other
-  adjustment functions already did. `d_separated()` and `m_separated()` now
-  document their convention for overlapping sets: nodes of `Z` are dropped from
-  `X` and `Y` first.
+- Overlapping node sets are answered, not rejected (#387). `d_separated()`
+  and `m_separated()` document their convention: nodes of `Z` are dropped from
+  `X` and `Y` first. Adjustment sets are defined for pairwise disjoint `X`,
+  `Y` and `Z`, so the adjustment functions treat any other triple as not
+  admissible: `is_valid_backdoor()` and `is_valid_adjustment_admg()` return
+  `FALSE`, `adjustment_set()` returns `NULL`, and `all_backdoor_sets()` and
+  `all_adjustment_sets_admg()` return `list()`, where some of them errored and
+  `is_valid_adjustment_admg()` accepted a `Z` holding `Y` when `X` has no effect
+  on `Y`. `minimal_separator()` returns `NULL` when `X` and `Y` overlap or `I`
+  contains a node of either; it returned a set that does not separate them.
 
 - caugi's JSON output now validates against its published schema: the schema
   allows the top-level `$schema` key that every file has, and its class list

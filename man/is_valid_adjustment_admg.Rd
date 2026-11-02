@@ -17,16 +17,15 @@ is_valid_adjustment_admg(
 \arguments{
 \item{cg}{A \code{caugi} object of class ADMG.}
 
-\item{X, Y}{Disjoint node names (can be vectors for multiple
-treatments/outcomes).}
+\item{X, Y}{Node names (can be vectors for multiple treatments/outcomes).}
 
 \item{Z}{Conditioning set (character vector of node names).}
 
 \item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
-Logical value indicating if the adjustment set is valid. A \code{Z}
-that contains a node of \code{X} or \code{Y} is never valid.
+Logical value indicating if the adjustment set is valid; \code{FALSE}
+unless \code{X}, \code{Y} and \code{Z} are pairwise disjoint.
 }
 \description{
 Checks whether \code{Z} is a valid adjustment set for estimating
