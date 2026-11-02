@@ -102,6 +102,13 @@
 
 ## Bug Fixes
 
+- `neighbors()` defines every mode from edge endpoints (#385). On UNKNOWN
+  graphs, `"in"` and `"out"` no longer return the other end of `<->`, `o->` or
+  `--o`, as a parent or child needs a tail at one end and an arrowhead at the
+  other. `"partial"` takes a circle at either end, so it finds `o->` and `--o`
+  seen from the end without the circle. Parallel edges, such as a bow, no
+  longer list a neighbor twice.
+
 * Plot compositions using `+`, `|`, and `/` now give equal space to all plots
   in the same row or column, while preserving mixed layouts (#434).
 

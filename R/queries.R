@@ -866,6 +866,7 @@ formals(children) <- alist(cg = , nodes = NULL, index = NULL)
 #'   \item{`"partial"`}{Nodes connected via partial edges (edges with circle
 #'     endpoints: `o-o`, `o->`, `--o`)}
 #' }
+#' Each neighbor is listed once, even when several edges join it to the node.
 #'
 #' Not all modes are valid for all graph classes:
 #' \itemize{

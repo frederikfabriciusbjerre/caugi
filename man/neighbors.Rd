@@ -29,6 +29,7 @@ OUT from the target node (equivalent to \code{children()})}
 \item{\code{"partial"}}{Nodes connected via partial edges (edges with circle
 endpoints: \code{o-o}, \verb{o->}, \code{--o})}
 }
+Each neighbor is listed once, even when several edges join it to the node.
 
 Not all modes are valid for all graph classes:
 \itemize{

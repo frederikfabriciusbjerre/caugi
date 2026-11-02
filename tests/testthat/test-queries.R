@@ -1059,18 +1059,27 @@ test_that("neighbors mode 'partial' works for UNKNOWN graphs", {
     class = "UNKNOWN"
   )
 
-  # Partial mode returns neighbors where the CURRENT node has a Circle mark.
-  # Edge marks:
-  # A --> B: A has Tail, B has Arrow
-  # B o-> C: B has Circle, C has Arrow
-  # C o-o D: both have Circle
-  # D --o E: D has Tail, E has Circle (head position has Circle)
+  # Partial mode returns neighbors joined by an edge with a circle at either
+  # end, so B o-> C counts from C and D --o E from D.
+  expect_null(neighbors(cg, "A", mode = "partial"))
+  expect_identical(neighbors(cg, "B", mode = "partial"), "C")
+  expect_identical(neighbors(cg, "C", mode = "partial"), c("B", "D"))
+  expect_identical(neighbors(cg, "D", mode = "partial"), c("C", "E"))
+  expect_identical(neighbors(cg, "E", mode = "partial"), "D")
+})
 
-  expect_null(neighbors(cg, "A", mode = "partial")) # A has Tail (no Circle)
-  expect_identical(neighbors(cg, "B", mode = "partial"), "C") # B has Circle in B o-> C
-  expect_identical(neighbors(cg, "C", mode = "partial"), "D") # C has Circle in C o-o D (but Arrow in B o-> C)
-  expect_identical(neighbors(cg, "D", mode = "partial"), "C") # D has Circle in C o-o D (but Tail in D --o E)
-  expect_identical(neighbors(cg, "E", mode = "partial"), "D") # E has Circle in D --o E
+test_that("neighbors 'in' and 'out' need a tail and an arrowhead", {
+  cg <- caugi(A %-->% B, B %<->% C, B %o->% D, class = "UNKNOWN")
+  expect_identical(neighbors(cg, "B", mode = "in"), "A")
+  expect_null(neighbors(cg, "B", mode = "out"))
+  expect_null(neighbors(cg, "D", mode = "in"))
+  # A bow joins A and B twice, but B is one neighbor.
+  for (class in c("UNKNOWN", "ADMG")) {
+    expect_identical(
+      neighbors(caugi(A %-->% B, A %<->% B, class = class), "A"),
+      "B"
+    )
+  }
 })
 
 test_that("parents and children error for UNKNOWN graphs", {

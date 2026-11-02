@@ -205,7 +205,16 @@ impl GraphView {
             }
 
             // ADMG: in, out, bidirected (spouses), all (no undirected or partial)
-            (GraphView::Admg(g), NeighborMode::All) => Ok(g.neighbors_of(i).to_vec()),
+            // A bow lists its other end among the parents or children and
+            // among the spouses, so keep only the first.
+            (GraphView::Admg(g), NeighborMode::All) => {
+                let mut seen = vec![false; g.n() as usize];
+                Ok(g.neighbors_of(i)
+                    .iter()
+                    .copied()
+                    .filter(|&v| !std::mem::replace(&mut seen[v as usize], true))
+                    .collect())
+            }
             (GraphView::Admg(g), NeighborMode::In) => Ok(g.parents_of(i).to_vec()),
             (GraphView::Admg(g), NeighborMode::Out) => Ok(g.children_of(i).to_vec()),
             (GraphView::Admg(_), NeighborMode::Undirected) => {
@@ -301,15 +310,11 @@ impl GraphView {
             let include = match mode {
                 NeighborMode::All => true,
 
-                NeighborMode::In => {
-                    // Ingoing: I have an Arrow mark (something points INTO me)
-                    my_mark == Mark::Arrow
-                }
+                // A parent: an arrowhead here and a tail there.
+                NeighborMode::In => my_mark == Mark::Arrow && neighbor_mark == Mark::Tail,
 
-                NeighborMode::Out => {
-                    // Outgoing: neighbor has Arrow mark (something points INTO neighbor)
-                    neighbor_mark == Mark::Arrow
-                }
+                // A child: a tail here and an arrowhead there.
+                NeighborMode::Out => my_mark == Mark::Tail && neighbor_mark == Mark::Arrow,
 
                 NeighborMode::Undirected => {
                     // Undirected: both ends have Tail marks
@@ -321,10 +326,8 @@ impl GraphView {
                     spec.class == EdgeClass::Bidirected
                 }
 
-                NeighborMode::Partial => {
-                    // Partial: I have Circle mark
-                    my_mark == Mark::Circle
-                }
+                // A circle at either end.
+                NeighborMode::Partial => my_mark == Mark::Circle || neighbor_mark == Mark::Circle,
             };
 
             if include {
@@ -332,6 +335,9 @@ impl GraphView {
             }
         }
 
+        // Parallel edges list a neighbour once per edge.
+        result.sort_unstable();
+        result.dedup();
         Ok(result)
     }
 
@@ -1659,64 +1665,36 @@ mod tests {
         let bi = r.code_of("<->").unwrap();
         let po = r.code_of("o->").unwrap();
         let oo = r.code_of("o-o").unwrap();
+        let to = r.code_of("--o").unwrap();
 
-        // Graph: 0 -> 1, 1 --- 2, 1 <-> 3, 1 o-> 4, 1 o-o 5
-        // Edge marks:
-        // 0 -> 1: tail at 0, arrow at 1
-        // 1 --- 2: tail at 1, tail at 2
-        // 1 <-> 3: arrow at 1, arrow at 3
-        // 1 o-> 4: circle at 1, arrow at 4
-        // 1 o-o 5: circle at 1, circle at 5
-        let mut b = GraphBuilder::new_with_registry(6, false, &r);
-        b.add_edge(0, 1, d).unwrap(); // 0 -> 1
-        b.add_edge(1, 2, u).unwrap(); // 1 --- 2
-        b.add_edge(1, 3, bi).unwrap(); // 1 <-> 3
-        b.add_edge(1, 4, po).unwrap(); // 1 o-> 4
-        b.add_edge(1, 5, oo).unwrap(); // 1 o-o 5
-        let core = Arc::new(b.finalize().unwrap());
-        let v = GraphView::Raw(core);
+        // 0 --> 1, 1 --- 2, 1 <-> 3, 1 o-> 4, 1 o-o 5, 1 --> 6, 1 --o 7, and the
+        // bow 0 <-> 1 next to 0 --> 1.
+        let mut b = GraphBuilder::new_with_registry(8, false, &r);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(1, 2, u).unwrap();
+        b.add_edge(1, 3, bi).unwrap();
+        b.add_edge(1, 4, po).unwrap();
+        b.add_edge(1, 5, oo).unwrap();
+        b.add_edge(1, 6, d).unwrap();
+        b.add_edge(1, 7, to).unwrap();
+        b.add_edge(0, 1, bi).unwrap();
+        let v = GraphView::Raw(Arc::new(b.finalize().unwrap()));
+        let of = |i, mode| v.neighbors_of(i, mode).unwrap();
 
-        // Node 1 neighbors:
-        // - All: 0, 2, 3, 4, 5
-        let all = v.neighbors_of(1, NeighborMode::All).unwrap();
-        assert_eq!(all.len(), 5);
-        assert!(all.contains(&0));
-        assert!(all.contains(&2));
-        assert!(all.contains(&3));
-        assert!(all.contains(&4));
-        assert!(all.contains(&5));
-
-        // - In: node 1 has Arrow mark in edges 0->1 (arrow at 1) and 1<->3 (arrow at 1)
-        let in_neigh = v.neighbors_of(1, NeighborMode::In).unwrap();
-        assert_eq!(in_neigh.len(), 2);
-        assert!(in_neigh.contains(&0)); // 0 -> 1
-        assert!(in_neigh.contains(&3)); // 1 <-> 3 (arrow at both ends)
-
-        // - Out: neighbor has Arrow mark in edges 1<->3 (arrow at 3) and 1o->4 (arrow at 4)
-        let out_neigh = v.neighbors_of(1, NeighborMode::Out).unwrap();
-        assert_eq!(out_neigh.len(), 2);
-        assert!(out_neigh.contains(&3)); // 1 <-> 3 (arrow at 3)
-        assert!(out_neigh.contains(&4)); // 1 o-> 4 (arrow at 4)
-
-        // - Undirected: node 1 has Tail mark in edge 1---2
-        let und_neigh = v.neighbors_of(1, NeighborMode::Undirected).unwrap();
-        assert_eq!(und_neigh, vec![2]);
-
-        // - Bidirected: both node 1 AND neighbor have Arrow marks (only 1<->3)
-        let bi_neigh = v.neighbors_of(1, NeighborMode::Bidirected).unwrap();
-        assert_eq!(bi_neigh, vec![3]);
-
-        // - Partial: node 1 has Circle mark in edges 1o->4 and 1o-o5
-        let part_neigh = v.neighbors_of(1, NeighborMode::Partial).unwrap();
-        assert_eq!(part_neigh.len(), 2);
-        assert!(part_neigh.contains(&4));
-        assert!(part_neigh.contains(&5));
-
-        // Now test from node 4's perspective (4 is at head of 1 o-> 4)
-        // 4 has Arrow mark, 1 has Circle mark
-        assert_eq!(v.neighbors_of(4, NeighborMode::In).unwrap(), vec![1]); // arrow at 4, so 1 goes IN
-        assert!(v.neighbors_of(4, NeighborMode::Out).unwrap().is_empty()); // no arrow at 1
-        assert!(v.neighbors_of(4, NeighborMode::Partial).unwrap().is_empty()); // no circle at 4
+        // The bow gives node 0 once.
+        assert_eq!(of(1, NeighborMode::All), vec![0, 2, 3, 4, 5, 6, 7]);
+        // `in` needs an arrowhead here and a tail there, `out` the reverse, so
+        // neither counts <-> or the edges with a circle.
+        assert_eq!(of(1, NeighborMode::In), vec![0]);
+        assert_eq!(of(1, NeighborMode::Out), vec![6]);
+        assert_eq!(of(1, NeighborMode::Undirected), vec![2]);
+        assert_eq!(of(1, NeighborMode::Bidirected), vec![0, 3]);
+        // `partial` takes a circle at either end, so 1 --o 7 counts from 1
+        // and 1 o-> 4 counts from 4.
+        assert_eq!(of(1, NeighborMode::Partial), vec![4, 5, 7]);
+        assert!(of(4, NeighborMode::In).is_empty());
+        assert_eq!(of(4, NeighborMode::Partial), vec![1]);
+        assert_eq!(of(7, NeighborMode::Partial), vec![1]);
     }
 
     #[test]
@@ -2001,11 +1979,9 @@ mod tests {
         assert!(all.contains(&2));
         assert!(all.contains(&3));
 
-        // neighbors_of allows explicit mode selection
-        let in_neigh = v.neighbors_of(1, NeighborMode::In).unwrap();
-        assert_eq!(in_neigh.len(), 2);
-        assert!(in_neigh.contains(&0)); // 0 -> 1
-        assert!(in_neigh.contains(&3)); // 1 <-> 3 (arrow at 1)
+        // neighbors_of allows explicit mode selection; 1 <-> 3 has no tail at
+        // 3, so 3 is not a parent.
+        assert_eq!(v.neighbors_of(1, NeighborMode::In).unwrap(), vec![0]);
 
         assert_eq!(
             v.neighbors_of(1, NeighborMode::Undirected).unwrap(),
@@ -2032,7 +2008,7 @@ mod tests {
 
         // From A's perspective (side 0): my_mark = Circle, neighbor_mark = Arrow
         assert!(v.neighbors_of(0, NeighborMode::In).unwrap().is_empty()); // A has no Arrow
-        assert_eq!(v.neighbors_of(0, NeighborMode::Out).unwrap(), vec![1]); // B has Arrow (pointing in)
+        assert!(v.neighbors_of(0, NeighborMode::Out).unwrap().is_empty()); // A has no Tail
         assert!(v
             .neighbors_of(0, NeighborMode::Undirected)
             .unwrap()
@@ -2044,7 +2020,7 @@ mod tests {
         assert_eq!(v.neighbors_of(0, NeighborMode::Partial).unwrap(), vec![1]); // A has Circle
 
         // From B's perspective (side 1): my_mark = Arrow, neighbor_mark = Circle
-        assert_eq!(v.neighbors_of(1, NeighborMode::In).unwrap(), vec![0]); // B has Arrow (pointing in)
+        assert!(v.neighbors_of(1, NeighborMode::In).unwrap().is_empty()); // A has no Tail
         assert!(v.neighbors_of(1, NeighborMode::Out).unwrap().is_empty()); // A has no Arrow
         assert!(v
             .neighbors_of(1, NeighborMode::Undirected)
@@ -2054,7 +2030,7 @@ mod tests {
             .neighbors_of(1, NeighborMode::Bidirected)
             .unwrap()
             .is_empty()); // Not both Arrow
-        assert!(v.neighbors_of(1, NeighborMode::Partial).unwrap().is_empty()); // B has no Circle
+        assert_eq!(v.neighbors_of(1, NeighborMode::Partial).unwrap(), vec![0]); // A has Circle
     }
 
     #[test]
@@ -2082,7 +2058,7 @@ mod tests {
             .neighbors_of(0, NeighborMode::Bidirected)
             .unwrap()
             .is_empty());
-        assert!(v.neighbors_of(0, NeighborMode::Partial).unwrap().is_empty()); // A has no Circle
+        assert_eq!(v.neighbors_of(0, NeighborMode::Partial).unwrap(), vec![1]); // B has Circle
 
         // From B's perspective (side 1): my_mark = Circle, neighbor_mark = Tail
         assert!(v.neighbors_of(1, NeighborMode::In).unwrap().is_empty()); // B has no Arrow
@@ -2117,7 +2093,7 @@ mod tests {
         b.add_edge(2, 3, op).unwrap(); // 2 --o 3: 2 has Tail, 3 has Circle
         let v = GraphView::Raw(Arc::new(b.finalize().unwrap()));
 
-        // Test partial mode: returns neighbors where current node has Circle mark
+        // Test partial mode: returns neighbors joined by a Circle mark at either end
         // Node 0: position 0 in o-o, so my_mark = Circle -> returns 1
         assert_eq!(v.neighbors_of(0, NeighborMode::Partial).unwrap(), vec![1]);
 
@@ -2127,22 +2103,22 @@ mod tests {
         assert!(p1.contains(&0)); // from o-o (Circle at position 1)
         assert!(p1.contains(&2)); // from o-> (Circle at position 0)
 
-        // Node 2: position 1 in o-> (Arrow) and position 0 in --o (Tail)
-        // Neither has Circle, so partial is empty for node 2
-        assert!(v.neighbors_of(2, NeighborMode::Partial).unwrap().is_empty());
+        // Node 2: Arrow in o-> and Tail in --o, but the other ends have Circles
+        assert_eq!(
+            v.neighbors_of(2, NeighborMode::Partial).unwrap(),
+            vec![1, 3]
+        );
 
         // Node 3: position 1 in --o (Circle) -> returns 2
         assert_eq!(v.neighbors_of(3, NeighborMode::Partial).unwrap(), vec![2]);
 
-        // In mode: returns neighbors where current node has Arrow mark
-        // Node 2: position 1 in o-> (Arrow) -> returns 1
-        assert_eq!(v.neighbors_of(2, NeighborMode::In).unwrap(), vec![1]);
-        assert!(v.neighbors_of(1, NeighborMode::In).unwrap().is_empty()); // no Arrow at node 1
-
-        // Out mode: returns neighbors where neighbor has Arrow mark
-        // Node 1: neighbor 2 has Arrow (from o->) -> returns 2
-        assert_eq!(v.neighbors_of(1, NeighborMode::Out).unwrap(), vec![2]);
-        assert!(v.neighbors_of(2, NeighborMode::Out).unwrap().is_empty()); // neighbor 3 has Circle, not Arrow
+        // In and out need a Tail at one end and an Arrow at the other, so no
+        // edge here has a parent or child: o-> has a Circle where the Tail
+        // would be.
+        assert!(v.neighbors_of(2, NeighborMode::In).unwrap().is_empty());
+        assert!(v.neighbors_of(1, NeighborMode::In).unwrap().is_empty());
+        assert!(v.neighbors_of(1, NeighborMode::Out).unwrap().is_empty());
+        assert!(v.neighbors_of(2, NeighborMode::Out).unwrap().is_empty());
 
         // Undirected mode: returns neighbors where BOTH nodes have Tail mark
         // Node 2: position 0 in --o, my_mark = Tail, but neighbor 3's mark = Circle
