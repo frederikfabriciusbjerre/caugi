@@ -12,9 +12,9 @@
 #'   or missing, no nodes are conditioned on.
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
-#' @returns `TRUE` if d-separated, `FALSE` otherwise. Overlapping sets give
-#'   `FALSE`: a node is not separated from itself, and a separator holds no
-#'   node of `X` or `Y`.
+#' @returns `TRUE` if d-separated, `FALSE` otherwise. Nodes of `Z` are
+#'   dropped from `X` and `Y` first, so `X` within `Z` gives `TRUE`, and `X`
+#'   and `Y` sharing a node outside `Z` gives `FALSE`.
 #'
 #' @examples
 #' cg <- caugi(
@@ -52,9 +52,6 @@ d_separated <- function(
   X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
   Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-  if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
-    return(FALSE)
-  }
 
   rs_d_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }

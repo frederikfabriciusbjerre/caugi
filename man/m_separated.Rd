@@ -24,8 +24,8 @@ or missing, no nodes are conditioned on.}
 }
 \value{
 A logical value; \code{TRUE} if \code{X} and \code{Y} are m-separated given \code{Z}.
-Overlapping sets give \code{FALSE}: a node is not separated from itself, and a
-separator holds no node of \code{X} or \code{Y}.
+Nodes of \code{Z} are dropped from \code{X} and \code{Y} first, so \code{X} within \code{Z} gives
+\code{TRUE}, and \code{X} and \code{Y} sharing a node outside \code{Z} gives \code{FALSE}.
 }
 \description{
 Test whether two sets of nodes are m-separated given a

@@ -1350,8 +1350,8 @@ districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
 #' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns A logical value; `TRUE` if `X` and `Y` are m-separated given `Z`.
-#'   Overlapping sets give `FALSE`: a node is not separated from itself, and a
-#'   separator holds no node of `X` or `Y`.
+#'   Nodes of `Z` are dropped from `X` and `Y` first, so `X` within `Z` gives
+#'   `TRUE`, and `X` and `Y` sharing a node outside `Z` gives `FALSE`.
 #'
 #' @examples
 #' # Classic confounding example
@@ -1383,9 +1383,6 @@ m_separated <- function(
   X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
   Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-  if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
-    return(FALSE)
-  }
 
   rs_m_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }

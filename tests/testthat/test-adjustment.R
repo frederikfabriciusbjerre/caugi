@@ -178,13 +178,14 @@ test_that("backdoor and d-separation functions check X and Y", {
   }
 })
 
-test_that("overlapping node sets are not separators", {
+test_that("separation and adjustment handle overlapping node sets", {
   dag <- caugi(U %-->% X + Y, X %-->% Y, class = "DAG")
   # X has no effect on Y, so only Y in Z could make the ADMG check accept it
   admg <- caugi(U %-->% X + Y, class = "ADMG")
+  # Nodes of Z are dropped from X and Y before testing separation
   expect_false(d_separated(dag, "X", "X"))
-  expect_false(d_separated(dag, "U", "Y", Z = "U"))
-  expect_false(m_separated(admg, "U", "Y", Z = "Y"))
+  expect_true(d_separated(dag, "U", "Y", Z = "U"))
+  expect_true(m_separated(admg, "U", "Y", Z = "Y"))
   expect_false(is_valid_backdoor(dag, "X", "Y", Z = c("U", "Y")))
   expect_false(is_valid_adjustment_admg(admg, "X", "Y", Z = c("U", "Y")))
   expect_null(minimal_separator(dag, "X", "X"))
