@@ -93,6 +93,10 @@
 
 ## Improvements
 
+* "graph is not a CPDAG" errors now name the culprit when it is a chordless
+  cycle in a chain component, e.g. `A --- B --- C --- D --- A`, or an arrow
+  that is not strongly protected (#440).
+
 * "contains a directed cycle" errors for DAGs, PDAGs, ADMGs and ancestral
   graphs now print the cycle, e.g.
   `DAG contains a directed cycle: A -> B -> C -> A` (#439).

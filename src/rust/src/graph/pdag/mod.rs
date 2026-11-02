@@ -2,6 +2,7 @@
 //! Pdag wrapper with O(1) slice queries via packed neighborhoods.
 
 mod cpdag;
+pub(crate) use cpdag::NotCpdag;
 mod enumerate;
 mod transforms;
 

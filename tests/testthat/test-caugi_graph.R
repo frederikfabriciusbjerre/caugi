@@ -1100,3 +1100,15 @@ test_that("a directed cycle error names the cycle", {
     fixed = TRUE
   )
 })
+
+test_that("a CPDAG error names the chordless cycle or unprotected arrow", {
+  expect_error(
+    caugi(A %---% B, B %---% C, C %---% D, D %---% A, class = "CPDAG"),
+    "chordless cycle [A-D]( --- [A-D]){4}$"
+  )
+  expect_error(
+    caugi(A %-->% B, class = "CPDAG"),
+    "the arrow A -> B is not strongly protected",
+    fixed = TRUE
+  )
+})

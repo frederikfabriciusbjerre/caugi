@@ -992,6 +992,15 @@ impl GraphSession {
         }
     }
 
+    /// `0 -> 1` as `A -> B`, or `None` if a part is not a node index.
+    fn format_indices(&self, indices: &str, sep: &str) -> Option<String> {
+        let names: Vec<String> = indices
+            .split(sep)
+            .map(|i| i.parse().ok().map(|i| self.format_index(i)))
+            .collect::<Option<_>>()?;
+        Some(names.join(sep))
+    }
+
     fn map_error(&self, err: String) -> String {
         self.map_error_str(&err).unwrap_or(err)
     }
@@ -1064,14 +1073,28 @@ impl GraphSession {
         }
 
         if let Some((graph, cycle)) = err.split_once(" contains a directed cycle: ") {
-            let nodes: Vec<String> = cycle
-                .split(" -> ")
-                .map(|i| i.parse().ok().map(|i| self.format_index(i)))
-                .collect::<Option<_>>()?;
             return Some(format!(
                 "{} contains a directed cycle: {}",
                 graph,
-                nodes.join(" -> ")
+                self.format_indices(cycle, " -> ")?
+            ));
+        }
+
+        const CHORDLESS: &str = "graph is not a CPDAG: a chain component has the chordless cycle ";
+        if let Some(cycle) = err.strip_prefix(CHORDLESS) {
+            return Some(format!(
+                "{CHORDLESS}{}",
+                self.format_indices(cycle, " --- ")?
+            ));
+        }
+
+        if let Some(arrow) = err
+            .strip_prefix("graph is not a CPDAG: the arrow ")
+            .and_then(|rest| rest.strip_suffix(" is not strongly protected"))
+        {
+            return Some(format!(
+                "graph is not a CPDAG: the arrow {} is not strongly protected",
+                self.format_indices(arrow, " -> ")?
             ));
         }
 
@@ -1924,6 +1947,20 @@ mod tests {
         assert!(session
             .map_error_str("DAG contains a directed cycle: 0 -> x")
             .is_none());
+        assert_eq!(
+            session
+                .map_error_str(
+                    "graph is not a CPDAG: a chain component has the chordless cycle 0 --- 1 --- 2 --- 0"
+                )
+                .unwrap(),
+            "graph is not a CPDAG: a chain component has the chordless cycle A --- B --- C --- A"
+        );
+        assert_eq!(
+            session
+                .map_error_str("graph is not a CPDAG: the arrow 0 -> 1 is not strongly protected")
+                .unwrap(),
+            "graph is not a CPDAG: the arrow A -> B is not strongly protected"
+        );
         assert!(session.map_error_str("unmapped error").is_none());
     }
 
