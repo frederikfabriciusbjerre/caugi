@@ -2,6 +2,12 @@
 
 ## New Features
 
+* `cg[c("A", "B")]` gives the subgraph on nodes `A` and `B`, as `subgraph()`
+  does; numeric indices select by position (#447).
+
+* `"A" %in% cg` tests whether a graph has a node named `A`, and
+  `match("A", cg)` gives its position in `nodes(cg)` (#450).
+
 * Built-in reverse edges `<--`, `<-o` and `o--` complete the nine endpoint
   combinations (#443). They are stored as the mirrored `-->`, `o->` and `--o`,
   so `caugi(B %<--% A) == caugi(A %-->% B)`, and every conversion and
