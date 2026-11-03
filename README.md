@@ -28,31 +28,28 @@ causality or if you are learning about causal graphs for the first time,
 
 ## Installation
 
-Install the released version from CRAN:
+You can install the released version of `caugi` from CRAN with:
 
 ``` r
 install.packages("caugi")
 ```
 
-or the development version from
-[r-universe](https://frederikfabriciusbjerre.r-universe.dev/caugi):
+or the development version from GitHub with:
 
 ``` r
-install.packages(
-  "caugi",
-  repos = c("https://frederikfabriciusbjerre.r-universe.dev", "https://cloud.r-project.org")
-)
+pak::pak("frederikfabriciusbjerre/caugi")
 ```
 
-On Windows and macOS, both come as ready-built binaries, so you do not
-need Rust.
+### Installing Rust
 
-### Building from source
+On Windows and macOS, CRAN ships ready-built binaries, so
+`install.packages()` does not need Rust. Installing with `pak` from
+GitHub, or from CRAN on Linux, builds `caugi` from source, which
+requires Rust (rustc \>= 1.80). If you don’t have Rust installed, visit
+[rustup.rs](https://rustup.rs/) for installation instructions
+appropriate for your platform.
 
-Building `caugi` from source, for example on Linux or with
-`pak::pak("frederikfabriciusbjerre/caugi")`, requires Rust (rustc \>=
-1.80). Visit [rustup.rs](https://rustup.rs/) for installation
-instructions, or install Rust from your OS package manager.
+Alternatively, you may install Rust from your OS package manager.
 
 ## The basic object: `caugi`
 
@@ -114,7 +111,7 @@ register_caugi_edge(
 )
 
 caugi(A %-->% B, B %!-->% C, class = "UNKNOWN")
-#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x98c4281f0>
+#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x81917c0b0>
 #>   graph_class: UNKNOWN
 #>   nodes: A, B, C
 #>   edges: A-->B, B!-->C
@@ -126,8 +123,8 @@ reset_caugi_registry()
 In queries, `B %!-->% C` counts as a directed edge; only its glyph tells
 it apart.
 
-We expect this feature to be needing further polishing in future
-releases, and we would love your input if you use this feature!
+We expect this feature to need further polishing in future releases, and
+we would love your input if you use this feature!
 
 ## Queries, adjustment and conversion
 
@@ -154,15 +151,15 @@ metrics and conversions.
 
 `caugi` graphs are represented in a compact Compressed Sparse Row (CSR)
 format in Rust. `caugi` works with a front-loading philosophy. Since the
-`caugi` graph is stored in a CSR format, mutations of the graph is
+`caugi` graph is stored in a CSR format, mutations of the graph are
 computationally expensive compared to other graph storage systems, *but*
-it allows for very fast querying. Additionally to the storage format of
+it allows for very fast querying. In addition to the storage format of
 the graph itself, `caugi` also stores additional information about node
 relations in such a way that it allows for faster queries without
 blowing up the object too much.
 
-To accommodate for the cost of mutations, `caugi` graphs are built
-lazily, but you can force a build by using the function `build()`.
+To offset the cost of mutations, `caugi` graphs are built lazily, but
+you can force a build by using the function `build()`.
 
 ## Why?
 
@@ -175,8 +172,8 @@ for benchmarks.
 Would you like to contribute? Great! Please see [Contributing to
 caugi](https://caugi.org/CONTRIBUTING.html) for detailed guidelines on
 code style, testing, and the development workflow. Quick tips: follow
-the tidyverse style guide for R code, run `styler::style_pkg()` for R
-and `cargo fmt` for Rust before PRs, and write tests for new features.
+the tidyverse style guide for R code, run `air format .` for R and
+`cargo fmt` for Rust before PRs, and write tests for new features.
 
-Did you find run into problems? That’s *paw-ful*! Please report an
+Did you run into problems? That’s *paw-ful*! Please report an
 [issue](https://github.com/frederikfabriciusbjerre/caugi/issues)!
