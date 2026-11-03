@@ -1280,8 +1280,8 @@ test_that("condition_marginalize() keeps exactly the inseparable pairs (#397)", 
     FALSE
   }
 
-  # Most inputs have `---` or `<->` edges, where anteriors and ancestors
-  # differ; one in four is a DAG.
+  # About a third of the inputs have `---` edges, where anteriors and
+  # ancestors differ, a quarter more have `<->` edges, and a quarter are DAGs.
   set.seed(397)
   for (i in seq_len(300L)) {
     n <- sample(4:8, 1)
