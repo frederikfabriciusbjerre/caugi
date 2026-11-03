@@ -452,14 +452,32 @@ impl GraphSession {
             .is_some_and(|s| s.symmetric)
     }
 
-    /// A symmetric edge runs from its lower to its higher node, so both ways
-    /// of writing it compare equal.
+    /// A symmetric edge runs from its lower to its higher node, and the
+    /// built-in mirrors `<--`, `<-o` and `o--` become `-->`, `o->` and `--o`
+    /// with the ends swapped, so every way of writing an edge compares equal.
     fn canonical(&self, u: u32, v: u32, etype: u8) -> (u32, u32, u8) {
-        if v < u && self.is_symmetric(etype) {
+        if let Some(forward) = self.mirrored(etype) {
+            (v, u, forward)
+        } else if v < u && self.is_symmetric(etype) {
             (v, u, etype)
         } else {
             (u, v, etype)
         }
+    }
+
+    /// The edge type a built-in mirror stands for.
+    fn mirrored(&self, etype: u8) -> Option<u8> {
+        let specs = &self.registry.specs;
+        let forward = match specs.get(etype as usize)?.glyph.as_str() {
+            "<--" => "-->",
+            "<-o" => "o->",
+            "o--" => "--o",
+            _ => return None,
+        };
+        specs
+            .iter()
+            .position(|s| s.glyph == forward)
+            .map(|c| c as u8)
     }
 
     /// `edges` in canonical form. Repeats are kept, so building the graph
@@ -1505,6 +1523,20 @@ mod tests {
         assert_eq!(session.edge_buffer().etype, vec![d]);
         assert!(session.built_core().is_none());
         assert!(session.built_view().is_none());
+    }
+
+    #[test]
+    fn mirrored_edges_are_stored_forward() {
+        let reg = make_registry();
+        let (d, back) = (reg.code_of("-->").unwrap(), reg.code_of("<--").unwrap());
+        let (po, op) = (reg.code_of("o->").unwrap(), reg.code_of("<-o").unwrap());
+        let (pu, up) = (reg.code_of("--o").unwrap(), reg.code_of("o--").unwrap());
+        let mut s = GraphSession::new(&reg, 4, false, GraphClass::Unknown);
+        // 1 <-- 0, 2 <-o 1, 3 o-- 2
+        s.set_edges_from_vecs(vec![1, 2, 3], vec![0, 1, 2], vec![back, op, up]);
+        assert_eq!(s.edge_buffer().from, vec![0, 1, 2]);
+        assert_eq!(s.edge_buffer().to, vec![1, 2, 3]);
+        assert_eq!(s.edge_buffer().etype, vec![d, po, pu]);
     }
 
     #[test]
