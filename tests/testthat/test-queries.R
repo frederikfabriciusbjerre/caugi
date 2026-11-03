@@ -1755,3 +1755,82 @@ test_that("queries with an empty node vector name the argument", {
   expect_error(descendants(cg, character(0)), msg, fixed = TRUE)
   expect_error(parents(cg, index = integer(0)), msg, fixed = TRUE)
 })
+
+test_that("markov_equivalent compares the CPDAGs of DAGs and CPDAGs", {
+  chain <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  fork <- caugi(B %-->% A, B %-->% C, class = "DAG")
+  collider <- caugi(A %-->% B, C %-->% B, class = "DAG")
+  expect_true(markov_equivalent(chain, fork))
+  expect_false(markov_equivalent(chain, collider))
+  expect_true(markov_equivalent(dag_to_cpdag(chain), fork))
+  expect_false(markov_equivalent(chain, caugi(A %-->% B, C, D, class = "DAG")))
+  expect_error(
+    markov_equivalent(chain, caugi(A %---% B, class = "UG")),
+    "DAGs or CPDAGs"
+  )
+})
+
+test_that("markov_equivalent agrees with skeleton and v-structures on random DAGs", {
+  # Oracle (Verma and Pearl, 1990): same skeleton and same v-structures.
+  set.seed(1995)
+  nodes <- LETTERS[1:6]
+  pa <- function(e, v) e$from[e$to == v]
+  oracle <- function(e) {
+    adj <- function(a, b) any(e$from == a & e$to == b | e$from == b & e$to == a)
+    vs <- unlist(lapply(nodes, function(c) {
+      p <- sort(pa(e, c))
+      if (length(p) < 2) {
+        return(NULL)
+      }
+      unshielded <- Filter(
+        function(q) !adj(q[1], q[2]),
+        combn(p, 2, simplify = FALSE)
+      )
+      vapply(unshielded, function(q) paste(q[1], "->", c, "<-", q[2]), "")
+    }))
+    list(sort(paste(pmin(e$from, e$to), pmax(e$from, e$to))), sort(vs))
+  }
+  dag <- function(e) {
+    tryCatch(
+      caugi(
+        from = e$from,
+        edge = rep("-->", nrow(e)),
+        to = e$to,
+        nodes = nodes,
+        class = "DAG"
+      ),
+      error = function(err) NULL # the reversal made a cycle
+    )
+  }
+  random_edges <- function() {
+    ord <- sample(nodes)
+    pairs <- t(combn(6, 2))[runif(15) < 0.4, , drop = FALSE]
+    data.frame(from = ord[pairs[, 1]], to = ord[pairs[, 2]])
+  }
+  n <- c(covered = 0, uncovered = 0)
+  for (i in seq_len(300)) {
+    e <- random_edges()
+    for (k in seq_len(nrow(e))) {
+      # Reversing X --> Y keeps the class exactly when it is covered,
+      # Pa(Y) = Pa(X) + X (Chickering, 1995).
+      covered <- setequal(pa(e, e$to[k]), c(pa(e, e$from[k]), e$from[k]))
+      r <- e
+      r[k, ] <- e[k, 2:1]
+      g <- dag(r)
+      if (is.null(g)) {
+        next
+      }
+      kind <- if (covered) "covered" else "uncovered"
+      n[[kind]] <- n[[kind]] + 1
+      expect_identical(markov_equivalent(dag(e), g), covered)
+      expect_identical(identical(oracle(e), oracle(r)), covered)
+    }
+    f <- random_edges()
+    expect_identical(
+      markov_equivalent(dag(e), dag(f)),
+      identical(oracle(e), oracle(f))
+    )
+  }
+  expect_gt(n[["covered"]], 100)
+  expect_gt(n[["uncovered"]], 100)
+})
