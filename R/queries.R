@@ -1472,6 +1472,7 @@ is_visible_edge <- function(
 #' cg2 <- caugi(B %-->% C, class = "DAG")
 #' all(nodes(sub_cg) == nodes(cg2)) # TRUE
 #' all(edges(sub_cg) == edges(cg2)) # TRUE
+#' cg[c("B", "C")] # the same subgraph
 #'
 #' @family queries
 #' @concept queries
@@ -1480,6 +1481,14 @@ is_visible_edge <- function(
 # Implemented directly in Rust via `subgraph()` in `src/rust/src/lib.rs`.
 subgraph <- subgraph
 formals(subgraph) <- alist(cg = , nodes = NULL, index = NULL)
+
+#' @rdname subgraph
+#' @param x A `caugi` object.
+#' @param i Node names or indices to keep: `x[i]` is `subgraph(x, i)`.
+#' @export
+`[.caugi::caugi` <- function(x, i) {
+  if (is.numeric(i)) subgraph(x, index = i) else subgraph(x, nodes = i)
+}
 
 #' @title Are two graphs Markov equivalent?
 #'

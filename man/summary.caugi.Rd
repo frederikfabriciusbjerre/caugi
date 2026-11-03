@@ -34,6 +34,7 @@ summary(cg)
 Other caugi methods:
 \code{\link[=as.data.frame.caugi]{as.data.frame.caugi()}},
 \code{\link{caugi-equality}},
+\code{\link{caugi-membership}},
 \code{\link[=length.caugi]{length.caugi()}},
 \code{\link[=print.caugi]{print.caugi()}}
 }
