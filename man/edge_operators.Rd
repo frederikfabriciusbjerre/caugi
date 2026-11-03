@@ -8,6 +8,9 @@
 \alias{\%o-o\%}
 \alias{\%--o\%}
 \alias{\%o->\%}
+\alias{\%<--\%}
+\alias{\%<-o\%}
+\alias{\%o--\%}
 \title{Infix operators for edge specifications}
 \usage{
 lhs \%-->\% rhs
@@ -21,6 +24,12 @@ lhs \%o-o\% rhs
 lhs \%--o\% rhs
 
 lhs \%o->\% rhs
+
+lhs \%<--\% rhs
+
+lhs \%<-o\% rhs
+
+lhs \%o--\% rhs
 }
 \arguments{
 \item{lhs}{The left-hand side node expression.}

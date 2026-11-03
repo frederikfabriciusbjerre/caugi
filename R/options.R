@@ -107,6 +107,11 @@ caugi_default_options <- function() {
 #' Options set via `caugi_options()` serve as global defaults that can be
 #' overridden by arguments to [plot.caugi()].
 #'
+#' Setting an option checks it: its name must be one of the defaults', and its
+#' value of the same kind as the default: a list, `TRUE` or `FALSE`, a number
+#' or [grid::unit()], or a string. `label_style` lists take any [grid::gpar()]
+#' parameters, and `NULL` unsets an option.
+#'
 #' @seealso [plot.caugi()] for per-plot style arguments, [grid::gpar()] for
 #'   available graphical parameters
 #'
@@ -214,9 +219,53 @@ caugi_options <- function(..., reset = FALSE) {
     )
   }
 
+  .check_options(new, .caugi_default_options())
+
   out <- old[nm]
   names(out) <- nm
 
   .caugi_env$options <- utils::modifyList(old, new)
   invisible(out)
+}
+
+#' Error on option names the defaults lack, and on values of another kind than
+#' their default. An empty default list, such as `label_style`, takes any
+#' names, a `NULL` default any value, and a `NULL` value unsets the option.
+#' @keywords internal
+#' @noRd
+.check_options <- function(new, defaults, path = NULL) {
+  for (key in names(new)) {
+    at <- paste(c(path, key), collapse = "$")
+    if (!key %in% names(defaults)) {
+      stop("Unknown option `", at, "`.", call. = FALSE)
+    }
+    value <- new[[key]]
+    default <- defaults[[key]]
+    if (is.null(value) || is.null(default)) {
+      next
+    }
+    kind <- .option_kind(default)
+    if (!identical(.option_kind(value), kind)) {
+      stop("Option `", at, "` must be ", kind, ".", call. = FALSE)
+    }
+    if (is.list(default) && length(default) > 0L) {
+      .check_options(value, default, c(path, key))
+    }
+  }
+}
+
+#' @keywords internal
+#' @noRd
+.option_kind <- function(x) {
+  if (inherits(x, "unit") || is.numeric(x)) {
+    "a number or grid::unit()"
+  } else if (is.list(x)) {
+    "a list"
+  } else if (is.logical(x)) {
+    "TRUE or FALSE"
+  } else if (is.character(x)) {
+    "a string"
+  } else {
+    class(x)[1]
+  }
 }

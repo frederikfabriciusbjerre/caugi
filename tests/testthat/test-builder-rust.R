@@ -3,7 +3,7 @@
 test_that("graph builder works for directed edge in reverse direction", {
   reg <- edge_registry_new()
   edge_registry_register_builtins(reg)
-  expect_equal(edge_registry_len(reg), 6L)
+  expect_equal(edge_registry_len(reg), 9L)
 
   # Custom directed edge in reverse direction
   code_und <- edge_registry_register(
@@ -100,7 +100,7 @@ test_that("rs_build compiles core and view lazily", {
 test_that("edge registry seal works", {
   reg <- edge_registry_new()
   edge_registry_register_builtins(reg)
-  expect_equal(edge_registry_len(reg), 6L)
+  expect_equal(edge_registry_len(reg), 9L)
 
   code_und <- edge_registry_register(
     reg,
@@ -111,7 +111,7 @@ test_that("edge registry seal works", {
     symmetric = TRUE
   )
   expect_true(is.integer(code_und) || is.double(code_und))
-  expect_equal(edge_registry_len(reg), 7L)
+  expect_equal(edge_registry_len(reg), 10L)
 
   edge_registry_seal(reg)
 

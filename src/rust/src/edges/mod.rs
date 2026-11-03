@@ -225,6 +225,11 @@ impl EdgeRegistry {
         add("o-o", M::Circle, M::Circle, true, C::Partial)?;
         add("--o", M::Tail, M::Circle, false, C::PartiallyUndirected)?;
         add("o->", M::Circle, M::Arrow, false, C::PartiallyDirected)?;
+        // Mirrors of the three asymmetric edges, stored as those (see
+        // `GraphSession::canonical`).
+        add("<--", M::Arrow, M::Tail, false, C::Directed)?;
+        add("<-o", M::Arrow, M::Circle, false, C::PartiallyDirected)?;
+        add("o--", M::Circle, M::Tail, false, C::PartiallyUndirected)?;
         Ok(())
     }
 }
@@ -242,8 +247,10 @@ mod tests {
     #[test]
     fn builtins_present_and_len() {
         let r = built_reg();
-        assert_eq!(r.len(), 6);
-        for g in ["-->", "---", "<->", "o-o", "--o", "o->"] {
+        assert_eq!(r.len(), 9);
+        for g in [
+            "-->", "---", "<->", "o-o", "--o", "o->", "<--", "<-o", "o--",
+        ] {
             assert!(r.code_of(g).is_ok(), "missing builtin {}", g);
         }
     }

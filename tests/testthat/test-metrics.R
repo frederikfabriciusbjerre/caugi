@@ -40,7 +40,6 @@ test_that("SHD: shd gives correct results for different with one edge difference
 
 test_that("SHD: graphs with custom nodes work", {
   reset_caugi_registry()
-  register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
 
   cg1 <- caugi(A %-->% B)
   cg2 <- caugi(B %<--% A)
@@ -59,8 +58,6 @@ test_that("SHD: symmetrical node relations work with shd", {
 
 test_that("HD: same graphs but written in different ways work with shd", {
   reset_caugi_registry()
-
-  register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
 
   cg1 <- caugi(A %-->% B, B %-->% C)
   cg2 <- caugi(C %<--% B, B %<--% A)
@@ -170,7 +167,6 @@ test_that("HD: hd gives correct results for different with one edge difference",
 
 test_that("HD: graphs with custom nodes work", {
   reset_caugi_registry()
-  register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
 
   cg1 <- caugi(A %-->% B)
   cg2 <- caugi(B %<--% A)
@@ -188,8 +184,6 @@ test_that("HD: symmetrical node relations work with hd", {
 
 test_that("HD: same graphs but written in different ways work with hd", {
   reset_caugi_registry()
-
-  register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
   cg1 <- caugi(A %-->% B, B %-->% C)
   cg2 <- caugi(C %<--% B, B %<--% A)
 
