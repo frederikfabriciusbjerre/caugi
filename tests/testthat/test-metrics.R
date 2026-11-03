@@ -129,6 +129,26 @@ test_that("SHD: larger graph with shuffled edges gives SHD 0", {
   expect_equal(shd(cg1, cg2), 0)
 })
 
+test_that("SHD: counts each edge of a pair with two edges (#389)", {
+  two <- latent_project(
+    caugi(L %-->% A + B, A %-->% B, class = "DAG"),
+    latents = "L"
+  )
+  expect_equal(shd(two, two), 0)
+
+  # One edge removed, one edge changed, two edges removed.
+  cases <- list(
+    list(caugi(A %-->% B, class = "ADMG"), 1),
+    list(caugi(A %-->% B, A %---% B, class = "UNKNOWN"), 1),
+    list(caugi(nodes = c("A", "B"), class = "ADMG"), 2)
+  )
+  for (case in cases) {
+    expect_equal(shd(two, case[[1]]), case[[2]])
+    expect_equal(shd(case[[1]], two), case[[2]])
+  }
+  expect_equal(shd(two, cases[[3]][[1]], normalized = TRUE), 2)
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────────────────── HD ──────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
