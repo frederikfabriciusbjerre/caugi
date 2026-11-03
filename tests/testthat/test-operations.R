@@ -1218,26 +1218,6 @@ test_that("condition_marginalize and helper branches are covered", {
     "must be the same length"
   )
 
-  expect_true(
-    caugi:::.not_m_separated_for_all_subsets(
-      cg = cg2,
-      node_a = "A",
-      node_b = "C",
-      other_nodes = character(0),
-      cond_vars = character(0)
-    )
-  )
-
-  expect_false(
-    caugi:::.not_m_separated_for_all_subsets(
-      cg = cg2,
-      node_a = "A",
-      node_b = "C",
-      other_nodes = "B",
-      cond_vars = character(0)
-    )
-  )
-
   edge_rev <- caugi:::.edge_type_from_anteriors(
     node_a = "A",
     node_b = "B",
@@ -1249,138 +1229,38 @@ test_that("condition_marginalize and helper branches are covered", {
   expect_identical(edge_rev$to, "A")
 })
 
-test_that("not_m_separated helper matches R reference across subset scenarios", {
-  helper_reference <- function(cg, node_a, node_b, other_nodes, cond_vars) {
-    n_other <- length(other_nodes)
-    subsets <- if (n_other == 0L) {
-      list(NULL)
-    } else {
-      c(
-        list(other_nodes),
-        if (n_other > 1L) {
-          unlist(
-            lapply(
-              seq_len(n_other - 1L),
-              function(k) combn(other_nodes, n_other - k, simplify = FALSE)
-            ),
-            recursive = FALSE
-          )
-        },
-        list(NULL)
-      )
-    }
+test_that("condition_marginalize() keeps exactly the inseparable pairs (#397)", {
+  skip_on_cran()
 
-    for (subset in subsets) {
-      z <- c(cond_vars, subset)
-      if (length(z) == 0L) {
-        z <- NULL
-      }
-      if (m_separated(cg, X = node_a, Y = node_b, Z = z)) {
-        return(FALSE)
+  # The oracle is the definition (Richardson and Spirtes 2002, Theorem
+  # 4.2(ii)): a and b stay adjacent iff no Z with S ⊆ Z ⊆ V \ (L ∪ {a, b})
+  # m-separates them.
+  separable <- function(cg, a, b, S, L) {
+    rest <- setdiff(nodes(cg)$name, c(a, b, S, L))
+    for (m in seq_len(2^length(rest)) - 1) {
+      Z <- c(S, rest[bitwAnd(m, 2^(seq_along(rest) - 1)) > 0])
+      if (m_separated(cg, a, b, Z)) {
+        return(TRUE)
       }
     }
-    TRUE
+    FALSE
+  }
+  check <- function(cg) {
+    SL <- sample(nodes(cg)$name, 2)
+    res <- condition_marginalize(cg, cond_vars = SL[1], marg_vars = SL[2])
+    pairs <- combn(nodes(res)$name, 2)
+    expect_identical(
+      apply(pairs, 2, \(p) p[2] %in% neighbors(res, p[1])),
+      apply(pairs, 2, \(p) !separable(cg, p[1], p[2], SL[1], SL[2]))
+    )
+    res
   }
 
-  # 1) Separation found only for full subset.
-  # A <- B -> C and A <- D -> C: both B and D are required to block all paths.
-  g_full <- caugi(B %-->% A + C, D %-->% A + C, class = "DAG")
-  expect_true(m_separated(g_full, X = "A", Y = "C", Z = c("B", "D")))
-  expect_false(m_separated(g_full, X = "A", Y = "C", Z = "B"))
-  expect_false(m_separated(g_full, X = "A", Y = "C", Z = "D"))
-
-  rust_full <- caugi:::.not_m_separated_for_all_subsets(
-    g_full,
-    node_a = "A",
-    node_b = "C",
-    other_nodes = c("B", "D"),
-    cond_vars = character(0)
-  )
-  ref_full <- helper_reference(
-    g_full,
-    node_a = "A",
-    node_b = "C",
-    other_nodes = c("B", "D"),
-    cond_vars = character(0)
-  )
-  expect_identical(rust_full, ref_full)
-
-  # 2) Separation found only for an intermediate subset size.
-  # A <- B -> C is blocked by conditioning on B, but conditioning on D opens A->E<-C via E->D.
-  g_mid <- caugi(B %-->% A + C, A %-->% E, C %-->% E, E %-->% D, class = "DAG")
-  expect_true(m_separated(g_mid, X = "A", Y = "C", Z = "B"))
-  expect_false(m_separated(g_mid, X = "A", Y = "C", Z = c("B", "D")))
-
-  rust_mid <- caugi:::.not_m_separated_for_all_subsets(
-    g_mid,
-    node_a = "A",
-    node_b = "C",
-    other_nodes = c("B", "D"),
-    cond_vars = character(0)
-  )
-  ref_mid <- helper_reference(
-    g_mid,
-    node_a = "A",
-    node_b = "C",
-    other_nodes = c("B", "D"),
-    cond_vars = character(0)
-  )
-  expect_identical(rust_mid, ref_mid)
-
-  # 3) Separation found for cond_vars alone.
-  g_cond <- caugi(S %-->% A + C, T %-->% A, class = "DAG")
-  expect_true(m_separated(g_cond, X = "A", Y = "C", Z = "S"))
-
-  rust_cond <- caugi:::.not_m_separated_for_all_subsets(
-    g_cond,
-    node_a = "A",
-    node_b = "C",
-    other_nodes = "T",
-    cond_vars = "S"
-  )
-  ref_cond <- helper_reference(
-    g_cond,
-    node_a = "A",
-    node_b = "C",
-    other_nodes = "T",
-    cond_vars = "S"
-  )
-  expect_identical(rust_cond, ref_cond)
-
-  # Additional parity checks on small random DAGs (all subsets feasible).
-  set.seed(123)
-  for (i in seq_len(20L)) {
-    g <- generate_graph(n = 8, m = 8, class = "DAG")
-    nn <- nodes(g)$name
-    pair <- sample(nn, size = 2, replace = FALSE)
-    rest <- setdiff(nn, pair)
-    other <- sample(rest, size = sample.int(3L, 1), replace = FALSE)
-    cond_pool <- setdiff(rest, other)
-    cond <- if (length(cond_pool) > 0L) {
-      sample(
-        cond_pool,
-        size = sample.int(min(2L, length(cond_pool)), 1) - 1L,
-        replace = FALSE
-      )
-    } else {
-      character(0)
-    }
-
-    rust <- caugi:::.not_m_separated_for_all_subsets(
-      g,
-      node_a = pair[[1]],
-      node_b = pair[[2]],
-      other_nodes = other,
-      cond_vars = cond
-    )
-    ref <- helper_reference(
-      g,
-      node_a = pair[[1]],
-      node_b = pair[[2]],
-      other_nodes = other,
-      cond_vars = cond
-    )
-    expect_identical(rust, ref)
+  # Conditioning gives `---` edges, so the second round runs on AGs where
+  # anteriors and ancestors differ.
+  set.seed(397)
+  for (i in seq_len(40L)) {
+    check(check(generate_graph(n = 9, m = 14, class = "DAG")))
   }
 })
 
