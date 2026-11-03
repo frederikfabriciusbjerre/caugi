@@ -305,3 +305,10 @@ test_that("caugi() reads rows with an NA edge as isolated nodes (#446)", {
     "must have a `from` node"
   )
 })
+
+test_that("%in% and match() look up node names", {
+  cg <- caugi(A %-->% B, C, class = "DAG")
+  expect_true("A" %in% cg)
+  expect_identical(c("C", "Z") %in% cg, c(TRUE, FALSE))
+  expect_identical(match("B", cg), 2L)
+})
