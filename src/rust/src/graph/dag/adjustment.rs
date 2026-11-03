@@ -249,9 +249,10 @@ impl Dag {
         let mut cur = Vec::new();
         let max_size = max_size as usize;
         for k in 0..=max_size.min(u.len()) {
-            subsets::k_subsets(&u, k, 0, &mut cur, &mut acc);
+            subsets::k_subsets(&u, k, 0, &mut cur, &mut acc, |z| {
+                self.is_valid_backdoor_set(xs, ys, z)
+            });
         }
-        acc.retain(|z| self.is_valid_backdoor_set(xs, ys, z));
         if minimal {
             subsets::prune_minimal(&mut acc);
         }

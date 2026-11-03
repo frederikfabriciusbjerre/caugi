@@ -530,23 +530,15 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
     node_a <- remaining_nodes[pair_indices[1L, j]]
     node_b <- remaining_nodes[pair_indices[2L, j]]
 
-    # Check if nodes are adjacent in the original graph
-    is_adjacent <- node_a %in% neighbors(cg, nodes = node_b)
+    # Theorem 4.2(iv) of Richardson and Spirtes (2002): a and b are adjacent
+    # iff they are m-connected given ant({a, b} ∪ S) \ (L ∪ {a, b}).
+    seeds <- c(node_a, node_b, cond_vars)
+    z <- setdiff(
+      c(seeds, unlist(anteriors_list[seeds], use.names = FALSE)),
+      c(marg_vars, node_a, node_b)
+    )
 
-    if (!is_adjacent) {
-      # Check m-separation for all subsets of (other remaining nodes ∪ cond_vars)
-      # Nodes are adjacent if NOT m-separated for ANY conditioning subset
-      other_nodes <- setdiff(remaining_nodes, c(node_a, node_b))
-      is_adjacent <- .not_m_separated_for_all_subsets(
-        cg,
-        node_a,
-        node_b,
-        other_nodes,
-        cond_vars
-      )
-    }
-
-    if (is_adjacent) {
+    if (!m_separated(cg, node_a, node_b, z)) {
       edge_list[[j]] <- .edge_type_from_anteriors(
         node_a,
         node_b,
@@ -564,51 +556,6 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
   edges_df <- data.table::rbindlist(edge_list[non_null])
 
   caugi(edges_df = edges_df, nodes = remaining_nodes, class = "AG")
-}
-
-#' @title
-#' Check if nodes are NOT m-separated for all conditioning subsets
-#'
-#' @description
-#' Tests whether two nodes fail to be m-separated for every possible
-#' conditioning set formed from `other_nodes` combined with `cond_vars`.
-#' If they are never separated, they must be adjacent in the resulting graph.
-#'
-#' @param cg A `caugi` object.
-#' @param node_a First node name.
-#' @param node_b Second node name.
-#' @param other_nodes Other remaining nodes to form conditioning sets from.
-#' @param cond_vars Conditioning variables (always included in conditioning).
-#'
-#' @returns `TRUE` if nodes are not m-separated for any subset (i.e., adjacent).
-#'
-#' @keywords internal
-.not_m_separated_for_all_subsets <- function(
-  cg,
-  node_a,
-  node_b,
-  other_nodes,
-  cond_vars
-) {
-  node_idx <- .nodes_to_indices(cg, c(node_a, node_b))
-  other_idx <- if (length(other_nodes) == 0L) {
-    integer(0)
-  } else {
-    .nodes_to_indices(cg, other_nodes)
-  }
-  cond_idx <- if (length(cond_vars) == 0L) {
-    integer(0)
-  } else {
-    .nodes_to_indices(cg, cond_vars)
-  }
-
-  rs_not_m_separated_for_all_subsets(
-    cg@session,
-    node_idx[[1]],
-    node_idx[[2]],
-    other_idx,
-    cond_idx
-  )
 }
 
 #' @title
