@@ -19,6 +19,12 @@ lhs %o-o% rhs
 lhs %--o% rhs
 
 lhs %o->% rhs
+
+lhs %<--% rhs
+
+lhs %<-o% rhs
+
+lhs %o--% rhs
 ```
 
 ## Arguments

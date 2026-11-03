@@ -4,6 +4,14 @@
 
 ### New Features
 
+- Built-in reverse edges `<--`, `<-o` and `o--` complete the nine
+  endpoint combinations
+  ([\#443](https://github.com/frederikfabriciusbjerre/caugi/issues/443)).
+  They are stored as the mirrored `-->`, `o->` and `--o`, so
+  `caugi(B %<--% A) == caugi(A %-->% B)`, and every conversion and
+  comparison treats them alike. Registering a custom `<--` now errors,
+  as it is built in.
+
 - [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) now reads
   a data.frame or data.table edge list with columns `from`, `edge` and
   `to`, such as the output of

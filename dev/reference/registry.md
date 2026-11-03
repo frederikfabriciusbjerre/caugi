@@ -32,10 +32,9 @@ A `data.table` with columns `glyph`, `tail`, `head`, `class`, and
 
 The intended use of the `caugi` registry is mostly for advanced users
 and developers. The registry enables users who need to define their own
-custom edge types in `caugi` directly. . It currently mostly supports
-the *representation* of new edges, but for users that might want to
-represent reverse edges, this preserves correctness of reason over these
-edges.
+custom edge types in `caugi` directly. It currently mostly supports the
+*representation* of new edges. The reverse edges `<--`, `<-o` and `o--`
+are built in: `B %<--% A` is stored as `A %-->% B`.
 
 ## Functions
 
@@ -75,28 +74,35 @@ list_caugi_edges()
 #> 4:    o-o circle circle              partial      TRUE
 #> 5:    --o   tail circle partially_undirected     FALSE
 #> 6:    o-> circle  arrow   partially_directed     FALSE
+#> 7:    <--  arrow   tail             directed     FALSE
+#> 8:    <-o  arrow circle   partially_directed     FALSE
+#> 9:    o-- circle   tail partially_undirected     FALSE
 
-# register an edge
+# register an edge: causalDisco writes forbidden edges in background
+# knowledge as `!-->`
 register_caugi_edge(
-  glyph = "<--",
-  tail_mark = "arrow",
-  head_mark = "tail",
+  glyph = "!-->",
+  tail_mark = "tail",
+  head_mark = "arrow",
   class = "directed",
   symmetric = FALSE
 )
 
 # now, this edge is available for caugi graphs:
 list_caugi_edges()
-#>     glyph   tail   head                class symmetric
-#>    <char> <char> <char>               <char>    <lgcl>
-#> 1:    -->   tail  arrow             directed     FALSE
-#> 2:    ---   tail   tail           undirected      TRUE
-#> 3:    <->  arrow  arrow           bidirected      TRUE
-#> 4:    o-o circle circle              partial      TRUE
-#> 5:    --o   tail circle partially_undirected     FALSE
-#> 6:    o-> circle  arrow   partially_directed     FALSE
-#> 7:    <--  arrow   tail             directed     FALSE
-cg <- caugi(A %-->% B, B %<--% C, class = "DAG")
+#>      glyph   tail   head                class symmetric
+#>     <char> <char> <char>               <char>    <lgcl>
+#>  1:    -->   tail  arrow             directed     FALSE
+#>  2:    ---   tail   tail           undirected      TRUE
+#>  3:    <->  arrow  arrow           bidirected      TRUE
+#>  4:    o-o circle circle              partial      TRUE
+#>  5:    --o   tail circle partially_undirected     FALSE
+#>  6:    o-> circle  arrow   partially_directed     FALSE
+#>  7:    <--  arrow   tail             directed     FALSE
+#>  8:    <-o  arrow circle   partially_directed     FALSE
+#>  9:    o-- circle   tail partially_undirected     FALSE
+#> 10:   !-->   tail  arrow             directed     FALSE
+cg <- caugi(A %-->% B, B %!-->% C, class = "UNKNOWN")
 
 # reset the registry to default
 reset_caugi_registry()

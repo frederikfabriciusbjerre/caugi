@@ -76,32 +76,40 @@ The available edges in `caugi` are listed below:
 - `%o->%` (partially directed)
 - `%--o%` (partially undirected)
 - `%o-o%` (partial)
+- `%<--%`, `%<-o%` and `%o--%`, the same edges written the other way
+  round: `B %<--% A` is stored as `A %-->% B`
 
 You can register more types with
-[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md),
-if you find that you need a more expressive set of edges. For example,
-if you want to represent a directed edge in the reverse direction, you
-can do so like this:
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md).
+caugi reasons with an edge’s marks and class but keeps its glyph, so a
+custom glyph can carry a meaning of your own. For example,
+[causalDisco](https://github.com/disco-coders/causalDisco) writes a
+forbidden edge in background knowledge as `!-->`. Registering that glyph
+keeps forbidden edges apart from ordinary directed ones in a caugi
+graph:
 
 ``` r
 
 register_caugi_edge(
-  glyph = "<--",
-  tail_mark = "arrow",
-  head_mark = "tail",
+  glyph = "!-->",
+  tail_mark = "tail",
+  head_mark = "arrow",
   class = "directed",
   symmetric = FALSE
 )
 
-caugi(A %-->% B, B %<--% C, class = "DAG")
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0xb4d198260>
-#>   graph_class: DAG
+caugi(A %-->% B, B %!-->% C, class = "UNKNOWN")
+#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0xa96fe01c0>
+#>   graph_class: UNKNOWN
 #>   nodes: A, B, C
-#>   edges: A-->B, B<--C
+#>   edges: A-->B, B!-->C
 
 # reset the registry to default with original edges
 reset_caugi_registry()
 ```
+
+In queries, `B %!-->% C` counts as a directed edge; only its glyph tells
+it apart.
 
 We expect this feature to be needing further polishing in future
 releases, and we would love your input if you use this feature!

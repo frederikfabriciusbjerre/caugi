@@ -123,6 +123,9 @@ The format supports all caugi edge types using their DSL operators:
 | `--o`    | Partially undirected   | PAG, UNKNOWN                      |
 | `o-o`    | Partial (both circles) | PAG, UNKNOWN                      |
 
+The reverse operators `<--`, `<-o` and `o--` are stored, and so written,
+as `-->`, `o->` and `--o` with the ends swapped.
+
 ## Working with the Format
 
 ### String Serialization
