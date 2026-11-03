@@ -146,6 +146,20 @@
 
 ### Performance Improvements
 
+- [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
+  tests each candidate set as it generates it, and keeps only the
+  back-door sets. It used to build every subset up to `max_size` in
+  memory first
+  ([\#399](https://github.com/frederikfabriciusbjerre/caugi/issues/399)).
+
+- [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md)
+  is now polynomial instead of exponential. It tried every subset of the
+  remaining nodes as a separating set for each pair; now one
+  m-separation test per pair decides adjacency (Richardson and Spirtes
+  2002, Theorem 4.2(iv)). A 23-node DAG took 150 seconds; it now takes
+  0.04 seconds
+  ([\#397](https://github.com/frederikfabriciusbjerre/caugi/issues/397)).
+
 - [`is_mag()`](https://caugi.org/dev/reference/is_mag.md) is now
   polynomial instead of exponential. It tried every subset of the other
   nodes as a separating set for each non-adjacent pair. A pair has no
