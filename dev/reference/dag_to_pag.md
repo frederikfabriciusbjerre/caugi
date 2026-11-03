@@ -66,14 +66,14 @@ Other operations:
 ``` r
 dag <- caugi(U %-->% X, U %-->% Y, X %-->% Y, W %-->% X, class = "DAG")
 dag_to_pag(dag, latents = "U")
-#> <caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x5f62c4799f00>
+#> <caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x61e877b20670>
 #>   graph_class: PAG
 #>   nodes: X, W, Y
 #>   edges: Wo-oY, Xo-oW, Xo-oY
 
 # Selection bias: conditioning on a common child.
 dag_to_pag(caugi(X %-->% S, Y %-->% S, class = "DAG"), selection = "S")
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x5f62c50c2030>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x61e872dbb820>
 #>   graph_class: PAG
 #>   nodes: X, Y
 #>   edges: Xo-oY

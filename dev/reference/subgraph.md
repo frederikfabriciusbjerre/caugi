@@ -89,7 +89,7 @@ all(nodes(sub_cg) == nodes(cg2)) # TRUE
 all(edges(sub_cg) == edges(cg2)) # TRUE
 #> [1] TRUE
 cg[c("B", "C")] # the same subgraph
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x5f62c4d463c0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x61e87c107e90>
 #>   graph_class: DAG
 #>   nodes: B, C
 #>   edges: B-->C

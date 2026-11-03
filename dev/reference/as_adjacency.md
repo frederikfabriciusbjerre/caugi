@@ -62,7 +62,7 @@ m
 #> B 1 0 2
 #> C 0 2 0
 as_caugi(m, class = "UNKNOWN")
-#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x5f62c392b540>
+#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x61e873c09740>
 #>   graph_class: UNKNOWN
 #>   nodes: A, B, C
 #>   edges: Ao->B, B<->C
