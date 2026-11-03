@@ -132,8 +132,9 @@
 - [`spouses()`](https://caugi.org/dev/reference/spouses.md) : Get
   spouses (bidirected neighbors) of nodes in an ADMG
 
-- [`subgraph()`](https://caugi.org/dev/reference/subgraph.md) : Get the
-  induced subgraph
+- [`subgraph()`](https://caugi.org/dev/reference/subgraph.md)
+  [`` `[`( ``*`<caugi::caugi>`*`)`](https://caugi.org/dev/reference/subgraph.md)
+  : Get the induced subgraph
 
 - [`topological_sort()`](https://caugi.org/dev/reference/topological_sort.md)
   : Get a topological ordering of a DAG

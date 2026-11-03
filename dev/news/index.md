@@ -4,6 +4,11 @@
 
 ### New Features
 
+- `cg[c("A", "B")]` gives the subgraph on nodes `A` and `B`, as
+  [`subgraph()`](https://caugi.org/dev/reference/subgraph.md) does;
+  numeric indices select by position
+  ([\#447](https://github.com/frederikfabriciusbjerre/caugi/issues/447)).
+
 - `"A" %in% cg` tests whether a graph has a node named `A`, and
   `match("A", cg)` gives its position in `nodes(cg)`
   ([\#450](https://github.com/frederikfabriciusbjerre/caugi/issues/450)).

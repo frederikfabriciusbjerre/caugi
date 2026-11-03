@@ -6,6 +6,9 @@ Get the induced subgraph
 
 ``` r
 subgraph(cg, nodes = NULL, index = NULL)
+
+# S3 method for class '`caugi::caugi`'
+x[i]
 ```
 
 ## Arguments
@@ -21,6 +24,14 @@ subgraph(cg, nodes = NULL, index = NULL)
 - index:
 
   A vector of node indexes.
+
+- x:
+
+  A `caugi` object.
+
+- i:
+
+  Node names or indices to keep: `x[i]` is `subgraph(x, i)`.
 
 ## Value
 
@@ -76,4 +87,9 @@ all(nodes(sub_cg) == nodes(cg2)) # TRUE
 #> [1] TRUE
 all(edges(sub_cg) == edges(cg2)) # TRUE
 #> [1] TRUE
+cg[c("B", "C")] # the same subgraph
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x63ed9592db70>
+#>   graph_class: DAG
+#>   nodes: B, C
+#>   edges: B-->C
 ```
