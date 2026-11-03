@@ -32,9 +32,10 @@
 #' # list registered edges
 #' list_caugi_edges()
 #'
-#' # register an edge
+#' # register an edge: causalDisco writes forbidden edges in background
+#' # knowledge as `!-->`
 #' register_caugi_edge(
-#'   glyph = "==>",
+#'   glyph = "!-->",
 #'   tail_mark = "tail",
 #'   head_mark = "arrow",
 #'   class = "directed",
@@ -43,7 +44,7 @@
 #'
 #' # now, this edge is available for caugi graphs:
 #' list_caugi_edges()
-#' cg <- caugi(A %-->% B, B %==>% C, class = "DAG")
+#' cg <- caugi(A %-->% B, B %!-->% C, class = "UNKNOWN")
 #'
 #' # reset the registry to default
 #' reset_caugi_registry()
@@ -144,9 +145,10 @@ seal_caugi_registry <- function() {
 #' # create a new registry
 #' reg <- caugi_registry()
 #'
-#' # register an edge
+#' # register an edge: causalDisco writes forbidden edges in background
+#' # knowledge as `!-->`
 #' register_caugi_edge(
-#'   glyph = "==>",
+#'   glyph = "!-->",
 #'   tail_mark = "tail",
 #'   head_mark = "arrow",
 #'   class = "directed",
@@ -154,7 +156,7 @@ seal_caugi_registry <- function() {
 #' )
 #'
 #' # now, this edge is available for caugi graphs:
-#' cg <- caugi(A %-->% B, B %==>% C, class = "DAG")
+#' cg <- caugi(A %-->% B, B %!-->% C, class = "UNKNOWN")
 #'
 #' # reset the registry to default
 #' reset_caugi_registry()
