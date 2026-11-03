@@ -1079,3 +1079,36 @@ test_that("helper branches for field warning and node constructor are covered", 
   n_dt <- caugi:::.node_constructor(c("B", "A"), sort = TRUE)
   expect_identical(n_dt$name, c("A", "B"))
 })
+
+test_that("errors do not show the internal function that raised them", {
+  err <- tryCatch(
+    caugi(A %-->% B, B %-->% C, C %-->% A, class = "DAG"),
+    error = identity
+  )
+  expect_null(conditionCall(err))
+  err <- tryCatch(
+    register_caugi_edge("-->", "tail", "arrow", "directed"),
+    error = identity
+  )
+  expect_null(conditionCall(err))
+})
+
+test_that("a directed cycle error names the cycle", {
+  expect_error(
+    caugi(A %-->% B, B %-->% C, C %-->% A, class = "DAG"),
+    "DAG contains a directed cycle: A -> B -> C -> A",
+    fixed = TRUE
+  )
+})
+
+test_that("a CPDAG error names the chordless cycle or unprotected arrow", {
+  expect_error(
+    caugi(A %---% B, B %---% C, C %---% D, D %---% A, class = "CPDAG"),
+    "chordless cycle [A-D]( --- [A-D]){4}$"
+  )
+  expect_error(
+    caugi(A %-->% B, class = "CPDAG"),
+    "the arrow A -> B is not strongly protected",
+    fixed = TRUE
+  )
+})

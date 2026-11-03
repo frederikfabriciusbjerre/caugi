@@ -109,3 +109,21 @@
 `%o->%` <- function(lhs, rhs) {
   .edge_spec(substitute(lhs), substitute(rhs), "o->")
 }
+
+#' @rdname edge_operators
+#' @keywords internal
+`%<--%` <- function(lhs, rhs) {
+  .edge_spec(substitute(lhs), substitute(rhs), "<--")
+}
+
+#' @rdname edge_operators
+#' @keywords internal
+`%<-o%` <- function(lhs, rhs) {
+  .edge_spec(substitute(lhs), substitute(rhs), "<-o")
+}
+
+#' @rdname edge_operators
+#' @keywords internal
+`%o--%` <- function(lhs, rhs) {
+  .edge_spec(substitute(lhs), substitute(rhs), "o--")
+}

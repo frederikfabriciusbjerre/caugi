@@ -11,7 +11,7 @@ test_that("caugi_registry initializes once and loads builtins", {
   r1 <- caugi_registry()
   r2 <- caugi_registry()
   expect_identical(r1, r2)
-  expect_equal(edge_registry_len(r1), 6L)
+  expect_equal(edge_registry_len(r1), 9L)
 
   reset_caugi_registry()
 })
@@ -95,11 +95,11 @@ test_that("glyph arbitary length works", {
 test_that("View edges work with caugi_registry", {
   reset_caugi_registry()
   before_edges <- list_caugi_edges()
-  register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
+  register_caugi_edge("==>", "tail", "arrow", "directed", FALSE)
   after_edges <- list_caugi_edges()
 
   expect_equal(nrow(after_edges), nrow(before_edges) + 1)
-  expect_true("<--" %in% after_edges$glyph)
+  expect_true("==>" %in% after_edges$glyph)
 
   reset_caugi_registry()
 })
@@ -154,7 +154,6 @@ test_that("reset_caugi_registry does not allow overwriting builtin edges", {
 
 test_that("reverse edge, <--, behaves correctly, when initalized in a cg", {
   reset_caugi_registry()
-  register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
   cg <- caugi(A %-->% B, B %<--% C, class = "DAG")
   expect_null(parents(cg, index = 1L))
   expect_identical(children(cg, index = 1L), "B")
@@ -168,7 +167,6 @@ test_that("reverse edge, <--, behaves correctly, when initalized in a cg", {
 
 test_that("reverse edge, <--, cannot create cycles", {
   reset_caugi_registry()
-  register_caugi_edge("<--", "arrow", "tail", "directed", FALSE)
   expect_error(caugi(A %-->% B, B %-->% C, A %<--% C, class = "DAG"))
   reset_caugi_registry()
 })
@@ -253,4 +251,14 @@ test_that("existing graphs keep their registry after it is redefined", {
   expect_true(grepl("x-x", caugi_serialize(cg1), fixed = TRUE))
   expect_true(grepl("x-x", to_graphml(cg1), fixed = TRUE))
   reset_caugi_registry()
+})
+
+test_that("reverse glyphs are stored as the edges they mirror", {
+  expect_true(
+    caugi(B %<--% A, B %<-o% C, D %o--% C, class = "UNKNOWN") ==
+      caugi(A %-->% B, C %o->% B, C %--o% D, class = "UNKNOWN")
+  )
+  dag <- caugi(B %<--% A, class = "DAG")
+  expect_identical(edges(dag)$edge, "-->")
+  expect_identical(nrow(edges(remove_edges(dag, B %<--% A))), 0L)
 })

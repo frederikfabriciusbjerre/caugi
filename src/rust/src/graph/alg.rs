@@ -14,5 +14,5 @@ pub mod subsets;
 pub mod topo_sort;
 pub mod traversal;
 
-pub use acyclic::directed_part_is_acyclic;
+pub use acyclic::{directed_part_is_acyclic, find_directed_cycle};
 pub use topo_sort::topological_sort;
