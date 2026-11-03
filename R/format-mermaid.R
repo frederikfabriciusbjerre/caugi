@@ -54,7 +54,8 @@ caugi_mermaid <- S7::new_class(
 #'
 #' Edges with a custom glyph from [register_caugi_edge()] are an error.
 #'
-#' Node names are automatically escaped if they contain special characters.
+#' Each node is written as `nK["name"]` with a generated ID `nK`, so any
+#' name works, including Mermaid keywords such as `end`.
 #'
 #' @examples
 #' cg <- caugi(
@@ -91,53 +92,38 @@ to_mermaid <- function(x, direction = "TD") {
     )
   }
 
-  # Ensure graph is built
+  # Every node gets a generated ID, so names never meet Mermaid's syntax or
+  # reserved words such as `end`; the name is the label, with `"` as `#quot;`.
+  nm <- nodes(x)$name
+  id <- paste0("n", seq_along(nm))
+  label <- gsub('"', "#quot;", nm, fixed = TRUE)
 
-  nodes_df <- nodes(x)
-  edges_df <- edges(x)
-
-  # Start building Mermaid string
-  lines <- character()
-  lines <- c(lines, paste0("flowchart ", direction))
-
-  # Add edges (nodes are defined implicitly through edges in Mermaid)
-  if (nrow(edges_df) > 0) {
-    for (i in seq_len(nrow(edges_df))) {
-      from <- escape_mermaid_id(edges_df$from[i])
-      to <- escape_mermaid_id(edges_df$to[i])
-      edge_type <- edges_df$edge[i]
-
-      # Determine edge operator. Mermaid allows asymmetric endpoint markers:
-      # the start marker (`o`/`x`/`<`) and end marker (`o`/`x`/`>`) are parsed
-      # independently, so `o-->` is a circle tail with an arrow head -- matching
-      # caugi's `o->`. See destructStartLink()/destructEndLink() in Mermaid.
-      if (edge_type == "-->") {
-        operator <- "-->"
-      } else if (edge_type == "---") {
-        operator <- "---"
-      } else if (edge_type == "<->") {
-        operator <- "<-->"
-      } else if (edge_type == "o->") {
-        operator <- "o-->"
-      } else if (edge_type == "--o") {
-        operator <- "--o"
-      } else if (edge_type == "o-o") {
-        operator <- "o--o"
-      }
-
-      edge_line <- paste0("  ", from, " ", operator, " ", to)
-      lines <- c(lines, edge_line)
-    }
-  } else {
-    # If no edges, define nodes explicitly
-    for (i in seq_len(nrow(nodes_df))) {
-      node_name <- escape_mermaid_id(nodes_df$name[i])
-      lines <- c(lines, paste0("  ", node_name))
-    }
-  }
-
-  result <- paste(lines, collapse = "\n")
-  caugi_mermaid(content = result)
+  # Mermaid parses the start (`o`/`<`) and end (`o`/`>`) markers of a link
+  # independently, so `o-->` is a circle tail with an arrow head, matching
+  # caugi's `o->`. See destructStartLink()/destructEndLink() in Mermaid.
+  operator <- c(
+    "-->" = "-->",
+    "---" = "---",
+    "<->" = "<-->",
+    "o->" = "o-->",
+    "--o" = "--o",
+    "o-o" = "o--o"
+  )
+  e <- edges(x)
+  lines <- c(
+    paste0("flowchart ", direction),
+    paste0("  ", id, '["', label, '"]'),
+    paste0(
+      "  ",
+      id[match(e$from, nm)],
+      " ",
+      operator[e$edge],
+      " ",
+      id[match(e$to, nm)],
+      recycle0 = TRUE
+    )
+  )
+  caugi_mermaid(content = paste(lines, collapse = "\n"))
 }
 
 #' Write caugi Graph to Mermaid File
@@ -174,19 +160,4 @@ write_mermaid <- function(x, file, ...) {
   mmd_obj <- to_mermaid(x, ...)
   writeLines(mmd_obj@content, file)
   invisible(file)
-}
-
-# Helper function to escape Mermaid identifiers
-escape_mermaid_id <- function(x) {
-  # Mermaid requires quotes around IDs with special characters
-  # Simple alphanumeric + underscore don't need quotes
-  needs_quotes <- !grepl("^[a-zA-Z_][a-zA-Z0-9_]*$", x)
-
-  if (needs_quotes) {
-    # Escape quotes
-    x <- gsub('"', '\\"', x, fixed = TRUE)
-    paste0('"', x, '"')
-  } else {
-    x
-  }
 }

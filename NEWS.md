@@ -155,6 +155,10 @@
 
 ## Bug Fixes
 
+* `to_mermaid()` writes every node as `nK["name"]` with a generated ID. It
+  dropped isolated nodes when the graph had edges, and wrote IDs that Mermaid
+  rejects, such as quoted names or a node named `end` (#413).
+
 * `to_dot()`, `to_mermaid()`, `as_igraph()` and `as_bnlearn()` refuse edges
   with a custom glyph from `register_caugi_edge()`. They wrote them as plain
   arrows, reversed them or dropped them (#404).

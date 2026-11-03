@@ -34,7 +34,8 @@ The function handles different edge types:
 
 Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
 
-Node names are automatically escaped if they contain special characters.
+Each node is written as \code{nK["name"]} with a generated ID \code{nK}, so any
+name works, including Mermaid keywords such as \code{end}.
 }
 \examples{
 cg <- caugi(
