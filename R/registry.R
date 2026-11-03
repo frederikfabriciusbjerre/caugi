@@ -221,7 +221,7 @@ register_caugi_edge <- function(
 
   # check if in the global registry
   if (op %in% .edge_ops_get()) {
-    stop("Operator ", op, " is already registered")
+    stop("Operator ", op, " is already registered", call. = FALSE)
   }
 
   # update glyph map
