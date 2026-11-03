@@ -1,7 +1,7 @@
 # Get the skeleton of a graph
 
-The skeleton of a graph is obtained by replacing all directed edges with
-undirected edges.
+The skeleton of a graph is obtained by replacing every edge, of any
+type, with an undirected edge (`---`).
 
 ## Usage
 
@@ -13,7 +13,7 @@ skeleton(cg)
 
 - cg:
 
-  A `caugi` object. Either a DAG or PDAG.
+  A `caugi` object of any class.
 
 ## Value
 
@@ -21,8 +21,9 @@ A `caugi` object representing the skeleton of the graph (UG).
 
 ## Details
 
-This changes the graph from any class to an Undirected Graph (UG), also
-known as a Markov Graph.
+This changes the graph from any class to an Undirected Graph (UG).
+Parallel edges between two nodes become one edge, and self-loops are
+dropped.
 
 ## See also
 
@@ -46,7 +47,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 skeleton(cg) # A --- B
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x63ed9106f6e0>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x59b2ab463060>
 #>   graph_class: UG
 #>   nodes: A, B
 #>   edges: A---B
