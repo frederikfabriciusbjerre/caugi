@@ -15,14 +15,17 @@ The node names, which \code{\link[=match]{match()}} and \code{\%in\%} compare ag
 }
 \description{
 \code{"A" \%in\% cg} tests whether the graph has a node named \code{A},
-and \code{match("A", cg)} gives its position in \code{nodes(cg)}.
+and \code{match("A", cg)} gives its position in \code{nodes(cg)}. This needs R 4.6
+or later: before that, \code{\link[=match]{match()}} rejects a \code{caugi} object as not a vector
+without asking this method.
 }
 \examples{
+\dontshow{if (getRversion() >= "4.6.0") withAutoprint(\{ # examplesIf}
 cg <- caugi(A \%-->\% B, class = "DAG")
 "A" \%in\% cg # TRUE
 c("B", "Z") \%in\% cg # TRUE FALSE
 match("B", cg) # 2
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 Other caugi methods:

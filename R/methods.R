@@ -41,13 +41,15 @@ S7::method(length, caugi) <- length.caugi
 #' Node membership in a `caugi`
 #'
 #' @description `"A" %in% cg` tests whether the graph has a node named `A`,
-#'   and `match("A", cg)` gives its position in `nodes(cg)`.
+#'   and `match("A", cg)` gives its position in `nodes(cg)`. This needs R 4.6
+#'   or later: before that, [match()] rejects a `caugi` object as not a vector
+#'   without asking this method.
 #'
 #' @param x A `caugi` object.
 #'
 #' @returns The node names, which [match()] and `%in%` compare against.
 #'
-#' @examples
+#' @examplesIf getRversion() >= "4.6.0"
 #' cg <- caugi(A %-->% B, class = "DAG")
 #' "A" %in% cg # TRUE
 #' c("B", "Z") %in% cg # TRUE FALSE

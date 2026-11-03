@@ -11,7 +11,8 @@
   does; numeric indices select by position (#447).
 
 * `"A" %in% cg` tests whether a graph has a node named `A`, and
-  `match("A", cg)` gives its position in `nodes(cg)` (#450).
+  `match("A", cg)` gives its position in `nodes(cg)` (#450). This needs R 4.6
+  or later, whose `match()` accepts objects that are not vectors.
 
 * Built-in reverse edges `<--`, `<-o` and `o--` complete the nine endpoint
   combinations (#443). They are stored as the mirrored `-->`, `o->` and `--o`,
