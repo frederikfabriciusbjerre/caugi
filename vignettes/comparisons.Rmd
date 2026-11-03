@@ -75,9 +75,10 @@ Two adjacent areas are intentionally out of scope:
 [^caugi-cpdag]: `caugi` has a dedicated `CPDAG` class whose invariants (chordal
     chain components, an acyclic component DAG, Meek closure, and strong arrow
     protection) are validated at construction via `class = "CPDAG"` (in `caugi()`,
-    `as_caugi()`, and `mutate_caugi()`). `generate_graph(class = "CPDAG")`
-    returns a graph typed `"CPDAG"`, and `is_cpdag()` also validates the
-    structure post-hoc for graphs of other classes.
+    `as_caugi()`, and `mutate_caugi()`). `dag_to_cpdag()` computes the CPDAG
+    of a DAG, `generate_graph(class = "CPDAG")` returns a graph typed
+    `"CPDAG"`, and `is_cpdag()` also validates the structure post-hoc for
+    graphs of other classes.
 
 [^caugi-pag]: `caugi` has a dedicated `PAG` class, validated *completely* at
     construction: a graph carries `class = "PAG"` only if some maximal

@@ -2,6 +2,16 @@
 # ───────────────────────────────── Skeleton ───────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
+test_that("dag_to_cpdag returns the CPDAG of a DAG", {
+  expect_equal(
+    dag_to_cpdag(caugi(A %-->% B, B %-->% C, class = "DAG")),
+    caugi(A %---% B, B %---% C, class = "CPDAG")
+  )
+  v <- caugi(A %-->% C, B %-->% C, class = "DAG")
+  expect_equal(dag_to_cpdag(v), mutate_caugi(v, "CPDAG"))
+  expect_error(dag_to_cpdag(caugi(A %---% B, class = "UG")), "class 'DAG'")
+})
+
 test_that("skeleton works on every class", {
   ug <- caugi(A %---% B, B %---% C, class = "UG")
   expect_equal(skeleton(caugi(A %<->% B, B %-->% C, class = "ADMG")), ug)

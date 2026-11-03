@@ -2,6 +2,8 @@
 
 ## New Features
 
+* `dag_to_cpdag()` returns the CPDAG of a DAG's Markov equivalence class (#441).
+
 * `cg[c("A", "B")]` gives the subgraph on nodes `A` and `B`, as `subgraph()`
   does; numeric indices select by position (#447).
 
