@@ -39,6 +39,7 @@ consistent extension of a partially directed acyclic graph".
 Other operations:
 [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md),
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
+[`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md),
 [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),

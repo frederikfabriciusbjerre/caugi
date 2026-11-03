@@ -101,6 +101,7 @@ Other queries:
 [`is_visible_edge()`](https://caugi.org/dev/reference/is_visible_edge.md),
 [`m_separated()`](https://caugi.org/dev/reference/m_separated.md),
 [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md),
+[`markov_equivalent()`](https://caugi.org/dev/reference/markov_equivalent.md),
 [`nodes()`](https://caugi.org/dev/reference/nodes.md),
 [`parents()`](https://caugi.org/dev/reference/parents.md),
 [`posteriors()`](https://caugi.org/dev/reference/posteriors.md),

@@ -265,6 +265,9 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
   Get Markov blanket of nodes in a `caugi`
 
+- [`markov_equivalent()`](https://caugi.org/dev/reference/markov_equivalent.md)
+  : Are two graphs Markov equivalent?
+
 - [`neighbors()`](https://caugi.org/dev/reference/neighbors.md)
   [`neighbours()`](https://caugi.org/dev/reference/neighbors.md) :
 
@@ -418,6 +421,9 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 - [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
   : Extend a PDAG to a DAG using the Dor-Tarsi Algorithm
+
+- [`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md) :
+  Construct the CPDAG of a DAG
 
 - [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md) :
   Construct the PAG of a DAG with latent variables

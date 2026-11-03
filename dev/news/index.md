@@ -4,6 +4,14 @@
 
 ### New Features
 
+- `markov_equivalent(g1, g2)` checks whether two DAGs or CPDAGs are
+  Markov equivalent, by comparing their CPDAGs
+  ([\#442](https://github.com/frederikfabriciusbjerre/caugi/issues/442)).
+
+- [`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md)
+  returns the CPDAG of a DAG’s Markov equivalence class
+  ([\#441](https://github.com/frederikfabriciusbjerre/caugi/issues/441)).
+
 - `cg[c("A", "B")]` gives the subgraph on nodes `A` and `B`, as
   [`subgraph()`](https://caugi.org/dev/reference/subgraph.md) does;
   numeric indices select by position

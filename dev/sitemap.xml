@@ -58,6 +58,7 @@
 <url><loc>https://caugi.org/dev/reference/count_dags.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/d_separated.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dag_from_pdag.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/dag_to_cpdag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dag_to_pag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/descendants.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/districts.html</loc></url>
@@ -136,6 +137,7 @@
 <url><loc>https://caugi.org/dev/reference/mag_to_pag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/makeContent.caugi_edge_grob.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/markov_blanket.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/markov_equivalent.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/meek_closure.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/minimal_separator.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/moralize.html</loc></url>

@@ -159,8 +159,10 @@ request with the relevant information.
     [`caugi()`](https://caugi.org/dev/reference/caugi.md),
     [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md), and
     [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md)).
-    `generate_graph(class = "CPDAG")` returns a graph typed `"CPDAG"`,
-    and [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md) also
+    [`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md)
+    computes the CPDAG of a DAG, `generate_graph(class = "CPDAG")`
+    returns a graph typed `"CPDAG"`, and
+    [`is_cpdag()`](https://caugi.org/dev/reference/is_cpdag.md) also
     validates the structure post-hoc for graphs of other classes.
 
 [^3]: `caugi` accepts `class = "AG"` (ancestral graph) in the

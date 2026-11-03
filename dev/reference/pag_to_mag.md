@@ -43,6 +43,7 @@ Other operations:
 [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md),
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
+[`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md),
 [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
@@ -59,14 +60,14 @@ Other operations:
 ``` r
 pag <- caugi(A %-->% B, C %o->% A, D %o->% A, class = "PAG")
 pag_to_mag(pag)
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x59b2b09a08f0>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5f62c4ed31c0>
 #>   graph_class: AG
 #>   nodes: A, C, D, B
 #>   edges: A-->B, C-->A, D-->A
 
 # An all-circle graph is oriented into a DAG with no unshielded colliders.
 pag_to_mag(caugi(A %o-o% B, A %o-o% C, C %o-o% D, class = "PAG"))
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x59b2a5eb1130>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5f62c7cf41c0>
 #>   graph_class: AG
 #>   nodes: A, C, B, D
 #>   edges: A-->B, C-->A, D-->C

@@ -39,6 +39,7 @@ Markov models." Ann. Statist. 30 (4) 962 - 1030, August 2002.
 Other operations:
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
+[`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md),
 [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
@@ -62,12 +63,12 @@ mg <- caugi(
 )
 
 condition_marginalize(mg, marg_vars = "U") # ADMG
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x59b2af32ce00>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5f62c41aa900>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y, X<->Y
 condition_marginalize(mg, cond_vars = "U") # DAG
-#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x59b2b15380a0>
+#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x5f62c382e230>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y

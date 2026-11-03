@@ -72,6 +72,7 @@ Other queries:
 [`is_ug()`](https://caugi.org/dev/reference/is_ug.md),
 [`is_visible_edge()`](https://caugi.org/dev/reference/is_visible_edge.md),
 [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md),
+[`markov_equivalent()`](https://caugi.org/dev/reference/markov_equivalent.md),
 [`neighbors()`](https://caugi.org/dev/reference/neighbors.md),
 [`nodes()`](https://caugi.org/dev/reference/nodes.md),
 [`parents()`](https://caugi.org/dev/reference/parents.md),
