@@ -4,6 +4,10 @@
 
 ### New Features
 
+- `"A" %in% cg` tests whether a graph has a node named `A`, and
+  `match("A", cg)` gives its position in `nodes(cg)`
+  ([\#450](https://github.com/frederikfabriciusbjerre/caugi/issues/450)).
+
 - Built-in reverse edges `<--`, `<-o` and `o--` complete the nine
   endpoint combinations
   ([\#443](https://github.com/frederikfabriciusbjerre/caugi/issues/443)).

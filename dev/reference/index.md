@@ -210,6 +210,11 @@
 
   Convert a `caugi` to a data.frame
 
+- [`mtfrm(`*`<caugi::caugi>`*`)`](https://caugi.org/dev/reference/caugi-membership.md)
+  :
+
+  Node membership in a `caugi`
+
 - [`length(`*`<caugi>`*`)`](https://caugi.org/dev/reference/length.caugi.md)
   :
 

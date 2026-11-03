@@ -43,6 +43,7 @@ A `data.frame` with columns `from`, `edge` and `to`, and a
 
 Other caugi methods:
 [`caugi-equality`](https://caugi.org/dev/reference/caugi-equality.md),
+[`caugi-membership`](https://caugi.org/dev/reference/caugi-membership.md),
 [`length.caugi()`](https://caugi.org/dev/reference/length.caugi.md),
 [`print.caugi()`](https://caugi.org/dev/reference/print.caugi.md),
 [`summary.caugi()`](https://caugi.org/dev/reference/summary.caugi.md)
