@@ -12,7 +12,7 @@ use super::CaugiGraph;
 use crate::edges::EdgeClass;
 use crate::graph::alg::bitset;
 use crate::graph::alg::csr;
-use crate::graph::alg::directed_part_is_acyclic;
+use crate::graph::alg::find_directed_cycle;
 use crate::graph::alg::moral;
 use crate::graph::alg::topological_sort;
 use crate::graph::alg::traversal;
@@ -41,8 +41,8 @@ impl Dag {
     pub fn try_new(core: Arc<CaugiGraph>) -> Result<Self, DagError> {
         let n = core.n() as usize;
 
-        if !directed_part_is_acyclic(&core) {
-            return Err(DagError::DirectedCycle);
+        if let Some(cycle) = find_directed_cycle(&core) {
+            return Err(DagError::DirectedCycle { cycle });
         }
 
         let mut packed_builder: PackedBucketsBuilder<2> = PackedBucketsBuilder::new(n);

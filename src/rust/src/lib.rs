@@ -19,6 +19,27 @@ use graph::{
 };
 use std::sync::Arc;
 
+// Errors raised here carry no call: `Rf_error()` would attach the call of the
+// generated `.Call` wrapper, such as `rs_resolve_class(session, class)`, an
+// internal function the user never called.
+extern "C" {
+    fn Rf_errorcall(call: *mut std::ffi::c_void, format: *const std::ffi::c_char, ...) -> !;
+}
+
+/// Holds the message across the longjmp out of `throw_r_error`, which skips
+/// Rust destructors.
+static mut ERROR_MESSAGE: Option<std::ffi::CString> = None;
+
+/// Raise `s` as an R error with no call. Shadows extendr's `throw_r_error`.
+fn throw_r_error<S: AsRef<str>>(s: S) -> ! {
+    let nil = unsafe { nil_value().get() }.cast();
+    unsafe {
+        ERROR_MESSAGE = Some(std::ffi::CString::new(s.as_ref()).unwrap());
+        let message = (*std::ptr::addr_of!(ERROR_MESSAGE)).as_ref().unwrap();
+        Rf_errorcall(nil, c"%s".as_ptr(), message.as_ptr())
+    }
+}
+
 // ---------- helpers ----------
 fn rint_to_u32(x: Rint, field: &str) -> u32 {
     if x.is_na() {

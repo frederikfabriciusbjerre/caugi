@@ -93,6 +93,19 @@
 
 ## Improvements
 
+* "graph is not a CPDAG" errors now name the culprit when it is a chordless
+  cycle in a chain component, e.g. `A --- B --- C --- D --- A`, or an arrow
+  that is not strongly protected (#440).
+
+* "contains a directed cycle" errors for DAGs, PDAGs, ADMGs and ancestral
+  graphs now print the cycle, e.g.
+  `DAG contains a directed cycle: A -> B -> C -> A` (#439).
+
+* Errors from caugi's Rust code and internal helpers no longer name the
+  internal function that raised them, such as
+  `Error in rs_resolve_class(session, class)`; they show only the message
+  (#438).
+
 * `adjustment_set()` returns `NULL` instead of an error when the requested
   construction finds no valid set: none exists, the parents of `X` are not
   valid (`type = "parents"`), or no node of `Y` is a descendant of `X`
