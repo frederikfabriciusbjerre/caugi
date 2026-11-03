@@ -128,7 +128,7 @@ to_mermaid <- function(x, direction = "TD") {
 
 #' Write caugi Graph to Mermaid File
 #'
-#' Writes a caugi graph to a file in Mermaid format.
+#' Writes a caugi graph to a file in Mermaid format, as UTF-8 in every locale.
 #'
 #' @param x A `caugi` object.
 #' @param file Path to output file.
@@ -158,6 +158,6 @@ to_mermaid <- function(x, direction = "TD") {
 #' @export
 write_mermaid <- function(x, file, ...) {
   mmd_obj <- to_mermaid(x, ...)
-  writeLines(mmd_obj@content, file)
+  writeLines(enc2utf8(mmd_obj@content), file, useBytes = TRUE)
   invisible(file)
 }

@@ -155,6 +155,9 @@
 
 ## Bug Fixes
 
+* `write_dot()` and `write_mermaid()` write UTF-8 in every locale. Under a
+  non-UTF-8 locale they lost non-ASCII node names (#417).
+
 * `to_mermaid()` writes every node as `nK["name"]` with a generated ID. It
   dropped isolated nodes when the graph had edges, and wrote IDs that Mermaid
   rejects, such as quoted names or a node named `end` (#413).

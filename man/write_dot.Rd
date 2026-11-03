@@ -18,7 +18,8 @@ write_dot(x, file, ...)
 Invisibly returns the path to the file.
 }
 \description{
-Writes a caugi graph to a file in Graphviz DOT format.
+Writes a caugi graph to a file in Graphviz DOT format, as UTF-8 in every
+locale.
 }
 \examples{
 cg <- caugi(

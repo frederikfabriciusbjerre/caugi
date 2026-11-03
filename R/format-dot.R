@@ -214,7 +214,8 @@ to_dot <- function(
 
 #' Write caugi Graph to DOT File
 #'
-#' Writes a caugi graph to a file in Graphviz DOT format.
+#' Writes a caugi graph to a file in Graphviz DOT format, as UTF-8 in every
+#' locale.
 #'
 #' @param x A `caugi` object.
 #' @param file Path to output file.
@@ -248,7 +249,7 @@ to_dot <- function(
 #' @export
 write_dot <- function(x, file, ...) {
   dot_obj <- to_dot(x, ...)
-  writeLines(dot_obj@content, file)
+  writeLines(enc2utf8(dot_obj@content), file, useBytes = TRUE)
   invisible(file)
 }
 
