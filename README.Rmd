@@ -30,21 +30,24 @@ knitr::opts_chunk$set(
 
 ## Installation
 
-You can install the development version of `caugi` from GitHub with:
-```{r, eval=FALSE}
-pak::pak("frederikfabriciusbjerre/caugi")
-```
-
-or directly from CRAN with:
+Install the released version from CRAN:
 ```{r, eval=FALSE}
 install.packages("caugi")
 ```
 
-### Installing Rust
+or the development version from [r-universe](https://frederikfabriciusbjerre.r-universe.dev/caugi):
+```{r, eval=FALSE}
+install.packages(
+  "caugi",
+  repos = c("https://frederikfabriciusbjerre.r-universe.dev", "https://cloud.r-project.org")
+)
+```
 
-Rust is required for `caugi` to work. If you don't have Rust installed, visit [rustup.rs](https://rustup.rs/) for installation instructions appropriate for your platform.
+On Windows and macOS, both come as ready-built binaries, so you do not need Rust.
 
-Alternatively, you may install Rust from your OS package manager.
+### Building from source
+
+Building `caugi` from source, for example on Linux or with `pak::pak("frederikfabriciusbjerre/caugi")`, requires Rust (rustc >= 1.80). Visit [rustup.rs](https://rustup.rs/) for installation instructions, or install Rust from your OS package manager.
 
 ## The basic object: `caugi`
 
@@ -54,7 +57,7 @@ A `caugi` graph object is the bread and butter of the `caugi` package. It is eas
 library(caugi)
 ```
 
-You can create simple graphs as well as a number of predefined graph classes. Currently, we support the classes `"DAG"`, `"PDAG"`, `"MPDAG"`, `"CPDAG"`, `"ADMG"`, `"AG"`, `"UG"` as well as an `"UNKNOWN"` class. We plan on supporting several other causal graph types in future releases, such as `"PAG"`, `"MAG"`, and `"SWIG"`.
+You can create simple graphs as well as a number of predefined graph classes. Currently, we support the classes `"DAG"`, `"PDAG"`, `"MPDAG"`, `"CPDAG"`, `"ADMG"`, `"AG"`, `"PAG"`, `"UG"` as well as an `"UNKNOWN"` class. We plan on supporting `"MAG"` and `"SWIG"` as classes of their own in future releases.
 
 ```{r}
 #| fig-width: 2
@@ -104,14 +107,17 @@ In queries, `B %!-->% C` counts as a directed edge; only its glyph tells it apar
 
 We expect this feature to be needing further polishing in future releases, and we would love your input if you use this feature!
 
-## Querying and metrics
+## Queries, adjustment and conversion
 
-`caugi` provides a number of functions to query and analyze `caugi` objects. Some of the available functions are:
+Query the DAG from above, find an adjustment set for the effect of `B` on `D`, and test d-separation:
 
-* Relational queries
-* Structural queries
-* Graph manipulations
-* Graph metrics
+```{r}
+parents(cg, "D")
+adjustment_set(cg, X = "B", Y = "D")
+d_separated(cg, X = "B", Y = "C", Z = "A")
+```
+
+`as_caugi()` reads graphs from `igraph`, `dagitty`, `bnlearn`, `graph`, `tidygraph`, adjacency matrices (including `pcalg`'s mark coding) and edge lists, and `as_igraph()`, `as_dagitty()`, `as_bnlearn()` and `as_adjacency()` convert back. See the [reference](https://caugi.org/reference/) for all queries, adjustment, metrics and conversions.
 
 ## How it works 
 
