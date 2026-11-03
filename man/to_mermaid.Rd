@@ -32,6 +32,8 @@ The function handles different edge types:
 \item Partial edges (\code{o-o}) use \code{o--o} in Mermaid (circle both ends)
 }
 
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
+
 Node names are automatically escaped if they contain special characters.
 }
 \examples{

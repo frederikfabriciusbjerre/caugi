@@ -1,5 +1,7 @@
 #' @title Convert a caugi to an igraph object
 #'
+#' @description Edges with a custom glyph from [register_caugi_edge()] are an error.
+#'
 #' @param x A `caugi` object.
 #' @param ... Additional arguments passed to `igraph::graph_from_data_frame()`.
 #'
@@ -31,6 +33,7 @@ as_igraph <- function(x, ...) {
       call. = FALSE
     )
   }
+  .stop_if_custom_glyphs(x, "as_igraph()")
 
   et <- edge_types(x)
 
@@ -235,6 +238,8 @@ as_adjacency <- function(x, coding = c("binary", "marks")) {
 
 #' @title Convert a caugi to a bnlearn network
 #'
+#' @description Edges with a custom glyph from [register_caugi_edge()] are an error.
+#'
 #' @param x A `caugi` object.
 #'
 #' @returns A `bnlearn` DAG.
@@ -256,6 +261,7 @@ as_bnlearn <- function(x) {
   if (x@graph_class != "DAG") {
     stop("as_bnlearn requires a 'DAG' graph_class.", call. = FALSE)
   }
+  .stop_if_custom_glyphs(x, "as_bnlearn()")
 
   nm <- nodes(x)$name
   e <- edges(x)

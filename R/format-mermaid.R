@@ -52,6 +52,8 @@ caugi_mermaid <- S7::new_class(
 #' * Partial edges (`--o`) use `--o` in Mermaid (circle head)
 #' * Partial edges (`o-o`) use `o--o` in Mermaid (circle both ends)
 #'
+#' Edges with a custom glyph from [register_caugi_edge()] are an error.
+#'
 #' Node names are automatically escaped if they contain special characters.
 #'
 #' @examples
@@ -74,6 +76,7 @@ caugi_mermaid <- S7::new_class(
 #' @export
 to_mermaid <- function(x, direction = "TD") {
   is_caugi(x, throw_error = TRUE)
+  .stop_if_custom_glyphs(x, "to_mermaid()")
 
   # Validate direction
   valid_directions <- c("TB", "TD", "BT", "LR", "RL")
@@ -120,9 +123,6 @@ to_mermaid <- function(x, direction = "TD") {
         operator <- "--o"
       } else if (edge_type == "o-o") {
         operator <- "o--o"
-      } else {
-        # Unknown edge type, default to directed
-        operator <- "-->"
       }
 
       edge_line <- paste0("  ", from, " ", operator, " ", to)

@@ -410,6 +410,22 @@ test_that("as_dagitty errors on unsupported edge types", {
   reset_caugi_registry()
 })
 
+test_that("exporters refuse custom glyphs (#404)", {
+  on.exit(reset_caugi_registry(), add = TRUE)
+  # The arrowhead is at `from`, so `A %<!--% B` is B --> A.
+  register_caugi_edge(
+    glyph = "<!--",
+    tail_mark = "arrow",
+    head_mark = "tail",
+    class = "directed",
+    symmetric = FALSE
+  )
+  cg <- caugi(A %<!--% B, B %-->% C, class = "DAG")
+  for (f in list(to_dot, to_mermaid, as_igraph, as_bnlearn)) {
+    expect_error(f(cg), "only converts built-in edges, not `<!--`")
+  }
+})
+
 test_that("conversion and wrapper branches are covered", {
   cg <- caugi(A %-->% B, class = "DAG")
   rs_set_class(cg@session, "AUTO")

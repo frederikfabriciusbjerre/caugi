@@ -155,6 +155,10 @@
 
 ## Bug Fixes
 
+* `to_dot()`, `to_mermaid()`, `as_igraph()` and `as_bnlearn()` refuse edges
+  with a custom glyph from `register_caugi_edge()`. They wrote them as plain
+  arrows, reversed them or dropped them (#404).
+
 * `skeleton()` works on every graph class, as its documentation said: every
   edge becomes `---`, parallel edges become one and self-loops are dropped. It
   only accepted DAGs and PDAGs (#444).
