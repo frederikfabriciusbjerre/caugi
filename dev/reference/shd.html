@@ -73,8 +73,17 @@ graphs.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An integer representing the Hamming Distance between the two graphs,
-if <code>normalized = FALSE</code>, or a numeric between 0 and 1 if <code>normalized = TRUE</code>.</p>
+if <code>normalized = FALSE</code>, or that count divided by the number of node pairs
+if <code>normalized = TRUE</code>. The normalized SHD is between 0 and 1 unless a pair
+has more than one edge.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Each edge counts: a missing, extra or differently typed edge adds</p><ol><li><p>Between a pair of nodes, the SHD counts the fewest edges to add, remove or
+change to turn one graph's edges into the other's. So <code>A --&gt; B, A &lt;-&gt; B</code>,
+as <code><a href="latent_project.html">latent_project()</a></code> can give, is 1 from <code>A --&gt; B</code>, 1 from
+<code>A --&gt; B, A --- B</code> and 2 from no edge.</p></li>
+</ol></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other metrics:

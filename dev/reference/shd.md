@@ -25,8 +25,20 @@ shd(cg1, cg2, normalized = FALSE)
 ## Value
 
 An integer representing the Hamming Distance between the two graphs, if
-`normalized = FALSE`, or a numeric between 0 and 1 if
-`normalized = TRUE`.
+`normalized = FALSE`, or that count divided by the number of node pairs
+if `normalized = TRUE`. The normalized SHD is between 0 and 1 unless a
+pair has more than one edge.
+
+## Details
+
+Each edge counts: a missing, extra or differently typed edge adds
+
+1.  Between a pair of nodes, the SHD counts the fewest edges to add,
+    remove or change to turn one graph's edges into the other's. So
+    `A --> B, A <-> B`, as
+    [`latent_project()`](https://caugi.org/dev/reference/latent_project.md)
+    can give, is 1 from `A --> B`, 1 from `A --> B, A --- B` and 2 from
+    no edge.
 
 ## See also
 

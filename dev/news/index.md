@@ -230,6 +230,16 @@
 
 ### Bug Fixes
 
+- [`shd()`](https://caugi.org/dev/reference/shd.md) counts each edge
+  between a pair of nodes. A pair with two edges, such as `A --> B` and
+  `A <-> B` from
+  [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
+  was compared by one edge on each side, so `shd(g, g)` could be 1 and
+  `shd(g1, g2)` could differ from `shd(g2, g1)`. Now a missing, extra or
+  differently typed edge adds 1, so that pair is 1 from `A --> B` and 2
+  from no edge
+  ([\#389](https://github.com/frederikfabriciusbjerre/caugi/issues/389)).
+
 - [`skeleton()`](https://caugi.org/dev/reference/skeleton.md) works on
   every graph class, as its documentation said: every edge becomes
   `---`, parallel edges become one and self-loops are dropped. It only
