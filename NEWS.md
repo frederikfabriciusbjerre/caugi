@@ -93,6 +93,10 @@
 
 ## Performance Improvements
 
+* `all_backdoor_sets()` tests each candidate set as it generates it, and keeps
+  only the back-door sets. It used to build every subset up to `max_size` in
+  memory first (#399).
+
 * `condition_marginalize()` is now polynomial instead of exponential. It
   tried every subset of the remaining nodes as a separating set for each pair;
   now one m-separation test per pair decides adjacency (Richardson and Spirtes

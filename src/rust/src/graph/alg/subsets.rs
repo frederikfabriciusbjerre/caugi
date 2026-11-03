@@ -24,7 +24,9 @@ pub fn prune_minimal(sets: &mut Vec<Vec<u32>>) {
     *sets = out;
 }
 
-/// Enumerate all `k`-subsets of `u` into `out` (lexicographic order).
+/// Enumerate the `k`-subsets of `u` (lexicographic order), collecting into
+/// `out` those that satisfy `keep`. Each subset is tested as it is built, so
+/// only the kept ones are stored.
 ///
 /// # Arguments
 /// * `u` - The set to enumerate subsets from
@@ -32,14 +34,26 @@ pub fn prune_minimal(sets: &mut Vec<Vec<u32>>) {
 /// * `start` - Starting index (for recursion, usually 0)
 /// * `cur` - Current subset being built (for recursion, usually empty)
 /// * `out` - Output vector to collect subsets
-pub fn k_subsets(u: &[u32], k: usize, start: usize, cur: &mut Vec<u32>, out: &mut Vec<Vec<u32>>) {
+/// * `keep` - Predicate a subset must satisfy to be collected
+pub fn k_subsets<F>(
+    u: &[u32],
+    k: usize,
+    start: usize,
+    cur: &mut Vec<u32>,
+    out: &mut Vec<Vec<u32>>,
+    keep: F,
+) where
+    F: Fn(&[u32]) -> bool + Copy,
+{
     if cur.len() == k {
-        out.push(cur.clone());
+        if keep(cur) {
+            out.push(cur.clone());
+        }
         return;
     }
     for i in start..u.len() {
         cur.push(u[i]);
-        k_subsets(u, k, i + 1, cur, out);
+        k_subsets(u, k, i + 1, cur, out, keep);
         cur.pop();
     }
 }
@@ -75,7 +89,7 @@ mod tests {
         let u = vec![0, 1, 2, 3];
         let mut cur = vec![];
         let mut out = vec![];
-        k_subsets(&u, 2, 0, &mut cur, &mut out);
+        k_subsets(&u, 2, 0, &mut cur, &mut out, |_| true);
 
         // C(4,2) = 6
         assert_eq!(out.len(), 6);
@@ -92,7 +106,7 @@ mod tests {
         let u = vec![0, 1, 2];
         let mut cur = vec![];
         let mut out = vec![];
-        k_subsets(&u, 0, 0, &mut cur, &mut out);
+        k_subsets(&u, 0, 0, &mut cur, &mut out, |_| true);
 
         // Only the empty set
         assert_eq!(out, vec![vec![] as Vec<u32>]);
