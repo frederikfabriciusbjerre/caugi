@@ -83,8 +83,9 @@ fn has_edge_to(
 
 /// Compute Structural Hamming Distance between two graphs with identical node ordering.
 ///
-/// A node pair counts once when its sets of edge kinds differ, so a pair with
-/// both `-->` and `<->` matches only the same two edges.
+/// Each edge counts: a pair of nodes adds the fewest edges to add, remove or
+/// change to turn one graph's edges between them into the other's. So
+/// `{-->, <->}` against `{-->}` or `{-->, ---}` is 1, and against no edge 2.
 pub fn shd(truth: &CaugiGraph, guess: &CaugiGraph) -> (f64, usize) {
     shd_with_perm(truth, guess, &(0..truth.n()).collect::<Vec<_>>())
 }
@@ -104,6 +105,7 @@ pub fn shd_with_perm(truth: &CaugiGraph, guess: &CaugiGraph, perm: &[u32]) -> (f
     // FxHashMap is faster than std HashMap for integer keys.
     let mut guess_edges: FxHashMap<u32, Vec<EdgeKind>> = FxHashMap::default();
     let mut in_truth: Vec<EdgeKind> = Vec::new();
+    let mut unmatched: Vec<EdgeKind> = Vec::new();
 
     for u in 0..n {
         let row_t = truth.row_range(u as u32);
@@ -127,11 +129,22 @@ pub fn shd_with_perm(truth: &CaugiGraph, guess: &CaugiGraph, perm: &[u32]) -> (f
             cursor_t = edge_kinds_to(truth, v as u32, cursor_t, row_end, &mut in_truth);
             let in_guess = guess_edges.get(&perm[v]).map_or(&[][..], Vec::as_slice);
 
-            let same = in_truth.iter().all(|k| in_guess.contains(k))
-                && in_guess.iter().all(|k| in_truth.contains(k));
-            if !same {
-                distance += 1;
-            }
+            // Edges of the same kind match; the rest are changed in pairs and
+            // added or removed one by one, so the pair costs the larger count
+            // of unmatched edges.
+            unmatched.clear();
+            unmatched.extend_from_slice(in_guess);
+            let matched = in_truth
+                .iter()
+                .filter(|k| match unmatched.iter().position(|g| g == *k) {
+                    Some(i) => {
+                        unmatched.swap_remove(i);
+                        true
+                    }
+                    None => false,
+                })
+                .count();
+            distance += in_truth.len().max(in_guess.len()) - matched;
         }
     }
 
@@ -269,24 +282,28 @@ mod tests {
     }
 
     #[test]
-    fn pair_with_two_edges_compares_both() {
+    fn pair_with_two_edges_counts_per_edge() {
         let mut reg = EdgeRegistry::new();
         reg.register_builtins().unwrap();
-        let e_dir = reg.code_of("-->").unwrap();
-        let e_bi = reg.code_of("<->").unwrap();
+        let build = |codes: &[&str]| {
+            let mut gb = GraphBuilder::new_with_registry(2, false, &reg);
+            for c in codes {
+                gb.add_edge(0, 1, reg.code_of(c).unwrap()).unwrap();
+            }
+            gb.finalize().unwrap()
+        };
+        let two = build(&["-->", "<->"]);
 
-        // two: 0-->1 and 0<->1; one: 0-->1 only
-        let mut gb = GraphBuilder::new_with_registry(2, false, &reg);
-        gb.add_edge(0, 1, e_dir).unwrap();
-        gb.add_edge(0, 1, e_bi).unwrap();
-        let two = gb.finalize().unwrap();
-        let mut gb = GraphBuilder::new_with_registry(2, false, &reg);
-        gb.add_edge(0, 1, e_dir).unwrap();
-        let one = gb.finalize().unwrap();
-
-        assert_eq!(shd(&two, &two), (0.0, 0));
-        assert_eq!(shd(&two, &one), (1.0, 1));
-        assert_eq!(shd(&one, &two), (1.0, 1));
+        assert_eq!(shd(&two, &two).1, 0);
+        // One edge removed, one edge changed, two edges removed.
+        for (other, d) in [
+            (build(&["-->"]), 1),
+            (build(&["-->", "---"]), 1),
+            (build(&[]), 2),
+        ] {
+            assert_eq!(shd(&two, &other).1, d);
+            assert_eq!(shd(&other, &two).1, d);
+        }
     }
 
     #[test]

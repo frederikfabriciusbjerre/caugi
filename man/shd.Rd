@@ -15,16 +15,22 @@ shd(cg1, cg2, normalized = FALSE)
 }
 \value{
 An integer representing the Hamming Distance between the two graphs,
-if \code{normalized = FALSE}, or a numeric between 0 and 1 if \code{normalized = TRUE}.
+if \code{normalized = FALSE}, or that count divided by the number of node pairs
+if \code{normalized = TRUE}. The normalized SHD is between 0 and 1 unless a pair
+has more than one edge.
 }
 \description{
 Compute the Structural Hamming Distance (SHD) between two
 graphs.
 }
 \details{
-Each pair of nodes counts at most once: when the two graphs differ
-in the set of edges between them. A pair with two edges, such as \verb{A --> B}
-and \verb{A <-> B} from \code{\link[=latent_project]{latent_project()}}, matches only the same two edges.
+Each edge counts: a missing, extra or differently typed edge adds
+\enumerate{
+\item Between a pair of nodes, the SHD counts the fewest edges to add, remove or
+change to turn one graph's edges into the other's. So \verb{A --> B, A <-> B},
+as \code{\link[=latent_project]{latent_project()}} can give, is 1 from \verb{A --> B}, 1 from
+\verb{A --> B, A --- B} and 2 from no edge.
+}
 }
 \examples{
 cg1 <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")

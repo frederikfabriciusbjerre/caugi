@@ -11,16 +11,20 @@
 #' @description Compute the Structural Hamming Distance (SHD) between two
 #' graphs.
 #'
-#' @details Each pair of nodes counts at most once: when the two graphs differ
-#' in the set of edges between them. A pair with two edges, such as `A --> B`
-#' and `A <-> B` from [latent_project()], matches only the same two edges.
+#' @details Each edge counts: a missing, extra or differently typed edge adds
+#' 1. Between a pair of nodes, the SHD counts the fewest edges to add, remove or
+#' change to turn one graph's edges into the other's. So `A --> B, A <-> B`,
+#' as [latent_project()] can give, is 1 from `A --> B`, 1 from
+#' `A --> B, A --- B` and 2 from no edge.
 #'
 #' @param cg1 A `caugi` object.
 #' @param cg2 A `caugi` object.
 #' @param normalized Logical; if `TRUE`, returns the normalized SHD.
 #'
 #' @returns An integer representing the Hamming Distance between the two graphs,
-#' if `normalized = FALSE`, or a numeric between 0 and 1 if `normalized = TRUE`.
+#' if `normalized = FALSE`, or that count divided by the number of node pairs
+#' if `normalized = TRUE`. The normalized SHD is between 0 and 1 unless a pair
+#' has more than one edge.
 #'
 #' @examples
 #' cg1 <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
