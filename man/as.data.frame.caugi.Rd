@@ -35,7 +35,6 @@ caugi(edges_df = df, class = "PDAG") == cg # TRUE
 \seealso{
 Other caugi methods:
 \code{\link{caugi-equality}},
-\code{\link{caugi-membership}},
 \code{\link[=length.caugi]{length.caugi()}},
 \code{\link[=print.caugi]{print.caugi()}},
 \code{\link[=summary.caugi]{summary.caugi()}}
