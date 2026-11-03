@@ -977,6 +977,9 @@ The following options can be configured under `plot`:
   [`grid::gpar()`](https://rdrr.io/r/grid/gpar.html))
 - **`title_style`**: List with `col`, `fontface`, and `fontsize`
 
+Setting an option that does not exist, or a value of another kind than
+its default (a string for `padding`, say), is an error.
+
 ``` r
 
 # View all current options

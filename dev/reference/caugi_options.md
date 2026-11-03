@@ -82,6 +82,13 @@ Options set via `caugi_options()` serve as global defaults that can be
 overridden by arguments to
 [`plot.caugi()`](https://caugi.org/dev/reference/plot.caugi.md).
 
+Setting an option checks it: its name must be one of the defaults', and
+its value of the same kind as the default: a list, `TRUE` or `FALSE`, a
+number or [`grid::unit()`](https://rdrr.io/r/grid/unit.html), or a
+string. `label_style` lists take any
+[`grid::gpar()`](https://rdrr.io/r/grid/gpar.html) parameters, and
+`NULL` unsets an option.
+
 ## See also
 
 [`plot.caugi()`](https://caugi.org/dev/reference/plot.caugi.md) for

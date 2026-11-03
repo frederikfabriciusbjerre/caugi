@@ -142,6 +142,12 @@
 
 ### Improvements
 
+- [`caugi_options()`](https://caugi.org/dev/reference/caugi_options.md)
+  checks what it sets: an unknown option name, or a value of another
+  kind than its default, such as a string for a number, now errors
+  instead of being stored and failing later
+  ([\#437](https://github.com/frederikfabriciusbjerre/caugi/issues/437)).
+
 - “graph is not a CPDAG” errors now name the culprit when it is a
   chordless cycle in a chain component,
   e.g. `A --- B --- C --- D --- A`, or an arrow that is not strongly

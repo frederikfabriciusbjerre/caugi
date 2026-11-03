@@ -102,6 +102,10 @@ would otherwise cross (default: <code>TRUE</code>)</p></li>
 </ul></li>
 </ul><p>Options set via <code>caugi_options()</code> serve as global defaults that can be
 overridden by arguments to <code><a href="plot.caugi.html">plot.caugi()</a></code>.</p>
+<p>Setting an option checks it: its name must be one of the defaults', and its
+value of the same kind as the default: a list, <code>TRUE</code> or <code>FALSE</code>, a number
+or <code><a href="https://rdrr.io/r/grid/unit.html" class="external-link">grid::unit()</a></code>, or a string. <code>label_style</code> lists take any <code><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">grid::gpar()</a></code>
+parameters, and <code>NULL</code> unsets an option.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
