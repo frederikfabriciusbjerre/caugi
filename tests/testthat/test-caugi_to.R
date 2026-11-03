@@ -399,13 +399,13 @@ test_that("as_dagitty errors on unsupported edge types", {
   reset_caugi_registry()
   reg <- caugi_registry()
   register_caugi_edge(
-    glyph = "<--",
-    tail_mark = "arrow",
-    head_mark = "tail",
+    glyph = "==>",
+    tail_mark = "tail",
+    head_mark = "arrow",
     class = "directed",
     symmetric = FALSE
   )
-  cg1 <- caugi(A %<--% B, class = "UNKNOWN")
+  cg1 <- caugi(A %==>% B, class = "UNKNOWN")
   expect_error(as_dagitty(cg1), "Unsupported edge type for dagitty")
   reset_caugi_registry()
 })

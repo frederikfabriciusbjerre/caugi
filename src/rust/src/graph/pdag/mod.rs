@@ -2,6 +2,7 @@
 //! Pdag wrapper with O(1) slice queries via packed neighborhoods.
 
 mod cpdag;
+pub(crate) use cpdag::NotCpdag;
 mod enumerate;
 mod transforms;
 
@@ -9,7 +10,7 @@ use super::error::PdagError;
 use super::packed::{PackedBuckets, PackedBucketsBuilder};
 use super::CaugiGraph;
 use crate::edges::EdgeClass;
-use crate::graph::alg::directed_part_is_acyclic;
+use crate::graph::alg::find_directed_cycle;
 use crate::graph::alg::traversal;
 use std::sync::Arc;
 
@@ -31,8 +32,8 @@ impl Pdag {
     /// Builds a `Pdag` view with typed error handling.
     pub fn try_new(core: Arc<CaugiGraph>) -> Result<Self, PdagError> {
         let n = core.n() as usize;
-        if !directed_part_is_acyclic(&core) {
-            return Err(PdagError::DirectedCycle);
+        if let Some(cycle) = find_directed_cycle(&core) {
+            return Err(PdagError::DirectedCycle { cycle });
         }
         let mut packed_builder: PackedBucketsBuilder<3> = PackedBucketsBuilder::new(n);
         // Count degrees using mark helpers.

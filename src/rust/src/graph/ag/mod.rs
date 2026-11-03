@@ -18,7 +18,7 @@ use super::packed::{PackedBuckets, PackedBucketsBuilder};
 use super::CaugiGraph;
 use crate::edges::EdgeClass;
 use crate::graph::alg::bitset;
-use crate::graph::alg::directed_part_is_acyclic;
+use crate::graph::alg::find_directed_cycle;
 use crate::graph::alg::traversal;
 use std::sync::Arc;
 
@@ -53,8 +53,8 @@ impl Ag {
         let n = core.n() as usize;
 
         // Check acyclicity of directed part
-        if !directed_part_is_acyclic(&core) {
-            return Err(AgError::DirectedCycle);
+        if let Some(cycle) = find_directed_cycle(&core) {
+            return Err(AgError::DirectedCycle { cycle });
         }
 
         let mut packed_builder: PackedBucketsBuilder<4> = PackedBucketsBuilder::new(n);

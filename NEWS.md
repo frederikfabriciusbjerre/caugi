@@ -4,6 +4,12 @@
 
 * `dag_to_cpdag()` returns the CPDAG of a DAG's Markov equivalence class (#441).
 
+* Built-in reverse edges `<--`, `<-o` and `o--` complete the nine endpoint
+  combinations (#443). They are stored as the mirrored `-->`, `o->` and `--o`,
+  so `caugi(B %<--% A) == caugi(A %-->% B)`, and every conversion and
+  comparison treats them alike. Registering a custom `<--` now errors, as it
+  is built in.
+
 * `as_caugi()` now reads a data.frame or data.table edge list with columns
   `from`, `edge` and `to`, such as the output of `as.data.frame()` or
   `edges()`. Rows with an `NA` edge are read as isolated nodes.
@@ -94,6 +100,23 @@
   halves the cost of graphs whose check is expensive, such as CPDAGs and MPDAGs.
 
 ## Improvements
+
+* `caugi_options()` checks what it sets: an unknown option name, or a value of
+  another kind than its default, such as a string for a number, now errors
+  instead of being stored and failing later (#437).
+  
+* "graph is not a CPDAG" errors now name the culprit when it is a chordless
+  cycle in a chain component, e.g. `A --- B --- C --- D --- A`, or an arrow
+  that is not strongly protected (#440).
+
+* "contains a directed cycle" errors for DAGs, PDAGs, ADMGs and ancestral
+  graphs now print the cycle, e.g.
+  `DAG contains a directed cycle: A -> B -> C -> A` (#439).
+
+* Errors from caugi's Rust code and internal helpers no longer name the
+  internal function that raised them, such as
+  `Error in rs_resolve_class(session, class)`; they show only the message
+  (#438).
 
 * `adjustment_set()` returns `NULL` instead of an error when the requested
   construction finds no valid set: none exists, the parents of `X` are not

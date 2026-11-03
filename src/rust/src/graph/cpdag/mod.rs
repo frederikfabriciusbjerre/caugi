@@ -10,7 +10,7 @@
 //! invariant. Accessors are inherited from `Mpdag` (and thus `Pdag`) via `Deref`.
 
 use super::mpdag::Mpdag;
-use super::pdag::Pdag;
+use super::pdag::{NotCpdag, Pdag};
 use super::traits::{Acyclic, MeekClosed, NoBidirected};
 
 #[derive(Debug, Clone)]
@@ -23,12 +23,26 @@ impl Cpdag {
     /// (chordal chain components, acyclic component DAG, Meek closure, and strong
     /// arrow protection) via [`Pdag::is_cpdag`].
     pub fn try_new(pdag: Pdag) -> Result<Self, String> {
-        if !pdag.is_cpdag() {
-            return Err(
-                "graph is not a CPDAG (chain components must be chordal and every arrow \
-                 strongly protected under a Meek-closed orientation)"
-                    .into(),
-            );
+        if let Some(reason) = pdag.not_cpdag() {
+            return Err(match reason {
+                NotCpdag::ChordlessCycle(cycle) => format!(
+                    "graph is not a CPDAG: a chain component has the chordless cycle {}",
+                    cycle
+                        .iter()
+                        .map(u32::to_string)
+                        .collect::<Vec<_>>()
+                        .join(" --- ")
+                ),
+                NotCpdag::UnprotectedArrow(a, b) => format!(
+                    "graph is not a CPDAG: the arrow {} -> {} is not strongly protected",
+                    a, b
+                ),
+                NotCpdag::Other => {
+                    "graph is not a CPDAG (chain components must be chordal and \
+                                    every arrow strongly protected under a Meek-closed orientation)"
+                        .into()
+                }
+            });
         }
         // A CPDAG is Meek-closed by definition, so this never re-fails.
         let mpdag = Mpdag::from_closed_unchecked(pdag);

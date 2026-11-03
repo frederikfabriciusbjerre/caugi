@@ -452,14 +452,32 @@ impl GraphSession {
             .is_some_and(|s| s.symmetric)
     }
 
-    /// A symmetric edge runs from its lower to its higher node, so both ways
-    /// of writing it compare equal.
+    /// A symmetric edge runs from its lower to its higher node, and the
+    /// built-in mirrors `<--`, `<-o` and `o--` become `-->`, `o->` and `--o`
+    /// with the ends swapped, so every way of writing an edge compares equal.
     fn canonical(&self, u: u32, v: u32, etype: u8) -> (u32, u32, u8) {
-        if v < u && self.is_symmetric(etype) {
+        if let Some(forward) = self.mirrored(etype) {
+            (v, u, forward)
+        } else if v < u && self.is_symmetric(etype) {
             (v, u, etype)
         } else {
             (u, v, etype)
         }
+    }
+
+    /// The edge type a built-in mirror stands for.
+    fn mirrored(&self, etype: u8) -> Option<u8> {
+        let specs = &self.registry.specs;
+        let forward = match specs.get(etype as usize)?.glyph.as_str() {
+            "<--" => "-->",
+            "<-o" => "o->",
+            "o--" => "--o",
+            _ => return None,
+        };
+        specs
+            .iter()
+            .position(|s| s.glyph == forward)
+            .map(|c| c as u8)
     }
 
     /// `edges` in canonical form. Repeats are kept, so building the graph
@@ -992,6 +1010,15 @@ impl GraphSession {
         }
     }
 
+    /// `0 -> 1` as `A -> B`, or `None` if a part is not a node index.
+    fn format_indices(&self, indices: &str, sep: &str) -> Option<String> {
+        let names: Vec<String> = indices
+            .split(sep)
+            .map(|i| i.parse().ok().map(|i| self.format_index(i)))
+            .collect::<Option<_>>()?;
+        Some(names.join(sep))
+    }
+
     fn map_error(&self, err: String) -> String {
         self.map_error_str(&err).unwrap_or(err)
     }
@@ -1061,6 +1088,32 @@ impl GraphSession {
                     ));
                 }
             }
+        }
+
+        if let Some((graph, cycle)) = err.split_once(" contains a directed cycle: ") {
+            return Some(format!(
+                "{} contains a directed cycle: {}",
+                graph,
+                self.format_indices(cycle, " -> ")?
+            ));
+        }
+
+        const CHORDLESS: &str = "graph is not a CPDAG: a chain component has the chordless cycle ";
+        if let Some(cycle) = err.strip_prefix(CHORDLESS) {
+            return Some(format!(
+                "{CHORDLESS}{}",
+                self.format_indices(cycle, " --- ")?
+            ));
+        }
+
+        if let Some(arrow) = err
+            .strip_prefix("graph is not a CPDAG: the arrow ")
+            .and_then(|rest| rest.strip_suffix(" is not strongly protected"))
+        {
+            return Some(format!(
+                "graph is not a CPDAG: the arrow {} is not strongly protected",
+                self.format_indices(arrow, " -> ")?
+            ));
         }
 
         if let Some(rest) = err.strip_prefix("Anterior constraint violated: node ") {
@@ -1470,6 +1523,20 @@ mod tests {
         assert_eq!(session.edge_buffer().etype, vec![d]);
         assert!(session.built_core().is_none());
         assert!(session.built_view().is_none());
+    }
+
+    #[test]
+    fn mirrored_edges_are_stored_forward() {
+        let reg = make_registry();
+        let (d, back) = (reg.code_of("-->").unwrap(), reg.code_of("<--").unwrap());
+        let (po, op) = (reg.code_of("o->").unwrap(), reg.code_of("<-o").unwrap());
+        let (pu, up) = (reg.code_of("--o").unwrap(), reg.code_of("o--").unwrap());
+        let mut s = GraphSession::new(&reg, 4, false, GraphClass::Unknown);
+        // 1 <-- 0, 2 <-o 1, 3 o-- 2
+        s.set_edges_from_vecs(vec![1, 2, 3], vec![0, 1, 2], vec![back, op, up]);
+        assert_eq!(s.edge_buffer().from, vec![0, 1, 2]);
+        assert_eq!(s.edge_buffer().to, vec![1, 2, 3]);
+        assert_eq!(s.edge_buffer().etype, vec![d, po, pu]);
     }
 
     #[test]
@@ -1903,6 +1970,29 @@ mod tests {
                 "Anterior constraint violated: node 1 has arrowheadfrom 0 but is an anterior of 2"
             )
             .is_none());
+        assert_eq!(
+            session
+                .map_error_str("DAG contains a directed cycle: 0 -> 1 -> 0")
+                .unwrap(),
+            "DAG contains a directed cycle: A -> B -> A"
+        );
+        assert!(session
+            .map_error_str("DAG contains a directed cycle: 0 -> x")
+            .is_none());
+        assert_eq!(
+            session
+                .map_error_str(
+                    "graph is not a CPDAG: a chain component has the chordless cycle 0 --- 1 --- 2 --- 0"
+                )
+                .unwrap(),
+            "graph is not a CPDAG: a chain component has the chordless cycle A --- B --- C --- A"
+        );
+        assert_eq!(
+            session
+                .map_error_str("graph is not a CPDAG: the arrow 0 -> 1 is not strongly protected")
+                .unwrap(),
+            "graph is not a CPDAG: the arrow A -> B is not strongly protected"
+        );
         assert!(session.map_error_str("unmapped error").is_none());
     }
 
