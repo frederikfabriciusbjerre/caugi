@@ -38,14 +38,14 @@ moralize <- function(cg) {
 #' @title Get the skeleton of a graph
 #'
 #' @description
-#' The skeleton of a graph is obtained by replacing all directed edges with
-#' undirected edges.
+#' The skeleton of a graph is obtained by replacing every edge, of any type,
+#' with an undirected edge (`---`).
 #'
 #' @details
-#' This changes the graph from any class to an Undirected Graph (UG), also known
-#' as a Markov Graph.
+#' This changes the graph from any class to an Undirected Graph (UG). Parallel
+#' edges between two nodes become one edge, and self-loops are dropped.
 #'
-#' @param cg A `caugi` object. Either a DAG or PDAG.
+#' @param cg A `caugi` object of any class.
 #'
 #' @returns A `caugi` object representing the skeleton of the graph (UG).
 #'

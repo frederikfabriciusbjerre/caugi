@@ -2,6 +2,21 @@
 # ───────────────────────────────── Skeleton ───────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
+test_that("skeleton works on every class", {
+  ug <- caugi(A %---% B, B %---% C, class = "UG")
+  expect_equal(skeleton(caugi(A %<->% B, B %-->% C, class = "ADMG")), ug)
+  expect_equal(skeleton(caugi(A %o->% B, C %o->% B, class = "PAG")), ug)
+  # A bow and a self-loop collapse.
+  unknown <- caugi(
+    A %-->% B,
+    A %<->% B,
+    B %o->% C,
+    C %-->% C,
+    class = "UNKNOWN"
+  )
+  expect_equal(skeleton(unknown), ug)
+})
+
 test_that("DAG --> UG with skeleton keeps the skeleton", {
   cg <- caugi(
     A %-->% B,
