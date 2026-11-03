@@ -60,6 +60,11 @@ would otherwise cross (default: \code{TRUE})
 
 Options set via \code{caugi_options()} serve as global defaults that can be
 overridden by arguments to \code{\link[=plot.caugi]{plot.caugi()}}.
+
+Setting an option checks it: its name must be one of the defaults', and its
+value of the same kind as the default: a list, \code{TRUE} or \code{FALSE}, a number
+or \code{\link[grid:unit]{grid::unit()}}, or a string. \code{label_style} lists take any \code{\link[grid:gpar]{grid::gpar()}}
+parameters, and \code{NULL} unsets an option.
 }
 \examples{
 # Query all options
