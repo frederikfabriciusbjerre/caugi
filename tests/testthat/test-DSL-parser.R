@@ -47,16 +47,17 @@ test_that(".glyph_of returns correct glyph", {
   expect_equal(.glyph_of(as.symbol("%--o%")), "--o")
   expect_equal(.glyph_of(as.symbol("%o-o%")), "o-o")
   expect_equal(.glyph_of(as.symbol("%o->%")), "o->")
+  expect_equal(.glyph_of(as.symbol("%<--%")), "<--")
 
   # new registered edge
   register_caugi_edge(
-    glyph = "<--",
-    tail_mark = "arrow",
-    head_mark = "tail",
+    glyph = "==>",
+    tail_mark = "tail",
+    head_mark = "arrow",
     class = "directed",
     symmetric = FALSE
   )
-  expect_equal(.glyph_of(as.symbol("%<--%")), "<--")
+  expect_equal(.glyph_of(as.symbol("%==>%")), "==>")
   reset_caugi_registry()
 })
 
@@ -219,13 +220,6 @@ test_that(".parse_edge_arg errors when no edge present", {
 
 test_that(".parse_edge_arg handles multiple edge units with context", {
   reset_caugi_registry()
-  register_caugi_edge(
-    glyph = "<--",
-    tail_mark = "arrow",
-    head_mark = "tail",
-    class = "directed",
-    symmetric = FALSE
-  )
   # Build: X + (A %-->% B) + Y + (C %<--% D) + Z
   e1 <- call("%-->%", quote(A), quote(B))
   e2 <- call("%<--%", quote(C), quote(D))

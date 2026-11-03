@@ -4,43 +4,86 @@
 use super::Pdag;
 use std::collections::{HashSet, VecDeque};
 
+/// Why a PDAG is not a CPDAG.
+#[derive(Debug, PartialEq)]
+pub(crate) enum NotCpdag {
+    /// A cycle `[v, ..., v]` with no chord in a chain component.
+    ChordlessCycle(Vec<u32>),
+    /// An arrow `a -> b` that is not strongly protected.
+    UnprotectedArrow(u32, u32),
+    /// Another condition fails.
+    Other,
+}
+
 impl Pdag {
     /// Full CPDAG check. Returns true iff `self` is a CPDAG.
     pub fn is_cpdag(&self) -> bool {
+        self.not_cpdag().is_none()
+    }
+
+    /// Why `self` is not a CPDAG, or `None` if it is one.
+    pub(crate) fn not_cpdag(&self) -> Option<NotCpdag> {
         let n = self.n() as usize;
         if n <= 1 {
-            return true;
+            return None;
         }
 
         // chain components
         let (comp, c) = self.chain_components();
 
-        // no arrows within any undirected component
-        if self.has_intra_component_arrows(&comp) {
-            return false;
-        }
-
-        // component DAG must be acyclic
-        if !self.component_dag_is_acyclic(&comp, c) {
-            return false;
+        // no arrows within any undirected component, and the component DAG
+        // must be acyclic
+        if self.has_intra_component_arrows(&comp) || !self.component_dag_is_acyclic(&comp, c) {
+            return Some(NotCpdag::Other);
         }
 
         // each undirected component is chordal
-        if !self.components_are_chordal(&comp, c) {
-            return false;
+        if let Some((v, x, w)) = self.non_chordal_at(&comp, c) {
+            return Some(
+                self.chordless_cycle(v, x, w)
+                    .map_or(NotCpdag::Other, NotCpdag::ChordlessCycle),
+            );
         }
 
         // Meeks rules would not orient any more edges
         if !self.is_meek_closed() {
-            return false;
+            return Some(NotCpdag::Other);
         }
 
         // every arrow is strongly protected
-        if !self.all_arrows_strongly_protected(&comp) {
-            return false;
-        }
+        self.unprotected_arrow()
+            .map(|(a, b)| NotCpdag::UnprotectedArrow(a, b))
+    }
 
-        true
+    /// A chordless cycle through `v` and its non-adjacent neighbours `x` and
+    /// `w`: `v`, then a shortest `x`-`w` path avoiding `v`'s other neighbours.
+    /// No inner node of the path is adjacent to `v`, and a chord within the
+    /// path would make it shorter.
+    fn chordless_cycle(&self, v: u32, x: u32, w: u32) -> Option<Vec<u32>> {
+        // prev[u] is u's predecessor on the path, or u itself when blocked.
+        let mut prev = vec![u32::MAX; self.n() as usize];
+        for &u in self.undirected_of(v).iter().chain([&v, &x]) {
+            prev[u as usize] = u;
+        }
+        prev[w as usize] = u32::MAX;
+        let mut queue = VecDeque::from([x]);
+        while let Some(u) = queue.pop_front() {
+            for &y in self.undirected_of(u) {
+                if prev[y as usize] == u32::MAX {
+                    prev[y as usize] = u;
+                    queue.push_back(y);
+                }
+            }
+        }
+        if prev[w as usize] == u32::MAX {
+            return None;
+        }
+        let mut cycle = vec![v, w];
+        while *cycle.last().unwrap() != x {
+            cycle.push(prev[*cycle.last().unwrap() as usize]);
+        }
+        cycle.push(v);
+        Some(cycle)
     }
 
     /// True if the PDAG is closed under Meek orientation rules (R1..R4).
@@ -134,7 +177,9 @@ impl Pdag {
     }
 
     /// Check chordality of all undirected components via MCS + clique test.
-    fn components_are_chordal(&self, comp: &[usize], c: usize) -> bool {
+    /// Returns a node `v` with two non-adjacent neighbours `x` and `w` that
+    /// the test requires adjacent, or `None` if every component is chordal.
+    fn non_chordal_at(&self, comp: &[usize], c: usize) -> Option<(u32, u32, u32)> {
         let n = self.n() as usize;
         let mut nodes_in: Vec<Vec<usize>> = vec![Vec::new(); c];
         for v in 0..n {
@@ -168,12 +213,7 @@ impl Pdag {
                         best = label[v];
                     }
                 }
-                if pick == usize::MAX {
-                    for &v in &nodes {
-                        in_c[v] = false;
-                    }
-                    return false;
-                }
+                assert!(pick != usize::MAX, "an unnumbered node remains");
                 order.push(pick);
                 numbered[pick] = true;
                 for &w in self.undirected_of(pick as u32) {
@@ -211,10 +251,7 @@ impl Pdag {
                         .binary_search(&(pvt as u32))
                         .is_ok()
                     {
-                        for &x in &nodes {
-                            in_c[x] = false;
-                        }
-                        return false;
+                        return Some((v as u32, pvt as u32, w as u32));
                     }
                 }
             }
@@ -224,7 +261,7 @@ impl Pdag {
             }
         }
 
-        true
+        None
     }
 
     /// No Meeks rule applies (R1..R4).
@@ -300,8 +337,9 @@ impl Pdag {
         true
     }
 
-    /// Every arrow is strongly protected (VS, SP1, SP2, SP3).
-    fn all_arrows_strongly_protected(&self, _comp: &[usize]) -> bool {
+    /// The first arrow that is not strongly protected (VS, SP1, SP2, SP3), or
+    /// `None` if every arrow is.
+    fn unprotected_arrow(&self) -> Option<(u32, u32)> {
         for a in 0..self.n() {
             for &b in self.children_of(a) {
                 // VS (v-structure protection): ∃ c: c→b and c ⊥ a
@@ -344,10 +382,10 @@ impl Pdag {
                     continue;
                 }
                 // not strongly protected
-                return false;
+                return Some((a, b));
             }
         }
-        true
+        None
     }
 }
 
@@ -364,6 +402,76 @@ mod tests {
         let d: u8 = reg.code_of("-->").unwrap();
         let u: u8 = reg.code_of("---").unwrap();
         (reg, d, u)
+    }
+
+    #[test]
+    fn not_cpdag_names_a_chordless_cycle_in_every_non_chordal_ug_on_six_nodes() {
+        let (reg, _d, u) = setup();
+        let pairs: Vec<(u32, u32)> = (0..6)
+            .flat_map(|a| (a + 1..6).map(move |b| (a, b)))
+            .collect();
+        for mask in 0u32..(1 << pairs.len()) {
+            let adj = |a: u32, b: u32| {
+                let (a, b) = (a.min(b), a.max(b));
+                pairs
+                    .iter()
+                    .position(|&p| p == (a, b))
+                    .is_some_and(|k| mask & (1 << k) != 0)
+            };
+            let mut b = GraphBuilder::new_with_registry(6, true, &reg);
+            for (k, &(x, y)) in pairs.iter().enumerate() {
+                if mask & (1 << k) != 0 {
+                    b.add_edge(x, y, u).unwrap();
+                }
+            }
+            let g = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+            // Brute force: some node set of size >= 4 induces a cycle.
+            let has_chordless_cycle = (0u32..64).any(|set| {
+                let nodes: Vec<u32> = (0..6).filter(|&v| set & (1 << v) != 0).collect();
+                nodes.len() >= 4
+                    && nodes
+                        .iter()
+                        .all(|&v| nodes.iter().filter(|&&w| w != v && adj(v, w)).count() == 2)
+                    && {
+                        // connected: walk the cycle from the first node
+                        let (mut prev, mut cur, mut len) = (u32::MAX, nodes[0], 0);
+                        loop {
+                            let next = *nodes
+                                .iter()
+                                .find(|&&w| w != cur && w != prev && adj(cur, w))
+                                .unwrap();
+                            (prev, cur, len) = (cur, next, len + 1);
+                            if cur == nodes[0] {
+                                break len == nodes.len();
+                            }
+                        }
+                    }
+            });
+            match g.not_cpdag() {
+                None => assert!(!has_chordless_cycle, "mask {mask}"),
+                Some(NotCpdag::ChordlessCycle(c)) => {
+                    assert!(has_chordless_cycle, "mask {mask}");
+                    let k = c.len() - 1;
+                    assert!(k >= 4 && c[0] == c[k], "mask {mask}: {c:?}");
+                    for i in 0..k {
+                        for j in i + 1..k {
+                            let consecutive = j == i + 1 || (i == 0 && j == k - 1);
+                            assert_eq!(adj(c[i], c[j]), consecutive, "mask {mask}: {c:?}");
+                        }
+                    }
+                }
+                other => panic!("mask {mask}: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn not_cpdag_names_an_unprotected_arrow() {
+        let (reg, d, _u) = setup();
+        let mut b = GraphBuilder::new_with_registry(2, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        let g = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert_eq!(g.not_cpdag(), Some(NotCpdag::UnprotectedArrow(0, 1)));
     }
 
     #[test]
@@ -743,7 +851,7 @@ mod tests {
         b1.add_edge(0, 1, d).unwrap(); // a->b
         b1.add_edge(2, 0, d).unwrap(); // c->a
         let g1 = Pdag::new(Arc::new(b1.finalize().unwrap())).unwrap();
-        assert!(!g1.all_arrows_strongly_protected(&[]));
+        assert!(g1.unprotected_arrow().is_some());
 
         // SP2: a->c and c->b protect a->b
         let mut b2 = GraphBuilder::new_with_registry(3, true, &reg);
@@ -751,7 +859,7 @@ mod tests {
         b2.add_edge(0, 2, d).unwrap(); // a->c
         b2.add_edge(2, 1, d).unwrap(); // c->b
         let g2 = Pdag::new(Arc::new(b2.finalize().unwrap())).unwrap();
-        assert!(!g2.all_arrows_strongly_protected(&[]));
+        assert!(g2.unprotected_arrow().is_some());
 
         // SP3: c,d -> b with c !~ d and a--c, a--d protect a->b
         let mut b3 = GraphBuilder::new_with_registry(4, true, &reg);
@@ -761,6 +869,6 @@ mod tests {
         b3.add_edge(0, 2, u).unwrap(); // a--c
         b3.add_edge(0, 3, u).unwrap(); // a--d
         let g3 = Pdag::new(Arc::new(b3.finalize().unwrap())).unwrap();
-        assert!(g3.all_arrows_strongly_protected(&[]));
+        assert!(g3.unprotected_arrow().is_none());
     }
 }

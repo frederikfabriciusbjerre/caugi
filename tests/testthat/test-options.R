@@ -121,13 +121,12 @@ test_that("caugi_options retrieves grid::unit values", {
 
 test_that("caugi_options resets to defaults", {
   on.exit(caugi_options(reset = TRUE))
-  # Modify options, including a key that is not in the defaults
-  caugi_options(plot = list(node_style = list(fill = "blue"), newkey = 1))
+  caugi_options(plot = list(node_style = list(fill = "blue")))
   expect_equal(caugi_options("plot", "node_style", "fill"), "blue")
 
   # Reset to defaults; returns the previous options invisibly
   prev <- caugi_options(reset = TRUE)
-  expect_equal(prev$plot$newkey, 1)
+  expect_equal(prev$plot$node_style$fill, "blue")
   expect_identical(caugi_options(), .caugi_default_options())
   expect_error(caugi_options(plot = list(), reset = TRUE), "cannot be combined")
 })
@@ -154,4 +153,39 @@ test_that("caugi_options sets multiple options at once", {
 
   # Restore
   caugi_options(plot = original)
+})
+
+test_that("caugi_options rejects unknown names and values of the wrong kind", {
+  on.exit(caugi_options(reset = TRUE))
+  expect_error(caugi_options(plott = 1), "Unknown option `plott`")
+  expect_error(
+    caugi_options(plot = list(node_style = list(fil = "red"))),
+    "Unknown option `plot$node_style$fil`",
+    fixed = TRUE
+  )
+  expect_error(
+    caugi_options(plot = list(node_style = list(padding = "2"))),
+    "`plot$node_style$padding` must be a number or grid::unit()",
+    fixed = TRUE
+  )
+  expect_error(
+    caugi_options(plot = list(edge_style = list(route = 1))),
+    "must be TRUE or FALSE"
+  )
+  expect_error(caugi_options(plot = list(node_style = "red")), "must be a list")
+  expect_error(
+    caugi_options(plot = list(node_style = list(fill = sum))),
+    "must be a string"
+  )
+
+  # label_style takes any gpar() names, a NULL default any value, and a unit
+  # default a number.
+  caugi_options(
+    plot = list(
+      label_style = list(cex = 2),
+      edge_style = list(fill = "red"),
+      tier_style = list(padding = 5)
+    )
+  )
+  expect_equal(caugi_options("plot", "label_style", "cex"), 2)
 })
