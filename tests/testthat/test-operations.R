@@ -1232,8 +1232,42 @@ test_that("condition_marginalize and helper branches are covered", {
 test_that("condition_marginalize() keeps exactly the inseparable pairs (#397)", {
   skip_on_cran()
 
-  # The oracle is the definition (Richardson and Spirtes 2002, Theorem
-  # 4.2(ii)): a and b stay adjacent iff no Z with S ⊆ Z ⊆ V \ (L ∪ {a, b})
+  # Random ancestral graph: `---` within a first block of nodes, then `-->`
+  # and `<->` forward in a hidden order. caugi rejects graphs that are not
+  # ancestral, and those are drawn again.
+  random_ag <- function(n) {
+    repeat {
+      nm <- sample(paste0("V", seq_len(n)))
+      k <- if (runif(1) < 0.5) 0L else sample(2:n, 1)
+      p <- combn(n, 2)
+      p <- p[, runif(ncol(p)) < runif(1, 0.2, 0.6), drop = FALSE]
+      edge <- ifelse(
+        p[2, ] <= k,
+        "---",
+        ifelse(
+          p[1, ] <= k,
+          "-->",
+          sample(c("-->", "-->", "<->"), ncol(p), TRUE)
+        )
+      )
+      cg <- tryCatch(
+        caugi(
+          from = nm[p[1, ]],
+          edge = edge,
+          to = nm[p[2, ]],
+          nodes = nm,
+          class = "AG"
+        ),
+        error = function(e) NULL
+      )
+      if (!is.null(cg)) {
+        return(cg)
+      }
+    }
+  }
+
+  # The oracle is the definition (Richardson and Spirtes 2002, Definition
+  # 4.2.1): a and b stay adjacent iff no Z with S ⊆ Z ⊆ V \ (L ∪ {a, b})
   # m-separates them.
   separable <- function(cg, a, b, S, L) {
     rest <- setdiff(nodes(cg)$name, c(a, b, S, L))
@@ -1245,22 +1279,27 @@ test_that("condition_marginalize() keeps exactly the inseparable pairs (#397)", 
     }
     FALSE
   }
-  check <- function(cg) {
-    SL <- sample(nodes(cg)$name, 2)
-    res <- condition_marginalize(cg, cond_vars = SL[1], marg_vars = SL[2])
+
+  # Most inputs have `---` or `<->` edges, where anteriors and ancestors
+  # differ; one in four is a DAG.
+  set.seed(397)
+  for (i in seq_len(300L)) {
+    n <- sample(4:8, 1)
+    cg <- if (i %% 4 == 0) {
+      generate_graph(n = n, m = n, class = "DAG")
+    } else {
+      random_ag(n)
+    }
+    SL <- sample(nodes(cg)$name, sample(min(3, n - 2), 1))
+    S <- SL[runif(length(SL)) < 0.5]
+    L <- setdiff(SL, S)
+    res <- condition_marginalize(cg, cond_vars = S, marg_vars = L)
+
     pairs <- combn(nodes(res)$name, 2)
     expect_identical(
       apply(pairs, 2, \(p) p[2] %in% neighbors(res, p[1])),
-      apply(pairs, 2, \(p) !separable(cg, p[1], p[2], SL[1], SL[2]))
+      apply(pairs, 2, \(p) !separable(cg, p[1], p[2], S, L))
     )
-    res
-  }
-
-  # Conditioning gives `---` edges, so the second round runs on AGs where
-  # anteriors and ancestors differ.
-  set.seed(397)
-  for (i in seq_len(40L)) {
-    check(check(generate_graph(n = 9, m = 14, class = "DAG")))
   }
 })
 
