@@ -129,6 +129,17 @@ test_that("SHD: larger graph with shuffled edges gives SHD 0", {
   expect_equal(shd(cg1, cg2), 0)
 })
 
+test_that("SHD: a pair with two edges is compared as a whole (#389)", {
+  two <- latent_project(
+    caugi(L %-->% A + B, A %-->% B, class = "DAG"),
+    latents = "L"
+  )
+  one <- caugi(A %-->% B, class = "ADMG")
+  expect_equal(shd(two, two), 0)
+  expect_equal(shd(two, one), 1)
+  expect_equal(shd(one, two), 1)
+})
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────────────────── HD ──────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────

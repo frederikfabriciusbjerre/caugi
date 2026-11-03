@@ -21,6 +21,11 @@ if \code{normalized = FALSE}, or a numeric between 0 and 1 if \code{normalized =
 Compute the Structural Hamming Distance (SHD) between two
 graphs.
 }
+\details{
+Each pair of nodes counts at most once: when the two graphs differ
+in the set of edges between them. A pair with two edges, such as \verb{A --> B}
+and \verb{A <-> B} from \code{\link[=latent_project]{latent_project()}}, matches only the same two edges.
+}
 \examples{
 cg1 <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
 cg2 <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
