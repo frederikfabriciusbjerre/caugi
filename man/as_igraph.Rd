@@ -15,7 +15,7 @@ as_igraph(x, ...)
 An \code{igraph} object representing the same graph structure.
 }
 \description{
-Convert a caugi to an igraph object
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
 }
 \examples{
 cg <- caugi(

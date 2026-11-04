@@ -1,5 +1,7 @@
 #' @title Convert a caugi to an igraph object
 #'
+#' @description Edges with a custom glyph from [register_caugi_edge()] are an error.
+#'
 #' @param x A `caugi` object.
 #' @param ... Additional arguments passed to `igraph::graph_from_data_frame()`.
 #'
@@ -31,6 +33,7 @@ as_igraph <- function(x, ...) {
       call. = FALSE
     )
   }
+  .stop_if_custom_glyphs(x, "as_igraph()")
 
   et <- edge_types(x)
 
@@ -135,6 +138,8 @@ as_igraph <- function(x, ...) {
 #'
 #' [as_caugi()] reads both codings back.
 #'
+#' Edges with a custom glyph from [register_caugi_edge()] are an error.
+#'
 #' @param x A `caugi` object.
 #' @param coding Either `"binary"` for a 0/1 adjacency matrix or `"marks"`
 #'   for the mark-coded `amat.pag` form.
@@ -160,6 +165,7 @@ as_igraph <- function(x, ...) {
 #' @export
 as_adjacency <- function(x, coding = c("binary", "marks")) {
   is_caugi(x, throw_error = TRUE)
+  .stop_if_custom_glyphs(x, "as_adjacency()")
   coding <- match.arg(coding)
 
   nm <- nodes(x)$name
@@ -181,14 +187,6 @@ as_adjacency <- function(x, coding = c("binary", "marks")) {
       "--o" = c(3L, 1L),
       "o-o" = c(1L, 1L)
     )
-    unknown <- setdiff(e$edge, rownames(marks))
-    if (length(unknown) > 0L) {
-      stop(
-        "Unsupported edge glyphs in conversion to a mark-coded matrix: ",
-        paste(unknown, collapse = ", "),
-        call. = FALSE
-      )
-    }
     i <- match(e$from, nm)
     j <- match(e$to, nm)
     if (any(i == j) || anyDuplicated(paste(pmin(i, j), pmax(i, j)))) {
@@ -235,6 +233,8 @@ as_adjacency <- function(x, coding = c("binary", "marks")) {
 
 #' @title Convert a caugi to a bnlearn network
 #'
+#' @description Edges with a custom glyph from [register_caugi_edge()] are an error.
+#'
 #' @param x A `caugi` object.
 #'
 #' @returns A `bnlearn` DAG.
@@ -256,6 +256,7 @@ as_bnlearn <- function(x) {
   if (x@graph_class != "DAG") {
     stop("as_bnlearn requires a 'DAG' graph_class.", call. = FALSE)
   }
+  .stop_if_custom_glyphs(x, "as_bnlearn()")
 
   nm <- nodes(x)$name
   e <- edges(x)
@@ -285,6 +286,8 @@ as_bnlearn <- function(x) {
 #' Reading a `pag` back with [as_caugi()] gives class `"UNKNOWN"`, as caugi
 #' doesn't support PAGs yet.
 #'
+#' Edges with a custom glyph from [register_caugi_edge()] are an error.
+#'
 #' @param x A `caugi` object.
 #'
 #' @returns A `dagitty` object.
@@ -302,6 +305,7 @@ as_bnlearn <- function(x) {
 #' @export
 as_dagitty <- function(x) {
   is_caugi(x, throw_error = TRUE)
+  .stop_if_custom_glyphs(x, "as_dagitty()")
 
   nm <- nodes(x)$name
   e <- edges(x)
@@ -359,8 +363,7 @@ as_dagitty <- function(x) {
         bb <- max(a, b)
         sprintf("%s @-@ %s", aa, bb)
       },
-      "--o" = sprintf("%s @-- %s", b, a),
-      stop("Unsupported edge type for dagitty: ", g, call. = FALSE)
+      "--o" = sprintf("%s @-- %s", b, a)
     )
   }
 

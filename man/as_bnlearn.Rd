@@ -13,7 +13,7 @@ as_bnlearn(x)
 A \code{bnlearn} DAG.
 }
 \description{
-Convert a caugi to a bnlearn network
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
 }
 \examples{
 cg <- caugi(

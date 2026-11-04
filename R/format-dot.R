@@ -54,6 +54,8 @@ caugi_dot <- S7::new_class(
 #' * Partial edges (`o-o`) use `->` with
 #'   `[dir=both, arrowtail=odot, arrowhead=odot]` attribute
 #'
+#' Edges with a custom glyph from [register_caugi_edge()] are an error.
+#'
 #' @examples
 #' cg <- caugi(
 #'   A %-->% B + C,
@@ -83,8 +85,7 @@ to_dot <- function(
   edge_attrs = list()
 ) {
   is_caugi(x, throw_error = TRUE)
-
-  # Ensure graph is built
+  .stop_if_custom_glyphs(x, "to_dot()")
 
   nodes_df <- nodes(x)
   edges_df <- edges(x)
@@ -186,9 +187,6 @@ to_dot <- function(
         edge_attrs_list$dir <- "both"
         edge_attrs_list$arrowtail <- "odot"
         edge_attrs_list$arrowhead <- "odot"
-      } else {
-        # Unknown edge type, default to directed
-        operator <- "->"
       }
 
       # Build edge line
@@ -216,7 +214,8 @@ to_dot <- function(
 
 #' Write caugi Graph to DOT File
 #'
-#' Writes a caugi graph to a file in Graphviz DOT format.
+#' Writes a caugi graph to a file in Graphviz DOT format, as UTF-8 in every
+#' locale.
 #'
 #' @param x A `caugi` object.
 #' @param file Path to output file.
@@ -250,7 +249,7 @@ to_dot <- function(
 #' @export
 write_dot <- function(x, file, ...) {
   dot_obj <- to_dot(x, ...)
-  writeLines(dot_obj@content, file)
+  writeLines(enc2utf8(dot_obj@content), file, useBytes = TRUE)
   invisible(file)
 }
 

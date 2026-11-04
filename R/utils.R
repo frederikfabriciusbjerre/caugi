@@ -75,6 +75,25 @@
   list(nodes_supplied = nodes_supplied, index_supplied = index_supplied)
 }
 
+#' Error when `x` has an edge glyph that is not built in. The exporters only
+#' know the built-in glyphs, so they would write a custom one reversed or drop
+#' it.
+#' @keywords internal
+#' @noRd
+.stop_if_custom_glyphs <- function(x, fn) {
+  custom <- setdiff(edge_types(x), .caugi_defaults_glyph_map)
+  if (length(custom) > 0L) {
+    stop(
+      "`",
+      fn,
+      "` only converts built-in edges, not ",
+      paste0("`", custom, "`", collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+}
+
 #' @title Convert node names to 0-based indices
 #'
 #' @description

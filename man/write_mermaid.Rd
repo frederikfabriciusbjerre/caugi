@@ -18,7 +18,7 @@ write_mermaid(x, file, ...)
 Invisibly returns the path to the file.
 }
 \description{
-Writes a caugi graph to a file in Mermaid format.
+Writes a caugi graph to a file in Mermaid format, as UTF-8 in every locale.
 }
 \examples{
 cg <- caugi(

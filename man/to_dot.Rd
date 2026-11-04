@@ -35,6 +35,8 @@ The function handles different edge types:
 \item Partial edges (\code{o-o}) use \verb{->} with
 \verb{[dir=both, arrowtail=odot, arrowhead=odot]} attribute
 }
+
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
 }
 \examples{
 cg <- caugi(

@@ -64,18 +64,47 @@ test_that("to_mermaid validates direction", {
   )
 })
 
-test_that("to_mermaid escapes special characters", {
+test_that("to_mermaid labels names Mermaid can't read as IDs (#413)", {
+  # `end` is a Mermaid keyword, so is `end.x`, and `Sepal.Length` has no edges. The generated ID for
+  # `end` steps around the node named `n2`.
   cg <- caugi(
-    "Node 1" %-->% "Node-2",
-    "Node-2" %-->% "Node_3"
+    "Node 1" %-->% end,
+    n2 %---% end,
+    nodes = c("Node 1", "end", "Sepal.Length", 'say "hi"', "n2", "end.x")
   )
 
-  mmd <- to_mermaid(cg)
-  mmd_str <- as.character(mmd)
+  expect_identical(
+    as.character(to_mermaid(cg)),
+    paste(
+      "flowchart TD",
+      '  n1["Node 1"]',
+      '  n2_1["end"]',
+      "  Sepal.Length",
+      '  n4["say #quot;hi#quot;"]',
+      '  n6["end.x"]',
+      "  n1 --> n2_1",
+      "  n2_1 --- n2",
+      sep = "\n"
+    )
+  )
+})
 
-  expect_match(mmd_str, '"Node 1"')
-  expect_match(mmd_str, '"Node-2"')
-  expect_match(mmd_str, "Node_3") # No quotes needed for valid identifier
+test_that("to_mermaid writes a name as it is when Mermaid reads it (#413)", {
+  # `--` starts a link, and `1class` holds the keyword `class`.
+  cg <- caugi(nodes = c("age-group", "2.5", "\u00d8l", "a--b", "1class"))
+
+  expect_identical(
+    as.character(to_mermaid(cg)),
+    paste(
+      "flowchart TD",
+      "  age-group",
+      "  2.5",
+      "  \u00d8l",
+      '  n4["a--b"]',
+      '  n5["1class"]',
+      sep = "\n"
+    )
+  )
 })
 
 test_that("to_mermaid works with single node", {

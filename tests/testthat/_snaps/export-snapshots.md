@@ -26,10 +26,12 @@
       cat(as.character(to_mermaid(snapshot_graph)))
     Output
       flowchart TD
+        n4["my var"]
+        E
         A --> B
         B --- C
         C <--> D
-        "my var" o--> A
+        n4 o--> A
 
 # to_graphml() output
 

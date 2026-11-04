@@ -28,6 +28,8 @@ can't be written.
 
 Reading a \code{pag} back with \code{\link[=as_caugi]{as_caugi()}} gives class \code{"UNKNOWN"}, as caugi
 doesn't support PAGs yet.
+
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
 }
 \examples{
 cg <- caugi(

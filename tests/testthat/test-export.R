@@ -62,3 +62,24 @@ test_that("knit_print works for all export formats", {
   expect_s3_class(mmd_knit, "knit_asis")
   expect_match(as.character(mmd_knit), "```\\{mermaid\\}")
 })
+
+test_that("write_dot() and write_mermaid() write UTF-8 in any locale (#417)", {
+  old <- Sys.getlocale("LC_CTYPE")
+  on.exit(Sys.setlocale("LC_CTYPE", old), add = TRUE)
+  latin1 <- c("en_US.ISO8859-1", "en_US.iso88591", "English_United States.1252")
+  set <- vapply(
+    latin1,
+    function(l) suppressWarnings(Sys.setlocale("LC_CTYPE", l)) != "",
+    TRUE
+  )
+  skip_if_not(any(set), "No Latin-1 locale available")
+
+  name <- "\u65e5\u672c"
+  cg <- caugi(from = "A", edge = "-->", to = name, class = "DAG")
+  for (write in list(write_dot, write_mermaid)) {
+    f <- tempfile()
+    write(cg, f)
+    txt <- readLines(f, encoding = "UTF-8", warn = FALSE)
+    expect_true(any(grepl(name, txt, fixed = TRUE, useBytes = TRUE)))
+  }
+})

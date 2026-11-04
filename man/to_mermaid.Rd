@@ -32,7 +32,11 @@ The function handles different edge types:
 \item Partial edges (\code{o-o}) use \code{o--o} in Mermaid (circle both ends)
 }
 
-Node names are automatically escaped if they contain special characters.
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
+
+A node name Mermaid reads as an ID, such as \code{A}, \code{Sepal.Length},
+\code{age-group} or \code{2.5}, is written as it is. Any other name, such as \verb{my var}
+or the keyword \code{end}, is written as \code{nK["name"]} with a generated ID \code{nK}.
 }
 \examples{
 cg <- caugi(

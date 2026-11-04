@@ -159,6 +159,20 @@
 
 ## Bug Fixes
 
+* `write_dot()` and `write_mermaid()` write UTF-8 in every locale. Under a
+  non-UTF-8 locale they lost non-ASCII node names (#417).
+
+* `to_mermaid()` keeps isolated nodes when the graph has edges. A node whose
+  name Mermaid can't read as an ID, such as `my var` or `end`, is written as
+  `nK["name"]` with a generated ID, not as an ID Mermaid rejects (#413).
+
+* Every exporter refuses edges with a custom glyph from
+  `register_caugi_edge()`, as none can record what the glyph means.
+  `to_dot()`, `to_mermaid()`, `as_igraph()` and `as_bnlearn()` wrote them as
+  plain arrows, reversed them or dropped them, and `write_caugi()` and
+  `write_graphml()` wrote files that only a session with the same glyph
+  registered could read (#404).
+
 * `generate_graph()` no longer draws an unused node order, so a given seed
   now gives a different graph than before.
 
