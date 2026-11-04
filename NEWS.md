@@ -159,6 +159,10 @@
 
 ## Bug Fixes
 
+* `simulate_data()` checks `coef_range` and `error_sd`, which were used
+  unchecked, and centers a constant column under `standardize = TRUE` instead
+  of filling it with `NaN`.
+
 * `is_valid_adjustment_admg()` and `all_adjustment_sets_admg()` error when `X`
   or `Y` names no nodes, as `adjustment_set()` does. They returned `TRUE` and
   `list(character(0))`.
