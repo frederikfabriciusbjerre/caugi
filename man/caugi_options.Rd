@@ -32,6 +32,8 @@ It is the default of the \code{open} argument of \code{\link[=ancestors]{ancesto
 
 The plot options are nested under the \code{plot} key:
 \itemize{
+\item \code{layout}: The default \code{layout} of \code{\link[=plot.caugi]{plot.caugi()}}, a method name of
+\code{\link[=caugi_layout]{caugi_layout()}} (default: \code{"auto"})
 \item \code{spacing}: A \code{\link[grid:unit]{grid::unit()}} controlling space between composed plots
 (default: \code{grid::unit(1, "lines")})
 \item \code{node_style}: List of default node appearance parameters:
@@ -79,6 +81,9 @@ caugi_options("plot", "node_style", "fill")
 
 # Set plot spacing
 caugi_options(plot = list(spacing = grid::unit(2, "lines")))
+
+# Set the default layout
+caugi_options(plot = list(layout = "kamada-kawai"))
 
 # Set default node style
 caugi_options(plot = list(

@@ -5,7 +5,8 @@
 \alias{plot}
 \title{Create a caugi Graph Plot Object}
 \usage{
-\method{plot}{caugi}(x, layout = "auto", node_style = list(),
+\method{plot}{caugi}(x, layout = caugi_options("plot", "layout"),
+  node_style = list(),
   edge_style = list(), label_style = list(), tier_style = list(),
   main = NULL, title_style = list(), asp = NA,
   outer_margin = grid::unit(2, "mm"), title_gap = grid::unit(1, "lines"), ...)
@@ -16,9 +17,10 @@ layout.}
 
 \item{layout}{Specifies the graph layout method. Can be:
 \itemize{
-\item A character string: \code{"auto"} (default), \code{"sugiyama"},
+\item A character string: \code{"auto"}, \code{"sugiyama"},
 \code{"fruchterman-reingold"}, \code{"kamada-kawai"}, \code{"bipartite"}, \code{"tiered"},
-\code{"circle"}. See \code{\link[=caugi_layout]{caugi_layout()}} for details.
+\code{"circle"}. See \code{\link[=caugi_layout]{caugi_layout()}} for details. The default is the
+\code{layout} plot option of \code{\link[=caugi_options]{caugi_options()}}, \code{"auto"} unless set.
 \item A layout function: e.g., \code{caugi_layout_sugiyama},
 \code{caugi_layout_bipartite}, etc. The function will be called with \code{x} and
 any additional arguments passed via \code{...}.

@@ -29,6 +29,7 @@ caugi_default_options <- function() {
   list(
     use_open_graph_definition = TRUE,
     plot = list(
+      layout = "auto",
       spacing = grid::unit(1, "lines"),
       node_style = list(
         fill = "lightgrey",
@@ -85,6 +86,8 @@ caugi_default_options <- function() {
 #'
 #' The plot options are nested under the `plot` key:
 #'
+#' - `layout`: The default `layout` of [plot.caugi()], a method name of
+#'   [caugi_layout()] (default: `"auto"`)
 #' - `spacing`: A [grid::unit()] controlling space between composed plots
 #'   (default: `grid::unit(1, "lines")`)
 #' - `node_style`: List of default node appearance parameters:
@@ -130,6 +133,9 @@ caugi_default_options <- function() {
 #'
 #' # Set plot spacing
 #' caugi_options(plot = list(spacing = grid::unit(2, "lines")))
+#'
+#' # Set the default layout
+#' caugi_options(plot = list(layout = "kamada-kawai"))
 #'
 #' # Set default node style
 #' caugi_options(plot = list(

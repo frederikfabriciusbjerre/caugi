@@ -8,9 +8,10 @@
 #' @param x A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
 #' @param layout Specifies the graph layout method. Can be:
-#'   * A character string: `"auto"` (default), `"sugiyama"`,
+#'   * A character string: `"auto"`, `"sugiyama"`,
 #'     `"fruchterman-reingold"`, `"kamada-kawai"`, `"bipartite"`, `"tiered"`,
-#'     `"circle"`. See [caugi_layout()] for details.
+#'     `"circle"`. See [caugi_layout()] for details. The default is the
+#'     `layout` plot option of [caugi_options()], `"auto"` unless set.
 #'   * A layout function: e.g., `caugi_layout_sugiyama`,
 #'     `caugi_layout_bipartite`, etc. The function will be called with `x` and
 #'     any additional arguments passed via `...`.
@@ -136,7 +137,8 @@
 #'
 #' @name plot.caugi
 #' @aliases plot
-#' @usage \method{plot}{caugi}(x, layout = "auto", node_style = list(),
+#' @usage \method{plot}{caugi}(x, layout = caugi_options("plot", "layout"),
+#'   node_style = list(),
 #'   edge_style = list(), label_style = list(), tier_style = list(),
 #'   main = NULL, title_style = list(), asp = NA,
 #'   outer_margin = grid::unit(2, "mm"), title_gap = grid::unit(1, "lines"), ...)
@@ -146,7 +148,7 @@
 #' @export
 plot.caugi <- function(
   x,
-  layout = "auto",
+  layout = caugi_options("plot", "layout"),
   node_style = list(),
   edge_style = list(),
   label_style = list(),

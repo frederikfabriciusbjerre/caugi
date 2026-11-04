@@ -4,6 +4,9 @@
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
 
+* The `layout` plot option sets `plot()`'s default layout, e.g.
+  `caugi_options(plot = list(layout = "kamada-kawai"))`.
+
 * `markov_blanket()` accepts PAGs, reading the blanket off a member MAG.
 
 * `markov_equivalent(g1, g2)` checks whether two DAGs or CPDAGs are Markov

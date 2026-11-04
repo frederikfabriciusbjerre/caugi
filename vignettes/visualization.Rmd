@@ -926,6 +926,7 @@ caugi_options(reset = TRUE)
 
 The following options can be configured under `plot`:
 
+- **`layout`**: The default layout method of `plot()`, such as `"sugiyama"`
 - **`spacing`**: A `grid::unit()` controlling space between composed plots
 - **`node_style`**: List with `fill`, `padding`, and `size`
 - **`edge_style`**: List with `arrow_size`, `circle_size`, `fill`, and `route`

@@ -74,6 +74,17 @@ test_that("caugi_options sets options and returns old values", {
   expect_equal(caugi_options("plot", "node_style", "fill"), "lightgrey")
 })
 
+test_that("plot() takes its default layout from the layout option", {
+  expect_identical(caugi_options("plot", "layout"), "auto")
+  original <- caugi_options("plot")
+  on.exit(caugi_options(plot = original))
+
+  caugi_options(plot = list(layout = "no-such-layout"))
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(plot(cg), "should be one of")
+  expect_s7_class(plot(cg, layout = "circle"), caugi_plot)
+})
+
 test_that("caugi_options preserves other nested values when setting", {
   original <- caugi_options("plot")
 
