@@ -155,6 +155,10 @@
 
 ## Bug Fixes
 
+* `is_valid_adjustment_admg()` and `all_adjustment_sets_admg()` error when `X`
+  or `Y` names no nodes, as `adjustment_set()` does. They returned `TRUE` and
+  `list(character(0))`.
+
 * `shd()` counts each edge between a pair of nodes. A pair with two edges,
   such as `A --> B` and `A <-> B` from `latent_project()`, was compared by one
   edge on each side, so `shd(g, g)` could be 1 and `shd(g1, g2)` could differ
