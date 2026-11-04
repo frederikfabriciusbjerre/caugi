@@ -92,14 +92,14 @@ way directed and the rest undirected.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A chain is equivalent to its reverse and to the fork, so no edge is fixed.</span></span></span>
 <span class="r-in"><span><span class="fu">dag_to_cpdag</span><span class="op">(</span><span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span>, <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span><span class="op">)</span> <span class="co"># A --- B --- C</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x573ad25650c0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x56083e22d8c0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: CPDAG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, C</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: A---B, B---C</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A v-structure is shared by every member of its class.</span></span></span>
 <span class="r-in"><span><span class="fu">dag_to_cpdag</span><span class="op">(</span><span class="fu"><a href="caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>, <span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span>, class <span class="op">=</span> <span class="st">"DAG"</span><span class="op">)</span><span class="op">)</span> <span class="co"># A --&gt; C &lt;-- B</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x573acc1c8480&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x56083a8d1cf0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: CPDAG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, C</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: A--&gt;C, B--&gt;C</span>

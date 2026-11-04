@@ -235,6 +235,10 @@
 
 ### Bug Fixes
 
+- [`generate_graph()`](https://caugi.org/dev/reference/generate_graph.md)
+  no longer draws an unused node order, so a given seed now gives a
+  different graph than before.
+
 - [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) errors when
   a `size`, `padding`, `lwd`, `arrow_size` or `circle_size` in
   `node_style` or `edge_style` is not a number, or is negative (`size`
