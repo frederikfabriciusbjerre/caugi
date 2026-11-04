@@ -4,12 +4,11 @@
 \alias{shd}
 \title{Structural Hamming Distance}
 \usage{
-shd(cg1, cg2, normalized = FALSE)
+shd(truth, guess, normalized = FALSE)
 }
 \arguments{
-\item{cg1}{A \code{caugi} object.}
-
-\item{cg2}{A \code{caugi} object.}
+\item{truth, guess}{\code{caugi} objects with the same nodes. The order does not
+matter.}
 
 \item{normalized}{Logical; if \code{TRUE}, returns the normalized SHD.}
 }
@@ -33,9 +32,9 @@ as \code{\link[=latent_project]{latent_project()}} can give, is 1 from \verb{A -
 }
 }
 \examples{
-cg1 <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
-cg2 <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
-shd(cg1, cg2) # 1
+truth <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
+guess <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
+shd(truth, guess) # 1
 
 }
 \seealso{

@@ -4,12 +4,11 @@
 \alias{hd}
 \title{Hamming Distance}
 \usage{
-hd(cg1, cg2, normalized = FALSE)
+hd(truth, guess, normalized = FALSE)
 }
 \arguments{
-\item{cg1}{A \code{caugi} object.}
-
-\item{cg2}{A \code{caugi} object.}
+\item{truth, guess}{\code{caugi} objects with the same nodes. The order does not
+matter.}
 
 \item{normalized}{Logical; if \code{TRUE}, returns the normalized Hamming
 Distance.}
@@ -22,9 +21,9 @@ if \code{normalized = FALSE}, or a numeric between 0 and 1 if \code{normalized =
 Compute the Hamming Distance between two graphs.
 }
 \examples{
-cg1 <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
-cg2 <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
-hd(cg1, cg2) # 0
+truth <- caugi(A \%-->\% B \%-->\% C, D \%-->\% C, class = "DAG")
+guess <- caugi(A \%-->\% B \%-->\% C, D \%---\% C, class = "PDAG")
+hd(truth, guess) # 0
 
 }
 \seealso{
