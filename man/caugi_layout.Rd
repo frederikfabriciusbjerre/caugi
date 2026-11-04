@@ -19,7 +19,7 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 }
 \usage{
 caugi_layout(
-  x,
+  cg,
   method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite",
     "tiered", "circle"),
   packing_ratio = 1.618034,
@@ -27,7 +27,7 @@ caugi_layout(
 )
 }
 \arguments{
-\item{x}{A \code{caugi} object. Must contain only directed edges for Sugiyama
+\item{cg}{A \code{caugi} object. Must contain only directed edges for Sugiyama
 layout.}
 
 \item{method}{Character string specifying the layout method. Options:
