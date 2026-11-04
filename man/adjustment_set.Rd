@@ -8,8 +8,6 @@ adjustment_set(
   cg,
   X = NULL,
   Y = NULL,
-  X_index = NULL,
-  Y_index = NULL,
   type = c("optimal", "parents", "backdoor")
 )
 }
@@ -17,8 +15,6 @@ adjustment_set(
 \item{cg}{A \code{caugi} object.}
 
 \item{X, Y}{Node names; one or more each.}
-
-\item{X_index, Y_index}{Deprecated; pass node names instead.}
 
 \item{type}{One of \code{"parents"}, \code{"backdoor"}, \code{"optimal"}.
 The \code{optimal} option computes the O-set.}

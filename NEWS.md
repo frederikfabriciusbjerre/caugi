@@ -23,6 +23,12 @@
   so a removed argument such as `simple` or `inplace` is not read as a node.
   Before, `caugi(A %-->% B, foo = C)` dropped the name and added `C`.
 
+* The `*_index` arguments of `d_separated()`, `m_separated()`,
+  `adjustment_set()`, `is_valid_backdoor()`, `all_backdoor_sets()`,
+  `minimal_separator()`, `is_valid_adjustment_admg()`,
+  `all_adjustment_sets_admg()` and `is_visible_edge()` are removed. Pass node
+  names instead (#360).
+
 ## New Features
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.

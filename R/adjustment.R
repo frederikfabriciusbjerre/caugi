@@ -10,7 +10,6 @@
 #' @param cg A `caugi` object.
 #' @param X,Y,Z Character vectors of node names, or `NULL`. If `Z` is `NULL`
 #'   or missing, no nodes are conditioned on.
-#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns `TRUE` if d-separated, `FALSE` otherwise. Nodes of `Z` are
 #'   dropped from `X` and `Y` first, so `X` within `Z` gives `TRUE`, and `X`
@@ -42,16 +41,12 @@ d_separated <- function(
   cg,
   X = NULL,
   Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
+  Z = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, "Y")
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z)
 
   rs_d_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -99,7 +94,6 @@ d_separated <- function(
 #'
 #' @param cg A `caugi` object.
 #' @param X,Y Node names; one or more each.
-#' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param type One of `"parents"`, `"backdoor"`, `"optimal"`.
 #' The `optimal` option computes the O-set.
 #'
@@ -138,22 +132,19 @@ adjustment_set <- function(
   cg,
   X = NULL,
   Y = NULL,
-  X_index = NULL,
-  Y_index = NULL,
   type = c("optimal", "parents", "backdoor")
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
   type <- match.arg(type)
 
-  if (is.null(X) && is.null(X_index)) {
+  if (is.null(X)) {
     stop("X must be provided.", call. = FALSE)
   }
-  if (is.null(Y) && is.null(Y_index)) {
+  if (is.null(Y)) {
     stop("Y must be provided.", call. = FALSE)
   }
-  X_idx0 <- unique(.resolve_idx0_mget(cg@session, X, X_index))
-  Y_idx0 <- unique(.resolve_idx0_mget(cg@session, Y, Y_index))
+  X_idx0 <- unique(.resolve_idx0_mget(cg@session, X))
+  Y_idx0 <- unique(.resolve_idx0_mget(cg@session, Y))
   if (length(X_idx0) == 0L) {
     stop("`X` must name at least one node.", call. = FALSE)
   }
@@ -210,7 +201,6 @@ adjustment_set <- function(
 #'
 #' @param X,Y Node names; one or more each.
 #' @param Z Optional node set for conditioning
-#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns Logical value indicating if backdoor is valid or not.
 #'
@@ -244,16 +234,12 @@ is_valid_backdoor <- function(
   cg,
   X = NULL,
   Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
+  Z = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, "Y")
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z)
   if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
     return(FALSE)
   }
@@ -270,7 +256,6 @@ is_valid_backdoor <- function(
 #'
 #' @param cg A `caugi`.
 #' @param X,Y Node names; one or more each.
-#' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
@@ -326,15 +311,12 @@ all_backdoor_sets <- function(
   cg,
   X = NULL,
   Y = NULL,
-  X_index = NULL,
-  Y_index = NULL,
   minimal = TRUE,
   max_size = 3L
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, "Y")
   if (!.disjoint(X_idx0, Y_idx0)) {
     return(list())
   }
@@ -379,7 +361,6 @@ all_backdoor_sets <- function(
 #' @param I Nodes that must be included in the separator.
 #' @param R Nodes allowed in the separator. If `NULL`, uses all nodes excluding
 #'   X and Y.
-#' @param X_index,Y_index,I_index,R_index Deprecated; pass node names instead.
 #'
 #' @returns A character vector of node names representing the minimal separator,
 #' or `NULL` if no valid separator exists within the restriction R, such as
@@ -435,14 +416,9 @@ minimal_separator <- function(
   X = NULL,
   Y = NULL,
   I = character(0),
-  R = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  I_index = NULL,
-  R_index = NULL
+  R = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
 
   if (
     !is_dag(cg) &&
@@ -460,8 +436,8 @@ minimal_separator <- function(
   }
 
   # Resolve X and Y indices
-  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  X_idx0 <- .resolve_idx0_mget(cg@session, X)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y)
 
   # Validate that X and Y resolve to non-empty node sets
   if (length(X_idx0) == 0L) {
@@ -477,18 +453,18 @@ minimal_separator <- function(
     )
   }
   # Resolve I indices (default to empty)
-  I_idx0 <- .resolve_idx0_mget(cg@session, I, I_index)
+  I_idx0 <- .resolve_idx0_mget(cg@session, I)
   if (!.disjoint(X_idx0, Y_idx0, I_idx0)) {
     return(NULL)
   }
 
   # Resolve R indices (default to all nodes except X and Y)
-  if (is.null(R) && is.null(R_index)) {
+  if (is.null(R)) {
     # Default: all nodes except X and Y
     all_idx0 <- seq.int(0L, nrow(cg@nodes) - 1L)
     R_idx0 <- setdiff(setdiff(all_idx0, X_idx0), Y_idx0)
   } else {
-    R_idx0 <- .resolve_idx0_mget(cg@session, R, R_index)
+    R_idx0 <- .resolve_idx0_mget(cg@session, R)
   }
 
   # Call Rust function
@@ -523,7 +499,6 @@ minimal_separator <- function(
 #' @param cg A `caugi` object of class ADMG.
 #' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
 #' @param Z Conditioning set (character vector of node names).
-#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns Logical value indicating if the adjustment set is valid; `FALSE`
 #'   unless `X`, `Y` and `Z` are pairwise disjoint.
@@ -548,16 +523,12 @@ is_valid_adjustment_admg <- function(
   cg,
   X = NULL,
   Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
+  Z = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, "Y")
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z)
   if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
     return(FALSE)
   }
@@ -572,7 +543,6 @@ is_valid_adjustment_admg <- function(
 #'
 #' @param cg A `caugi` object of class ADMG.
 #' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
-#' @param X_index,Y_index Deprecated; pass node names instead.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
@@ -599,15 +569,12 @@ all_adjustment_sets_admg <- function(
   cg,
   X = NULL,
   Y = NULL,
-  X_index = NULL,
-  Y_index = NULL,
   minimal = TRUE,
   max_size = 3L
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, "Y")
   if (!.disjoint(X_idx0, Y_idx0)) {
     return(list())
   }
@@ -627,24 +594,22 @@ all_adjustment_sets_admg <- function(
 # ───────────────────────────────── Helpers ────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-#' @title Resolve node names or indices to 0-based indices.
+#' @title Resolve node names to 0-based indices.
 #'
-#' @description Internal helpers that resolve node names, or 1-based node
-#' indices, to 0-based indices using the Rust session.
-#' `.resolve_idx0_xy` also requires at least one node.
+#' @description Internal helpers that resolve node names to 0-based indices
+#' using the Rust session. `.resolve_idx0_xy` also requires at least one node.
 #'
 #' @param session A GraphSession pointer.
 #' @param node_name Optional character vector of node names.
-#' @param node_index Optional numeric vector of 1-based node indices.
 #'
 #' @name .resolve_idx0_mget
 #'
 #' @keywords internal
-.resolve_idx0_xy <- function(session, node_name, node_index, arg) {
-  if (is.null(node_name) && is.null(node_index)) {
+.resolve_idx0_xy <- function(session, node_name, arg) {
+  if (is.null(node_name)) {
     stop(arg, " must be provided.", call. = FALSE)
   }
-  idx0 <- .resolve_idx0_mget(session, node_name, node_index)
+  idx0 <- .resolve_idx0_mget(session, node_name)
   if (length(idx0) == 0L) {
     stop("`", arg, "` must name at least one node.", call. = FALSE)
   }
@@ -653,35 +618,11 @@ all_adjustment_sets_admg <- function(
 
 #' @name .resolve_idx0_mget
 #' @keywords internal
-.resolve_idx0_mget <- function(session, node_name = NULL, node_index = NULL) {
-  if (is.null(node_name) && is.null(node_index)) {
+.resolve_idx0_mget <- function(session, node_name = NULL) {
+  if (is.null(node_name)) {
     integer(0)
-  } else if (!is.null(node_index)) {
-    if (!is.null(node_name)) {
-      stop("Pass node names only, not also an index.", call. = FALSE)
-    }
-    as.integer(node_index - 1L)
-  } else if (!is.null(node_name)) {
+  } else {
     rs_indices_of(session, node_name)
-  }
-}
-
-#' Warn, once per call, about the deprecated `*_index` arguments the caller
-#' was given.
-#' @keywords internal
-#' @noRd
-.warn_index_deprecated <- function(env = parent.frame()) {
-  args <- grep("_index$", ls(env), value = TRUE)
-  used <- args[!vapply(args, function(a) is.null(env[[a]]), logical(1L))]
-  if (length(used) > 0L) {
-    warning(
-      "The `*_index` arguments are deprecated and will be removed in caugi ",
-      "2.0.0. Pass node names instead, e.g. `X = nodes(cg)$name[X_index]`. ",
-      "Supplied: ",
-      paste0("`", used, "`", collapse = ", "),
-      ".",
-      call. = FALSE
-    )
   }
 }
 

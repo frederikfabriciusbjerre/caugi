@@ -4,15 +4,13 @@
 \alias{is_visible_edge}
 \title{Is a directed edge in a MAG or PAG visible?}
 \usage{
-is_visible_edge(cg, from = NULL, to = NULL, from_index = NULL, to_index = NULL)
+is_visible_edge(cg, from = NULL, to = NULL)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class \code{"AG"} that is a MAG, or of class
 \code{"PAG"}.}
 
 \item{from, to}{Node names.}
-
-\item{from_index, to_index}{Deprecated; pass node names instead.}
 }
 \value{
 \code{TRUE} if the edge \verb{from --> to} is visible, otherwise \code{FALSE}.

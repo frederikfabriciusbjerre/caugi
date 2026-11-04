@@ -3,22 +3,19 @@
 \name{.resolve_idx0_mget}
 \alias{.resolve_idx0_mget}
 \alias{.resolve_idx0_xy}
-\title{Resolve node names or indices to 0-based indices.}
+\title{Resolve node names to 0-based indices.}
 \usage{
-.resolve_idx0_xy(session, node_name, node_index, arg)
+.resolve_idx0_xy(session, node_name, arg)
 
-.resolve_idx0_mget(session, node_name = NULL, node_index = NULL)
+.resolve_idx0_mget(session, node_name = NULL)
 }
 \arguments{
 \item{session}{A GraphSession pointer.}
 
 \item{node_name}{Optional character vector of node names.}
-
-\item{node_index}{Optional numeric vector of 1-based node indices.}
 }
 \description{
-Internal helpers that resolve node names, or 1-based node
-indices, to 0-based indices using the Rust session.
-\code{.resolve_idx0_xy} also requires at least one node.
+Internal helpers that resolve node names to 0-based indices
+using the Rust session. \code{.resolve_idx0_xy} also requires at least one node.
 }
 \keyword{internal}
