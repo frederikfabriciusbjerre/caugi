@@ -122,11 +122,10 @@ pub(crate) fn apply_meek_closure(
                     if !adjacent(a as usize, ci, und, pa, ch)
                         && (!guard_new_colliders
                             || !creates_new_unshielded_collider(b, c, und, pa, ch))
+                        && try_orient(b as u32, c, und, pa, ch)
                     {
-                        if try_orient(b as u32, c, und, pa, ch) {
-                            changed = true;
-                            continue 'c_loop;
-                        }
+                        changed = true;
+                        continue 'c_loop;
                     }
                 }
             }
@@ -137,16 +136,14 @@ pub(crate) fn apply_meek_closure(
             let uab: Vec<u32> = und[a].clone().into_iter().collect();
             for b_u in uab {
                 let b = b_u as usize;
-                if ch[a].iter().any(|w| pa[b].contains(w)) {
-                    if try_orient(a as u32, b_u, und, pa, ch) {
-                        changed = true;
-                        continue;
-                    }
+                if ch[a].iter().any(|w| pa[b].contains(w)) && try_orient(a as u32, b_u, und, pa, ch)
+                {
+                    changed = true;
+                    continue;
                 }
-                if ch[b].iter().any(|w| pa[a].contains(w)) {
-                    if try_orient(b_u, a as u32, und, pa, ch) {
-                        changed = true;
-                    }
+                if ch[b].iter().any(|w| pa[a].contains(w)) && try_orient(b_u, a as u32, und, pa, ch)
+                {
+                    changed = true;
                 }
             }
         }
@@ -164,11 +161,10 @@ pub(crate) fn apply_meek_closure(
                         if !adjacent(c, d, und, pa, ch)
                             && und[a].contains(&pb[i])
                             && und[a].contains(&pb[j])
+                            && try_orient(a as u32, b_u, und, pa, ch)
                         {
-                            if try_orient(a as u32, b_u, und, pa, ch) {
-                                changed = true;
-                                break 'pairs;
-                            }
+                            changed = true;
+                            break 'pairs;
                         }
                     }
                 }
@@ -200,10 +196,9 @@ pub(crate) fn apply_meek_closure(
                     if try_orient(a as u32, b_u, und, pa, ch) {
                         changed = true;
                     }
-                } else if has_dir_path(ch, b_u, a as u32) {
-                    if try_orient(b_u, a as u32, und, pa, ch) {
-                        changed = true;
-                    }
+                } else if has_dir_path(ch, b_u, a as u32) && try_orient(b_u, a as u32, und, pa, ch)
+                {
+                    changed = true;
                 }
             }
         }

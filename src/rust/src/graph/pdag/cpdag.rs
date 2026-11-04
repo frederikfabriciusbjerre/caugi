@@ -246,10 +246,10 @@ impl Pdag {
                 higher.sort_unstable_by_key(|&w| pos[w]);
                 let pvt = higher[0];
                 for &w in &higher[1..] {
-                    if !self
+                    if self
                         .undirected_of(w as u32)
                         .binary_search(&(pvt as u32))
-                        .is_ok()
+                        .is_err()
                     {
                         return Some((v as u32, pvt as u32, w as u32));
                     }

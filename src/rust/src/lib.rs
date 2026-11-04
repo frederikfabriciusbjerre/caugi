@@ -439,7 +439,7 @@ fn session_from_view(view: GraphView, node_names: Vec<String>) -> GraphSession {
         class,
     );
     session.set_names(node_names);
-    session.set_edges(edge_buffer_from_core(&core));
+    session.set_edges(edge_buffer_from_core(core));
     session
 }
 
@@ -700,10 +700,9 @@ fn session_aid_impl(
         build_inv_from_string_slices(names_true, names_guess).unwrap_or_else(|e| throw_r_error(e));
     let t_view = s_true.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
     let g_view = s_guess.as_mut().view().unwrap_or_else(|e| throw_r_error(e));
-    let t = to_aid_input(t_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let g = to_aid_input(g_view.as_ref()).unwrap_or_else(|e| throw_r_error(e.to_string()));
-    let (score, count) =
-        aid::aid(aid_type, t, g, &inv).unwrap_or_else(|e| throw_r_error(e.to_string()));
+    let t = to_aid_input(t_view.as_ref()).unwrap_or_else(|e| throw_r_error(&e));
+    let g = to_aid_input(g_view.as_ref()).unwrap_or_else(|e| throw_r_error(&e));
+    let (score, count) = aid::aid(aid_type, t, g, &inv).unwrap_or_else(|e| throw_r_error(&e));
     list!(score = score, count = count as i32).into_robj()
 }
 
@@ -1158,7 +1157,7 @@ fn rs_compute_tiered_layout(
         .iter()
         .map(|&x| {
             if x < 0 {
-                throw_r_error(&format!("Tier assignment cannot be negative: {}", x));
+                throw_r_error(format!("Tier assignment cannot be negative: {}", x));
             }
             x as usize
         })
@@ -1230,13 +1229,13 @@ fn rs_index_of(session: ExternalPtr<GraphSession>, name: &str) -> Robj {
 fn rs_indices_of(session: ExternalPtr<GraphSession>, names: Robj) -> Robj {
     // Handle potential NULL or invalid input
     if names.is_null() {
-        throw_r_error("names cannot be NULL".to_string());
+        throw_r_error("names cannot be NULL");
     }
 
     // Convert from Robj to Strings more defensively
     let names_strings: Strings = match names.try_into() {
         Ok(s) => s,
-        Err(_) => throw_r_error("names must be a character vector".to_string()),
+        Err(_) => throw_r_error("names must be a character vector"),
     };
 
     let n = names_strings.len();
@@ -1344,7 +1343,7 @@ fn parents(cg: Robj, nodes: Robj, index: Robj) -> Robj {
         "Must supply either `nodes` or `index`.",
     );
     run_relation_query(&mut session, idx0, "idx", "idxs", |s, i| {
-        s.as_mut().parents_of(i).map_err(|e| e)
+        s.as_mut().parents_of(i)
     })
 }
 
@@ -1358,7 +1357,7 @@ fn children(cg: Robj, nodes: Robj, index: Robj) -> Robj {
         "Must supply either `nodes` or `index`.",
     );
     run_relation_query(&mut session, idx0, "idx", "idxs", |s, i| {
-        s.as_mut().children_of(i).map_err(|e| e)
+        s.as_mut().children_of(i)
     })
 }
 
@@ -1378,7 +1377,7 @@ fn neighbors(cg: Robj, nodes: Robj, index: Robj, mode: Robj) -> Robj {
         NeighborMode::from_str(mode_norm.as_str()).unwrap_or_else(|e| throw_r_error(e));
 
     run_relation_query(&mut session, idx0, "idx", "idxs", move |s, i| {
-        s.as_mut().neighbors_of(i, neighbor_mode).map_err(|e| e)
+        s.as_mut().neighbors_of(i, neighbor_mode)
     })
 }
 
@@ -1394,7 +1393,7 @@ fn ancestors(cg: Robj, nodes: Robj, index: Robj, open: Robj) -> Robj {
     let open_flag = parse_open_arg(open);
 
     run_relation_query(&mut session, idx0, "node", "node", move |s, i| {
-        let mut v = s.as_mut().ancestors_of(i).map_err(|e| e)?;
+        let mut v = s.as_mut().ancestors_of(i)?;
         if !open_flag {
             v.insert(0, i);
         }
@@ -1414,7 +1413,7 @@ fn descendants(cg: Robj, nodes: Robj, index: Robj, open: Robj) -> Robj {
     let open_flag = parse_open_arg(open);
 
     run_relation_query(&mut session, idx0, "node", "node", move |s, i| {
-        let mut v = s.as_mut().descendants_of(i).map_err(|e| e)?;
+        let mut v = s.as_mut().descendants_of(i)?;
         if !open_flag {
             v.insert(0, i);
         }
@@ -1434,7 +1433,7 @@ fn anteriors(cg: Robj, nodes: Robj, index: Robj, open: Robj) -> Robj {
     let open_flag = parse_open_arg(open);
 
     run_relation_query(&mut session, idx0, "node", "node", move |s, i| {
-        let mut v = s.as_mut().anteriors_of(i).map_err(|e| e)?;
+        let mut v = s.as_mut().anteriors_of(i)?;
         if !open_flag {
             v.insert(0, i);
         }
@@ -1449,7 +1448,7 @@ fn posteriors(cg: Robj, nodes: Robj, index: Robj, open: Robj) -> Robj {
     let open_flag = parse_open_arg(open);
 
     run_relation_query(&mut session, idx0, "node", "node", move |s, i| {
-        let mut v = s.as_mut().posteriors_of(i).map_err(|e| e)?;
+        let mut v = s.as_mut().posteriors_of(i)?;
         if !open_flag {
             v.insert(0, i);
         }
@@ -1467,7 +1466,7 @@ fn markov_blanket(cg: Robj, nodes: Robj, index: Robj) -> Robj {
         "Must supply either `nodes` or `index`.",
     );
     run_relation_query(&mut session, idx0, "node", "node", |s, i| {
-        s.as_mut().markov_blanket_of(i).map_err(|e| e)
+        s.as_mut().markov_blanket_of(i)
     })
 }
 
@@ -1481,7 +1480,7 @@ fn spouses(cg: Robj, nodes: Robj, index: Robj) -> Robj {
         "Must supply either `nodes` or `index`.",
     );
     run_relation_query(&mut session, idx0, "idx", "idxs", |s, i| {
-        s.as_mut().spouses_of(i).map_err(|e| e)
+        s.as_mut().spouses_of(i)
     })
 }
 

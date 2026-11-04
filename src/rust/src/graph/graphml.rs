@@ -305,54 +305,46 @@ pub fn deserialize_graphml(
                 _ => {}
             },
 
-            Ok(Event::Text(e)) => {
-                if in_data {
-                    let t = e.decode().map_err(|e| e.to_string())?;
-                    data_value.push_str(&t);
-                }
+            Ok(Event::Text(e)) if in_data => {
+                let t = e.decode().map_err(|e| e.to_string())?;
+                data_value.push_str(&t);
             }
 
-            Ok(Event::GeneralRef(e)) => {
-                if in_data {
-                    push_general_ref(&mut data_value, e.as_ref());
-                }
+            Ok(Event::GeneralRef(e)) if in_data => {
+                push_general_ref(&mut data_value, e.as_ref());
             }
 
             Ok(Event::End(e)) => match e.name().as_ref() {
                 b"graph" => {
-                    if graph_depth > 0 {
-                        graph_depth -= 1;
-                    }
+                    graph_depth = graph_depth.saturating_sub(1);
                 }
 
-                b"data" => {
-                    if in_data {
-                        in_data = false;
+                b"data" if in_data => {
+                    in_data = false;
 
-                        // Interpret the full <data> payload here (after Text+GeneralRef accumulation)
-                        if data_key == "graph_class" && !in_edge {
-                            graph_class = data_value.clone();
-                        } else if data_key == "edge_type" && in_edge {
-                            let value = data_value.clone();
+                    // Interpret the full <data> payload here (after Text+GeneralRef accumulation)
+                    if data_key == "graph_class" && !in_edge {
+                        graph_class = data_value.clone();
+                    } else if data_key == "edge_type" && in_edge {
+                        let value = data_value.clone();
 
-                            if registry.code_of(&value).is_err() {
-                                return Err(format!("Unknown edge type: {}", value));
-                            }
-
-                            if !edge_type_seen {
-                                edges_from.push(current_edge_from.clone());
-                                edges_to.push(current_edge_to.clone());
-                                edges_type.push(value);
-                                edge_type_seen = true;
-                            } else if let Some(last) = edges_type.last_mut() {
-                                // In case multiple edge_type fields appear, keep the latest
-                                *last = value;
-                            }
+                        if registry.code_of(&value).is_err() {
+                            return Err(format!("Unknown edge type: {}", value));
                         }
 
-                        data_key.clear();
-                        data_value.clear();
+                        if !edge_type_seen {
+                            edges_from.push(current_edge_from.clone());
+                            edges_to.push(current_edge_to.clone());
+                            edges_type.push(value);
+                            edge_type_seen = true;
+                        } else if let Some(last) = edges_type.last_mut() {
+                            // In case multiple edge_type fields appear, keep the latest
+                            *last = value;
+                        }
                     }
+
+                    data_key.clear();
+                    data_value.clear();
                 }
 
                 b"edge" => {

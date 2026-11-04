@@ -138,7 +138,7 @@ pub fn deserialize_caugi(json: &str, registry: &EdgeRegistry) -> Result<Deserial
     // Parse version (semver: major.minor.patch)
     let parts: Vec<&str> = caugi_format.version.split('.').collect();
     let major = parts
-        .get(0)
+        .first()
         .and_then(|s| s.parse::<u32>().ok())
         .unwrap_or(0);
 

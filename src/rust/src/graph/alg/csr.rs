@@ -46,10 +46,8 @@ pub fn build_ug_core_from_adj(core: &CaugiGraph, adj: &[Vec<u32>]) -> Result<Cau
 /// Find an undirected edge code in the registry.
 pub fn undirected_code(registry: &crate::graph::RegistrySnapshot) -> Result<u8, String> {
     for (i, s) in registry.specs.iter().enumerate() {
-        if matches!(s.class, EdgeClass::Undirected) {
-            if s.glyph == "---" {
-                return Ok(i as u8);
-            }
+        if matches!(s.class, EdgeClass::Undirected) && s.glyph == "---" {
+            return Ok(i as u8);
         }
     }
     // Fallback: any undirected

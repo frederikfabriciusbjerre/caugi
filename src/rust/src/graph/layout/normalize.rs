@@ -113,8 +113,8 @@ mod tests {
         // Largest dimension is 100, so scale by 100
         // All coordinates should be in [0, 1]
         for &(x, y) in &coords {
-            assert!(x >= 0.0 && x <= 1.0);
-            assert!(y >= 0.0 && y <= 1.0);
+            assert!((0.0..=1.0).contains(&x));
+            assert!((0.0..=1.0).contains(&y));
         }
 
         // Check that the maximum coordinate is 1.0

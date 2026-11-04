@@ -287,6 +287,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::erasing_op, clippy::identity_op)] // row-major `row * n + col` indices, kept for readability
     fn test_shortest_paths_symmetric_skip_and_disconnected_fill() {
         let mut reg = EdgeRegistry::new();
         reg.register_builtins().unwrap();

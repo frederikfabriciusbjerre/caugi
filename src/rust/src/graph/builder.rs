@@ -189,11 +189,7 @@ impl GraphBuilder {
         let edge_count = edges.len();
 
         // Pre-allocate rows with estimated capacity (2 halves per edge, spread across n nodes).
-        let avg_degree = if n_us > 0 {
-            (2 * edge_count / n_us).max(1)
-        } else {
-            0
-        };
+        let avg_degree = (2 * edge_count).checked_div(n_us).map_or(0, |d| d.max(1));
         let mut rows: Vec<Vec<HalfEdge>> =
             (0..n_us).map(|_| Vec::with_capacity(avg_degree)).collect();
 
@@ -233,12 +229,10 @@ impl GraphBuilder {
         let mut side_arr = vec![0u8; nnz];
 
         for (i, row) in rows.iter().enumerate() {
-            let mut k = row_index[i] as usize;
-            for h in row {
+            for (k, h) in (row_index[i] as usize..).zip(row) {
                 col[k] = h.nbr;
                 ety[k] = h.etype;
                 side_arr[k] = h.side.as_u8();
-                k += 1;
             }
         }
 
@@ -291,12 +285,10 @@ impl GraphBuilder {
         let mut side = vec![0u8; nnz];
 
         for (i, row) in rows.iter().enumerate() {
-            let mut k = row_index[i] as usize;
-            for h in row {
+            for (k, h) in (row_index[i] as usize..).zip(row) {
                 col[k] = h.nbr;
                 ety[k] = h.etype;
                 side[k] = h.side.as_u8();
-                k += 1;
             }
         }
 
@@ -332,7 +324,7 @@ mod tests {
         // side=0 from tail at 0, side=1 from head at 1
         let rr1 = g.row_range(1);
         assert_eq!(g.side[rr0.start], 0);
-        assert!(rr1.len() >= 1);
+        assert!(!rr1.is_empty());
     }
 
     #[test]

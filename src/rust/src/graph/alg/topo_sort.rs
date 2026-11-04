@@ -25,7 +25,7 @@ pub fn topological_sort(core: &CaugiGraph) -> Vec<u32> {
     // Compute in-degree: count incoming directed edges.
     // side[k] stores position: 0 = tail position, 1 = head position.
     // An edge is incoming if my mark is Arrow (arrow points INTO me).
-    for i in 0..n {
+    for (i, d) in indeg.iter_mut().enumerate() {
         for k in core.row_range(i as u32) {
             let spec = &core.registry.specs[core.etype[k] as usize];
             if matches!(spec.class, EdgeClass::Directed) {
@@ -35,7 +35,7 @@ pub fn topological_sort(core: &CaugiGraph) -> Vec<u32> {
                     spec.head
                 };
                 if my_mark == Mark::Arrow {
-                    indeg[i] += 1;
+                    *d += 1;
                 }
             }
         }

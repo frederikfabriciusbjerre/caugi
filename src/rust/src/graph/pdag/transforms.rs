@@ -49,15 +49,11 @@ impl Pdag {
         let mut und_code: Option<u8> = None;
         for (i, s) in specs.iter().enumerate() {
             match s.class {
-                EdgeClass::Directed => {
-                    if dir_code.is_none() || s.glyph == "-->" {
-                        dir_code = Some(i as u8)
-                    }
+                EdgeClass::Directed if dir_code.is_none() || s.glyph == "-->" => {
+                    dir_code = Some(i as u8)
                 }
-                EdgeClass::Undirected => {
-                    if und_code.is_none() || s.glyph == "---" {
-                        und_code = Some(i as u8)
-                    }
+                EdgeClass::Undirected if und_code.is_none() || s.glyph == "---" => {
+                    und_code = Some(i as u8)
                 }
                 _ => {}
             }

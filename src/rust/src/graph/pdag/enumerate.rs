@@ -14,6 +14,9 @@ use crate::graph::CaugiGraph;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+/// One `HashSet` of neighbor indices per node.
+type NodeSets = Vec<HashSet<u32>>;
+
 impl Pdag {
     /// Enumerate every DAG in the Markov equivalence class.
     ///
@@ -27,7 +30,7 @@ impl Pdag {
         let (pa, ch, und) = closed.snapshot_sets();
         let input_pa = pa.clone();
         let skeleton = build_skeleton(&pa, &ch, &und);
-        let mut leaves: Vec<(Vec<HashSet<u32>>, Vec<HashSet<u32>>)> = Vec::new();
+        let mut leaves: Vec<(NodeSets, NodeSets)> = Vec::new();
         list_dags(pa, ch, und, &input_pa, &skeleton, &mut leaves);
         let mut out = Vec::with_capacity(leaves.len());
         for (pa, ch) in leaves {
@@ -128,7 +131,7 @@ impl Pdag {
         Dag::new(Arc::new(core))
     }
 
-    fn snapshot_sets(&self) -> (Vec<HashSet<u32>>, Vec<HashSet<u32>>, Vec<HashSet<u32>>) {
+    fn snapshot_sets(&self) -> (NodeSets, NodeSets, NodeSets) {
         let n = self.n() as usize;
         let mut pa = vec![HashSet::new(); n];
         let mut ch = vec![HashSet::new(); n];
@@ -258,7 +261,7 @@ fn list_dags(
     und: Vec<HashSet<u32>>,
     input_pa: &[HashSet<u32>],
     skeleton: &[HashSet<u32>],
-    out: &mut Vec<(Vec<HashSet<u32>>, Vec<HashSet<u32>>)>,
+    out: &mut Vec<(NodeSets, NodeSets)>,
 ) {
     let Some((u, v)) = smallest_und_edge(&und) else {
         if !has_new_v_structure(&pa, input_pa, skeleton) {

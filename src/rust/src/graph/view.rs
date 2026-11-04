@@ -8,6 +8,7 @@ use super::pdag::Pdag;
 use super::ug::Ug;
 use super::CaugiGraph;
 use rustc_hash::FxHashSet;
+use std::str::FromStr;
 use std::sync::Arc;
 
 /// Mode for neighbor queries, specifying which edge types to include.
@@ -27,9 +28,11 @@ pub enum NeighborMode {
     Partial,
 }
 
-impl NeighborMode {
-    /// Parse mode from string, with alias support.
-    pub fn from_str(s: &str) -> Result<Self, String> {
+impl FromStr for NeighborMode {
+    type Err = String;
+
+    /// Parse mode from string, case-insensitively.
+    fn from_str(s: &str) -> Result<Self, String> {
         match s.to_lowercase().as_str() {
             "all" => Ok(NeighborMode::All),
             "in" => Ok(NeighborMode::In),
@@ -381,7 +384,7 @@ impl GraphView {
             GraphView::Pag(g) => Ok((0..g.n())
                 .filter(|&i| {
                     g.parents_of(i).is_empty()
-                        && !(undirected_as_parents && !g.undirected_of(i).is_empty())
+                        && (!undirected_as_parents || g.undirected_of(i).is_empty())
                 })
                 .collect()),
             GraphView::Raw(_) => Err("exogenous_nodes not implemented for UNKNOWN class".into()),
@@ -969,8 +972,8 @@ mod tests {
         let v = GraphView::Dag(Arc::new(Dag::new(Arc::new(b.finalize().unwrap())).unwrap()));
 
         // d-sep: X=1, Y=2 is not separated unconditionally; conditioning on 0 separates them
-        assert_eq!(v.d_separated(&[1], &[2], &[]).unwrap(), false);
-        assert_eq!(v.d_separated(&[0], &[2], &[0]).unwrap(), true);
+        assert!(!v.d_separated(&[1], &[2], &[]).unwrap());
+        assert!(v.d_separated(&[0], &[2], &[0]).unwrap());
 
         // adjustment sets (parents/backdoor/optimal) all return {0}
         assert_eq!(v.adjustment_set_parents(&[1], &[2]).unwrap(), vec![0]);
@@ -978,8 +981,8 @@ mod tests {
         assert_eq!(v.adjustment_set_optimal(&[1], &[2]).unwrap(), vec![0]);
 
         // backdoor validity + enumeration
-        assert_eq!(v.is_valid_backdoor_set(&[1], &[2], &[0]).unwrap(), true);
-        assert_eq!(v.is_valid_backdoor_set(&[1], &[2], &[]).unwrap(), false);
+        assert!(v.is_valid_backdoor_set(&[1], &[2], &[0]).unwrap());
+        assert!(!v.is_valid_backdoor_set(&[1], &[2], &[]).unwrap());
         assert_eq!(
             v.all_backdoor_sets(&[1], &[2], true, 5).unwrap(),
             vec![vec![0]]
@@ -1000,9 +1003,9 @@ mod tests {
         let v = GraphView::Dag(Arc::new(Dag::new(Arc::new(b.finalize().unwrap())).unwrap()));
 
         // Unblocked path 0—1—2 => not separated
-        assert_eq!(v.d_separated(&[0], &[2], &[]).unwrap(), false);
+        assert!(!v.d_separated(&[0], &[2], &[]).unwrap());
         // Condition on middle node blocks it
-        assert_eq!(v.d_separated(&[0], &[2], &[1]).unwrap(), true);
+        assert!(v.d_separated(&[0], &[2], &[1]).unwrap());
     }
 
     // --- PDAG and RAW: all DAG-only methods must return errors ---
@@ -1246,8 +1249,8 @@ mod tests {
         );
 
         // m-separation dispatch + error branch
-        assert_eq!(v_admg.m_separated(&[0], &[2], &[]).unwrap(), false);
-        assert_eq!(v_ag.m_separated(&[0], &[1], &[]).unwrap(), false);
+        assert!(!v_admg.m_separated(&[0], &[2], &[]).unwrap());
+        assert!(!v_ag.m_separated(&[0], &[1], &[]).unwrap());
         assert_eq!(
             v_pdag.m_separated(&[0], &[2], &[]).unwrap_err(),
             "m_separated is only defined for ADMGs, AGs, PAGs, DAGs, and UGs"

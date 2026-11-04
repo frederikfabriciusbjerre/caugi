@@ -125,9 +125,9 @@ pub fn shd_with_perm(truth: &CaugiGraph, guess: &CaugiGraph, perm: &[u32]) -> (f
         }
 
         let mut cursor_t = row_start;
-        for v in (u + 1)..n {
+        for (v, pv) in perm.iter().enumerate().skip(u + 1) {
             cursor_t = edge_kinds_to(truth, v as u32, cursor_t, row_end, &mut in_truth);
-            let in_guess = guess_edges.get(&perm[v]).map_or(&[][..], Vec::as_slice);
+            let in_guess = guess_edges.get(pv).map_or(&[][..], Vec::as_slice);
 
             // Edges of the same kind match; the rest are changed in pairs and
             // added or removed one by one, so the pair costs the larger count
@@ -185,11 +185,11 @@ pub fn hd_with_perm(truth: &CaugiGraph, guess: &CaugiGraph, perm: &[u32]) -> (f6
         }
 
         let mut cursor_t = row_t.start;
-        for v in (u + 1)..n {
+        for (v, pv) in perm.iter().enumerate().skip(u + 1) {
             let (has_edge_t, new_cursor_t) = has_edge_to(truth, v as u32, cursor_t, row_end);
             cursor_t = new_cursor_t;
 
-            let has_edge_g = guess_nbrs.contains(&perm[v]);
+            let has_edge_g = guess_nbrs.contains(pv);
 
             // XOR: count as difference if exactly one graph has the edge
             if has_edge_t ^ has_edge_g {
