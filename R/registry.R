@@ -138,6 +138,9 @@ seal_caugi_registry <- function() {
 #' @param symmetric Logical.
 #' @returns TRUE, invisibly.
 #'
+#' @details Exporters such as [to_dot()], [as_igraph()] and [write_caugi()]
+#' refuse graphs with a custom glyph, as they can't record what it means.
+#'
 #' @examples
 #' # first, for reproducability, we reset the registry to default
 #' reset_caugi_registry()

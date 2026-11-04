@@ -21,6 +21,10 @@ Converts a caugi graph to a JSON string in the native caugi format.
 This is a lower-level function; consider using \code{write_caugi()} for
 writing to files.
 }
+\details{
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error, as the
+file stores only the glyph, not its marks or class.
+}
 \examples{
 cg <- caugi(A \%-->\% B, class = "DAG")
 json <- caugi_serialize(cg)

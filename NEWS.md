@@ -162,9 +162,12 @@
   dropped isolated nodes when the graph had edges, and wrote IDs that Mermaid
   rejects, such as quoted names or a node named `end` (#413).
 
-* `to_dot()`, `to_mermaid()`, `as_igraph()` and `as_bnlearn()` refuse edges
-  with a custom glyph from `register_caugi_edge()`. They wrote them as plain
-  arrows, reversed them or dropped them (#404).
+* Every exporter refuses edges with a custom glyph from
+  `register_caugi_edge()`, as none can record what the glyph means.
+  `to_dot()`, `to_mermaid()`, `as_igraph()` and `as_bnlearn()` wrote them as
+  plain arrows, reversed them or dropped them, and `write_caugi()` and
+  `write_graphml()` wrote files that only a session with the same glyph
+  registered could read (#404).
 
 * `shd()` counts each edge between a pair of nodes. A pair with two edges,
   such as `A --> B` and `A <-> B` from `latent_project()`, was compared by one

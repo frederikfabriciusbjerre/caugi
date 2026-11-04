@@ -26,6 +26,9 @@ The GraphML export includes:
 
 Edge types are encoded using the caugi DSL operators (e.g., "-->", "<->").
 This allows for perfect round-trip conversion back to caugi.
+
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error, as the
+file stores only the glyph, not its marks or class.
 }
 \examples{
 cg <- caugi(

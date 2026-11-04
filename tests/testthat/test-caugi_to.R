@@ -223,12 +223,6 @@ test_that("the mark coding rejects what one matrix entry cannot hold", {
   expect_error(as_adjacency(bow, "marks"), "parallel edges")
   loop <- caugi(A %-->% A, class = "UNKNOWN")
   expect_error(as_adjacency(loop, "marks"), "self-loops")
-
-  reset_caugi_registry()
-  on.exit(reset_caugi_registry(), add = TRUE)
-  register_caugi_edge("x-x", "other", "other", "undirected", symmetric = TRUE)
-  cg <- caugi(A %x-x% B, class = "UNKNOWN")
-  expect_error(as_adjacency(cg, "marks"), "Unsupported edge glyphs.*x-x")
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -394,22 +388,6 @@ test_that("as_dagitty encodes circle endpoints with @ in edges()", {
   expect_true(any(grepl("@--", ed, fixed = TRUE)))
 })
 
-test_that("as_dagitty errors on unsupported edge types", {
-  testthat::skip_if_not_installed("dagitty")
-  reset_caugi_registry()
-  reg <- caugi_registry()
-  register_caugi_edge(
-    glyph = "==>",
-    tail_mark = "tail",
-    head_mark = "arrow",
-    class = "directed",
-    symmetric = FALSE
-  )
-  cg1 <- caugi(A %==>% B, class = "UNKNOWN")
-  expect_error(as_dagitty(cg1), "Unsupported edge type for dagitty")
-  reset_caugi_registry()
-})
-
 test_that("exporters refuse custom glyphs (#404)", {
   on.exit(reset_caugi_registry(), add = TRUE)
   # The arrowhead is at `from`, so `A %<!--% B` is B --> A.
@@ -421,9 +399,26 @@ test_that("exporters refuse custom glyphs (#404)", {
     symmetric = FALSE
   )
   cg <- caugi(A %<!--% B, B %-->% C, class = "DAG")
-  for (f in list(to_dot, to_mermaid, as_igraph, as_bnlearn)) {
+  file <- tempfile()
+  exporters <- list(
+    to_dot,
+    to_mermaid,
+    to_graphml,
+    caugi_serialize,
+    as_igraph,
+    as_bnlearn,
+    as_dagitty,
+    as_adjacency,
+    \(cg) as_adjacency(cg, coding = "marks"),
+    \(cg) write_dot(cg, file),
+    \(cg) write_mermaid(cg, file),
+    \(cg) write_graphml(cg, file),
+    \(cg) write_caugi(cg, file)
+  )
+  for (f in exporters) {
     expect_error(f(cg), "only converts built-in edges, not `<!--`")
   }
+  expect_false(file.exists(file))
 })
 
 test_that("conversion and wrapper branches are covered", {
