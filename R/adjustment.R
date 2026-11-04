@@ -582,17 +582,8 @@ is_valid_adjustment_admg <- function(
 ) {
   is_caugi(cg, throw_error = TRUE)
   .warn_index_deprecated()
-  # Validate that X and Y are provided
-
-  if (is.null(X) && is.null(X_index)) {
-    stop("X must be provided.", call. = FALSE)
-  }
-  if (is.null(Y) && is.null(Y_index)) {
-    stop("Y must be provided.", call. = FALSE)
-  }
-
-  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
   if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
     return(FALSE)
@@ -642,16 +633,8 @@ all_adjustment_sets_admg <- function(
 ) {
   is_caugi(cg, throw_error = TRUE)
   .warn_index_deprecated()
-  # Validate that X and Y are provided
-  if (is.null(X) && is.null(X_index)) {
-    stop("X must be provided.", call. = FALSE)
-  }
-  if (is.null(Y) && is.null(Y_index)) {
-    stop("Y must be provided.", call. = FALSE)
-  }
-
-  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
   if (!.disjoint(X_idx0, Y_idx0)) {
     return(list())
   }

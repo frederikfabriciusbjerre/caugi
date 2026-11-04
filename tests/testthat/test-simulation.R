@@ -175,6 +175,24 @@ test_that("simulate_data: errors on invalid n", {
   )
 })
 
+test_that("simulate_data: errors on invalid coef_range or error_sd", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  for (bad in list(0.5, c(0.9, 0.1), c(0, Inf), c("a", "b"))) {
+    expect_error(simulate_data(cg, n = 5, coef_range = bad), "`coef_range`")
+  }
+  for (bad in list(-1, c(1, 2), NA_real_, "1")) {
+    expect_error(simulate_data(cg, n = 5, error_sd = bad), "`error_sd`")
+  }
+})
+
+test_that("simulate_data: standardizing centers a constant column", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  df <- simulate_data(cg, n = 10, A = rep(3, n), B = A + rnorm(n))
+  expect_identical(df$A, rep(0, 10))
+  expect_identical(nrow(simulate_data(cg, n = 1)), 1L)
+  expect_false(anyNA(simulate_data(cg, n = 1)))
+})
+
 test_that("simulate_data: errors on unknown node in equations", {
   cg <- caugi(A %-->% B, class = "DAG")
   expect_error(
