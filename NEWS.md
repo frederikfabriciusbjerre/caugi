@@ -159,6 +159,9 @@
 
 ## Bug Fixes
 
+* `aid()` returns 0 for graphs with fewer than two nodes, as `hd()` and
+  `shd()` do, instead of erroring.
+
 * `simulate_data()` checks `coef_range` and `error_sd`, which were used
   unchecked, and centers a constant column under `standardize = TRUE` instead
   of filling it with `NaN`.

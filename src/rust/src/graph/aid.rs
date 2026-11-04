@@ -415,8 +415,9 @@ pub fn aid(
     if guess_g.n() as usize != n {
         return Err("both graphs must contain the same number of nodes".into());
     }
+    // No ordered pairs to get wrong, as for hd() and shd().
     if n < 2 {
-        return Err("graph must contain at least 2 nodes".into());
+        return Ok((0.0, 0));
     }
     if inv_guess_to_true.len() != n {
         return Err("index map length does not match graph size".into());
