@@ -215,6 +215,41 @@ make_tiers <- function(
   )
 }
 
+#' Check the sizes in a style list, at any depth: `size` must be positive, and
+#' `padding`, `lwd`, `arrow_size` and `circle_size` must not be negative.
+#' @keywords internal
+#' @noRd
+.check_style_sizes <- function(style, arg) {
+  for (nm in names(style)) {
+    v <- style[[nm]]
+    # NULL falls back to the default.
+    if (is.null(v) || grid::is.unit(v)) {
+      next
+    }
+    if (is.list(v)) {
+      .check_style_sizes(v, arg)
+    } else if (
+      nm %in% c("size", "padding", "lwd", "arrow_size", "circle_size")
+    ) {
+      positive <- nm == "size"
+      ok <- is.numeric(v) &&
+        all(is.finite(v)) &&
+        all(if (positive) v > 0 else v >= 0)
+      if (!ok) {
+        stop(
+          "`",
+          nm,
+          "` in `",
+          arg,
+          "` must be ",
+          if (positive) "a positive number." else "a number >= 0.",
+          call. = FALSE
+        )
+      }
+    }
+  }
+}
+
 make_styles <- function(
   edge_style,
   node_style,
@@ -222,6 +257,8 @@ make_styles <- function(
   title_style,
   tier_style
 ) {
+  .check_style_sizes(node_style, "node_style")
+  .check_style_sizes(edge_style, "edge_style")
   # Get global options
   opts <- get0("options", .caugi_env, ifnotfound = .caugi_default_options())
   plot_opts <- opts$plot %||% list()

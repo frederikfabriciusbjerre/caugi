@@ -1215,6 +1215,21 @@ test_that("neighbors mode validation for ADMG", {
   expect_null(neighbors(cg, "B", mode = "partial"))
 })
 
+test_that("has_edge checks adjacency of any edge type, either way", {
+  cg <- caugi(A %-->% B, B %<->% C, C %o-o% D, E, class = "UNKNOWN")
+  expect_true(has_edge(cg, "A", "B"))
+  expect_true(has_edge(cg, "B", "A"))
+  expect_true(has_edge(cg, "C", "B"))
+  expect_true(has_edge(cg, "D", "C"))
+  expect_false(has_edge(cg, "A", "C"))
+  expect_false(has_edge(cg, "E", "A"))
+  expect_true(has_edge(caugi(A %-->% A, class = "UNKNOWN"), "A", "A"))
+
+  expect_error(has_edge(cg, "A", "Z"), "Non-existent node name: Z")
+  expect_error(has_edge(cg, "Z", "A"), "Non-existent node name: Z")
+  expect_error(has_edge(cg, c("A", "B"), "C"), "exactly one node")
+})
+
 test_that("spouses errors for UNKNOWN graphs", {
   cg <- caugi(
     A %-->% B,

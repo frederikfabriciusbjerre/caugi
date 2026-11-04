@@ -2,6 +2,10 @@
 
 ## New Features
 
+* `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
+
+* `markov_blanket()` accepts PAGs, reading the blanket off a member MAG.
+
 * `markov_equivalent(g1, g2)` checks whether two DAGs or CPDAGs are Markov
   equivalent, by comparing their CPDAGs (#442).
 
@@ -158,9 +162,9 @@
 * `write_dot()` and `write_mermaid()` write UTF-8 in every locale. Under a
   non-UTF-8 locale they lost non-ASCII node names (#417).
 
-* `to_mermaid()` writes every node as `nK["name"]` with a generated ID. It
-  dropped isolated nodes when the graph had edges, and wrote IDs that Mermaid
-  rejects, such as quoted names or a node named `end` (#413).
+* `to_mermaid()` keeps isolated nodes when the graph has edges. A node whose
+  name Mermaid can't read as an ID, such as `my var` or `end`, is written as
+  `nK["name"]` with a generated ID, not as an ID Mermaid rejects (#413).
 
 * Every exporter refuses edges with a custom glyph from
   `register_caugi_edge()`, as none can record what the glyph means.
@@ -168,6 +172,25 @@
   plain arrows, reversed them or dropped them, and `write_caugi()` and
   `write_graphml()` wrote files that only a session with the same glyph
   registered could read (#404).
+
+* `generate_graph()` no longer draws an unused node order, so a given seed
+  now gives a different graph than before.
+
+* `plot()` errors when a `size`, `padding`, `lwd`, `arrow_size` or
+  `circle_size` in `node_style` or `edge_style` is not a number, or is
+  negative (`size` must be positive). They were drawn as given, and a string
+  such as `padding = "2"` was converted silently.
+
+* `aid()` returns 0 for graphs with fewer than two nodes, as `hd()` and
+  `shd()` do, instead of erroring.
+
+* `simulate_data()` checks `coef_range` and `error_sd`, which were used
+  unchecked, and centers a constant column under `standardize = TRUE` instead
+  of filling it with `NaN`.
+
+* `is_valid_adjustment_admg()` and `all_adjustment_sets_admg()` error when `X`
+  or `Y` names no nodes, as `adjustment_set()` does. They returned `TRUE` and
+  `list(character(0))`.
 
 * `shd()` counts each edge between a pair of nodes. A pair with two edges,
   such as `A --> B` and `A <-> B` from `latent_project()`, was compared by one

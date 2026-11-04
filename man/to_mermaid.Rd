@@ -34,8 +34,9 @@ The function handles different edge types:
 
 Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
 
-Each node is written as \code{nK["name"]} with a generated ID \code{nK}, so any
-name works, including Mermaid keywords such as \code{end}.
+A node name Mermaid reads as an ID, such as \code{A}, \code{Sepal.Length},
+\code{age-group} or \code{2.5}, is written as it is. Any other name, such as \verb{my var}
+or the keyword \code{end}, is written as \code{nK["name"]} with a generated ID \code{nK}.
 }
 \examples{
 cg <- caugi(

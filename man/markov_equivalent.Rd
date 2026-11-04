@@ -44,6 +44,7 @@ Other queries:
 \code{\link[=edge_types]{edge_types()}},
 \code{\link[=edges]{edges()}},
 \code{\link[=exogenous]{exogenous()}},
+\code{\link[=has_edge]{has_edge()}},
 \code{\link[=is_acyclic]{is_acyclic()}},
 \code{\link[=is_admg]{is_admg()}},
 \code{\link[=is_ag]{is_ag()}},

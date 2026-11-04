@@ -54,8 +54,9 @@ caugi_mermaid <- S7::new_class(
 #'
 #' Edges with a custom glyph from [register_caugi_edge()] are an error.
 #'
-#' Each node is written as `nK["name"]` with a generated ID `nK`, so any
-#' name works, including Mermaid keywords such as `end`.
+#' A node name Mermaid reads as an ID, such as `A`, `Sepal.Length`,
+#' `age-group` or `2.5`, is written as it is. Any other name, such as `my var`
+#' or the keyword `end`, is written as `nK["name"]` with a generated ID `nK`.
 #'
 #' @examples
 #' cg <- caugi(
@@ -92,11 +93,55 @@ to_mermaid <- function(x, direction = "TD") {
     )
   }
 
-  # Every node gets a generated ID, so names never meet Mermaid's syntax or
-  # reserved words such as `end`; the name is the label, with `"` as `#quot;`.
+  # A name Mermaid reads as an ID is written as it is. Any other name gets a
+  # generated ID `nK` with the name as its label, `"` written as `#quot;`. The
+  # rule below was checked against the parser of Mermaid 11.4.1 and 11.17.2.
   nm <- nodes(x)$name
-  id <- paste0("n", seq_along(nm))
-  label <- gsub('"', "#quot;", nm, fixed = TRUE)
+  e <- edges(x)
+  keywords <- c(
+    "call",
+    "class",
+    "classDef",
+    "click",
+    "end",
+    "flowchart",
+    "graph",
+    "href",
+    "interpolate",
+    "linkStyle",
+    "style",
+    "subgraph"
+  )
+  # Mermaid reads ASCII letters, digits and the symbols listed below, and
+  # Latin, Greek and Cyrillic letters except U+037F. `--`, `-.` and `.-` start
+  # a link, `:::` a class and a leading `%%` a comment, and `direction` and a
+  # keyword that is not part of a longer word, as in `end` or `1class`, break
+  # the parse.
+  bare <- grepl(
+    "(*UTF)^(?:[A-Za-z0-9!#$%&'*+,./:?\\\\_`-]|(?!\\x{37F})(?=\\p{L})[\\x{C0}-\\x{4FF}])+$",
+    enc2utf8(nm),
+    perl = TRUE
+  ) &
+    !grepl("--|-\\.|\\.-|:::|^%%|direction", nm) &
+    !grepl(
+      paste0(
+        "(^|[^A-Za-z_])(",
+        paste(keywords, collapse = "|"),
+        ")([^A-Za-z0-9_]|$)"
+      ),
+      nm
+    )
+  id <- nm
+  id[!bare] <- make.unique(c(nm[bare], paste0("n", which(!bare))), "_")[
+    sum(bare) + seq_len(sum(!bare))
+  ]
+  # A node is declared on its own line if it needs a label or has no edges.
+  decl <- !bare | !nm %in% c(e$from, e$to)
+  label <- ifelse(
+    bare,
+    "",
+    paste0('["', gsub('"', "#quot;", nm, fixed = TRUE), '"]')
+  )
 
   # Mermaid parses the start (`o`/`<`) and end (`o`/`>`) markers of a link
   # independently, so `o-->` is a circle tail with an arrow head, matching
@@ -109,10 +154,9 @@ to_mermaid <- function(x, direction = "TD") {
     "--o" = "--o",
     "o-o" = "o--o"
   )
-  e <- edges(x)
   lines <- c(
     paste0("flowchart ", direction),
-    paste0("  ", id, '["', label, '"]'),
+    paste0("  ", id[decl], label[decl], recycle0 = TRUE),
     paste0(
       "  ",
       id[match(e$from, nm)],

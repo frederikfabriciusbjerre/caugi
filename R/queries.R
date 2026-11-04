@@ -918,6 +918,37 @@ formals(neighbors) <- alist(cg = , nodes = NULL, index = NULL, mode = "all")
 #' @export
 neighbours <- neighbors
 
+#' @title Are two nodes adjacent?
+#'
+#' @description Checks whether any edge joins `X` and `Y`, whatever its type
+#' and direction.
+#'
+#' @param cg A `caugi` object.
+#' @param X,Y Node names, one each.
+#'
+#' @returns `TRUE` if an edge joins `X` and `Y`, otherwise `FALSE`.
+#'
+#' @examples
+#' cg <- caugi(A %-->% B, B %<->% C, class = "ADMG")
+#' has_edge(cg, "A", "B") # TRUE
+#' has_edge(cg, "B", "A") # TRUE
+#' has_edge(cg, "A", "C") # FALSE
+#'
+#' @family queries
+#' @concept queries
+#'
+#' @export
+has_edge <- function(cg, X, Y) {
+  is_caugi(cg, throw_error = TRUE)
+  if (
+    !is.character(X) || length(X) != 1L || !is.character(Y) || length(Y) != 1L
+  ) {
+    stop("`X` and `Y` must each name exactly one node.", call. = FALSE)
+  }
+  .resolve_idx0_mget(cg@session, Y) # errors on an unknown node
+  Y %in% neighbors(cg, X)
+}
+
 #' @title Get ancestors of nodes in a `caugi`
 #'
 #' @inheritParams parents
@@ -1115,6 +1146,10 @@ formals(posteriors) <- alist(
 #' @title Get Markov blanket of nodes in a `caugi`
 #'
 #' @inheritParams parents
+#'
+#' @details In a PAG, the blanket is read off the member MAG from
+#' [pag_to_mag()]. Every member gives the same blanket, since Markov
+#' equivalent MAGs share their m-separations.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).

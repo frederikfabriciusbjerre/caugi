@@ -67,8 +67,6 @@ generate_graph <- function(
   reg <- caugi_registry()
   code_dir <- edge_registry_code_of(reg, "-->")
 
-  ord <- sample.int(n) - 1L
-
   if (m > 0L) {
     ranks <- sample.int(tot, m) - 1L
     row_len <- (n - 1L):1L
@@ -119,7 +117,8 @@ generate_graph <- function(
 #'   and the variable `n` (sample size). Nodes without custom equations use
 #'   auto-generated linear Gaussian relationships.
 #' @param standardize Logical; if `TRUE`, standardize all variables to have
-#'   mean 0 and standard deviation 1. Default is `TRUE`.
+#'   mean 0 and standard deviation 1. A constant variable is only centered.
+#'   Default is `TRUE`.
 #' @param coef_range Numeric vector of length 2; range for random edge
 #'   coefficients that will be sampled uniformly. Default is `c(0.1, 0.9)`.
 #' @param error_sd Numeric; standard deviation for error terms in
@@ -182,6 +181,25 @@ simulate_data <- function(
   n <- as.integer(n)
   if (length(n) != 1L || n <= 0L) {
     stop("n must be a single integer > 0", call. = FALSE)
+  }
+  if (
+    !is.numeric(coef_range) ||
+      length(coef_range) != 2L ||
+      !all(is.finite(coef_range)) ||
+      coef_range[1L] > coef_range[2L]
+  ) {
+    stop(
+      "`coef_range` must be two finite numbers, lower bound first.",
+      call. = FALSE
+    )
+  }
+  if (
+    !is.numeric(error_sd) ||
+      length(error_sd) != 1L ||
+      !is.finite(error_sd) ||
+      error_sd < 0
+  ) {
+    stop("`error_sd` must be a single finite number >= 0.", call. = FALSE)
   }
 
   # capture custom equations
@@ -276,7 +294,11 @@ simulate_data <- function(
   out <- as.data.frame(data, check.names = FALSE)[, node_names, drop = FALSE]
 
   if (standardize) {
-    out[] <- lapply(out, function(x) (x - mean(x)) / stats::sd(x))
+    out[] <- lapply(out, function(x) {
+      s <- stats::sd(x)
+      # A constant column (or n = 1) has no spread to scale by.
+      if (is.na(s) || s == 0) x - mean(x) else (x - mean(x)) / s
+    })
   }
 
   out

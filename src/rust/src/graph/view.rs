@@ -357,7 +357,8 @@ impl GraphView {
             GraphView::Ug(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Admg(g) => Ok(g.markov_blanket_of(i)),
             GraphView::Ag(g) => Ok(g.markov_blanket_of(i)),
-            GraphView::Pag(_) => Err("markov_blanket_of is not yet implemented for PAG".into()),
+            // Every member MAG has the same m-separations, so the same blanket.
+            GraphView::Pag(g) => Ok(g.to_mag()?.markov_blanket_of(i)),
             GraphView::Raw(_) => Err("markov_blanket_of not implemented for UNKNOWN class".into()),
         }
     }

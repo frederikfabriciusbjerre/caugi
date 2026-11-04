@@ -20,6 +20,11 @@ requested) or a list of character vectors (if multiple nodes are requested).
 \description{
 Get Markov blanket of nodes in a \code{caugi}
 }
+\details{
+In a PAG, the blanket is read off the member MAG from
+\code{\link[=pag_to_mag]{pag_to_mag()}}. Every member gives the same blanket, since Markov
+equivalent MAGs share their m-separations.
+}
 \examples{
 cg <- caugi(
   A \%-->\% B,
@@ -48,6 +53,7 @@ Other queries:
 \code{\link[=edge_types]{edge_types()}},
 \code{\link[=edges]{edges()}},
 \code{\link[=exogenous]{exogenous()}},
+\code{\link[=has_edge]{has_edge()}},
 \code{\link[=is_acyclic]{is_acyclic()}},
 \code{\link[=is_admg]{is_admg()}},
 \code{\link[=is_ag]{is_ag()}},
