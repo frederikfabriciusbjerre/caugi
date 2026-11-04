@@ -11,12 +11,7 @@
 //! Every rule walks edges: the rows of the nodes involved, or the common
 //! neighbours of an edge's two ends, never every node pair or triple.
 //!
-//! Ported from `CausalStructures.jl`, with two fixes:
-//!
-//! * its potentially-directed paths may cross `---`, which can never be
-//!   oriented `-->`; [`MarkedGraph::possible_children`] excludes it.
-//! * its R8 takes a tail *or circle* at `alpha`, which admits
-//!   `alpha o-> beta --> gamma`; Zhang requires a tail.
+//! Ported from `CausalStructures.jl`.
 
 use super::marked::MarkedGraph;
 use crate::edges::Mark;
