@@ -445,8 +445,7 @@ test_that("ADMG adjustment agrees with a brute-force oracle on random graphs", {
       edge = edges$edge,
       to = edges$to,
       nodes = nodes,
-      class = "ADMG",
-      simple = FALSE
+      class = "ADMG"
     )
     X <- sample(nodes, sample(1:2, 1))
     Y <- sample(setdiff(nodes, X), sample(1:2, 1))
@@ -620,8 +619,7 @@ test_that("adjustment agrees with exact do-calculus in random binary models", {
       edge = edges$edge,
       to = edges$to,
       nodes = nodes,
-      class = "ADMG",
-      simple = FALSE
+      class = "ADMG"
     )
     X <- sample(nodes, sample(1:2, 1))
     Y <- sample(setdiff(nodes, X), sample(1:2, 1))

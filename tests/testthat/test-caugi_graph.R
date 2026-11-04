@@ -115,65 +115,10 @@ test_that("nodes does not drop isolates declared in the DSL", {
 # ─────────────────────────── Simple / non-simple ──────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that("explicit `simple` is deprecated but still honoured", {
-  expect_warning(
-    cg <- caugi(A %-->% B, class = "UNKNOWN", simple = TRUE),
-    class = "caugi_deprecated_simple"
-  )
-  expect_true(cg@simple)
-  expect_warning(
-    caugi(A %-->% B, class = "DAG", simple = TRUE),
-    "deprecated and will be removed in caugi 2.0.0"
-  )
-  m <- matrix(c(0L, 1L, 0L, 0L), 2, dimnames = list(c("A", "B"), c("A", "B")))
-  expect_warning(
-    as_caugi(m, class = "UNKNOWN", simple = FALSE),
-    class = "caugi_deprecated_simple"
-  )
-  expect_no_warning(caugi(A %-->% B, class = "UNKNOWN"))
-  expect_no_warning(as_caugi(m, class = "DAG"))
-
-  # simple = FALSE still needs UNKNOWN, ADMG or AG
-  for (cls in c("DAG", "PDAG")) {
-    expect_error(
-      suppressWarnings(caugi(
-        A %-->% B,
-        B %---% C,
-        class = cls,
-        simple = FALSE
-      )),
-      "If simple = FALSE, class must be"
-    )
-  }
-  expect_false(
-    suppressWarnings(caugi(A %-->% B, class = "AG", simple = FALSE))@simple
-  )
-
-  # simple = TRUE still forbids multi-edges in UNKNOWN and ADMG
-  expect_error(
-    suppressWarnings(caugi(
-      A %-->% B,
-      A %---% B,
-      class = "UNKNOWN",
-      simple = TRUE
-    )),
-    "Parallel edges"
-  )
-  expect_error(
-    suppressWarnings(caugi(
-      A %-->% B,
-      A %<->% B,
-      class = "ADMG",
-      simple = TRUE
-    )),
-    "Parallel edges"
-  )
-})
-
 test_that("the class decides the default for multi-edges and self-loops", {
   # UNKNOWN: anything goes
   cg <- caugi(A %-->% A, B %---% C, class = "UNKNOWN")
-  expect_false(cg@simple)
+  expect_false(rs_simple(cg@session))
   expect_false(is_simple(cg))
   expect_s7_class(caugi(A %-->% B, A %<->% B, class = "UNKNOWN"), caugi)
   expect_s7_class(caugi(A %-->% B, A %o->% A, class = "UNKNOWN"), caugi)
@@ -190,13 +135,13 @@ test_that("the class decides the default for multi-edges and self-loops", {
 
   # ADMG: bows are fine, self-loops are not
   bow <- caugi(A %-->% B, A %<->% B, class = "ADMG")
-  expect_false(bow@simple)
+  expect_false(rs_simple(bow@session))
   expect_false(is_simple(bow))
   expect_error(caugi(A %<->% A, class = "ADMG"), "self-loop")
   expect_error(caugi(A %-->% A, class = "ADMG"), "self-loop|directed cycle")
 
   # everything else is simple
-  expect_true(caugi(A %-->% B, class = "AG")@simple)
+  expect_true(rs_simple(caugi(A %-->% B, class = "AG")@session))
   expect_error(caugi(A %-->% B, A %---% B, class = "PDAG"), "Parallel edges")
   expect_error(caugi(A %-->% B, A %<->% B, class = "AG"), "Parallel edges")
   expect_error(caugi(A %---% B, A %-->% B, class = "UG"), "Parallel edges")
@@ -207,7 +152,7 @@ test_that("the class decides the default for multi-edges and self-loops", {
 test_that("AUTO resolves graphs with multi-edges to ADMG or UNKNOWN", {
   bow <- caugi(A %-->% B, A %<->% B)
   expect_identical(bow@graph_class, "ADMG")
-  expect_false(bow@simple)
+  expect_false(rs_simple(bow@session))
   expect_equal(spouses(bow, "A"), "B")
 
   for (cg in list(
@@ -216,18 +161,18 @@ test_that("AUTO resolves graphs with multi-edges to ADMG or UNKNOWN", {
     caugi(A %-->% B, B %-->% A)
   )) {
     expect_identical(cg@graph_class, "UNKNOWN")
-    expect_false(cg@simple)
+    expect_false(rs_simple(cg@session))
     expect_false(is_simple(cg))
   }
 
   # simple graphs take the default of the class they resolve to
   dag <- caugi(A %-->% B, B %-->% C)
   expect_identical(dag@graph_class, "DAG")
-  expect_true(dag@simple)
+  expect_true(rs_simple(dag@session))
   expect_true(is_simple(dag))
   expect_error(add_edges(dag, A %<->% B), "Parallel edges")
-  expect_false(caugi(A %-->% B, C %<->% B)@simple) # ADMG
-  expect_false(caugi()@simple) # empty -> UNKNOWN
+  expect_false(rs_simple(caugi(A %-->% B, C %<->% B)@session)) # ADMG
+  expect_false(rs_simple(caugi()@session)) # empty -> UNKNOWN
 })
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -593,37 +538,6 @@ test_that("caugi errors with trailing commas", {
   )
 })
 
-test_that("caugi accepts build parameter for backward compatibility", {
-  cg <- expect_warning(
-    caugi(A %-->% B, build = FALSE),
-    "`build` is deprecated"
-  )
-  expect_true(!is.null(cg@session))
-  cg2 <- expect_warning(
-    caugi(A %-->% B, build = TRUE),
-    "`build` is deprecated"
-  )
-  expect_true(!is.null(cg2@session))
-})
-
-test_that("caugi accepts state parameter for backward compatibility", {
-  state <- new.env(parent = emptyenv())
-  state$nodes <- data.table::data.table(name = c("X", "Y"))
-  state$edges <- data.table::data.table(from = "X", edge = "-->", to = "Y")
-  state$simple <- TRUE
-  state$class <- "DAG"
-
-  cg <- expect_warning(
-    caugi(A %-->% B, state = state),
-    "`state` is deprecated"
-  )
-  expect_equal(cg@nodes$name, c("A", "B"))
-  expect_equal(
-    cg@edges,
-    data.table::data.table(from = "A", edge = "-->", to = "B")
-  )
-})
-
 test_that("caugi with wrong node input errors", {
   expect_error(
     caugi(
@@ -743,7 +657,7 @@ test_that(".session_to_caugi works as expected", {
   cg2 <- .session_to_caugi(cg@session)
   expect_s7_class(cg2, caugi)
   expect_equal(cg@nodes, cg2@nodes)
-  expect_equal(cg@simple, cg2@simple)
+  expect_equal(cg@graph_class, cg2@graph_class)
 })
 
 test_that(".session_to_caugi fails on NULL session", {
@@ -993,89 +907,11 @@ test_that("graph_class property setter is read-only", {
   )
 })
 
-test_that("deprecated property getters warn and return NULL", {
-  cg <- caugi(A %-->% B, class = "DAG")
-
-  expect_warning(cg@ptr, "`@ptr` is deprecated")
-  ptr <- suppressWarnings(cg@ptr)
-  expect_null(ptr)
-
-  expect_warning(cg@built, "`@built` is deprecated")
-  built <- suppressWarnings(cg@built)
-  expect_null(built)
-
-  expect_warning(cg@name_index_map, "`@name_index_map` is deprecated")
-  idx_map <- suppressWarnings(cg@name_index_map)
-  expect_null(idx_map)
-
-  expect_warning(cg@.state, "`@.state` is deprecated")
-  st <- suppressWarnings(cg@.state)
-  expect_null(st)
-})
-
-test_that("deprecated property setters warn then error", {
-  cg <- caugi(A %-->% B, class = "DAG")
-
-  expect_warning(
-    expect_error(cg@ptr <- NULL, "read-only"),
-    "`@ptr` is deprecated"
-  )
-  expect_warning(
-    expect_error(cg@built <- TRUE, "read-only"),
-    "`@built` is deprecated"
-  )
-  expect_warning(
-    expect_error(cg@name_index_map <- integer(), "read-only"),
-    "`@name_index_map` is deprecated"
-  )
-  expect_warning(
-    expect_error(cg@.state <- new.env(parent = emptyenv()), "read-only"),
-    "`@.state` is deprecated"
-  )
-})
-
 # ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────────── Validation ──────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-test_that("validator catches simple=FALSE for non-ADMG/AG classes", {
-  expect_error(
-    suppressWarnings(caugi(A %-->% B, class = "DAG", simple = FALSE)),
-    "If simple = FALSE, class must be"
-  )
-  expect_error(
-    suppressWarnings(caugi(A %-->% B, class = "PDAG", simple = FALSE)),
-    "If simple = FALSE, class must be"
-  )
-})
-
-test_that("ADMG and AG allow simple=FALSE", {
-  suppressWarnings({
-    expect_s7_class(caugi(A %-->% B, class = "ADMG", simple = FALSE), caugi)
-    expect_s7_class(caugi(A %-->% B, class = "AG", simple = FALSE), caugi)
-    expect_s7_class(caugi(A %-->% B, class = "UNKNOWN", simple = FALSE), caugi)
-  })
-})
-
-test_that("validator branch for non-simple DAG is covered", {
-  cg <- caugi(A %-->% B, class = "DAG")
-  rs_set_simple(cg@session, FALSE)
-  rs_set_class(cg@session, "DAG")
-  expect_match(
-    caugi@validator(cg),
-    "If simple = FALSE, class must be 'UNKNOWN', 'ADMG', or 'AG'"
-  )
-})
-
-test_that("helper branches for field warning and node constructor are covered", {
-  expect_false(
-    testthat::with_mocked_bindings(
-      caugi:::.supress_field_warning(),
-      sys.calls = function() list(),
-      .package = "base"
-    )
-  )
-
+test_that("node constructor sorts on request", {
   n_dt <- caugi:::.node_constructor(c("B", "A"), sort = TRUE)
   expect_identical(n_dt$name, c("A", "B"))
 })

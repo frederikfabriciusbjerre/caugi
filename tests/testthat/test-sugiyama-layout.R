@@ -62,8 +62,7 @@ test_that("sugiyama layout ignores self-loops instead of panicking (#422)", {
     A %-->% A,
     A %-->% B,
     B %-->% C,
-    class = "UNKNOWN",
-    simple = FALSE
+    class = "UNKNOWN"
   )
   layout <- caugi_layout(cg, method = "sugiyama")
   expect_equal(layout$name, c("A", "B", "C"))

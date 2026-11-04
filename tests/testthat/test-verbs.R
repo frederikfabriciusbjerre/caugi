@@ -178,7 +178,7 @@ test_that("edge removal preserves bows, directions, nodes, and its input", {
     expect_equal(edges(out), original[which(original$edge == "-->")])
     expect_equal(edges(cg), original)
     expect_equal(out@graph_class, "UNKNOWN")
-    expect_false(out@simple)
+    expect_false(rs_simple(out@session))
 
     out <- remove_edges(cg, from = "A", edge = "-->", to = "B")
     expect_equal(
@@ -357,16 +357,6 @@ test_that("verbs do not modify object for remove_nodes", {
   expect_equal(nrow(edges_new_object), 2L)
 })
 
-test_that("inplace parameter issues deprecation warning for remove_nodes", {
-  cg <- caugi(Z %-->% X %-->% Y, U %-->% X + Y)
-  expect_warning(
-    result <- remove_nodes(cg, "U", inplace = TRUE),
-    "The `inplace` argument is deprecated"
-  )
-  # Verify it returns a new object despite inplace = TRUE
-  expect_false(identical(result@session, cg@session))
-})
-
 test_that("verbs do not modify object for add_nodes", {
   cg <- caugi(Z %-->% X %-->% Y, U %-->% X + Y)
   nodes_before <- cg@nodes
@@ -386,16 +376,6 @@ test_that("verbs do not modify object for add_nodes", {
   expect_equal(edges_new_object, edges_before)
 })
 
-test_that("inplace parameter issues deprecation warning for add_nodes", {
-  cg <- caugi(Z %-->% X %-->% Y, U %-->% X + Y)
-  expect_warning(
-    result <- add_nodes(cg, "W", inplace = TRUE),
-    "The `inplace` argument is deprecated"
-  )
-  # Verify it returns a new object despite inplace = TRUE
-  expect_false(identical(result@session, cg@session))
-})
-
 test_that("verbs do not modify object for remove_edges", {
   cg <- caugi(Z %-->% X %-->% Y, U %-->% X + Y)
   nodes_before <- cg@nodes
@@ -410,16 +390,6 @@ test_that("verbs do not modify object for remove_edges", {
   expect_equal(nrow(edges_new_object), 3L)
 })
 
-test_that("inplace parameter issues deprecation warning for remove_edges", {
-  cg <- caugi(Z %-->% X %-->% Y, U %-->% X + Y)
-  expect_warning(
-    result <- remove_edges(cg, from = "U", to = "X", inplace = TRUE),
-    "The `inplace` argument is deprecated"
-  )
-  # Verify it returns a new object despite inplace = TRUE
-  expect_false(identical(result@session, cg@session))
-})
-
 test_that("verbs do not modify object for add_edges", {
   cg <- caugi(Z %-->% X %-->% Y, U %-->% X + Y)
   nodes_before <- cg@nodes
@@ -432,16 +402,6 @@ test_that("verbs do not modify object for add_edges", {
 
   edges_new_object <- new_cg@edges
   expect_equal(nrow(edges_new_object), 5L)
-})
-
-test_that("inplace parameter issues deprecation warning for add_edges", {
-  cg <- caugi(Z %-->% X %-->% Y, U %-->% X + Y)
-  expect_warning(
-    result <- add_edges(cg, Z %-->% U, inplace = TRUE),
-    "The `inplace` argument is deprecated"
-  )
-  # Verify it returns a new object despite inplace = TRUE
-  expect_false(identical(result@session, cg@session))
 })
 
 test_that("verbs do not modify object for set_edges", {
@@ -459,21 +419,11 @@ test_that("verbs do not modify object for set_edges", {
   expect_true("---" %in% edges_new_object$edge)
 })
 
-test_that("inplace parameter issues deprecation warning for set_edges", {
-  cg <- caugi(Z %-->% X %-->% Y, U %-->% X + Y, class = "PDAG")
-  expect_warning(
-    result <- set_edges(cg, U %---% X, inplace = TRUE),
-    "The `inplace` argument is deprecated"
-  )
-  # Verify it returns a new object despite inplace = TRUE
-  expect_false(identical(result@session, cg@session))
-})
-
 test_that("copy-on-write semantics isolate references", {
   cg <- caugi(A %-->% B, class = "DAG")
   alias <- cg
 
-  # Without inplace, should create new session
+  # Each verb creates a new session
   out <- add_nodes(cg, C)
   expect_false(identical(cg@session, out@session))
   expect_false("C" %in% cg@nodes$name)

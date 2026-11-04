@@ -7,7 +7,6 @@
 as_caugi(
   x,
   class = c("DAG", "UG", "PDAG", "MPDAG", "CPDAG", "ADMG", "AG", "PAG", "UNKNOWN"),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -21,9 +20,6 @@ as_caugi(
 integer coded matrices, data.frames and \code{dagitty} objects, and is validated
 as in \code{\link[=caugi]{caugi()}}. For a data.frame, it defaults to the data.frame's
 \code{"graph_class"} attribute, which \code{\link[=as.data.frame]{as.data.frame()}} sets, if present.}
-
-\item{simple}{Deprecated; see \code{\link[=caugi]{caugi()}}. If omitted (recommended), it is
-derived from \code{class}.}
 
 \item{collapse}{logical. If \code{TRUE} collapse mutual directed edges to
 undirected edges. Default is \code{FALSE}.}

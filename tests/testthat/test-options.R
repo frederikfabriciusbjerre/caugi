@@ -88,13 +88,6 @@ test_that("caugi_options preserves other nested values when setting", {
   caugi_options(plot = original)
 })
 
-test_that("caugi_default_options is deprecated", {
-  expect_warning(
-    expect_identical(caugi_default_options(), .caugi_default_options()),
-    "deprecated"
-  )
-})
-
 test_that(".caugi_default_options returns expected structure", {
   defaults <- .caugi_default_options()
   expect_type(defaults, "list")

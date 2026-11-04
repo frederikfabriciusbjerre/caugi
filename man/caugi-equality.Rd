@@ -18,7 +18,7 @@ A single logical.
 }
 \description{
 S3 methods for \code{==} and \code{!=} that compare two caugi objects by
-their graph content (nodes, edges, simple, class) rather than session
+their graph content (nodes, edges, class) rather than session
 identity. Returns \code{FALSE} (resp. \code{TRUE}) when the other operand is not a
 caugi object.
 }

@@ -331,24 +331,6 @@ test_that("write_caugi validates inputs", {
   )
 })
 
-test_that("deprecated lazy warnings are covered", {
-  cg <- caugi(A %-->% B, class = "DAG")
-  tmp <- tempfile(fileext = ".caugi.json")
-  on.exit(unlink(tmp))
-
-  write_caugi(cg, tmp)
-  expect_warning(
-    read_caugi(tmp, lazy = TRUE),
-    "deprecated"
-  )
-
-  json <- caugi_serialize(cg)
-  expect_warning(
-    caugi_deserialize(json, lazy = FALSE),
-    "deprecated"
-  )
-})
-
 test_that("serialized output of every class fits the published schema (#419)", {
   schema_path <- test_path("../../pkgdown/assets/schemas/caugi-v1.schema.json")
   skip_if_not(file.exists(schema_path), "schema file not available")

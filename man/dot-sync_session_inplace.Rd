@@ -4,7 +4,7 @@
 \alias{.sync_session_inplace}
 \title{Update an existing session in place}
 \usage{
-.sync_session_inplace(session, node_names, edges_dt, simple, class)
+.sync_session_inplace(session, node_names, edges_dt, class)
 }
 \arguments{
 \item{session}{A GraphSession external pointer.}
@@ -12,8 +12,6 @@
 \item{node_names}{Character vector of node names.}
 
 \item{edges_dt}{A data.table with columns \code{from}, \code{edge}, \code{to}.}
-
-\item{simple}{Logical; whether the graph is simple.}
 
 \item{class}{Character; target graph class.}
 }

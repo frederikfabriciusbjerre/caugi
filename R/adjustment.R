@@ -510,33 +510,6 @@ minimal_separator <- function(
   nm[result_idx0 + 1L]
 }
 
-#' @rdname minimal_separator
-#' @export
-minimal_d_separator <- function(
-  cg,
-  X = NULL,
-  Y = NULL,
-  I = character(0),
-  R = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  I_index = NULL,
-  R_index = NULL
-) {
-  .Deprecated("minimal_separator")
-  minimal_separator(
-    cg = cg,
-    X = X,
-    Y = Y,
-    I = I,
-    R = R,
-    X_index = X_index,
-    Y_index = Y_index,
-    I_index = I_index,
-    R_index = R_index
-  )
-}
-
 # ──────────────────────────────────────────────────────────────────────────────
 # ──────────────────────── ADMG Adjustment Functions ───────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────

@@ -117,25 +117,11 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
   return(TRUE)
 }
 
-#' Warn that `force_check` is deprecated.
-#' @keywords internal
-#' @noRd
-.warn_force_check_deprecated <- function() {
-  warning(
-    "The `force_check` argument is deprecated and will be removed in caugi ",
-    "2.0.0; the graph class is validated when the graph is built.",
-    call. = FALSE
-  )
-}
-
 #' @title Is the `caugi` acyclic?
 #'
 #' @description Checks if the given `caugi` graph is acyclic.
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Deprecated and will be removed in caugi 2.0.0. A
-#' graph's class is validated when the graph is built, so the class is
-#' trusted and there is nothing to force.
 #'
 #' @returns A logical value indicating whether the graph is acyclic.
 #'
@@ -158,15 +144,9 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 #' @concept queries
 #'
 #' @export
-is_acyclic <- function(cg, force_check = FALSE) {
+is_acyclic <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  if (!missing(force_check)) {
-    .warn_force_check_deprecated()
-  }
-
-  if (force_check) {
-    is_it <- rs_is_acyclic(cg@session)
-  } else if (
+  if (
     identical(cg@graph_class, "DAG") ||
       identical(cg@graph_class, "PDAG") ||
       identical(cg@graph_class, "MPDAG") ||
@@ -185,9 +165,6 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' no parallel edges).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Deprecated and will be removed in caugi 2.0.0. A
-#' graph's class is validated when the graph is built, so the class is
-#' trusted and there is nothing to force.
 #'
 #' @returns A logical value indicating whether the graph is simple.
 #'
@@ -209,11 +186,8 @@ is_acyclic <- function(cg, force_check = FALSE) {
 #' @concept queries
 #'
 #' @export
-is_simple <- function(cg, force_check = FALSE) {
+is_simple <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  if (!missing(force_check)) {
-    .warn_force_check_deprecated()
-  }
   rs_is_simple(cg@session)
 }
 
@@ -223,9 +197,6 @@ is_simple <- function(cg, force_check = FALSE) {
 #' Directed Acyclic Graph (DAG).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Deprecated and will be removed in caugi 2.0.0. A
-#' graph's class is validated when the graph is built, so the class is
-#' trusted and there is nothing to force.
 #'
 #' @returns A logical value indicating whether the graph is a DAG.
 #'
@@ -258,13 +229,9 @@ is_simple <- function(cg, force_check = FALSE) {
 #' @concept queries
 #'
 #' @export
-is_dag <- function(cg, force_check = FALSE) {
+is_dag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  if (!missing(force_check)) {
-    .warn_force_check_deprecated()
-  }
-
-  if (identical(cg@graph_class, "DAG") && !force_check) {
+  if (identical(cg@graph_class, "DAG")) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -279,9 +246,6 @@ is_dag <- function(cg, force_check = FALSE) {
 #' Partially Directed Acyclic Graph (PDAG).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Deprecated and will be removed in caugi 2.0.0. A
-#' graph's class is validated when the graph is built, so the class is
-#' trusted and there is nothing to force.
 #'
 #' @returns A logical value indicating whether the graph is a PDAG.
 #' @examples
@@ -320,13 +284,9 @@ is_dag <- function(cg, force_check = FALSE) {
 #' @concept queries
 #'
 #' @export
-is_pdag <- function(cg, force_check = FALSE) {
+is_pdag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  if (!missing(force_check)) {
-    .warn_force_check_deprecated()
-  }
-
-  if (cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG") && !force_check) {
+  if (cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG")) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -440,9 +400,6 @@ is_mpdag <- function(cg) {
 #' @description Checks if the given `caugi` graph is an undirected graph (UG).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Deprecated and will be removed in caugi 2.0.0. A
-#' graph's class is validated when the graph is built, so the class is
-#' trusted and there is nothing to force.
 #'
 #' @returns A logical value indicating whether the graph is an UG.
 #'
@@ -462,13 +419,9 @@ is_mpdag <- function(cg) {
 #' @concept queries
 #'
 #' @export
-is_ug <- function(cg, force_check = FALSE) {
+is_ug <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  if (!missing(force_check)) {
-    .warn_force_check_deprecated()
-  }
-
-  if (identical(cg@graph_class, "UG") && !force_check) {
+  if (identical(cg@graph_class, "UG")) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -486,9 +439,6 @@ is_ug <- function(cg, force_check = FALSE) {
 #' and the directed part must be acyclic.
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Deprecated and will be removed in caugi 2.0.0. A
-#' graph's class is validated when the graph is built, so the class is
-#' trusted and there is nothing to force.
 #'
 #' @returns A logical value indicating whether the graph is an ADMG.
 #'
@@ -510,13 +460,9 @@ is_ug <- function(cg, force_check = FALSE) {
 #' @concept queries
 #'
 #' @export
-is_admg <- function(cg, force_check = FALSE) {
+is_admg <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  if (!missing(force_check)) {
-    .warn_force_check_deprecated()
-  }
-
-  if (identical(cg@graph_class, "ADMG") && !force_check) {
+  if (identical(cg@graph_class, "ADMG")) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -535,9 +481,6 @@ is_admg <- function(cg, force_check = FALSE) {
 #' anterior constraint, and undirected constraint).
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Deprecated and will be removed in caugi 2.0.0. A
-#' graph's class is validated when the graph is built, so the class is
-#' trusted and there is nothing to force.
 #'
 #' @returns A logical value indicating whether the graph is an AG.
 #'
@@ -560,13 +503,9 @@ is_admg <- function(cg, force_check = FALSE) {
 #' @concept queries
 #'
 #' @export
-is_ag <- function(cg, force_check = FALSE) {
+is_ag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  if (!missing(force_check)) {
-    .warn_force_check_deprecated()
-  }
-
-  if (identical(cg@graph_class, "AG") && !force_check) {
+  if (identical(cg@graph_class, "AG")) {
     is_it <- TRUE
   } else {
     # if we can't be sure from the class, we check
@@ -635,9 +574,6 @@ is_pag <- function(cg) {
 #' check is polynomial in the size of the graph.
 #'
 #' @param cg A `caugi` object.
-#' @param force_check Deprecated and will be removed in caugi 2.0.0. A
-#' graph's class is validated when the graph is built, so the class is
-#' trusted and there is nothing to force.
 #'
 #' @returns A logical value indicating whether the graph is a MAG.
 #'
@@ -653,11 +589,8 @@ is_pag <- function(cg) {
 #' @concept queries
 #'
 #' @export
-is_mag <- function(cg, force_check = FALSE) {
+is_mag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
-  if (!missing(force_check)) {
-    .warn_force_check_deprecated()
-  }
   rs_is_mag(cg@session)
 }
 
@@ -1326,8 +1259,6 @@ formals(spouses) <- alist(cg = , nodes = NULL, index = NULL)
 #' district(s) containing these nodes.
 #' @param index Optional numeric vector of 1-based node indices. If supplied,
 #' returns district(s) containing these indices.
-#' @param all DEPRECATED (If `TRUE`, return all districts explicitly.
-#' Cannot be combined with `nodes` or `index`.)
 #'
 #' @returns If all districts are requested: a list of character vectors, one per
 #' district. If `nodes`/`index` are supplied: either a character vector (single
@@ -1349,18 +1280,8 @@ formals(spouses) <- alist(cg = , nodes = NULL, index = NULL)
 #' @concept queries
 #'
 #' @export
-# Implemented directly in Rust via `districts()` in `src/rust/src/lib.rs`,
-# with deprecation-warning compatibility handled in R.
-districts <- function(cg, nodes = NULL, index = NULL, all = NULL) {
-  if (!missing(all)) {
-    warning(
-      "`all` argument is deprecated and will be removed in a future version. ",
-      "To get all districts, simply call `districts(cg)` without `nodes` or `index`.",
-      call. = FALSE
-    )
-  }
-
-  .Call(wrap__districts, cg, nodes, index, all)
+districts <- function(cg, nodes = NULL, index = NULL) {
+  .Call(wrap__districts, cg, nodes, index)
 }
 
 #' @title M-separation test for AGs, PAGs and ADMGs

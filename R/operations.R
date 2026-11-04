@@ -619,7 +619,6 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 #' If the PDAG cannot be consistently extended to a DAG, the function will raise an error.
 #'
 #' @param cg A `caugi` object of class `"PDAG"`, `"MPDAG"`, or `"CPDAG"`.
-#' @param PDAG Deprecated alias for `cg`. Use `cg` instead.
 #'
 #' @returns A `caugi` object of class `"DAG"` representing a DAG extension
 #' of the input PDAG.
@@ -641,17 +640,7 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 #' extension of a partially directed acyclic graph".
 #'
 #' @export
-dag_from_pdag <- function(cg, PDAG) {
-  if (!missing(PDAG)) {
-    warning(
-      "The `PDAG` argument of `dag_from_pdag()` is deprecated; ",
-      "use `cg` instead.",
-      call. = FALSE
-    )
-    if (missing(cg)) {
-      cg <- PDAG
-    }
-  }
+dag_from_pdag <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
   if (!(cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG"))) {
     stop("Input must be a caugi PDAG/MPDAG/CPDAG graph")

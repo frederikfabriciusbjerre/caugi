@@ -16,7 +16,7 @@ A list with \code{object} (proxy) and \code{path}.
 }
 \description{
 Provides a proxy representation for waldo comparison that
-compares graph content (nodes, edges, simple, class) rather than session
+compares graph content (nodes, edges, class) rather than session
 identity.
 }
 \keyword{internal}

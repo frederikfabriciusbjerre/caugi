@@ -4,7 +4,7 @@
 \alias{.get_edges}
 \title{Build edges \code{data.table} from verb call.}
 \usage{
-.get_edges(from, edge, to, calls, simple = TRUE)
+.get_edges(from, edge, to, calls)
 }
 \arguments{
 \item{from}{Character vector of source node names.}
@@ -14,8 +14,6 @@
 \item{to}{Character vector of target node names.}
 
 \item{calls}{List of calls from \code{...}.}
-
-\item{simple}{Logical, whether the graph is simple or not.}
 }
 \value{
 A \code{data.table} with columns \code{from}, \code{edge}, and \code{to}.

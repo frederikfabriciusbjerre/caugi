@@ -8,8 +8,7 @@
   cg,
   nodes = NULL,
   edges = NULL,
-  action = c("add", "remove", "replace"),
-  inplace = FALSE
+  action = c("add", "remove", "replace")
 )
 }
 \arguments{
@@ -21,8 +20,6 @@
 add/remove.}
 
 \item{action}{One of \code{"add"}, \code{"remove"}, or \code{"replace"}.}
-
-\item{inplace}{DEPRECATED Ignored. Kept for backward compatibility.}
 }
 \value{
 The updated \code{caugi} object.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/caugi.R
 \name{.default_simple}
 \alias{.default_simple}
-\title{Default \code{simple} flag for a graph class}
+\title{\code{simple} flag for a graph class}
 \usage{
 .default_simple(class)
 }
@@ -14,7 +14,7 @@ A logical scalar.
 }
 \description{
 Only \code{"UNKNOWN"} and \code{"ADMG"} allow multiple edges between a
-pair of nodes by default; every other class is simple. \code{"AUTO"} builds
-permissively and takes the default of the class it resolves to.
+pair of nodes; every other class is simple. \code{"AUTO"} builds
+permissively and takes the flag of the class it resolves to.
 }
 \keyword{internal}

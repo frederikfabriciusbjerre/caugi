@@ -543,7 +543,7 @@ test_that("dagitty -> caugi: respects `simple` flag and builds session", {
   cg <- as_caugi(g, class = "DAG")
 
   expect_true(!is.null(cg@session))
-  expect_true(isTRUE(cg@simple))
+  expect_true(rs_simple(cg@session))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────

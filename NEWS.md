@@ -1,5 +1,23 @@
 # caugi (development version)
 
+## Breaking changes
+
+* The deprecated API is removed (#370):
+  * the `simple` argument of `caugi()` and `as_caugi()`, and the `@simple`
+    property. The graph class decides whether multiple edges are allowed;
+    `is_simple()` checks the graph itself.
+  * the `build` and `state` arguments of `caugi()`, and the `@ptr`, `@built`,
+    `@name_index_map` and `@.state` properties.
+  * the `inplace` argument of `add_edges()`, `remove_edges()`, `set_edges()`,
+    `add_nodes()` and `remove_nodes()`.
+  * the `force_check` argument of `is_acyclic()`, `is_simple()`, `is_dag()`,
+    `is_pdag()`, `is_ug()`, `is_admg()`, `is_ag()` and `is_mag()`.
+  * the `all` argument of `districts()`, the `PDAG` argument of
+    `dag_from_pdag()`, and the `lazy` argument of `read_caugi()` and
+    `caugi_deserialize()`.
+  * `minimal_d_separator()`; use `minimal_separator()`.
+  * `caugi_default_options()`; use `caugi_options(reset = TRUE)`.
+
 ## New Features
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
