@@ -155,9 +155,9 @@
 
 ## Bug Fixes
 
-* `to_mermaid()` writes every node as `nK["name"]` with a generated ID. It
-  dropped isolated nodes when the graph had edges, and wrote IDs that Mermaid
-  rejects, such as quoted names or a node named `end` (#413).
+* `to_mermaid()` keeps isolated nodes when the graph has edges. A node whose
+  name Mermaid can't read as an ID, such as `my var` or `end`, is written as
+  `nK["name"]` with a generated ID, not as an ID Mermaid rejects (#413).
 
 * Every exporter refuses edges with a custom glyph from
   `register_caugi_edge()`, as none can record what the glyph means.
