@@ -57,6 +57,14 @@ cg_from_rc_dag <- function(A) {
   )
 }
 
+test_that("AID is 0 on graphs with fewer than 2 nodes", {
+  for (g in list(caugi(class = "DAG"), caugi(A, class = "DAG"))) {
+    for (type in c("oset", "ancestor", "parent")) {
+      expect_identical(aid(g, g, type = type), 0)
+      expect_identical(aid(g, g, type = type, normalized = FALSE), 0L)
+    }
+  }
+})
 
 test_that("AID wrappers match gadjid_r and known values", {
   # ---- fixtures (copied from gadjid_r tests) ---------------------------------
