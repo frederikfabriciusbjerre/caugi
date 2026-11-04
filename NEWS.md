@@ -159,6 +159,10 @@
 
 ## Bug Fixes
 
+* `plot()` errors on a `size` that is not positive, or a negative `padding`,
+  `lwd`, `arrow_size` or `circle_size`, in `node_style` or `edge_style`. They
+  were drawn as given.
+
 * `aid()` returns 0 for graphs with fewer than two nodes, as `hd()` and
   `shd()` do, instead of erroring.
 
