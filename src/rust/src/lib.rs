@@ -324,21 +324,6 @@ fn parse_district_index1(index: Robj) -> Vec<i32> {
     throw_r_error(err_msg);
 }
 
-fn parse_optional_single_logical(value: Robj, err_msg: &str) -> Option<bool> {
-    if value.is_null() {
-        return None;
-    }
-    let vals: Logicals = value.try_into().unwrap_or_else(|_| throw_r_error(err_msg));
-    if vals.len() != 1 {
-        throw_r_error(err_msg);
-    }
-    let out = vals.elt(0);
-    if out.is_na() {
-        throw_r_error(err_msg);
-    }
-    Some(out.is_true())
-}
-
 fn run_relation_query<F>(
     session: &mut ExternalPtr<GraphSession>,
     idx0: Vec<i32>,
@@ -1486,7 +1471,7 @@ fn spouses(cg: Robj, nodes: Robj, index: Robj) -> Robj {
 }
 
 #[extendr]
-fn districts(cg: Robj, nodes: Robj, index: Robj, all: Robj) -> Robj {
+fn districts(cg: Robj, nodes: Robj, index: Robj) -> Robj {
     let mut session = session_ptr_from_cg(&cg);
 
     let nodes_supplied = !nodes.is_null();
@@ -1496,21 +1481,7 @@ fn districts(cg: Robj, nodes: Robj, index: Robj, all: Robj) -> Robj {
         throw_r_error("Supply either `nodes` or `index`, not both.");
     }
 
-    let all_opt = parse_optional_single_logical(all, "`all` must be TRUE, FALSE, or NULL.");
-    if all_opt == Some(true) && (nodes_supplied || index_supplied) {
-        throw_r_error("`all = TRUE` cannot be combined with `nodes` or `index`.");
-    }
-
-    if all_opt == Some(false) && !nodes_supplied && !index_supplied {
-        throw_r_error("`all = FALSE` requires `nodes` or `index` to be supplied.");
-    }
-
-    let all_requested = match all_opt {
-        None => !nodes_supplied && !index_supplied,
-        Some(v) => v,
-    };
-
-    if all_requested {
+    if !nodes_supplied && !index_supplied {
         let result = session
             .as_mut()
             .districts()

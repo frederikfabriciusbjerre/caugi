@@ -605,15 +605,6 @@ test_that("minimal_separator on AG with bidirected confounder returns NULL", {
   expect_null(minimal_separator(cg, "X", "Y"))
 })
 
-test_that("minimal_d_separator() is a deprecated alias", {
-  cg <- caugi(A %-->% B %-->% C, class = "DAG")
-  expect_warning(
-    sep <- minimal_d_separator(cg, "A", "C"),
-    "deprecated"
-  )
-  expect_equal(sep, "B")
-})
-
 # ──────────────────────────────────────────────────────────────────────────────
 # ── Worked examples from van der Zander & Liśkiewicz (UAI 2020), Figure 4 ────
 # ──────────────────────────────────────────────────────────────────────────────

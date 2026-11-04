@@ -4,7 +4,7 @@
 \alias{districts}
 \title{Get districts (c-components) of an ADMG or AG}
 \usage{
-districts(cg, nodes = NULL, index = NULL, all = NULL)
+districts(cg, nodes = NULL, index = NULL)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class ADMG or AG.}
@@ -14,9 +14,6 @@ district(s) containing these nodes.}
 
 \item{index}{Optional numeric vector of 1-based node indices. If supplied,
 returns district(s) containing these indices.}
-
-\item{all}{DEPRECATED (If \code{TRUE}, return all districts explicitly.
-Cannot be combined with \code{nodes} or \code{index}.)}
 }
 \value{
 If all districts are requested: a list of character vectors, one per

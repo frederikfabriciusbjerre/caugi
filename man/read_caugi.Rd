@@ -4,12 +4,10 @@
 \alias{read_caugi}
 \title{Read caugi Graph from File}
 \usage{
-read_caugi(path, lazy)
+read_caugi(path)
 }
 \arguments{
 \item{path}{Character string specifying the file path.}
-
-\item{lazy}{DEPRECATED, no longer necessary. The graph is always built lazily, so this argument is ignored.}
 }
 \value{
 A \code{caugi} object.

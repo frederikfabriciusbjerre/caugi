@@ -4,12 +4,10 @@
 \alias{caugi_deserialize}
 \title{Deserialize caugi Graph from JSON String}
 \usage{
-caugi_deserialize(json, lazy)
+caugi_deserialize(json)
 }
 \arguments{
 \item{json}{Character string containing the JSON representation.}
-
-\item{lazy}{DEPRECATED, no longer necessary. The graph is always built lazily, so this argument is ignored.}
 }
 \value{
 A \code{caugi} object.

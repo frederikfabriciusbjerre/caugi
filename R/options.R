@@ -2,27 +2,7 @@
 # ────────────────────────────── caugi options ─────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
-#' Default options for caugi
-#'
-#' Deprecated. Use `caugi_options(reset = TRUE)` to reset the options to their
-#' defaults; `caugi_options()` then returns them.
-#'
-#' @return A list of default options for caugi.
-#'
-#' @seealso [caugi_options()] for setting and getting options
-#' @keywords internal
-#' @export
-caugi_default_options <- function() {
-  .Deprecated(
-    msg = paste0(
-      "`caugi_default_options()` is deprecated. ",
-      "Use `caugi_options(reset = TRUE)` to reset options to their defaults."
-    )
-  )
-  .caugi_default_options()
-}
-
-#' Default options for caugi, without the deprecation warning.
+#' Default options for caugi.
 #' @keywords internal
 #' @noRd
 .caugi_default_options <- function() {

@@ -26,8 +26,6 @@
 #'  integer coded matrices, data.frames and `dagitty` objects, and is validated
 #'  as in [caugi()]. For a data.frame, it defaults to the data.frame's
 #'  `"graph_class"` attribute, which [as.data.frame()] sets, if present.
-#' @param simple Deprecated; see [caugi()]. If omitted (recommended), it is
-#' derived from `class`.
 #' @param collapse logical. If `TRUE` collapse mutual directed edges to
 #' undirected edges. Default is `FALSE`.
 #' @param collapse_to Character string to use as the edge glyph when collapsing.
@@ -123,7 +121,6 @@ as_caugi <- S7::new_generic(
       "PAG",
       "UNKNOWN"
     ),
-    simple = NULL,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -148,7 +145,6 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -172,7 +168,6 @@ S7::method(
       edge = character(),
       to = character(),
       nodes = nm,
-      simple = simple,
       class = class
     ))
   }
@@ -222,7 +217,6 @@ S7::method(
     edge = edge,
     to = to,
     nodes = nm,
-    simple = simple,
     class = class
   )
 }
@@ -244,7 +238,6 @@ register_graphnel_s4_class <- function() {
       "PAG",
       "UNKNOWN"
     ),
-    simple = NULL,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -277,7 +270,6 @@ register_graphnel_s4_class <- function() {
         edge = character(),
         to = character(),
         nodes = nm,
-        simple = simple,
         class = class
       ))
     }
@@ -308,7 +300,6 @@ register_graphnel_s4_class <- function() {
       edge = edge,
       to = to,
       nodes = nm,
-      simple = simple,
       class = class
     )
   }
@@ -330,7 +321,6 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -482,7 +472,6 @@ S7::method(
         edge = character(),
         to = character(),
         nodes = nm,
-        simple = simple,
         class = class
       ))
     }
@@ -515,7 +504,6 @@ S7::method(
     edge = edge,
     to = to,
     nodes = nm,
-    simple = simple,
     class = class
   )
 }
@@ -536,7 +524,6 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -556,7 +543,6 @@ S7::method(
   as_caugi(
     x,
     class = class,
-    simple = simple,
     collapse = collapse,
     collapse_to = collapse_to,
     ...
@@ -579,7 +565,6 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -595,7 +580,6 @@ S7::method(
   as_caugi(
     x,
     class = class,
-    simple = simple,
     collapse = collapse,
     collapse_to = collapse_to,
     ...
@@ -619,7 +603,6 @@ register_matrix_s4_class <- function() {
       "PAG",
       "UNKNOWN"
     ),
-    simple = NULL,
     collapse = FALSE,
     collapse_to = "---",
     ...
@@ -629,7 +612,6 @@ register_matrix_s4_class <- function() {
     as_caugi(
       m,
       class = class,
-      simple = simple,
       collapse = collapse,
       collapse_to = collapse_to,
       ...
@@ -653,7 +635,6 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -665,7 +646,6 @@ S7::method(
   as_caugi(
     tidygraph::as.igraph(x),
     class = class,
-    simple = simple,
     collapse = collapse,
     collapse_to = collapse_to,
     ...
@@ -688,7 +668,6 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -707,7 +686,6 @@ S7::method(
       edge = character(),
       to = character(),
       nodes = nm,
-      simple = simple,
       class = class
     ))
   }
@@ -785,7 +763,6 @@ S7::method(
     edge = edge,
     to = to,
     nodes = nm,
-    simple = simple,
     class = class
   )
 }
@@ -806,7 +783,6 @@ S7::method(
     "PAG",
     "UNKNOWN"
   ),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -826,7 +802,6 @@ S7::method(
       edge = character(),
       to = character(),
       nodes = nm,
-      simple = simple,
       class = class
     ))
   }
@@ -864,7 +839,6 @@ S7::method(
     edge = edge,
     to = to,
     nodes = nm,
-    simple = simple,
     class = class
   )
 }
@@ -882,7 +856,6 @@ S7::method(as_caugi, S7::class_data.frame) <- function(
     "PAG",
     "UNKNOWN"
   ),
-  simple = NULL,
   collapse = FALSE,
   collapse_to = "---",
   ...
@@ -894,5 +867,5 @@ S7::method(as_caugi, S7::class_data.frame) <- function(
   if (!isFALSE(collapse)) {
     stop("`collapse` is not supported for data.frames.", call. = FALSE)
   }
-  caugi(edges_df = x, simple = simple, class = class)
+  caugi(edges_df = x, class = class)
 }

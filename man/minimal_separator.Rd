@@ -2,7 +2,6 @@
 % Please edit documentation in R/adjustment.R
 \name{minimal_separator}
 \alias{minimal_separator}
-\alias{minimal_d_separator}
 \title{Compute a minimal separator}
 \source{
 van der Zander, B. & Liśkiewicz, M. (2020). Finding Minimal
@@ -13,18 +12,6 @@ Machine Learning Research 115:637-647 Available from
 }
 \usage{
 minimal_separator(
-  cg,
-  X = NULL,
-  Y = NULL,
-  I = character(0),
-  R = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  I_index = NULL,
-  R_index = NULL
-)
-
-minimal_d_separator(
   cg,
   X = NULL,
   Y = NULL,

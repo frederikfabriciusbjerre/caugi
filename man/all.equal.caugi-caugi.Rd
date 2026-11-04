@@ -18,7 +18,7 @@
 }
 \description{
 S3 method for \code{all.equal} that compares caugi objects by their
-graph content (nodes, edges, simple, class) rather than session identity.
+graph content (nodes, edges, class) rather than session identity.
 This is used by testthat edition 2.
 }
 \keyword{internal}

@@ -18,8 +18,6 @@
 #' @param edge Character vector of edge types. Default is `NULL`.
 #' @param to Character vector of target node names. Default is `NULL`.
 #' @param name Character vector of node names. Default is `NULL`.
-#' @param inplace DEPRECATED This parameter is deprecated and will be ignored.
-#' Graphs are always modified via copy-on-write.
 #'
 #' @returns The updated `caugi`.
 #'
@@ -72,18 +70,10 @@ add_edges <- function(
   ...,
   from = NULL,
   edge = NULL,
-  to = NULL,
-  inplace = FALSE
+  to = NULL
 ) {
-  if (!missing(inplace)) {
-    warning(
-      "The `inplace` argument is deprecated and will be ignored. ",
-      "Graphs are always modified via copy-on-write.",
-      call. = FALSE
-    )
-  }
-
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "add_edges")
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
   if (has_expr && has_vec) {
@@ -111,18 +101,10 @@ remove_edges <- function(
   ...,
   from = NULL,
   edge = NULL,
-  to = NULL,
-  inplace = FALSE
+  to = NULL
 ) {
-  if (!missing(inplace)) {
-    warning(
-      "The `inplace` argument is deprecated and will be ignored. ",
-      "Graphs are always modified via copy-on-write.",
-      call. = FALSE
-    )
-  }
-
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "remove_edges")
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
 
@@ -168,7 +150,7 @@ remove_edges <- function(
       stop("`from`, `edge`, `to` must be equal length.", call. = FALSE)
     }
   } else {
-    edges <- .get_edges(from, edge, to, calls, simple = cg@simple)
+    edges <- .get_edges(from, edge, to, calls)
     from <- edges$from
     edge <- edges$edge
     to <- edges$to
@@ -192,18 +174,10 @@ set_edges <- function(
   ...,
   from = NULL,
   edge = NULL,
-  to = NULL,
-  inplace = FALSE
+  to = NULL
 ) {
-  if (!missing(inplace)) {
-    warning(
-      "The `inplace` argument is deprecated and will be ignored. ",
-      "Graphs are always modified via copy-on-write.",
-      call. = FALSE
-    )
-  }
-
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "set_edges")
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
   if (has_expr && has_vec) {
@@ -228,16 +202,9 @@ set_edges <- function(
 
 #' @describeIn caugi_verbs Add nodes.
 #' @export
-add_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
-  if (!missing(inplace)) {
-    warning(
-      "The `inplace` argument is deprecated and will be ignored. ",
-      "Graphs are always modified via copy-on-write.",
-      call. = FALSE
-    )
-  }
-
+add_nodes <- function(cg, ..., name = NULL) {
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "add_nodes")
   nodes <- .get_nodes(name, calls)
   if (!nrow(nodes)) {
     return(cg)
@@ -247,16 +214,9 @@ add_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 
 #' @describeIn caugi_verbs Remove nodes.
 #' @export
-remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
-  if (!missing(inplace)) {
-    warning(
-      "The `inplace` argument is deprecated and will be ignored. ",
-      "Graphs are always modified via copy-on-write.",
-      call. = FALSE
-    )
-  }
-
+remove_nodes <- function(cg, ..., name = NULL) {
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "remove_nodes")
   nodes <- .get_nodes(name, calls)
   if (!nrow(nodes)) {
     return(cg)
@@ -314,12 +274,11 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 #' @param edge Character vector of edge types.
 #' @param to Character vector of target node names.
 #' @param calls List of calls from `...`.
-#' @param simple Logical, whether the graph is simple or not.
 #'
 #' @returns A `data.table` with columns `from`, `edge`, and `to`.
 #'
 #' @keywords internal
-.get_edges <- function(from, edge, to, calls, simple = TRUE) {
+.get_edges <- function(from, edge, to, calls) {
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
   edges <- if (has_vec) {
     if (is.null(from) || is.null(edge) || is.null(to)) {
@@ -351,7 +310,6 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 #' @param session A GraphSession external pointer.
 #' @param node_names Character vector of node names.
 #' @param edges_dt A data.table with columns `from`, `edge`, `to`.
-#' @param simple Logical; whether the graph is simple.
 #' @param class Character; target graph class.
 #'
 #' @returns A list with `session` and resolved `class`.
@@ -361,13 +319,11 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   session,
   node_names,
   edges_dt,
-  simple,
   class
 ) {
   n <- length(node_names)
 
   rs_set_n(session, as.integer(n))
-  rs_set_simple(session, isTRUE(simple))
   rs_set_names(session, node_names)
 
   resolved_class <- class
@@ -401,7 +357,6 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
 #' @param edges A `data.frame` with columns `from`, `edge`, `to` for edges to
 #' add/remove.
 #' @param action One of `"add"`, `"remove"`, or `"replace"`.
-#' @param inplace DEPRECATED Ignored. Kept for backward compatibility.
 #'
 #' @importFrom data.table `%chin%`
 #'
@@ -412,24 +367,14 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   cg,
   nodes = NULL,
   edges = NULL,
-  action = c("add", "remove", "replace"),
-  inplace = FALSE
+  action = c("add", "remove", "replace")
 ) {
-  if (!missing(inplace)) {
-    warning(
-      "The `inplace` argument is deprecated and will be ignored. ",
-      "Graphs are always modified via copy-on-write.",
-      call. = FALSE
-    )
-  }
-
   action <- match.arg(action)
   session <- cg@session
 
   # Get current state from Rust session (session is always present)
   current_nodes <- cg@nodes$name
   current_edges <- cg@edges
-  current_simple <- rs_simple(session)
   current_class <- rs_class(session)
 
   # Rust adds or replaces the edges, matching a symmetric edge whichever way
@@ -506,7 +451,6 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
     session = cloned_session,
     node_names = current_nodes,
     edges_dt = current_edges,
-    simple = current_simple,
     class = current_class
   )
   caugi(.session = cloned_session)

@@ -95,7 +95,7 @@ components <- function(cg, mode) .Call(wrap__components, cg, mode)
 
 spouses <- function(cg, nodes, index) .Call(wrap__spouses, cg, nodes, index)
 
-districts <- function(cg, nodes, index, all) .Call(wrap__districts, cg, nodes, index, all)
+districts <- function(cg, nodes, index) .Call(wrap__districts, cg, nodes, index)
 
 parents <- function(cg, nodes, index) .Call(wrap__parents, cg, nodes, index)
 

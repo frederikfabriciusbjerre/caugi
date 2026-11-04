@@ -39,14 +39,6 @@
 #' from another `caugi` object, `cg`. Rows with an `NA` edge declare isolated
 #' nodes, so `caugi(edges_df = as.data.frame(cg))` keeps the isolated nodes of
 #' `cg`.
-#' @param simple Deprecated in caugi 1.4.0 and
-#' to be removed in 2.0.0; the graph class now decides whether multiple edges
-#' are allowed. If omitted (recommended), it is derived from `class`: `FALSE`
-#' for `"UNKNOWN"` and `"ADMG"` (so self-loops and parallel edges in
-#' `"UNKNOWN"`, and bows in `"ADMG"`, are allowed) and `TRUE` for every other
-#' class. With `"AUTO"`, it follows the class the graph resolves to. Supplying it gives a deprecation warning but is still honoured:
-#' `TRUE` forbids parallel edges and self-loops, and `FALSE` is only allowed
-#' for `"UNKNOWN"`, `"ADMG"`, and `"AG"`.
 #' @param class Character; one of `"AUTO"`, `"DAG"`, `"UG"`, `"PDAG"`, `"MPDAG"`,
 #' `"CPDAG"`, `"ADMG"`, `"AG"`, `"PAG"`, or `"UNKNOWN"`. `"AUTO"` will
 #' automatically pick the appropriate class based on the first match in the
@@ -59,14 +51,6 @@
 #' and to `"UNKNOWN"` otherwise.
 #' @param .session For internal use. Build a graph by supplying a
 #' pre-constructed session pointer from Rust.
-#' @param build DEPRECATED. The graph is always built lazily, so this argument is ignored.
-#' Can use [build()] to force lazy compilation if desired.
-#' @param state DEPRECATED. Replaced by `.session`.
-#'
-#' @details
-#' The `@simple` property reports whether the graph forbids parallel edges and
-#' self-loops. It is deprecated together with the `simple` argument and will
-#' be removed in caugi 2.0.0; use [is_simple()] to check the graph itself.
 #'
 #' @returns A `caugi` S7 object containing the nodes, edges, and a
 #' pointer to the underlying Rust graph structure.
@@ -157,48 +141,6 @@ caugi <- S7::new_class(
         )
       }
     ),
-    ptr = S7::new_property(
-      S7::class_any,
-      getter = function(self) {
-        .deprecated_field_warning(
-          "`@ptr` is deprecated. Use `@session` instead."
-        )
-        NULL
-      },
-      setter = function(self, value) {
-        .deprecated_field_warning(
-          "`@ptr` is deprecated. Use `@session` instead."
-        )
-        stop(
-          "`ptr` property is read-only via @ <-.",
-          call. = FALSE
-        )
-      }
-    ),
-    simple = S7::new_property(
-      S7::class_logical,
-      getter = function(self) {
-        rs_simple(self@session)
-      }
-    ),
-    built = S7::new_property(
-      S7::class_any,
-      getter = function(self) {
-        .deprecated_field_warning(
-          "`@built` is deprecated. The graph is always built lazily."
-        )
-        NULL
-      },
-      setter = function(self, value) {
-        .deprecated_field_warning(
-          "`@built` is deprecated. The graph is always built lazily."
-        )
-        stop(
-          "`built` property is read-only via @ <-.",
-          call. = FALSE
-        )
-      }
-    ),
     graph_class = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -211,51 +153,8 @@ caugi <- S7::new_class(
           call. = FALSE
         )
       }
-    ),
-    name_index_map = S7::new_property(
-      S7::class_any,
-      getter = function(self) {
-        .deprecated_field_warning("`@name_index_map` is deprecated.")
-        NULL
-      },
-      setter = function(self, value) {
-        .deprecated_field_warning("`@name_index_map` is deprecated.")
-        stop(
-          "`name_index_map` property is read-only via @ <-.",
-          call. = FALSE
-        )
-      }
-    ),
-    `.state` = S7::new_property(
-      S7::class_any,
-      getter = function(self) {
-        .deprecated_field_warning("`@.state` is deprecated.")
-        NULL
-      },
-      setter = function(self, value) {
-        .deprecated_field_warning("`@.state` is deprecated.")
-        stop(
-          "`.state` property is read-only via @ <-.",
-          call. = FALSE
-        )
-      }
     )
   ),
-  validator = function(self) {
-    # Allow simple = FALSE for UNKNOWN, ADMG, and AG (mixed edges can share pairs)
-    simple <- rs_simple(self@session)
-    class <- rs_class(self@session)
-    if (
-      isFALSE(simple) &&
-        !identical(class, "UNKNOWN") &&
-        !identical(class, "ADMG") &&
-        !identical(class, "AG")
-    ) {
-      return("If simple = FALSE, class must be 'UNKNOWN', 'ADMG', or 'AG'")
-    }
-
-    NULL
-  },
   constructor = function(
     ...,
     from = NULL,
@@ -263,8 +162,6 @@ caugi <- S7::new_class(
     to = NULL,
     nodes = NULL,
     edges_df = NULL,
-    simple = NULL, # deprecated
-    build = NULL, # deprecated
     class = c(
       "AUTO",
       "DAG",
@@ -277,23 +174,8 @@ caugi <- S7::new_class(
       "PAG",
       "UNKNOWN"
     ),
-    state = NULL, # deprecated
     .session = NULL
   ) {
-    if (!missing(build)) {
-      warning(
-        "`build` is deprecated. Graph sessions are always created lazily.",
-        call. = FALSE
-      )
-    }
-
-    if (!is.null(state)) {
-      warning(
-        "`state` is deprecated and ignored.",
-        call. = FALSE
-      )
-    }
-
     if (!is.null(.session)) {
       .caugi_env$constructing_session <- TRUE
       on.exit(
@@ -309,14 +191,9 @@ caugi <- S7::new_class(
     }
     class <- toupper(class)
     class <- match.arg(class)
-    default_simple <- is.null(simple)
-    if (default_simple) {
-      simple <- .default_simple(class)
-    } else {
-      .warn_simple_deprecated()
-    }
 
     calls <- as.list(substitute(list(...)))[-1L]
+    .stop_if_named_dots(calls, "caugi")
     has_expr <- length(calls) > 0L
     has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
     has_df <- !is.null(edges_df)
@@ -417,19 +294,6 @@ caugi <- S7::new_class(
       to <- to[!iso]
     }
 
-    if (
-      !default_simple &&
-        !simple &&
-        class != "UNKNOWN" &&
-        class != "ADMG" &&
-        class != "AG"
-    ) {
-      stop(
-        "If simple = FALSE, class must be 'UNKNOWN', 'ADMG', or 'AG'",
-        call. = FALSE
-      )
-    }
-
     # Parse into edges + declared nodes
     if (has_expr) {
       terms <- .collect_edges_nodes(calls)
@@ -463,7 +327,7 @@ caugi <- S7::new_class(
     reg <- caugi_registry()
 
     resolved_class <- class
-    session <- rs_new(reg, n, simple, class)
+    session <- rs_new(reg, n, .default_simple(class), class)
 
     if (n > 0L) {
       rs_set_names(session, nodes$name)
@@ -484,10 +348,8 @@ caugi <- S7::new_class(
 
     if (!identical(resolved_class, class)) {
       rs_set_class(session, resolved_class)
-      if (default_simple) {
-        # AUTO builds permissively; the resolved class sets the rule.
-        rs_set_simple(session, .default_simple(resolved_class))
-      }
+      # AUTO builds permissively; the resolved class sets the rule.
+      rs_set_simple(session, .default_simple(resolved_class))
     }
 
     .caugi_env$constructing_session <- TRUE
@@ -566,36 +428,11 @@ caugi <- S7::new_class(
   )
 }
 
-#' @title Suppress field warning
-#'
-#' @description Internal helper to suppress field warning.
-#'
-#' @returns A logical value indicating whether the field
-#' warning should be suppressed.
-#'
-#' @keywords internal
-#' @noRd
-.supress_field_warning <- function() {
-  calls <- sys.calls()
-  if (length(calls) == 0L) {
-    return(FALSE)
-  }
-
-  call_text <- vapply(
-    calls,
-    function(cl) paste(deparse(cl, nlines = 1L), collapse = ""),
-    character(1)
-  )
-
-  # Top-level task callbacks execute through an internal `cb(...)` frame.
-  any(grepl("^cb\\(expr, value, (ok|succeeded), visible\\)$", call_text))
-}
-
-#' @title Default `simple` flag for a graph class
+#' @title `simple` flag for a graph class
 #'
 #' @description Only `"UNKNOWN"` and `"ADMG"` allow multiple edges between a
-#' pair of nodes by default; every other class is simple. `"AUTO"` builds
-#' permissively and takes the default of the class it resolves to.
+#' pair of nodes; every other class is simple. `"AUTO"` builds
+#' permissively and takes the flag of the class it resolves to.
 #'
 #' @param class Character; a graph class.
 #'
@@ -604,38 +441,4 @@ caugi <- S7::new_class(
 #' @keywords internal
 .default_simple <- function(class) {
   !class %in% c("UNKNOWN", "ADMG", "AUTO")
-}
-
-#' @title Warn that the `simple` argument is deprecated
-#'
-#' @description Signals a warning of class `caugi_deprecated_simple` (and
-#' `deprecatedWarning`).
-#'
-#' @returns `NULL`, invisibly.
-#'
-#' @keywords internal
-.warn_simple_deprecated <- function() {
-  warning(structure(
-    class = c(
-      "caugi_deprecated_simple",
-      "deprecatedWarning",
-      "warning",
-      "condition"
-    ),
-    list(
-      message = paste0(
-        "The `simple` argument is deprecated and will be removed in caugi ",
-        "2.0.0; the graph class now determines whether multiple edges are ",
-        "allowed."
-      ),
-      call = NULL
-    )
-  ))
-  invisible(NULL)
-}
-
-.deprecated_field_warning <- function(message) {
-  if (!.supress_field_warning()) {
-    warning(message, call. = FALSE)
-  }
 }

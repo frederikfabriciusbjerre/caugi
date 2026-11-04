@@ -4,14 +4,10 @@
 \alias{is_admg}
 \title{Is the \code{caugi} graph an ADMG?}
 \usage{
-is_admg(cg, force_check = FALSE)
+is_admg(cg)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
-
-\item{force_check}{Deprecated and will be removed in caugi 2.0.0. A
-graph's class is validated when the graph is built, so the class is
-trusted and there is nothing to force.}
 }
 \value{
 A logical value indicating whether the graph is an ADMG.

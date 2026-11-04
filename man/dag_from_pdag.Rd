@@ -4,12 +4,10 @@
 \alias{dag_from_pdag}
 \title{Extend a PDAG to a DAG using the Dor-Tarsi Algorithm}
 \usage{
-dag_from_pdag(cg, PDAG)
+dag_from_pdag(cg)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class \code{"PDAG"}, \code{"MPDAG"}, or \code{"CPDAG"}.}
-
-\item{PDAG}{Deprecated alias for \code{cg}. Use \code{cg} instead.}
 }
 \value{
 A \code{caugi} object of class \code{"DAG"} representing a DAG extension

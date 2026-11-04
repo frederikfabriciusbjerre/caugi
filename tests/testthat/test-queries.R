@@ -51,7 +51,7 @@ test_that("is_simple checks the graph structure", {
 
   # UNKNOWN allows multi-edges, but this graph has none
   cg_unknown <- caugi(A %-->% B, class = "UNKNOWN")
-  expect_false(cg_unknown@simple)
+  expect_false(rs_simple(cg_unknown@session))
   expect_true(is_simple(cg_unknown))
   expect_false(is_simple(caugi(A %-->% A, class = "UNKNOWN")))
 })
@@ -909,7 +909,7 @@ test_that("subgraph on graph without edges keeps nodes and empty edges", {
   expect_equal(nrow(s@edges), 0L)
   expect_true(!is.null(s@session))
   expect_identical(s@graph_class, g@graph_class)
-  expect_identical(s@simple, g@simple)
+  expect_identical(rs_simple(s@session), rs_simple(g@session))
 })
 
 test_that("cg[i] is subgraph()", {
@@ -1658,19 +1658,13 @@ test_that("getter and districts branches are covered", {
   )
   expect_setequal(spouses(cg_admg, index = 2), c("A", "C"))
 
-  # Test that deprecated 'all' parameter shows warning
-  expect_warning(
-    districts(cg_admg, all = TRUE),
-    "deprecated"
-  )
-
   # Test error for invalid index
   expect_error(
     districts(cg_admg, index = c(1, NA)),
     "`index` must be numeric without NA."
   )
 
-  # Test getting all districts (new API - no parameters)
+  # Test getting all districts
   all_districts <- districts(cg_admg)
   expect_true(is.list(all_districts))
   expect_true(length(all_districts) >= 1L)

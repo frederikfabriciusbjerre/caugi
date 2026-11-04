@@ -187,25 +187,25 @@ test_that("mutate_caugi applies the target class's multi-edge rule", {
   # A bow is a valid, non-simple ADMG.
   cg <- caugi(A %-->% B, A %<->% B, class = "UNKNOWN")
   cg_admg <- mutate_caugi(cg, class = "ADMG")
-  expect_false(cg_admg@simple)
+  expect_false(rs_simple(cg_admg@session))
   expect_silent(build(cg_admg))
   expect_equal(children(cg_admg, "A"), "B")
   expect_equal(spouses(cg_admg, "A"), "B")
 
   cg_back <- mutate_caugi(cg_admg, class = "UNKNOWN")
-  expect_false(cg_back@simple)
+  expect_false(rs_simple(cg_back@session))
   expect_silent(build(cg_back))
 
   # Simple-only targets become simple.
   cg_dag_like <- caugi(A %-->% B, B %-->% C, class = "UNKNOWN")
   cg_dag <- mutate_caugi(cg_dag_like, class = "DAG")
-  expect_true(cg_dag@simple)
+  expect_true(rs_simple(cg_dag@session))
   expect_silent(build(cg_dag))
   expect_equal(children(cg_dag, "A"), "B")
 
   # The target class decides, so a DAG converted to ADMG may gain bows.
   cg_admg2 <- mutate_caugi(caugi(A %-->% B, class = "DAG"), class = "ADMG")
-  expect_false(cg_admg2@simple)
+  expect_false(rs_simple(cg_admg2@session))
   expect_s7_class(add_edges(cg_admg2, A %<->% B), caugi)
 
   # Multi-edges cannot move into a simple-only class.
@@ -845,25 +845,6 @@ test_that("dag_from_pdag errors if PDAG cannot be extended to a DAG", {
     class = "PDAG"
   )
   expect_error(dag_from_pdag(PDAG), "PDAG cannot be extended to a DAG")
-})
-
-test_that("dag_from_pdag accepts the deprecated `PDAG` argument with a warning", {
-  pdag <- caugi(
-    A %---% B,
-    B %---% C,
-    class = "PDAG"
-  )
-  sig <- function(cg) {
-    e <- edges(cg)
-    sort(paste0(as.character(e$from), "->", as.character(e$to)))
-  }
-  expect_warning(
-    dag <- dag_from_pdag(PDAG = pdag),
-    "`PDAG` argument.*deprecated"
-  )
-  expect_equal(dag@graph_class, "DAG")
-  # The deprecated alias yields the same result as the current argument.
-  expect_setequal(sig(dag), sig(dag_from_pdag(pdag)))
 })
 
 # ──────────────────────────────────────────────────────────────────────────────

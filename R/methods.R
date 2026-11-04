@@ -92,7 +92,7 @@ print.caugi <- function(
     simple <- NA
   } else {
     graph_class <- x@graph_class
-    simple <- x@simple
+    simple <- rs_simple(session)
   }
 
   session_str <- if (is.null(session)) {
@@ -358,7 +358,7 @@ print.caugi_summary <- function(x, ...) {
 #' Proxy for waldo comparison of caugi objects
 #'
 #' @description Provides a proxy representation for waldo comparison that
-#' compares graph content (nodes, edges, simple, class) rather than session
+#' compares graph content (nodes, edges, class) rather than session
 #' identity.
 #'
 #' @param x A `caugi` object.
@@ -372,7 +372,6 @@ print.caugi_summary <- function(x, ...) {
   # Return a proxy with comparable properties (not the session pointer)
   list(
     object = list(
-      simple = x@simple,
       graph_class = x@graph_class,
       nodes = sort(x@nodes$name),
       edges = rs_canonical_edges(x@session)
@@ -384,7 +383,7 @@ print.caugi_summary <- function(x, ...) {
 #' Compare caugi objects for equality
 #'
 #' @description S3 method for `all.equal` that compares caugi objects by their
-#' graph content (nodes, edges, simple, class) rather than session identity.
+#' graph content (nodes, edges, class) rather than session identity.
 #' This is used by testthat edition 2.
 #'
 #' @param target A `caugi` object.
@@ -401,20 +400,6 @@ print.caugi_summary <- function(x, ...) {
   }
 
   diffs <- character(0)
-
-  # Compare simple flag
-  target_simple <- target@simple
-  current_simple <- current@simple
-  if (!identical(target_simple, current_simple)) {
-    diffs <- c(
-      diffs,
-      sprintf(
-        "simple: %s vs %s",
-        target_simple,
-        current_simple
-      )
-    )
-  }
 
   # Compare graph_class
   target_class <- target@graph_class
@@ -470,7 +455,7 @@ print.caugi_summary <- function(x, ...) {
 #' Equality operators for caugi objects
 #'
 #' @description S3 methods for `==` and `!=` that compare two caugi objects by
-#' their graph content (nodes, edges, simple, class) rather than session
+#' their graph content (nodes, edges, class) rather than session
 #' identity. Returns `FALSE` (resp. `TRUE`) when the other operand is not a
 #' caugi object.
 #'
