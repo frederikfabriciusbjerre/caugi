@@ -1147,6 +1147,10 @@ formals(posteriors) <- alist(
 #'
 #' @inheritParams parents
 #'
+#' @details In a PAG, the blanket is read off the member MAG from
+#' [pag_to_mag()]. Every member gives the same blanket, since Markov
+#' equivalent MAGs share their m-separations.
+#'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
 #'
