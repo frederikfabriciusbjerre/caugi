@@ -43,6 +43,7 @@ Other queries:
 [`edge_types()`](https://caugi.org/dev/reference/edge_types.md),
 [`edges()`](https://caugi.org/dev/reference/edges.md),
 [`exogenous()`](https://caugi.org/dev/reference/exogenous.md),
+[`has_edge()`](https://caugi.org/dev/reference/has_edge.md),
 [`is_acyclic()`](https://caugi.org/dev/reference/is_acyclic.md),
 [`is_admg()`](https://caugi.org/dev/reference/is_admg.md),
 [`is_ag()`](https://caugi.org/dev/reference/is_ag.md),

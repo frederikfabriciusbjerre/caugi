@@ -41,7 +41,8 @@ simulate_data(
 - standardize:
 
   Logical; if `TRUE`, standardize all variables to have mean 0 and
-  standard deviation 1. Default is `TRUE`.
+  standard deviation 1. A constant variable is only centered. Default is
+  `TRUE`.
 
 - coef_range:
 

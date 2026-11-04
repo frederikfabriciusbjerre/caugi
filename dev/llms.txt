@@ -201,6 +201,9 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
   Get all exogenous nodes in a `caugi`
 
+- [`has_edge()`](https://caugi.org/dev/reference/has_edge.md) : Are two
+  nodes adjacent?
+
 - [`is_acyclic()`](https://caugi.org/dev/reference/is_acyclic.md) :
 
   Is the `caugi` acyclic?

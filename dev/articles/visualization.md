@@ -359,7 +359,7 @@ plot(
   node_style = list(
     by_node = list(
       A = list(fill = "red", col = "blue", lwd = 2),
-      B = list(padding = "2")
+      B = list(padding = 2)
     )
   )
 )

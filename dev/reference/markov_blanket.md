@@ -27,6 +27,13 @@ markov_blanket(cg, nodes = NULL, index = NULL)
 Either a character vector of node names (if a single node is requested)
 or a list of character vectors (if multiple nodes are requested).
 
+## Details
+
+In a PAG, the blanket is read off the member MAG from
+[`pag_to_mag()`](https://caugi.org/dev/reference/pag_to_mag.md). Every
+member gives the same blanket, since Markov equivalent MAGs share their
+m-separations.
+
 ## See also
 
 Other queries:
@@ -39,6 +46,7 @@ Other queries:
 [`edge_types()`](https://caugi.org/dev/reference/edge_types.md),
 [`edges()`](https://caugi.org/dev/reference/edges.md),
 [`exogenous()`](https://caugi.org/dev/reference/exogenous.md),
+[`has_edge()`](https://caugi.org/dev/reference/has_edge.md),
 [`is_acyclic()`](https://caugi.org/dev/reference/is_acyclic.md),
 [`is_admg()`](https://caugi.org/dev/reference/is_admg.md),
 [`is_ag()`](https://caugi.org/dev/reference/is_ag.md),

@@ -49,6 +49,7 @@ Other queries:
 [`edge_types()`](https://caugi.org/dev/reference/edge_types.md),
 [`edges()`](https://caugi.org/dev/reference/edges.md),
 [`exogenous()`](https://caugi.org/dev/reference/exogenous.md),
+[`has_edge()`](https://caugi.org/dev/reference/has_edge.md),
 [`is_acyclic()`](https://caugi.org/dev/reference/is_acyclic.md),
 [`is_admg()`](https://caugi.org/dev/reference/is_admg.md),
 [`is_ag()`](https://caugi.org/dev/reference/is_ag.md),
@@ -89,7 +90,7 @@ all(nodes(sub_cg) == nodes(cg2)) # TRUE
 all(edges(sub_cg) == edges(cg2)) # TRUE
 #> [1] TRUE
 cg[c("B", "C")] # the same subgraph
-#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x620b0cd1d970>
+#> <caugi object; 2 nodes, 1 edges; simple: TRUE; session=0x573ad1239800>
 #>   graph_class: DAG
 #>   nodes: B, C
 #>   edges: B-->C
