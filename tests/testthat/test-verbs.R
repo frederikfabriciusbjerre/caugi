@@ -720,3 +720,25 @@ test_that("replace-action branches in .update_caugi are covered", {
   expect_true("C" %in% out@nodes$name)
   expect_equal(out@graph_class, "DAG")
 })
+
+test_that("a named argument in `...` is an error, not a node", {
+  expect_error(
+    caugi(A %-->% B, simple = FALSE),
+    "`caugi()` has no argument `simple`.",
+    fixed = TRUE
+  )
+  cg <- caugi(A %-->% B)
+  expect_error(
+    add_nodes(cg, C, inplace = TRUE),
+    "`add_nodes()` has no argument `inplace`.",
+    fixed = TRUE
+  )
+  expect_error(remove_nodes(cg, foo = A), "`remove_nodes()`", fixed = TRUE)
+  expect_error(add_edges(cg, foo = B %-->% C), "`add_edges()`", fixed = TRUE)
+  expect_error(
+    remove_edges(cg, foo = A %-->% B),
+    "`remove_edges()`",
+    fixed = TRUE
+  )
+  expect_error(set_edges(cg, foo = A %---% B), "`set_edges()`", fixed = TRUE)
+})

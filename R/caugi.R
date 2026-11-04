@@ -193,6 +193,7 @@ caugi <- S7::new_class(
     class <- match.arg(class)
 
     calls <- as.list(substitute(list(...)))[-1L]
+    .stop_if_named_dots(calls, "caugi")
     has_expr <- length(calls) > 0L
     has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
     has_df <- !is.null(edges_df)

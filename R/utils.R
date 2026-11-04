@@ -92,3 +92,21 @@
   }
   rs_indices_of(cg@session, nodes)
 }
+
+#' Error on named arguments in `...`, which takes only edges and nodes, so a
+#' misspelt or removed argument (such as `simple`) is not read as a node.
+#' @keywords internal
+#' @noRd
+.stop_if_named_dots <- function(calls, fn) {
+  nm <- names(calls)[nzchar(names(calls))]
+  if (length(nm) > 0L) {
+    stop(
+      "`",
+      fn,
+      "()` has no argument ",
+      paste0("`", nm, "`", collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+}

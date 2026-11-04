@@ -18,6 +18,11 @@
   * `minimal_d_separator()`; use `minimal_separator()`.
   * `caugi_default_options()`; use `caugi_options(reset = TRUE)`.
 
+* A named argument in the `...` of `caugi()`, `add_edges()`, `remove_edges()`,
+  `set_edges()`, `add_nodes()` or `remove_nodes()` is an error that names it,
+  so a removed argument such as `simple` or `inplace` is not read as a node.
+  Before, `caugi(A %-->% B, foo = C)` dropped the name and added `C`.
+
 ## New Features
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.

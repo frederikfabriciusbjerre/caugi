@@ -73,6 +73,7 @@ add_edges <- function(
   to = NULL
 ) {
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "add_edges")
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
   if (has_expr && has_vec) {
@@ -103,6 +104,7 @@ remove_edges <- function(
   to = NULL
 ) {
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "remove_edges")
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
 
@@ -175,6 +177,7 @@ set_edges <- function(
   to = NULL
 ) {
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "set_edges")
   has_expr <- length(calls) > 0L
   has_vec <- !(is.null(from) && is.null(edge) && is.null(to))
   if (has_expr && has_vec) {
@@ -201,6 +204,7 @@ set_edges <- function(
 #' @export
 add_nodes <- function(cg, ..., name = NULL) {
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "add_nodes")
   nodes <- .get_nodes(name, calls)
   if (!nrow(nodes)) {
     return(cg)
@@ -212,6 +216,7 @@ add_nodes <- function(cg, ..., name = NULL) {
 #' @export
 remove_nodes <- function(cg, ..., name = NULL) {
   calls <- as.list(substitute(list(...)))[-1L]
+  .stop_if_named_dots(calls, "remove_nodes")
   nodes <- .get_nodes(name, calls)
   if (!nrow(nodes)) {
     return(cg)
