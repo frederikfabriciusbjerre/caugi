@@ -40,6 +40,9 @@
   `caugi_layout(method = )`, which now documents the `partition`, `tiers` and
   `orientation` arguments of the bipartite and tiered layouts (#367).
 
+* `shd()` and `hd()` take the two graphs as `truth` and `guess`, like `aid()`,
+  instead of `cg1` and `cg2` (#362).
+
 ## New Features
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.

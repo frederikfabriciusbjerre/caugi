@@ -17,8 +17,8 @@
 #' as [latent_project()] can give, is 1 from `A --> B`, 1 from
 #' `A --> B, A --- B` and 2 from no edge.
 #'
-#' @param cg1 A `caugi` object.
-#' @param cg2 A `caugi` object.
+#' @param truth,guess `caugi` objects with the same nodes. The order does not
+#'   matter.
 #' @param normalized Logical; if `TRUE`, returns the normalized SHD.
 #'
 #' @returns An integer representing the Hamming Distance between the two graphs,
@@ -27,19 +27,19 @@
 #' has more than one edge.
 #'
 #' @examples
-#' cg1 <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
-#' cg2 <- caugi(A %-->% B %-->% C, D %---% C, class = "PDAG")
-#' shd(cg1, cg2) # 1
+#' truth <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+#' guess <- caugi(A %-->% B %-->% C, D %---% C, class = "PDAG")
+#' shd(truth, guess) # 1
 #'
 #' @family metrics
 #' @concept metrics
 #'
 #' @export
-shd <- function(cg1, cg2, normalized = FALSE) {
-  is_caugi(cg1, throw_error = TRUE)
-  is_caugi(cg2, throw_error = TRUE)
-  same_nodes(cg1, cg2, throw_error = TRUE)
-  out_lst <- rs_shd(cg1@session, cg2@session)
+shd <- function(truth, guess, normalized = FALSE) {
+  is_caugi(truth, throw_error = TRUE)
+  is_caugi(guess, throw_error = TRUE)
+  same_nodes(truth, guess, throw_error = TRUE)
+  out_lst <- rs_shd(truth@session, guess@session)
   out <- if (normalized) out_lst$normalized else out_lst$count
   out
 }
@@ -48,8 +48,8 @@ shd <- function(cg1, cg2, normalized = FALSE) {
 #'
 #' @description Compute the Hamming Distance between two graphs.
 #'
-#' @param cg1 A `caugi` object.
-#' @param cg2 A `caugi` object.
+#' @param truth,guess `caugi` objects with the same nodes. The order does not
+#'   matter.
 #' @param normalized Logical; if `TRUE`, returns the normalized Hamming
 #' Distance.
 #'
@@ -57,19 +57,19 @@ shd <- function(cg1, cg2, normalized = FALSE) {
 #' if `normalized = FALSE`, or a numeric between 0 and 1 if `normalized = TRUE`.
 #'
 #' @examples
-#' cg1 <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
-#' cg2 <- caugi(A %-->% B %-->% C, D %---% C, class = "PDAG")
-#' hd(cg1, cg2) # 0
+#' truth <- caugi(A %-->% B %-->% C, D %-->% C, class = "DAG")
+#' guess <- caugi(A %-->% B %-->% C, D %---% C, class = "PDAG")
+#' hd(truth, guess) # 0
 #'
 #' @family metrics
 #' @concept metrics
 #'
 #' @export
-hd <- function(cg1, cg2, normalized = FALSE) {
-  is_caugi(cg1, throw_error = TRUE)
-  is_caugi(cg2, throw_error = TRUE)
-  same_nodes(cg1, cg2, throw_error = TRUE)
-  out_lst <- rs_hd(cg1@session, cg2@session)
+hd <- function(truth, guess, normalized = FALSE) {
+  is_caugi(truth, throw_error = TRUE)
+  is_caugi(guess, throw_error = TRUE)
+  same_nodes(truth, guess, throw_error = TRUE)
+  out_lst <- rs_hd(truth@session, guess@session)
   out <- if (normalized) out_lst$normalized else out_lst$count
   out
 }
