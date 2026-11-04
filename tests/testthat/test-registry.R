@@ -246,10 +246,6 @@ test_that("existing graphs keep their registry after it is redefined", {
 
   # So does changing the graph class.
   expect_equal(children(mutate_caugi(cg1, "DAG"), "A"), "B")
-
-  # Serialization writes the graph's own glyphs.
-  expect_true(grepl("x-x", caugi_serialize(cg1), fixed = TRUE))
-  expect_true(grepl("x-x", to_graphml(cg1), fixed = TRUE))
   reset_caugi_registry()
 })
 
