@@ -11,9 +11,8 @@
 #'   * A character string: `"auto"` (default), `"sugiyama"`,
 #'     `"fruchterman-reingold"`, `"kamada-kawai"`, `"bipartite"`, `"tiered"`,
 #'     `"circle"`. See [caugi_layout()] for details.
-#'   * A layout function: e.g., `caugi_layout_sugiyama`,
-#'     `caugi_layout_bipartite`, etc. The function will be called with `x` and
-#'     any additional arguments passed via `...`.
+#'   * A layout function, called with `x` and any additional arguments
+#'     passed via `...`, that returns a data.frame like [caugi_layout()].
 #'   * A pre-computed layout data.frame with columns `name`, `x`, and `y`.
 #' @param ... Additional arguments passed to [caugi_layout()]. For bipartite
 #'   layouts, include `partition` (logical vector) and `orientation` (`"rows"`
@@ -97,17 +96,14 @@
 #' # Use a specific layout method (as string)
 #' plot(cg, layout = "kamada-kawai")
 #'
-#' # Use a layout function
-#' plot(cg, layout = caugi_layout_sugiyama)
-#'
 #' # Pre-compute layout and use it
-#' coords <- caugi_layout_fruchterman_reingold(cg)
+#' coords <- caugi_layout(cg, method = "fruchterman-reingold")
 #' plot(cg, layout = coords)
 #'
-#' # Bipartite layout with a function
+#' # Bipartite layout
 #' cg_bp <- caugi(A %-->% X, B %-->% X, C %-->% Y)
 #' partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE)
-#' plot(cg_bp, layout = caugi_layout_bipartite, partition = partition)
+#' plot(cg_bp, layout = "bipartite", partition = partition)
 #'
 #' # Customize nodes
 #' plot(cg, node_style = list(fill = "lightgreen", padding = 0.8))

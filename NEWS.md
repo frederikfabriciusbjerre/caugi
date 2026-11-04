@@ -36,6 +36,10 @@
 * `caugi_layout()` takes the graph as `cg`, not `x`, like the rest of the
   package (#363).
 
+* The `caugi_layout_*()` functions are no longer exported. Use
+  `caugi_layout(method = )`, which now documents the `partition`, `tiers` and
+  `orientation` arguments of the bipartite and tiered layouts (#367).
+
 ## New Features
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.

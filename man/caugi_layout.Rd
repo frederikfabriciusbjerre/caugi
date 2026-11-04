@@ -54,15 +54,28 @@ types)
 widescreen displays. Use \code{1.0} for square grid, \code{2.0} for wider layouts,
 \code{0.5} for taller layouts, \code{Inf} for single row, or \code{0.0} for single column.}
 
-\item{...}{Additional arguments passed to the specific layout function.
-For bipartite layouts, use \code{partition} (logical vector) and \code{orientation}
-(\code{"columns"} or \code{"rows"}).
-For tiered layouts, use \code{tiers} (list, named vector, or data.frame) and
-\code{orientation} (\code{"rows"} or \code{"columns"}).}
+\item{...}{Arguments of the \code{"bipartite"} and \code{"tiered"} methods:
+\itemize{
+\item \code{partition} (bipartite): Optional logical vector with one value per
+node. Nodes with \code{TRUE} are placed in one partition and nodes with
+\code{FALSE} in the other; both must be non-empty. If \code{NULL} (default), the
+nodes without incoming edges form one partition and the rest the other.
+\item \code{tiers} (tiered): The tier of each node, as a list of character vectors
+of node names, one per tier in order (element names are ignored); a
+numeric vector of tier indices named by node; or a data.frame with
+columns \code{name} and \code{tier}. Every node must be in a tier, no tier may be
+empty, and tier indices must be consecutive from 0 or 1.
+\item \code{orientation}: \code{"columns"} (default) or \code{"rows"}. With \code{"columns"}, the
+first partition is the right column (x = 1) and the first tier the left
+column (x = 0). With \code{"rows"}, the first partition or tier is the top
+row (y = 1).
+}}
 }
 \value{
 A \code{data.frame} with columns \code{name}, \code{x}, and \code{y} containing node
-names and their coordinates.
+names and their coordinates. The \code{"tiered"} method adds a \code{tier} column
+(0-indexed) and an \code{orientation} attribute, which \code{plot()} reads, so the
+tiers need not be passed again.
 }
 \description{
 Computes node coordinates for graph visualization using
@@ -101,6 +114,15 @@ Places nodes evenly along the perimeter of a circle. The first node is at
 the top and subsequent nodes proceed counter-clockwise. Useful for small
 graphs, cycle visualization, and as a deterministic fallback. Works with
 all edge types and ignores edge structure.
+
+\strong{Bipartite}
+
+Places nodes in two parallel rows or columns, one per side of a
+\code{partition}.
+
+\strong{Tiered}
+
+Places nodes in parallel rows or columns, one per tier of \code{tiers}.
 }
 
 \examples{
@@ -167,12 +189,6 @@ layout_tiered <- caugi_layout(
 \seealso{
 Other plotting:
 \code{\link{add-caugi_plot-caugi_plot}},
-\code{\link[=caugi_layout_bipartite]{caugi_layout_bipartite()}},
-\code{\link[=caugi_layout_circle]{caugi_layout_circle()}},
-\code{\link[=caugi_layout_fruchterman_reingold]{caugi_layout_fruchterman_reingold()}},
-\code{\link[=caugi_layout_kamada_kawai]{caugi_layout_kamada_kawai()}},
-\code{\link[=caugi_layout_sugiyama]{caugi_layout_sugiyama()}},
-\code{\link[=caugi_layout_tiered]{caugi_layout_tiered()}},
 \code{\link[=caugi_plot]{caugi_plot()}},
 \code{\link{divide-caugi_plot-caugi_plot}},
 \code{\link[=plot.caugi]{plot.caugi()}}
