@@ -4,3 +4,12 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  # One grouped PR a month: each needs src/rust/vendor.tar.xz re-vendored
+  # (see AGENTS.md).
+  - package-ecosystem: "cargo"
+    directory: "/src/rust"
+    schedule:
+      interval: "monthly"
+    groups:
+      cargo:
+        patterns: ["*"]

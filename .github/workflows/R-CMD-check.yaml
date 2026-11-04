@@ -20,6 +20,14 @@ jobs:
       - name: Check
         run: air format . --check
 
+  rustfmt-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check
+        run: cargo fmt --manifest-path src/rust/Cargo.toml --check
+
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
