@@ -36,7 +36,7 @@
 #' graphs, cycle visualization, and as a deterministic fallback. Works with
 #' all edge types and ignores edge structure.
 #'
-#' @param x A `caugi` object. Must contain only directed edges for Sugiyama
+#' @param cg A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
 #' @param method Character string specifying the layout method. Options:
 #'   * `"auto"`: Automatically choose the best layout (default). Selection order:
@@ -143,7 +143,7 @@
 #'
 #' @export
 caugi_layout <- function(
-  x,
+  cg,
   method = c(
     "auto",
     "sugiyama",
@@ -156,7 +156,7 @@ caugi_layout <- function(
   packing_ratio = 1.618034,
   ...
 ) {
-  is_caugi(x, throw_error = TRUE)
+  is_caugi(cg, throw_error = TRUE)
 
   method <- match.arg(method)
 
@@ -175,7 +175,7 @@ caugi_layout <- function(
         caugi_layout_bipartite
       } else {
         # Otherwise, choose based on edge types
-        edge_types <- unique(edges(x)[["edge"]])
+        edge_types <- unique(edges(cg)[["edge"]])
         non_directed <- setdiff(edge_types, "-->")
         if (length(non_directed) == 0) {
           caugi_layout_sugiyama
@@ -198,9 +198,9 @@ caugi_layout <- function(
     identical(layout_fn, caugi_layout_bipartite) ||
       identical(layout_fn, caugi_layout_tiered)
   ) {
-    layout_fn(x, ...)
+    layout_fn(cg, ...)
   } else {
-    layout_fn(x, packing_ratio = packing_ratio, ...)
+    layout_fn(cg, packing_ratio = packing_ratio, ...)
   }
 }
 

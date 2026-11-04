@@ -33,6 +33,9 @@
   `ancestors()`, `descendants()`, `anteriors()` and `posteriors()` instead
   (#364).
 
+* `caugi_layout()` takes the graph as `cg`, not `x`, like the rest of the
+  package (#363).
+
 ## New Features
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
