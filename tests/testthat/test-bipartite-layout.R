@@ -2,7 +2,7 @@ test_that("bipartite layout with rows orientation works", {
   cg <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
   partition <- c(TRUE, TRUE, FALSE, FALSE)
 
-  layout <- caugi_layout_bipartite(cg, partition, orientation = "rows")
+  layout <- .layout_bipartite(cg, partition, orientation = "rows")
 
   expect_equal(nrow(layout), 4)
   expect_equal(layout$name, c("A", "B", "X", "Y"))
@@ -18,7 +18,7 @@ test_that("bipartite layout with columns orientation works", {
   cg <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
   partition <- c(TRUE, TRUE, FALSE, FALSE)
 
-  layout <- caugi_layout_bipartite(cg, partition, orientation = "columns")
+  layout <- .layout_bipartite(cg, partition, orientation = "columns")
 
   expect_equal(nrow(layout), 4)
   expect_equal(layout$name, c("A", "B", "X", "Y"))
@@ -71,7 +71,7 @@ test_that("bipartite layout auto-detects partition", {
 
   # Should auto-detect: A, B, C have no incoming edges (partition = TRUE)
   # X, Y have incoming edges (partition = FALSE)
-  layout <- caugi_layout_bipartite(cg, orientation = "rows")
+  layout <- .layout_bipartite(cg, orientation = "rows")
 
   expect_equal(nrow(layout), 5)
   # A, B, C should be in top row (y=1)
@@ -84,7 +84,7 @@ test_that("bipartite layout works on chain graph with auto-detection", {
   cg <- caugi(A %-->% B, B %-->% C, C %-->% D)
 
   # A has no incoming edges (partition = TRUE), others do (partition = FALSE)
-  layout <- caugi_layout_bipartite(cg, orientation = "rows")
+  layout <- .layout_bipartite(cg, orientation = "rows")
 
   expect_equal(nrow(layout), 4)
   expect_equal(layout$y[layout$name == "A"], 1) # Top row
@@ -96,7 +96,7 @@ test_that("partition must be logical", {
   cg <- caugi(A %-->% B)
 
   expect_error(
-    caugi_layout_bipartite(cg, partition = c(1, 0)),
+    .layout_bipartite(cg, partition = c(1, 0)),
     "partition must be a logical vector"
   )
 })
@@ -105,7 +105,7 @@ test_that("partition length must match node count", {
   cg <- caugi(A %-->% B, B %-->% C)
 
   expect_error(
-    caugi_layout_bipartite(cg, partition = c(TRUE, FALSE)),
+    .layout_bipartite(cg, partition = c(TRUE, FALSE)),
     "partition length.*does not match number of nodes"
   )
 })
@@ -128,7 +128,7 @@ test_that("bipartite layout works with single node per partition", {
   cg <- caugi(A %-->% B)
   partition <- c(TRUE, FALSE)
 
-  layout <- caugi_layout_bipartite(cg, partition, orientation = "rows")
+  layout <- .layout_bipartite(cg, partition, orientation = "rows")
 
   # Both nodes should be centered horizontally
   expect_equal(layout$x, c(0.5, 0.5))
@@ -139,7 +139,7 @@ test_that("bipartite layout handles uneven partitions", {
   cg <- caugi(A %-->% X, B %-->% X, C %-->% X)
   partition <- c(TRUE, TRUE, TRUE, FALSE)
 
-  layout <- caugi_layout_bipartite(cg, partition, orientation = "rows")
+  layout <- .layout_bipartite(cg, partition, orientation = "rows")
 
   # Three nodes in top row
   expect_equal(sum(layout$y == 1), 3)
@@ -168,7 +168,7 @@ test_that("plot method accepts bipartite layout as function", {
   expect_no_error({
     p <- plot(
       cg,
-      layout = caugi_layout_bipartite,
+      layout = .layout_bipartite,
       partition = partition,
       orientation = "rows"
     )
@@ -177,7 +177,7 @@ test_that("plot method accepts bipartite layout as function", {
 
 test_that("plot method accepts pre-computed layout data.frame", {
   cg <- caugi(A %-->% B, B %-->% C)
-  coords <- caugi_layout_sugiyama(cg)
+  coords <- .layout_sugiyama(cg)
 
   expect_no_error({
     p <- plot(cg, layout = coords)
@@ -314,7 +314,7 @@ test_that("bipartite auto-detect fails when all nodes have incoming edges", {
   cg <- caugi(A %-->% B, B %-->% C, C %-->% A)
 
   expect_error(
-    caugi_layout_bipartite(cg),
+    .layout_bipartite(cg),
     "Could not automatically detect bipartite structure"
   )
 })
@@ -324,7 +324,7 @@ test_that("bipartite auto-detect fails when no nodes have incoming edges", {
   cg <- caugi(A + B + C)
 
   expect_error(
-    caugi_layout_bipartite(cg),
+    .layout_bipartite(cg),
     "Could not automatically detect bipartite structure"
   )
 })

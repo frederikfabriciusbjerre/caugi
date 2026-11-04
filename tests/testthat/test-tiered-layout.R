@@ -13,7 +13,7 @@ test_that("tiered layout with rows orientation works", {
     outcome = "Y"
   )
 
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   expect_equal(nrow(layout), 5)
   expect_equal(layout$name, c("X1", "X2", "M1", "M2", "Y"))
@@ -38,7 +38,7 @@ test_that("tiered layout with columns orientation works", {
 
   tiers <- list(c("X1", "X2"), c("M1", "M2"), "Y")
 
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "columns")
+  layout <- .layout_tiered(cg, tiers, orientation = "columns")
 
   expect_equal(nrow(layout), 5)
   expect_equal(layout$name, c("X1", "X2", "M1", "M2", "Y"))
@@ -58,7 +58,7 @@ test_that("tiered layout with named numeric vector works", {
 
   # 0-indexed
   tiers <- c(A = 0, B = 1, C = 2, D = 3)
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   expect_equal(nrow(layout), 4)
   expect_equal(layout$y[layout$name == "A"], 1)
@@ -66,7 +66,7 @@ test_that("tiered layout with named numeric vector works", {
 
   # 1-indexed (should be normalized to 0-indexed)
   tiers <- c(A = 1, B = 2, C = 3, D = 4)
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   expect_equal(nrow(layout), 4)
   expect_equal(layout$y[layout$name == "A"], 1)
@@ -81,7 +81,7 @@ test_that("tiered layout with data.frame works", {
     tier = c(0, 1, 2)
   )
 
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   expect_equal(nrow(layout), 3)
   expect_equal(layout$y[layout$name == "A"], 1)
@@ -126,7 +126,7 @@ test_that("tiered layout works with two tiers", {
 
   tiers <- list(c("A", "B", "C"), c("X", "Y"))
 
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   expect_equal(nrow(layout), 5)
   # First tier should be at y=1
@@ -139,7 +139,7 @@ test_that("tiered layout works with single node per tier", {
   cg <- caugi(A %-->% B, B %-->% C)
   tiers <- list("A", "B", "C")
 
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   # All nodes should be centered horizontally
   expect_equal(layout$x, c(0.5, 0.5, 0.5))
@@ -150,7 +150,7 @@ test_that("tiered layout handles uneven tier sizes", {
   cg <- caugi(A %-->% X, B %-->% X, C %-->% X)
   tiers <- list(c("A", "B", "C"), "X")
 
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   # Three nodes in top tier should be evenly spaced
   top_tier <- layout[layout$name %in% c("A", "B", "C"), ]
@@ -167,7 +167,7 @@ test_that("tiers must be provided", {
   cg <- caugi(A %-->% B)
 
   expect_error(
-    caugi_layout_tiered(cg),
+    .layout_tiered(cg),
     "argument \"tiers\" is missing"
   )
 })
@@ -176,12 +176,12 @@ test_that("tiers must be correct format", {
   cg <- caugi(A %-->% B)
 
   expect_error(
-    caugi_layout_tiered(cg, tiers = "invalid"),
+    .layout_tiered(cg, tiers = "invalid"),
     "tiers must be a named list, named numeric vector, or data.frame"
   )
 
   expect_error(
-    caugi_layout_tiered(cg, tiers = c(1, 2)),
+    .layout_tiered(cg, tiers = c(1, 2)),
     "tiers must be a named list, named numeric vector, or data.frame"
   )
 })
@@ -193,7 +193,7 @@ test_that("tier assignments must cover all nodes", {
   tiers <- c(A = 0, B = 1)
 
   expect_error(
-    caugi_layout_tiered(cg, tiers),
+    .layout_tiered(cg, tiers),
     "Missing tier assignments for nodes: C"
   )
 })
@@ -205,7 +205,7 @@ test_that("nodes in tiers must exist in graph", {
   tiers <- list(c("A", "Z"), "B")
 
   expect_error(
-    caugi_layout_tiered(cg, tiers),
+    .layout_tiered(cg, tiers),
     "Node 'Z' in tier 1 is not in the graph"
   )
 })
@@ -216,7 +216,7 @@ test_that("tier indices must be non-negative", {
   tiers <- c(A = -1, B = 0)
 
   expect_error(
-    caugi_layout_tiered(cg, tiers),
+    .layout_tiered(cg, tiers),
     "Tier indices must be non-negative"
   )
 })
@@ -228,7 +228,7 @@ test_that("tier indices must be consecutive", {
   tiers <- c(A = 0, B = 1, C = 3)
 
   expect_error(
-    caugi_layout_tiered(cg, tiers),
+    .layout_tiered(cg, tiers),
     "Tier indices must be consecutive"
   )
 })
@@ -240,7 +240,7 @@ test_that("data.frame must have correct columns", {
   tiers <- data.frame(name = c("A", "B"), x = c(0, 1))
 
   expect_error(
-    caugi_layout_tiered(cg, tiers),
+    .layout_tiered(cg, tiers),
     "Data.frame must have columns 'name' and 'tier'"
   )
 })
@@ -252,7 +252,7 @@ test_that("each tier element must be character vector", {
   tiers <- list(c(1, 2), "B")
 
   expect_error(
-    caugi_layout_tiered(cg, tiers),
+    .layout_tiered(cg, tiers),
     "Each tier in the list must be a character vector"
   )
 })
@@ -278,7 +278,7 @@ test_that("plot method accepts tiered layout as function", {
   expect_no_error({
     p <- plot(
       cg,
-      layout = caugi_layout_tiered,
+      layout = .layout_tiered,
       tiers = tiers,
       orientation = "columns"
     )
@@ -289,7 +289,7 @@ test_that("tiered layout returns correct structure", {
   cg <- caugi(A %-->% B)
   tiers <- list("A", "B")
 
-  layout <- caugi_layout_tiered(cg, tiers)
+  layout <- .layout_tiered(cg, tiers)
 
   # Check structure
   expect_s3_class(layout, "data.frame")
@@ -314,8 +314,8 @@ test_that("tiered layout is deterministic", {
   cg <- caugi(A %-->% B, B %-->% C)
   tiers <- list(c("A"), c("B"), c("C"))
 
-  layout1 <- caugi_layout_tiered(cg, tiers, orientation = "rows")
-  layout2 <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout1 <- .layout_tiered(cg, tiers, orientation = "rows")
+  layout2 <- .layout_tiered(cg, tiers, orientation = "rows")
 
   expect_equal(layout1, layout2)
 })
@@ -336,7 +336,7 @@ test_that("tiered layout works with complex graph", {
     tier3 = c("G", "H")
   )
 
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   expect_equal(nrow(layout), 8)
 
@@ -359,7 +359,7 @@ test_that("tiered layout works with four tiers", {
   cg <- caugi(A %-->% B, B %-->% C, C %-->% D, D %-->% E)
   tiers <- list("A", "B", "C", "D", "E")
 
-  layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout <- .layout_tiered(cg, tiers, orientation = "rows")
 
   expect_equal(nrow(layout), 5)
 
@@ -581,7 +581,7 @@ test_that("plot extracts tier info from layout data.frame", {
   )
 
   # Create layout with tier column
-  layout_df <- caugi_layout_tiered(cg, tiers, orientation = "rows")
+  layout_df <- .layout_tiered(cg, tiers, orientation = "rows")
 
   # Should work without passing tiers again
   expect_no_error({
@@ -598,7 +598,7 @@ test_that("explicit tiers override tier column in layout", {
 
   # Create layout with tier column
   tiers1 <- list("A", "B", "C")
-  layout_df <- caugi_layout_tiered(cg, tiers1, orientation = "rows")
+  layout_df <- .layout_tiered(cg, tiers1, orientation = "rows")
 
   # Pass different tiers to plot - should use the explicit ones
   tiers2 <- list(c("A", "B"), "C")
@@ -664,14 +664,14 @@ test_that("tiered layout validation branches are covered", {
 
   bad_df <- data.frame(name = c("A", "Z"), tier = c(0, 1))
   expect_error(
-    caugi_layout_tiered(cg, bad_df),
+    .layout_tiered(cg, bad_df),
     "in tiers data.frame is not in the graph"
   )
 
   # Exercise defensive empty-tier branch by mocking table().
   expect_error(
     testthat::with_mocked_bindings(
-      caugi_layout_tiered(cg, tiers = c(A = 0, B = 1)),
+      .layout_tiered(cg, tiers = c(A = 0, B = 1)),
       table = function(...) c(`0` = 1L, `1` = 0L),
       .package = "base"
     ),
@@ -680,7 +680,7 @@ test_that("tiered layout validation branches are covered", {
 
   cg3 <- caugi(A %-->% B %-->% C, class = "DAG")
   expect_error(
-    caugi_layout_tiered(cg3, tiers = c(A = 0, B = 1, C = NA)),
+    .layout_tiered(cg3, tiers = c(A = 0, B = 1, C = NA)),
     "Missing tier assignments for nodes: C"
   )
 })
@@ -689,11 +689,11 @@ test_that("tiers are validated the same way in every format (#428)", {
   cg <- caugi(X %-->% M, M %-->% Y, class = "DAG")
   # Unassigned nodes no longer land in tier 0.
   expect_error(
-    caugi_layout_tiered(cg, list("X", "M")),
+    .layout_tiered(cg, list("X", "M")),
     "Missing tier assignments for nodes: Y"
   )
   expect_error(
-    caugi_layout_tiered(cg, data.frame(name = c("X", "M"), tier = 1:2)),
+    .layout_tiered(cg, data.frame(name = c("X", "M"), tier = 1:2)),
     "Missing tier assignments for nodes: Y"
   )
   expect_error(
@@ -702,15 +702,15 @@ test_that("tiers are validated the same way in every format (#428)", {
   )
   # Unknown nodes, duplicates and non-whole tiers error for every format.
   expect_error(
-    caugi_layout_tiered(cg, c(X = 0, M = 1, Y = 2, Z = 3)),
+    .layout_tiered(cg, c(X = 0, M = 1, Y = 2, Z = 3)),
     "Node 'Z' in tiers is not in the graph"
   )
   expect_error(
-    caugi_layout_tiered(cg, list("X", c("M", "X"), "Y")),
+    .layout_tiered(cg, list("X", c("M", "X"), "Y")),
     "more than one tier: X"
   )
   expect_error(
-    caugi_layout_tiered(cg, c(X = 0, M = 0.9, Y = 2)),
+    .layout_tiered(cg, c(X = 0, M = 0.9, Y = 2)),
     "whole numbers"
   )
 })

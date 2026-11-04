@@ -36,6 +36,15 @@
 #' graphs, cycle visualization, and as a deterministic fallback. Works with
 #' all edge types and ignores edge structure.
 #'
+#' **Bipartite**
+#'
+#' Places nodes in two parallel rows or columns, one per side of a
+#' `partition`.
+#'
+#' **Tiered**
+#'
+#' Places nodes in parallel rows or columns, one per tier of `tiers`.
+#'
 #' @param cg A `caugi` object. Must contain only directed edges for Sugiyama
 #'   layout.
 #' @param method Character string specifying the layout method. Options:
@@ -56,14 +65,25 @@
 #'   (width/height). Default is the golden ratio (1.618) which works well with
 #'   widescreen displays. Use `1.0` for square grid, `2.0` for wider layouts,
 #'   `0.5` for taller layouts, `Inf` for single row, or `0.0` for single column.
-#' @param ... Additional arguments passed to the specific layout function.
-#'   For bipartite layouts, use `partition` (logical vector) and `orientation`
-#'   (`"columns"` or `"rows"`).
-#'   For tiered layouts, use `tiers` (list, named vector, or data.frame) and
-#'   `orientation` (`"rows"` or `"columns"`).
+#' @param ... Arguments of the `"bipartite"` and `"tiered"` methods:
+#'   * `partition` (bipartite): Optional logical vector with one value per
+#'     node. Nodes with `TRUE` are placed in one partition and nodes with
+#'     `FALSE` in the other; both must be non-empty. If `NULL` (default), the
+#'     nodes without incoming edges form one partition and the rest the other.
+#'   * `tiers` (tiered): The tier of each node, as a list of character vectors
+#'     of node names, one per tier in order (element names are ignored); a
+#'     numeric vector of tier indices named by node; or a data.frame with
+#'     columns `name` and `tier`. Every node must be in a tier, no tier may be
+#'     empty, and tier indices must be consecutive from 0 or 1.
+#'   * `orientation`: `"columns"` (default) or `"rows"`. With `"columns"`, the
+#'     first partition is the right column (x = 1) and the first tier the left
+#'     column (x = 0). With `"rows"`, the first partition or tier is the top
+#'     row (y = 1).
 #'
 #' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
-#'   names and their coordinates.
+#'   names and their coordinates. The `"tiered"` method adds a `tier` column
+#'   (0-indexed) and an `orientation` attribute, which `plot()` reads, so the
+#'   tiers need not be passed again.
 #'
 #' @examples
 #' cg <- caugi(
@@ -169,34 +189,34 @@ caugi_layout <- function(
 
       # If tiers provided, use tiered layout
       if (!is.null(dots$tiers)) {
-        caugi_layout_tiered
+        .layout_tiered
       } else if (!is.null(dots$partition)) {
         # If partition provided, use bipartite layout
-        caugi_layout_bipartite
+        .layout_bipartite
       } else {
         # Otherwise, choose based on edge types
         edge_types <- unique(edges(cg)[["edge"]])
         non_directed <- setdiff(edge_types, "-->")
         if (length(non_directed) == 0) {
-          caugi_layout_sugiyama
+          .layout_sugiyama
         } else {
-          caugi_layout_fruchterman_reingold
+          .layout_fruchterman_reingold
         }
       }
     },
-    "sugiyama" = caugi_layout_sugiyama,
-    "fruchterman-reingold" = caugi_layout_fruchterman_reingold,
-    "kamada-kawai" = caugi_layout_kamada_kawai,
-    "bipartite" = caugi_layout_bipartite,
-    "tiered" = caugi_layout_tiered,
-    "circle" = caugi_layout_circle
+    "sugiyama" = .layout_sugiyama,
+    "fruchterman-reingold" = .layout_fruchterman_reingold,
+    "kamada-kawai" = .layout_kamada_kawai,
+    "bipartite" = .layout_bipartite,
+    "tiered" = .layout_tiered,
+    "circle" = .layout_circle
   )
 
   # Call the layout function with appropriate parameters
   # Bipartite and tiered layouts don't use packing_ratio
   if (
-    identical(layout_fn, caugi_layout_bipartite) ||
-      identical(layout_fn, caugi_layout_tiered)
+    identical(layout_fn, .layout_bipartite) ||
+      identical(layout_fn, .layout_tiered)
   ) {
     layout_fn(cg, ...)
   } else {
@@ -204,45 +224,10 @@ caugi_layout <- function(
   }
 }
 
-#' Bipartite Graph Layout
-#'
-#' Computes node coordinates for bipartite graphs, placing nodes in two
-#' parallel lines (rows or columns) based on a partition. If the graph
-#' has not been built yet, it will be built automatically before computing
-#' the layout.
-#'
-#' @param x A `caugi` object.
-#' @param partition Optional logical vector indicating node partitions.
-#'   Nodes with `TRUE` are placed in one partition and nodes with `FALSE`
-#'   in the other. Length must equal the number of nodes. Both partitions
-#'   must be non-empty. If `NULL` (default), attempts to detect bipartite
-#'   structure automatically by assigning nodes without incoming edges to
-#'   one partition and others to the second partition.
-#' @param orientation Character string specifying the layout orientation:
-#'   * `"columns"`: Two vertical columns. First partition on right (x=1),
-#'     second partition on left (x=0).
-#'   * `"rows"`: Two horizontal rows. First partition on top (y=1),
-#'     second partition on bottom (y=0).
-#'
-#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
-#'   names and their coordinates.
-#'
-#' @examples
-#' # Create a bipartite graph (causes -> effects)
-#' cg <- caugi(A %-->% X, A %-->% Y, B %-->% X, B %-->% Y)
-#' partition <- c(TRUE, TRUE, FALSE, FALSE) # A, B = causes, X, Y = effects
-#'
-#' # Two horizontal rows (causes on top)
-#' layout_rows <- caugi_layout_bipartite(cg, partition, orientation = "rows")
-#'
-#' # Two vertical columns (causes on right)
-#' layout_cols <- caugi_layout_bipartite(cg, partition, orientation = "columns")
-#'
-#' @family plotting
-#' @concept plotting
-#'
-#' @export
-caugi_layout_bipartite <- function(
+#' Bipartite layout for [caugi_layout()].
+#' @keywords internal
+#' @noRd
+.layout_bipartite <- function(
   x,
   partition = NULL,
   orientation = c("columns", "rows")
@@ -381,74 +366,10 @@ caugi_layout_bipartite <- function(
   out
 }
 
-#' Tiered Graph Layout
-#'
-#' Computes node coordinates for graphs with multiple tiers (layers), placing
-#' nodes in parallel rows or columns based on tier assignments. If the graph
-#' has not been built yet, it will be built automatically before computing
-#' the layout.
-#'
-#' @param x A `caugi` object.
-#' @param tiers Tier assignments specifying which tier each node belongs to.
-#'   Can be provided in multiple formats:
-#'   * **Named list**: List where each element is a character vector of node
-#'     names belonging to that tier. Element names are ignored; tier order is
-#'     determined by list order (first element = tier 0, etc.).
-#'   * **Named numeric vector**: Vector where names are node names and values
-#'     are tier indices (starting from 0 or 1).
-#'   * **Data.frame**: Must contain columns `name` (node names) and `tier`
-#'     (tier indices).
-#'
-#'   All nodes must be assigned to a tier, all tiers must be non-empty, and
-#'   tier indices must be consecutive starting from 0 or 1.
-#' @param orientation Character string specifying the layout orientation:
-#'   * `"columns"`: Vertical tiers. First tier at left (x=0),
-#'     subsequent tiers to the right, last tier at right (x=1).
-#'   * `"rows"`: Horizontal tiers. First tier at top (y=1),
-#'     subsequent tiers below, last tier at bottom (y=0).
-#'
-#' @returns A `data.frame` with columns `name`, `x`, `y`, and `tier` containing
-#'   node names, their coordinates, and tier assignments (0-indexed). The
-#'   returned data.frame also has an `orientation` attribute storing the
-#'   orientation used. When passed to `plot()`, tier information is
-#'   automatically extracted, so you don't need to specify `tiers` again.
-#'
-#' @examples
-#' # Create a three-tier causal graph (exposures -> mediators -> outcome)
-#' cg <- caugi(
-#'   X1 %-->% M1 + M2,
-#'   X2 %-->% M1 + M2,
-#'   M1 %-->% Y,
-#'   M2 %-->% Y
-#' )
-#'
-#' # Option 1: Named list (tier names are just labels)
-#' tiers <- list(
-#'   exposures = c("X1", "X2"),
-#'   mediators = c("M1", "M2"),
-#'   outcome = "Y"
-#' )
-#' layout_rows <- caugi_layout_tiered(cg, tiers, orientation = "rows")
-#'
-#' # Option 2: Named numeric vector (0-indexed or 1-indexed both work)
-#' tiers <- c(X1 = 1, X2 = 1, M1 = 2, M2 = 2, Y = 3)
-#' layout_cols <- caugi_layout_tiered(cg, tiers, orientation = "columns")
-#'
-#' # Option 3: Data.frame
-#' tiers <- data.frame(
-#'   name = c("X1", "X2", "M1", "M2", "Y"),
-#'   tier = c(1, 1, 2, 2, 3)
-#' )
-#' layout <- caugi_layout_tiered(cg, tiers, orientation = "rows")
-#'
-#' # The layout includes tier information, so plot() works without passing tiers
-#' plot(cg, layout = layout)
-#'
-#' @family plotting
-#' @concept plotting
-#'
-#' @export
-caugi_layout_tiered <- function(
+#' Tiered layout for [caugi_layout()].
+#' @keywords internal
+#' @noRd
+.layout_tiered <- function(
   x,
   tiers,
   orientation = c("columns", "rows")
@@ -517,33 +438,10 @@ caugi_layout_tiered <- function(
   result
 }
 
-#' Sugiyama Hierarchical Layout
-#'
-#' Computes node coordinates using the Sugiyama hierarchical layout algorithm.
-#' Optimized for directed acyclic graphs (DAGs), placing nodes in layers to
-#' emphasize hierarchical structure and causal flow from top to bottom.
-#'
-#' @param x A `caugi` object. Must contain only directed edges.
-#' @param ... Ignored. For future extensibility.
-#' @inheritParams caugi_layout
-#'
-#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
-#'   names and their coordinates.
-#'
-#' @examples
-#' cg <- caugi(A %-->% B + C, B %-->% D, C %-->% D, class = "DAG")
-#' layout <- caugi_layout_sugiyama(cg)
-#'
-#' @family plotting
-#' @concept plotting
-#'
-#' @source Sugiyama, K., Tagawa, S., & Toda, M. (1981). Methods for visual
-#' understanding of hierarchical system structures. IEEE Transactions on
-#' Systems, Man, and Cybernetics, 11(2), 109-125.
-#' \doi{10.1109/TSMC.1981.4308636}
-#'
-#' @export
-caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
+#' Sugiyama layout for [caugi_layout()].
+#' @keywords internal
+#' @noRd
+.layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
   is_caugi(x, throw_error = TRUE)
 
   edge_types <- unique(edges(x)[["edge"]])
@@ -555,8 +453,8 @@ caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
       "Found edge type(s): ",
       paste(non_directed, collapse = ", "),
       ". ",
-      "Consider using caugi_layout_fruchterman_reingold() or ",
-      "caugi_layout_kamada_kawai() for graphs with mixed edge types.",
+      "Consider `method = \"fruchterman-reingold\"` or ",
+      "`method = \"kamada-kawai\"` for graphs with mixed edge types.",
       call. = FALSE
     )
   }
@@ -571,38 +469,10 @@ caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
   )
 }
 
-#' Fruchterman-Reingold Force-Directed Layout
-#'
-#' Computes node coordinates using the Fruchterman-Reingold force-directed
-#' layout algorithm. Fast spring-electrical model that treats edges as springs
-#' and nodes as electrically charged particles. Produces organic, symmetric
-#' layouts with uniform edge lengths. Works with all edge types and produces
-#' deterministic results.
-#'
-#' @param x A `caugi` object.
-#' @inheritParams caugi_layout
-#' @param ... Ignored. For future extensibility.
-#'
-#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
-#'   names and their coordinates.
-#'
-#' @examples
-#' cg <- caugi(
-#'   A %-->% B,
-#'   B %<->% C,
-#'   C %-->% D
-#' )
-#' layout <- caugi_layout_fruchterman_reingold(cg)
-#'
-#' @family plotting
-#' @concept plotting
-#'
-#' @source Fruchterman, T. M. J., & Reingold, E. M. (1991). Graph drawing by
-#' force-directed placement. Software: Practice and Experience, 21(11),
-#' 1129-1164. \doi{10.1002/spe.4380211102}
-#'
-#' @export
-caugi_layout_fruchterman_reingold <- function(
+#' Fruchterman-Reingold layout for [caugi_layout()].
+#' @keywords internal
+#' @noRd
+.layout_fruchterman_reingold <- function(
   x,
   packing_ratio = 1.618034,
   ...
@@ -619,39 +489,10 @@ caugi_layout_fruchterman_reingold <- function(
   )
 }
 
-#' Kamada-Kawai Stress Minimization Layout
-#'
-#' Computes node coordinates using the Kamada-Kawai stress minimization
-#' algorithm. High-quality force-directed layout that minimizes "stress" by
-#' making Euclidean distances proportional to graph-theoretic distances. Better
-#' preserves global structure and path lengths compared to Fruchterman-Reingold.
-#' Ideal for publication-quality visualizations. Works with all edge types and
-#' produces deterministic results.
-#'
-#' @param x A `caugi` object.
-#' @inheritParams caugi_layout
-#' @param ... Ignored. For future extensibility.
-#'
-#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
-#'   names and their coordinates.
-#'
-#' @examples
-#' cg <- caugi(
-#'   A %-->% B,
-#'   B %<->% C,
-#'   C %-->% D
-#' )
-#' layout <- caugi_layout_kamada_kawai(cg)
-#'
-#' @family plotting
-#' @concept plotting
-#'
-#' @source Kamada, T., & Kawai, S. (1989). An algorithm for drawing general
-#' undirected graphs. Information Processing Letters, 31(1), 7-15.
-#' \doi{10.1016/0020-0190(89)90102-6}
-#'
-#' @export
-caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
+#' Kamada-Kawai layout for [caugi_layout()].
+#' @keywords internal
+#' @noRd
+.layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
   is_caugi(x, throw_error = TRUE)
 
   coords <- rs_compute_layout(x@session, "kamada-kawai", packing_ratio)
@@ -664,33 +505,10 @@ caugi_layout_kamada_kawai <- function(x, packing_ratio = 1.618034, ...) {
   )
 }
 
-#' Circle Layout
-#'
-#' Computes node coordinates by placing nodes evenly along the perimeter of a
-#' circle. The first node is placed at the top of the circle, and subsequent
-#' nodes proceed counter-clockwise. Edge structure is ignored. Works with all
-#' edge types and produces deterministic results.
-#'
-#' @param x A `caugi` object.
-#' @param ... Ignored. For future extensibility.
-#'
-#' @returns A `data.frame` with columns `name`, `x`, and `y` containing node
-#'   names and their coordinates.
-#'
-#' @examples
-#' cg <- caugi(
-#'   A %-->% B,
-#'   B %-->% C,
-#'   C %-->% D,
-#'   D %-->% A
-#' )
-#' layout <- caugi_layout_circle(cg)
-#'
-#' @family plotting
-#' @concept plotting
-#'
-#' @export
-caugi_layout_circle <- function(x, ...) {
+#' Circle layout for [caugi_layout()].
+#' @keywords internal
+#' @noRd
+.layout_circle <- function(x, ...) {
   is_caugi(x, throw_error = TRUE)
 
   coords <- rs_compute_layout(x@session, "circle", 1.0)
