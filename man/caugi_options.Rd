@@ -25,11 +25,6 @@ Configure global defaults for caugi, including plot composition spacing and
 default visual styles for nodes, edges, labels, and titles.
 }
 \details{
-The \code{use_open_graph_definition} option (\code{TRUE}/\code{FALSE}, default \code{TRUE}) is
-deprecated and will be removed in caugi 2.0.0; setting it to \code{FALSE} warns.
-It is the default of the \code{open} argument of \code{\link[=ancestors]{ancestors()}}, \code{\link[=descendants]{descendants()}},
-\code{\link[=anteriors]{anteriors()}} and \code{\link[=posteriors]{posteriors()}}, so pass \code{open} to those instead.
-
 The plot options are nested under the \code{plot} key:
 \itemize{
 \item \code{spacing}: A \code{\link[grid:unit]{grid::unit()}} controlling space between composed plots

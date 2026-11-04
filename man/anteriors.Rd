@@ -4,12 +4,7 @@
 \alias{anteriors}
 \title{Get anteriors of nodes in a \code{caugi}}
 \usage{
-anteriors(
-  cg,
-  nodes = NULL,
-  index = NULL,
-  open = caugi_options("use_open_graph_definition")
-)
+anteriors(cg, nodes = NULL, index = NULL, open = TRUE)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class DAG or PDAG.}
@@ -19,9 +14,7 @@ anteriors(
 \item{index}{A vector of node indexes.}
 
 \item{open}{Logical; if \code{TRUE} (default), each queried node is left out
-of its own anteriors; if \code{FALSE}, it is included. The default comes
-from the deprecated \code{use_open_graph_definition} option of
-\code{\link[=caugi_options]{caugi_options()}}.}
+of its own anteriors; if \code{FALSE}, it is included.}
 }
 \value{
 Either a character vector of node names (if a single node is
