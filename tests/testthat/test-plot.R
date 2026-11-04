@@ -934,6 +934,33 @@ test_that("plotting empty graph gives clear error", {
   )
 })
 
+test_that("plot rejects negative or non-positive style sizes", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  expect_error(
+    plot(cg, node_style = list(size = 0)),
+    "`size` in `node_style` must be a positive number"
+  )
+  expect_error(
+    plot(cg, node_style = list(by_node = list(A = list(padding = -1)))),
+    "`padding` in `node_style` must be a number >= 0"
+  )
+  expect_error(
+    plot(cg, edge_style = list(directed = list(arrow_size = -2))),
+    "`arrow_size` in `edge_style`"
+  )
+  expect_error(
+    plot(cg, edge_style = list(by_edge = list(A = list(B = list(lwd = "x"))))),
+    "`lwd` in `edge_style`"
+  )
+  expect_s7_class(plot(cg, edge_style = list(lwd = NULL)), caugi_plot)
+  # A node may be named like a style key.
+  cg2 <- caugi(size %-->% lwd, class = "DAG")
+  expect_s7_class(
+    plot(cg2, node_style = list(by_node = list(size = list(fill = "red")))),
+    caugi_plot
+  )
+})
+
 test_that("plot layout validation branch is covered", {
   cg <- caugi(
     from = LETTERS[1:7],

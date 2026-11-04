@@ -310,7 +310,7 @@ test_that("M-bias collider at confounder admits no adjustment set (#277)", {
   )
 })
 
-test_that("is_valid_adjustment_admg errors when X or Y is missing", {
+test_that("is_valid_adjustment_admg errors when X or Y is missing or empty", {
   admg <- caugi(
     L %-->% X,
     X %-->% Y,
@@ -336,9 +336,18 @@ test_that("is_valid_adjustment_admg errors when X or Y is missing", {
     is_valid_adjustment_admg(admg, Z = "L"),
     "X must be provided"
   )
+
+  expect_error(
+    is_valid_adjustment_admg(admg, X = character(0), Y = "Y", Z = "L"),
+    "`X` must name at least one node"
+  )
+  expect_error(
+    is_valid_adjustment_admg(admg, X = "X", Y = character(0), Z = "L"),
+    "`Y` must name at least one node"
+  )
 })
 
-test_that("all_adjustment_sets_admg errors when X or Y is missing", {
+test_that("all_adjustment_sets_admg errors when X or Y is missing or empty", {
   admg <- caugi(
     L %-->% X,
     X %-->% Y,
@@ -362,6 +371,15 @@ test_that("all_adjustment_sets_admg errors when X or Y is missing", {
   expect_error(
     all_adjustment_sets_admg(admg),
     "X must be provided"
+  )
+
+  expect_error(
+    all_adjustment_sets_admg(admg, X = character(0), Y = "Y"),
+    "`X` must name at least one node"
+  )
+  expect_error(
+    all_adjustment_sets_admg(admg, X = "X", Y = character(0)),
+    "`Y` must name at least one node"
   )
 })
 

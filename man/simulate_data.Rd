@@ -25,7 +25,8 @@ and the variable \code{n} (sample size). Nodes without custom equations use
 auto-generated linear Gaussian relationships.}
 
 \item{standardize}{Logical; if \code{TRUE}, standardize all variables to have
-mean 0 and standard deviation 1. Default is \code{TRUE}.}
+mean 0 and standard deviation 1. A constant variable is only centered.
+Default is \code{TRUE}.}
 
 \item{coef_range}{Numeric vector of length 2; range for random edge
 coefficients that will be sampled uniformly. Default is \code{c(0.1, 0.9)}.}

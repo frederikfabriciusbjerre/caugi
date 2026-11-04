@@ -20,6 +20,28 @@ test_that("PAG neighbour queries split edges by their marks", {
   expect_setequal(anteriors(sel, "A"), c("B", "C", "D"))
 })
 
+test_that("PAG Markov blanket is that of every member MAG", {
+  pag <- caugi(A %o->% C, B %o->% C, C %-->% D, class = "PAG")
+  expect_setequal(markov_blanket(pag, "A"), c("B", "C"))
+  expect_setequal(markov_blanket(pag, "C"), c("A", "B", "D"))
+  expect_identical(markov_blanket(pag, "D"), "C")
+
+  # The MAG a PAG came from need not be the member pag_to_mag() picks.
+  set.seed(20261104)
+  for (i in 1:50) {
+    dag <- generate_graph(n = 8, p = 0.3, class = "DAG")
+    latents <- sample(nodes(dag)$name, 2)
+    mag <- condition_marginalize(dag, marg_vars = latents)
+    pag <- dag_to_pag(dag, latents = latents)
+    for (v in nodes(pag)$name) {
+      expect_setequal(
+        as.character(markov_blanket(pag, v)),
+        as.character(markov_blanket(mag, v))
+      )
+    }
+  }
+})
+
 test_that("PAG ancestry follows definite edges only", {
   pag <- caugi(A %o->% C, B %o->% C, C %-->% D, class = "PAG")
   expect_identical(ancestors(pag, "D"), "C")
