@@ -4,15 +4,7 @@
 \alias{is_valid_adjustment_admg}
 \title{Is a set a valid adjustment set in an ADMG?}
 \usage{
-is_valid_adjustment_admg(
-  cg,
-  X = NULL,
-  Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
-)
+is_valid_adjustment_admg(cg, X = NULL, Y = NULL, Z = NULL)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class ADMG.}
@@ -20,8 +12,6 @@ is_valid_adjustment_admg(
 \item{X, Y}{Node names (can be vectors for multiple treatments/outcomes).}
 
 \item{Z}{Conditioning set (character vector of node names).}
-
-\item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
 Logical value indicating if the adjustment set is valid; \code{FALSE}

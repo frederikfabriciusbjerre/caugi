@@ -11,17 +11,7 @@ Machine Learning Research 115:637-647 Available from
 \url{https://proceedings.mlr.press/v115/van-der-zander20a.html}.
 }
 \usage{
-minimal_separator(
-  cg,
-  X = NULL,
-  Y = NULL,
-  I = character(0),
-  R = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  I_index = NULL,
-  R_index = NULL
-)
+minimal_separator(cg, X = NULL, Y = NULL, I = character(0), R = NULL)
 }
 \arguments{
 \item{cg}{A \code{caugi} object (DAG, ADMG, AG, or PAG).}
@@ -32,8 +22,6 @@ minimal_separator(
 
 \item{R}{Nodes allowed in the separator. If \code{NULL}, uses all nodes excluding
 X and Y.}
-
-\item{X_index, Y_index, I_index, R_index}{Deprecated; pass node names instead.}
 }
 \value{
 A character vector of node names representing the minimal separator,

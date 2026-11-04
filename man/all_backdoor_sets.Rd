@@ -4,22 +4,12 @@
 \alias{all_backdoor_sets}
 \title{Get all backdoor sets up to a certain size.}
 \usage{
-all_backdoor_sets(
-  cg,
-  X = NULL,
-  Y = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  minimal = TRUE,
-  max_size = 3L
-)
+all_backdoor_sets(cg, X = NULL, Y = NULL, minimal = TRUE, max_size = 3L)
 }
 \arguments{
 \item{cg}{A \code{caugi}.}
 
 \item{X, Y}{Node names; one or more each.}
-
-\item{X_index, Y_index}{Deprecated; pass node names instead.}
 
 \item{minimal}{Logical; if \code{TRUE} (default), only minimal sets are returned.}
 

@@ -4,22 +4,12 @@
 \alias{all_adjustment_sets_admg}
 \title{Get all valid adjustment sets in an ADMG}
 \usage{
-all_adjustment_sets_admg(
-  cg,
-  X = NULL,
-  Y = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  minimal = TRUE,
-  max_size = 3L
-)
+all_adjustment_sets_admg(cg, X = NULL, Y = NULL, minimal = TRUE, max_size = 3L)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class ADMG.}
 
 \item{X, Y}{Node names (can be vectors for multiple treatments/outcomes).}
-
-\item{X_index, Y_index}{Deprecated; pass node names instead.}
 
 \item{minimal}{Logical; if \code{TRUE} (default), only minimal sets are returned.}
 

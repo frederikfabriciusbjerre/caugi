@@ -4,23 +4,13 @@
 \alias{m_separated}
 \title{M-separation test for AGs, PAGs and ADMGs}
 \usage{
-m_separated(
-  cg,
-  X = NULL,
-  Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
-)
+m_separated(cg, X = NULL, Y = NULL, Z = NULL)
 }
 \arguments{
 \item{cg}{A \code{caugi} object of class AG, PAG, ADMG, DAG, or UG.}
 
 \item{X, Y, Z}{Character vectors of node names, or \code{NULL}. If \code{Z} is \code{NULL}
 or missing, no nodes are conditioned on.}
-
-\item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
 A logical value; \code{TRUE} if \code{X} and \code{Y} are m-separated given \code{Z}.

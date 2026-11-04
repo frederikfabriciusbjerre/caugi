@@ -4,23 +4,13 @@
 \alias{d_separated}
 \title{Are X and Y d-separated given Z?}
 \usage{
-d_separated(
-  cg,
-  X = NULL,
-  Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
-)
+d_separated(cg, X = NULL, Y = NULL, Z = NULL)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
 
 \item{X, Y, Z}{Character vectors of node names, or \code{NULL}. If \code{Z} is \code{NULL}
 or missing, no nodes are conditioned on.}
-
-\item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
 \code{TRUE} if d-separated, \code{FALSE} otherwise. Nodes of \code{Z} are

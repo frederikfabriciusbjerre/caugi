@@ -1298,7 +1298,6 @@ districts <- function(cg, nodes = NULL, index = NULL) {
 #' @param cg A `caugi` object of class AG, PAG, ADMG, DAG, or UG.
 #' @param X,Y,Z Character vectors of node names, or `NULL`. If `Z` is `NULL`
 #'   or missing, no nodes are conditioned on.
-#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #'
 #' @returns A logical value; `TRUE` if `X` and `Y` are m-separated given `Z`.
 #'   Nodes of `Z` are dropped from `X` and `Y` first, so `X` within `Z` gives
@@ -1323,17 +1322,13 @@ m_separated <- function(
   cg,
   X = NULL,
   Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
+  Z = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
 
-  X_idx0 <- .resolve_idx0_mget(cg@session, X, X_index)
-  Y_idx0 <- .resolve_idx0_mget(cg@session, Y, Y_index)
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  X_idx0 <- .resolve_idx0_mget(cg@session, X)
+  Y_idx0 <- .resolve_idx0_mget(cg@session, Y)
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z)
 
   rs_m_separated(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
@@ -1365,7 +1360,6 @@ m_separated <- function(
 #' @param cg A `caugi` object of class `"AG"` that is a MAG, or of class
 #'   `"PAG"`.
 #' @param from,to Node names.
-#' @param from_index,to_index Deprecated; pass node names instead.
 #'
 #' @returns `TRUE` if the edge `from --> to` is visible, otherwise `FALSE`.
 #'
@@ -1394,14 +1388,11 @@ m_separated <- function(
 is_visible_edge <- function(
   cg,
   from = NULL,
-  to = NULL,
-  from_index = NULL,
-  to_index = NULL
+  to = NULL
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  from_idx0 <- .resolve_idx0_mget(cg@session, from, from_index)
-  to_idx0 <- .resolve_idx0_mget(cg@session, to, to_index)
+  from_idx0 <- .resolve_idx0_mget(cg@session, from)
+  to_idx0 <- .resolve_idx0_mget(cg@session, to)
   if (length(from_idx0) != 1L || length(to_idx0) != 1L) {
     stop("`from` and `to` must each name exactly one node.", call. = FALSE)
   }

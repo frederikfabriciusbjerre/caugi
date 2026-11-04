@@ -4,15 +4,7 @@
 \alias{is_valid_backdoor}
 \title{Is a backdoor set valid?}
 \usage{
-is_valid_backdoor(
-  cg,
-  X = NULL,
-  Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
-)
+is_valid_backdoor(cg, X = NULL, Y = NULL, Z = NULL)
 }
 \arguments{
 \item{cg}{A \code{caugi} object.}
@@ -20,8 +12,6 @@ is_valid_backdoor(
 \item{X, Y}{Node names; one or more each.}
 
 \item{Z}{Optional node set for conditioning}
-
-\item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 }
 \value{
 Logical value indicating if backdoor is valid or not.
