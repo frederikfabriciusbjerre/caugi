@@ -29,6 +29,8 @@ One pair of entries holds one edge, so self-loops and parallel edges are
 rejected.
 
 \code{\link[=as_caugi]{as_caugi()}} reads both codings back.
+
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error.
 }
 \examples{
 cg <- caugi(

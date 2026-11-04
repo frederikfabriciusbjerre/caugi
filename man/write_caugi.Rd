@@ -32,6 +32,8 @@ The caugi format is a versioned JSON schema that captures:
 }
 
 Edge types are encoded using their DSL operators (e.g., \code{"-->"}, \code{"<->"}, \code{"--"}).
+Edges with a custom glyph from \code{\link[=register_caugi_edge]{register_caugi_edge()}} are an error, as the
+file stores only the glyph, not its marks or class.
 
 For a complete guide to the format, see \code{vignette("serialization", package = "caugi")}.
 The formal JSON Schema is available at:

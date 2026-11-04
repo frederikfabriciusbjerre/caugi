@@ -29,6 +29,8 @@ NULL
 #' * Optional metadata (comments and tags)
 #'
 #' Edge types are encoded using their DSL operators (e.g., `"-->"`, `"<->"`, `"--"`).
+#' Edges with a custom glyph from [register_caugi_edge()] are an error, as the
+#' file stores only the glyph, not its marks or class.
 #'
 #' For a complete guide to the format, see `vignette("serialization", package = "caugi")`.
 #' The formal JSON Schema is available at:
@@ -59,6 +61,7 @@ NULL
 #' @export
 write_caugi <- function(x, path, comment = NULL, tags = NULL) {
   is_caugi(x, throw_error = TRUE)
+  .stop_if_custom_glyphs(x, "write_caugi()")
 
   # Validate arguments
   if (!is.character(path) || length(path) != 1L) {
@@ -166,6 +169,9 @@ read_caugi <- function(path, lazy) {
 #' This is a lower-level function; consider using `write_caugi()` for
 #' writing to files.
 #'
+#' Edges with a custom glyph from [register_caugi_edge()] are an error, as the
+#' file stores only the glyph, not its marks or class.
+#'
 #' @param x A `caugi` object.
 #' @param comment Optional character string with a comment about the graph.
 #' @param tags Optional character vector of tags for categorizing the graph.
@@ -183,6 +189,7 @@ read_caugi <- function(path, lazy) {
 #' @export
 caugi_serialize <- function(x, comment = NULL, tags = NULL) {
   is_caugi(x, throw_error = TRUE)
+  .stop_if_custom_glyphs(x, "caugi_serialize()")
 
   # Validate arguments
   if (!is.null(comment) && (!is.character(comment) || length(comment) != 1L)) {

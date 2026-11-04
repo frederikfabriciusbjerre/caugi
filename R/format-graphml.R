@@ -45,6 +45,9 @@ caugi_graphml <- S7::new_class(
 #' Edge types are encoded using the caugi DSL operators (e.g., "-->", "<->").
 #' This allows for perfect round-trip conversion back to caugi.
 #'
+#' Edges with a custom glyph from [register_caugi_edge()] are an error, as the
+#' file stores only the glyph, not its marks or class.
+#'
 #' @examples
 #' cg <- caugi(
 #'   A %-->% B + C,
@@ -66,6 +69,7 @@ caugi_graphml <- S7::new_class(
 #' @export
 to_graphml <- function(x) {
   is_caugi(x, throw_error = TRUE)
+  .stop_if_custom_glyphs(x, "to_graphml()")
   xml <- rs_serialize_graphml(
     x@session,
     x@graph_class
