@@ -7,7 +7,6 @@
 #' @noRd
 .caugi_default_options <- function() {
   list(
-    use_open_graph_definition = TRUE,
     plot = list(
       spacing = grid::unit(1, "lines"),
       node_style = list(
@@ -58,11 +57,6 @@
 #'   the requested options.
 #'
 #' @details
-#' The `use_open_graph_definition` option (`TRUE`/`FALSE`, default `TRUE`) is
-#' deprecated and will be removed in caugi 2.0.0; setting it to `FALSE` warns.
-#' It is the default of the `open` argument of [ancestors()], [descendants()],
-#' [anteriors()] and [posteriors()], so pass `open` to those instead.
-#'
 #' The plot options are nested under the `plot` key:
 #'
 #' - `spacing`: A [grid::unit()] controlling space between composed plots
@@ -186,17 +180,6 @@ caugi_options <- function(..., reset = FALSE) {
       result <- result[[key]]
     }
     return(result)
-  }
-
-  # Restoring the default (e.g. `caugi_options(old)`) stays silent.
-  open_def <- new[["use_open_graph_definition"]]
-  if (!is.null(open_def) && !isTRUE(open_def)) {
-    warning(
-      "The `use_open_graph_definition` option is deprecated and will be ",
-      "removed in caugi 2.0.0. Pass `open` to `ancestors()`, ",
-      "`descendants()`, `anteriors()` or `posteriors()` instead.",
-      call. = FALSE
-    )
   }
 
   .check_options(new, .caugi_default_options())

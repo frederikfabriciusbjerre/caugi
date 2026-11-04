@@ -886,9 +886,7 @@ has_edge <- function(cg, X, Y) {
 #'
 #' @inheritParams parents
 #' @param open Logical; if `TRUE` (default), each queried node is left out
-#'   of its own ancestors; if `FALSE`, it is included. The default comes
-#'   from the deprecated `use_open_graph_definition` option of
-#'   [caugi_options()].
+#'   of its own ancestors; if `FALSE`, it is included.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -920,16 +918,14 @@ formals(ancestors) <- alist(
   cg = ,
   nodes = NULL,
   index = NULL,
-  open = caugi_options("use_open_graph_definition")
+  open = TRUE
 )
 
 #' @title Get descendants of nodes in a `caugi`
 #'
 #' @inheritParams parents
 #' @param open Logical; if `TRUE` (default), each queried node is left out
-#'   of its own descendants; if `FALSE`, it is included. The default comes
-#'   from the deprecated `use_open_graph_definition` option of
-#'   [caugi_options()].
+#'   of its own descendants; if `FALSE`, it is included.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -961,7 +957,7 @@ formals(descendants) <- alist(
   cg = ,
   nodes = NULL,
   index = NULL,
-  open = caugi_options("use_open_graph_definition")
+  open = TRUE
 )
 
 #' @title Get anteriors of nodes in a `caugi`
@@ -978,9 +974,7 @@ formals(descendants) <- alist(
 #' @inheritParams parents
 #' @param cg A `caugi` object of class DAG or PDAG.
 #' @param open Logical; if `TRUE` (default), each queried node is left out
-#'   of its own anteriors; if `FALSE`, it is included. The default comes
-#'   from the deprecated `use_open_graph_definition` option of
-#'   [caugi_options()].
+#'   of its own anteriors; if `FALSE`, it is included.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #' requested) or a list of character vectors (if multiple nodes are requested).
@@ -1018,7 +1012,7 @@ formals(anteriors) <- alist(
   cg = ,
   nodes = NULL,
   index = NULL,
-  open = caugi_options("use_open_graph_definition")
+  open = TRUE
 )
 
 #' @title Get posteriors of nodes in a `caugi`
@@ -1036,9 +1030,7 @@ formals(anteriors) <- alist(
 #' @inheritParams parents
 #' @param cg A `caugi` object of class DAG, PDAG, or AG.
 #' @param open Logical; if `TRUE` (default), each queried node is left out
-#'   of its own posteriors; if `FALSE`, it is included. The default comes
-#'   from the deprecated `use_open_graph_definition` option of
-#'   [caugi_options()].
+#'   of its own posteriors; if `FALSE`, it is included.
 #'
 #' @returns Either a character vector of node names (if a single node is
 #'   requested) or a list of character vectors (if multiple nodes are requested).
@@ -1073,7 +1065,7 @@ formals(posteriors) <- alist(
   cg = ,
   nodes = NULL,
   index = NULL,
-  open = caugi_options("use_open_graph_definition")
+  open = TRUE
 )
 
 #' @title Get Markov blanket of nodes in a `caugi`

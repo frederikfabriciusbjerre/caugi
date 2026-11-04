@@ -29,6 +29,10 @@
   `all_adjustment_sets_admg()` and `is_visible_edge()` are removed. Pass node
   names instead (#360).
 
+* The `use_open_graph_definition` option is removed. Pass `open` to
+  `ancestors()`, `descendants()`, `anteriors()` and `posteriors()` instead
+  (#364).
+
 ## New Features
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
