@@ -159,6 +159,9 @@
 
 ## Bug Fixes
 
+* `generate_graph()` no longer draws an unused node order, so a given seed
+  now gives a different graph than before.
+
 * `plot()` errors when a `size`, `padding`, `lwd`, `arrow_size` or
   `circle_size` in `node_style` or `edge_style` is not a number, or is
   negative (`size` must be positive). They were drawn as given, and a string

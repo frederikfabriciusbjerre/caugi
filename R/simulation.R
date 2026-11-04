@@ -67,8 +67,6 @@ generate_graph <- function(
   reg <- caugi_registry()
   code_dir <- edge_registry_code_of(reg, "-->")
 
-  ord <- sample.int(n) - 1L
-
   if (m > 0L) {
     ranks <- sample.int(tot, m) - 1L
     row_len <- (n - 1L):1L
