@@ -9,7 +9,8 @@ arrowhead, 3 tail, where m[i, j] is the mark at node j on the edge
 between i and j. So m[i, j] == 2 with m[j, i] == 3 means i --&amp;gt; j.
 One pair of entries holds one edge, so self-loops and parallel edges are
 rejected.
-as_caugi() reads both codings back."><meta property="og:description" content="With coding = &quot;binary&quot; (the default), only supports the edge types found
+as_caugi() reads both codings back.
+Edges with a custom glyph from register_caugi_edge() are an error."><meta property="og:description" content="With coding = &quot;binary&quot; (the default), only supports the edge types found
 in a PDAG (--&amp;gt; and ---). A --- edge is written as 1 in both
 directions, so other symmetric edges such as &amp;lt;-&amp;gt; are rejected rather than
 encoded the same way.
@@ -19,7 +20,8 @@ arrowhead, 3 tail, where m[i, j] is the mark at node j on the edge
 between i and j. So m[i, j] == 2 with m[j, i] == 3 means i --&amp;gt; j.
 One pair of entries holds one edge, so self-loops and parallel edges are
 rejected.
-as_caugi() reads both codings back."><meta property="og:image" content="https://caugi.org/reference/figures/og.png"><meta property="og:image:alt" content="The name 'caugi' on the left and a graph on the right with corgi dogs as nodes."><meta name="robots" content="noindex"></head><body>
+as_caugi() reads both codings back.
+Edges with a custom glyph from register_caugi_edge() are an error."><meta property="og:image" content="https://caugi.org/reference/figures/og.png"><meta property="og:image:alt" content="The name 'caugi' on the left and a graph on the right with corgi dogs as nodes."><meta name="robots" content="noindex"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -74,6 +76,7 @@ between <code>i</code> and <code>j</code>. So <code>m[i, j] == 2</code> with <co
 One pair of entries holds one edge, so self-loops and parallel edges are
 rejected.</p>
 <p><code><a href="as_caugi.html">as_caugi()</a></code> reads both codings back.</p>
+<p>Edges with a custom glyph from <code><a href="register_caugi_edge.html">register_caugi_edge()</a></code> are an error.</p>
     </div>
 
     <div class="section level2">
@@ -124,7 +127,7 @@ for the mark-coded <code>amat.pag</code> form.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> B 1 0 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> C 0 2 0</span>
 <span class="r-in"><span><span class="fu"><a href="as_caugi.html">as_caugi</a></span><span class="op">(</span><span class="va">m</span>, class <span class="op">=</span> <span class="st">"UNKNOWN"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x56083f70dd90&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x5914783578f0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   graph_class: UNKNOWN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   nodes: A, B, C</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   edges: Ao-&gt;B, B&lt;-&gt;C</span>

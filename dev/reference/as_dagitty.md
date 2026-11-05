@@ -35,6 +35,10 @@ Reading a `pag` back with
 [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) gives class
 `"UNKNOWN"`, as caugi doesn't support PAGs yet.
 
+Edges with a custom glyph from
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+are an error.
+
 ## See also
 
 Other conversions:

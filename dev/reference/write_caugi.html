@@ -86,7 +86,9 @@ caugi graphs across R sessions.</p>
     <p>The caugi format is a versioned JSON schema that captures:</p><ul><li><p>Graph structure (nodes and edges with their types)</p></li>
 <li><p>Graph class (DAG, PDAG, ADMG, UG, etc.)</p></li>
 <li><p>Optional metadata (comments and tags)</p></li>
-</ul><p>Edge types are encoded using their DSL operators (e.g., <code>"--&gt;"</code>, <code>"&lt;-&gt;"</code>, <code>"--"</code>).</p>
+</ul><p>Edge types are encoded using their DSL operators (e.g., <code>"--&gt;"</code>, <code>"&lt;-&gt;"</code>, <code>"--"</code>).
+Edges with a custom glyph from <code><a href="register_caugi_edge.html">register_caugi_edge()</a></code> are an error, as the
+file stores only the glyph, not its marks or class.</p>
 <p>For a complete guide to the format, see <code><a href="../articles/serialization.html">vignette("serialization", package = "caugi")</a></code>.
 The formal JSON Schema is available at:
 <a href="https://caugi.org/schemas/caugi-v1.schema.json">https://caugi.org/schemas/caugi-v1.schema.json</a></p>

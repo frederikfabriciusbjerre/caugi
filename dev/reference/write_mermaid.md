@@ -1,6 +1,7 @@
 # Write caugi Graph to Mermaid File
 
-Writes a caugi graph to a file in Mermaid format.
+Writes a caugi graph to a file in Mermaid format, as UTF-8 in every
+locale.
 
 ## Usage
 

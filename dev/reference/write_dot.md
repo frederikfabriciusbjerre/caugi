@@ -1,6 +1,7 @@
 # Write caugi Graph to DOT File
 
-Writes a caugi graph to a file in Graphviz DOT format.
+Writes a caugi graph to a file in Graphviz DOT format, as UTF-8 in every
+locale.
 
 ## Usage
 

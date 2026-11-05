@@ -42,7 +42,14 @@ The function handles different edge types:
 
 - Partial edges (`o-o`) use `o--o` in Mermaid (circle both ends)
 
-Node names are automatically escaped if they contain special characters.
+Edges with a custom glyph from
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+are an error.
+
+A node name Mermaid reads as an ID, such as `A`, `Sepal.Length`,
+`age-group` or `2.5`, is written as it is. Any other name, such as
+`my var` or the keyword `end`, is written as `nK["name"]` with a
+generated ID `nK`.
 
 ## See also
 

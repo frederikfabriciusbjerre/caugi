@@ -235,6 +235,32 @@
 
 ### Bug Fixes
 
+- [`write_dot()`](https://caugi.org/dev/reference/write_dot.md) and
+  [`write_mermaid()`](https://caugi.org/dev/reference/write_mermaid.md)
+  write UTF-8 in every locale. Under a non-UTF-8 locale they lost
+  non-ASCII node names
+  ([\#417](https://github.com/frederikfabriciusbjerre/caugi/issues/417)).
+
+- [`to_mermaid()`](https://caugi.org/dev/reference/to_mermaid.md) keeps
+  isolated nodes when the graph has edges. A node whose name Mermaid
+  can’t read as an ID, such as `my var` or `end`, is written as
+  `nK["name"]` with a generated ID, not as an ID Mermaid rejects
+  ([\#413](https://github.com/frederikfabriciusbjerre/caugi/issues/413)).
+
+- Every exporter refuses edges with a custom glyph from
+  [`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md),
+  as none can record what the glyph means.
+  [`to_dot()`](https://caugi.org/dev/reference/to_dot.md),
+  [`to_mermaid()`](https://caugi.org/dev/reference/to_mermaid.md),
+  [`as_igraph()`](https://caugi.org/dev/reference/as_igraph.md) and
+  [`as_bnlearn()`](https://caugi.org/dev/reference/as_bnlearn.md) wrote
+  them as plain arrows, reversed them or dropped them, and
+  [`write_caugi()`](https://caugi.org/dev/reference/write_caugi.md) and
+  [`write_graphml()`](https://caugi.org/dev/reference/write_graphml.md)
+  wrote files that only a session with the same glyph registered could
+  read
+  ([\#404](https://github.com/frederikfabriciusbjerre/caugi/issues/404)).
+
 - [`generate_graph()`](https://caugi.org/dev/reference/generate_graph.md)
   no longer draws an unused node order, so a given seed now gives a
   different graph than before.

@@ -29,6 +29,12 @@ caugi_serialize(x, comment = NULL, tags = NULL)
 
 A character string containing the JSON representation.
 
+## Details
+
+Edges with a custom glyph from
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+are an error, as the file stores only the glyph, not its marks or class.
+
 ## See also
 
 Other export:

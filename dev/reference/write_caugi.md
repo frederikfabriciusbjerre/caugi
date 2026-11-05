@@ -43,7 +43,9 @@ The caugi format is a versioned JSON schema that captures:
 - Optional metadata (comments and tags)
 
 Edge types are encoded using their DSL operators (e.g., `"-->"`,
-`"<->"`, `"--"`).
+`"<->"`, `"--"`). Edges with a custom glyph from
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+are an error, as the file stores only the glyph, not its marks or class.
 
 For a complete guide to the format, see
 [`vignette("serialization", package = "caugi")`](https://caugi.org/dev/articles/serialization.md).

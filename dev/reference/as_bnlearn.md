@@ -1,6 +1,8 @@
 # Convert a caugi to a bnlearn network
 
-Convert a caugi to a bnlearn network
+Edges with a custom glyph from
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+are an error.
 
 ## Usage
 

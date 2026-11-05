@@ -15,6 +15,10 @@ parallel edges are rejected.
 [`as_caugi()`](https://caugi.org/dev/reference/as_caugi.md) reads both
 codings back.
 
+Edges with a custom glyph from
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+are an error.
+
 ## Usage
 
 ``` r
@@ -62,7 +66,7 @@ m
 #> B 1 0 2
 #> C 0 2 0
 as_caugi(m, class = "UNKNOWN")
-#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x56083f70dd90>
+#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x5914783578f0>
 #>   graph_class: UNKNOWN
 #>   nodes: A, B, C
 #>   edges: Ao->B, B<->C

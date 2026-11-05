@@ -50,6 +50,10 @@ The function handles different edge types:
 - Partial edges (`o-o`) use `->` with
   `[dir=both, arrowtail=odot, arrowhead=odot]` attribute
 
+Edges with a custom glyph from
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+are an error.
+
 ## See also
 
 Other export:

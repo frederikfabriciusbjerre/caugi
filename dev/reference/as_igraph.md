@@ -1,6 +1,8 @@
 # Convert a caugi to an igraph object
 
-Convert a caugi to an igraph object
+Edges with a custom glyph from
+[`register_caugi_edge()`](https://caugi.org/dev/reference/register_caugi_edge.md)
+are an error.
 
 ## Usage
 

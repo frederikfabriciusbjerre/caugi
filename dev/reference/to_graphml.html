@@ -73,6 +73,8 @@ GraphML is widely supported by graph analysis tools and libraries.</p>
 <li><p>Graph class stored as a graph-level attribute</p></li>
 </ul><p>Edge types are encoded using the caugi DSL operators (e.g., "–&gt;", "&lt;-&gt;").
 This allows for perfect round-trip conversion back to caugi.</p>
+<p>Edges with a custom glyph from <code><a href="register_caugi_edge.html">register_caugi_edge()</a></code> are an error, as the
+file stores only the glyph, not its marks or class.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

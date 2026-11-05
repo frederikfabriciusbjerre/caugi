@@ -35,6 +35,14 @@ register_caugi_edge(glyph, tail_mark, head_mark, class, symmetric = FALSE)
 
 TRUE, invisibly.
 
+## Details
+
+Exporters such as
+[`to_dot()`](https://caugi.org/dev/reference/to_dot.md),
+[`as_igraph()`](https://caugi.org/dev/reference/as_igraph.md) and
+[`write_caugi()`](https://caugi.org/dev/reference/write_caugi.md) refuse
+graphs with a custom glyph, as they can't record what it means.
+
 ## See also
 
 Other registry:
