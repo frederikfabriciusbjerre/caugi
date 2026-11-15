@@ -157,3 +157,20 @@
     call. = FALSE
   )
 }
+
+#' @title Warn that a function is deprecated
+#'
+#' @param old,new The old and new calls, as shown to the user.
+#'
+#' @keywords internal
+#' @noRd
+.warn_deprecated_fn <- function(old, new) {
+  warning(
+    sprintf(
+      "`%s` is deprecated and will be removed in caugi 2.0.0. Use `%s` instead.",
+      old,
+      new
+    ),
+    call. = FALSE
+  )
+}

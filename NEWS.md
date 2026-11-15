@@ -460,6 +460,13 @@
   caugi 2.0.0. Use `cg`, as every other function does. Supplying `x` still
   works but warns (#363).
 
+* `caugi_layout_sugiyama()`, `caugi_layout_fruchterman_reingold()`,
+  `caugi_layout_kamada_kawai()`, `caugi_layout_bipartite()`,
+  `caugi_layout_tiered()` and `caugi_layout_circle()` are deprecated and will
+  be removed in caugi 2.0.0. Use `caugi_layout()` with the matching `method`
+  instead; it takes `partition`, `tiers` and `orientation` in `...`, now
+  documented there. Calling them still works but warns (#367).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.
