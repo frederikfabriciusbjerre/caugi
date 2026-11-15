@@ -179,40 +179,49 @@ adjustment_set <- function(
   cg@nodes$name[idx0 + 1L]
 }
 
-#' @title Is a backdoor set valid?
+#' @title Is a set a valid adjustment set?
 #'
-#' @description Checks whether `Z` satisfies the generalized back-door
-#' criterion relative to `X` and `Y` in a DAG. `X` and `Y` can each hold one
-#' or more nodes.
+#' @description Checks whether `Z` is a valid adjustment set for the effect of
+#' `X` on `Y`. `X` and `Y` can each hold one or more nodes.
 #'
-#' @details
-#' `Z` satisfies the generalized back-door criterion (Maathuis & Colombo,
-#' 2015, Def. 3.7) when
-#' 1. `Z` contains no descendant of `X`, and
-#' 2. for every node \eqn{X_i} in `X`, \eqn{Z \cup X \setminus \{X_i\}} blocks
-#'    every back-door path (a path starting with an edge into \eqn{X_i}) from
-#'    \eqn{X_i} to `Y`.
+#' @details `type` picks the criterion:
+#' * `"adjustment"` (default): the generalized adjustment criterion (Perković
+#'   et al., 2018), which is complete, so it accepts exactly the valid
+#'   adjustment sets. Works on DAGs and ADMGs.
+#' * `"backdoor"`: the generalized back-door criterion (Maathuis & Colombo,
+#'   2015, Def. 3.7). DAGs only. `Z` satisfies it when
+#'   1. `Z` contains no descendant of `X`, and
+#'   2. for every node \eqn{X_i} in `X`, \eqn{Z \cup X \setminus \{X_i\}}
+#'      blocks every back-door path (a path starting with an edge into
+#'      \eqn{X_i}) from \eqn{X_i} to `Y`.
 #'
-#' With one treatment and one outcome this is Pearl's back-door criterion.
-#' With several treatments it can accept sets that Pearl's set version
-#' rejects, since that version requires `Z` alone to block every back-door
-#' path of each treatment. Every set accepted here is a valid adjustment set,
-#' but a valid adjustment set may be rejected, for example one containing a
-#' descendant of `X` off the causal paths. `X`, `Y` and `Z` must be pairwise
-#' disjoint, so overlapping sets give `FALSE`.
+#'   With one treatment and one outcome this is Pearl's back-door criterion.
+#'   With several treatments it can accept sets that Pearl's set version
+#'   rejects, since that version requires `Z` alone to block every back-door
+#'   path of each treatment.
+#'
+#' Every back-door set is a valid adjustment set, but not the other way
+#' round: in `X --> Y, X --> W`, `{W}` is a valid adjustment set but not a
+#' back-door set, as `W` is a descendant of `X`. `X`, `Y` and `Z` must be
+#' pairwise disjoint, so overlapping sets give `FALSE`.
 #'
 #' @references
+#' Perković, E., Textor, J., Kalisch, M. & Maathuis, M. H. (2018). Complete
+#' graphical characterization and construction of adjustment sets in Markov
+#' equivalence classes of ancestral graphs. \emph{Journal of Machine Learning
+#' Research}, 18(220), 1--62.
+#'
 #' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
 #' \emph{The Annals of Statistics}, 43(3), 1060--1088.
 #' \doi{10.1214/14-AOS1295}.
 #'
-#' @param cg A `caugi` object.
-#'
+#' @param cg A `caugi` object of class `"DAG"` or `"ADMG"`.
 #' @param X,Y Node names; one or more each.
-#' @param Z Optional node set for conditioning
-#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
+#' @param Z Node names of the candidate adjustment set; `NULL` (default) or
+#'   `character(0)` for the empty set.
+#' @param type `"adjustment"` (default) or `"backdoor"`; see Details.
 #'
-#' @returns Logical value indicating if backdoor is valid or not.
+#' @returns `TRUE` if `Z` is a valid adjustment set, `FALSE` otherwise.
 #'
 #' @examples
 #' cg <- caugi(
@@ -228,37 +237,51 @@ adjustment_set <- function(
 #'   class = "DAG"
 #' )
 #'
-#' is_valid_backdoor(cg, X = "X", Y = "Y", Z = NULL) # FALSE
-#' is_valid_backdoor(cg, X = "X", Y = "Y", Z = "K") # TRUE
-#' is_valid_backdoor(cg, X = "X", Y = "Y", Z = c("A", "C")) # TRUE
+#' is_valid_adjustment(cg, X = "X", Y = "Y", Z = NULL) # FALSE
+#' is_valid_adjustment(cg, X = "X", Y = "Y", Z = "K") # TRUE
+#' is_valid_adjustment(cg, X = "X", Y = "Y", Z = c("A", "C")) # TRUE
+#'
+#' # A descendant of X off the causal paths is allowed, but not in a
+#' # back-door set
+#' cg2 <- caugi(X %-->% Y + W, class = "DAG")
+#' is_valid_adjustment(cg2, "X", "Y", "W") # TRUE
+#' is_valid_adjustment(cg2, "X", "Y", "W", type = "backdoor") # FALSE
 #'
 #' # Several treatments: X2 blocks X1 <-- X2 --> Y, so no adjustment is needed
-#' cg2 <- caugi(X2 %-->% X1 + Y, X1 %-->% Y, class = "DAG")
-#' is_valid_backdoor(cg2, X = c("X1", "X2"), Y = "Y", Z = NULL) # TRUE
+#' cg3 <- caugi(X2 %-->% X1 + Y, X1 %-->% Y, class = "DAG")
+#' is_valid_adjustment(cg3, X = c("X1", "X2"), Y = "Y", Z = NULL) # TRUE
+#'
+#' # ADMG
+#' admg <- caugi(L %-->% X, X %-->% Y, L %-->% Y, class = "ADMG")
+#' is_valid_adjustment(admg, X = "X", Y = "Y", Z = "L") # TRUE
 #'
 #' @family adjustment
 #' @concept adjustment
 #'
 #' @export
-is_valid_backdoor <- function(
+is_valid_adjustment <- function(
   cg,
   X = NULL,
   Y = NULL,
   Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
+  type = c("adjustment", "backdoor")
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
+  type <- match.arg(type)
+  .check_adjustment_class(cg, type)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, NULL, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, NULL, "Y")
+  Z_idx0 <- .resolve_idx0_mget(cg@session, Z)
   if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
     return(FALSE)
   }
 
-  rs_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
+  check <- switch(
+    type,
+    adjustment = rs_is_valid_adjustment_set,
+    backdoor = rs_is_valid_backdoor_set
+  )
+  check(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
 #' @title Get all valid adjustment sets up to a certain size
@@ -271,7 +294,8 @@ is_valid_backdoor <- function(
 #'   et al., 2018), which is complete, so every valid adjustment set up to
 #'   `max_size` is found. Works on DAGs and ADMGs.
 #' * `"backdoor"`: the generalized back-door criterion (Maathuis & Colombo,
-#'   2015), as checked by [is_valid_backdoor()]. DAGs only.
+#'   2015), as checked by `is_valid_adjustment(type = "backdoor")`. DAGs
+#'   only.
 #'
 #' Every back-door set is a valid adjustment set, but not the other way
 #' round: in `X --> Y, X --> W`, `{W}` is a valid adjustment set but not a
@@ -549,61 +573,6 @@ minimal_d_separator <- function(
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ──────────────────────── ADMG Adjustment Functions ───────────────────────────
-# ──────────────────────────────────────────────────────────────────────────────
-
-#' @title Is a set a valid adjustment set in an ADMG?
-#'
-#' @description Checks whether `Z` is a valid adjustment set for estimating
-#' the causal effect of `X` on `Y` in an ADMG using the generalized adjustment
-#' criterion.
-#'
-#' @param cg A `caugi` object of class ADMG.
-#' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
-#' @param Z Conditioning set (character vector of node names).
-#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
-#'
-#' @returns Logical value indicating if the adjustment set is valid; `FALSE`
-#'   unless `X`, `Y` and `Z` are pairwise disjoint.
-#'
-#' @examples
-#' # Classic confounding
-#' cg <- caugi(
-#'   L %-->% X,
-#'   X %-->% Y,
-#'   L %-->% Y,
-#'   class = "ADMG"
-#' )
-#'
-#' is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = NULL) # FALSE
-#' is_valid_adjustment_admg(cg, X = "X", Y = "Y", Z = "L") # TRUE
-#'
-#' @family adjustment
-#' @concept adjustment
-#'
-#' @export
-is_valid_adjustment_admg <- function(
-  cg,
-  X = NULL,
-  Y = NULL,
-  Z = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  Z_index = NULL
-) {
-  is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  Z_idx0 <- .resolve_idx0_mget(cg@session, Z, Z_index)
-  if (!.disjoint(X_idx0, Y_idx0, Z_idx0)) {
-    return(FALSE)
-  }
-
-  rs_is_valid_adjustment_set_admg(cg@session, X_idx0, Y_idx0, Z_idx0)
-}
-
-# ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────────── Helpers ────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -717,19 +686,55 @@ is_valid_adjustment_admg <- function(
 #'
 #' @description These functions are deprecated and will be removed in caugi
 #' 2.0.0:
+#' * `is_valid_backdoor()`: use `is_valid_adjustment(type = "backdoor")`.
+#' * `is_valid_adjustment_admg()`: use [is_valid_adjustment()].
 #' * `all_backdoor_sets()`: use `all_adjustment_sets(type = "backdoor")`.
 #' * `all_adjustment_sets_admg()`: use [all_adjustment_sets()].
 #'
 #' @param cg A `caugi` object.
 #' @param X,Y Node names; one or more each.
-#' @param X_index,Y_index Deprecated; pass node names instead.
+#' @param Z See [is_valid_adjustment()].
+#' @param X_index,Y_index,Z_index Deprecated; pass node names instead.
 #' @param minimal,max_size See [all_adjustment_sets()].
 #'
-#' @returns See [all_adjustment_sets()].
+#' @returns See [is_valid_adjustment()] and [all_adjustment_sets()].
 #'
 #' @name adjustment_deprecated
 #' @keywords internal
 NULL
+
+#' @rdname adjustment_deprecated
+#' @export
+is_valid_backdoor <- function(
+  cg,
+  X = NULL,
+  Y = NULL,
+  Z = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  Z_index = NULL
+) {
+  .warn_deprecated_fn(
+    "is_valid_backdoor()",
+    "is_valid_adjustment(type = \"backdoor\")"
+  )
+  .is_valid_adjustment_old(cg, X, Y, Z, X_index, Y_index, Z_index, "backdoor")
+}
+
+#' @rdname adjustment_deprecated
+#' @export
+is_valid_adjustment_admg <- function(
+  cg,
+  X = NULL,
+  Y = NULL,
+  Z = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  Z_index = NULL
+) {
+  .warn_deprecated_fn("is_valid_adjustment_admg()", "is_valid_adjustment()")
+  .is_valid_adjustment_old(cg, X, Y, Z, X_index, Y_index, Z_index, "adjustment")
+}
 
 #' @rdname adjustment_deprecated
 #' @export
@@ -803,5 +808,28 @@ all_adjustment_sets_admg <- function(
     type = type,
     minimal = minimal,
     max_size = max_size
+  )
+}
+
+# The deprecated checks also take node indices.
+.is_valid_adjustment_old <- function(
+  cg,
+  X,
+  Y,
+  Z,
+  X_index,
+  Y_index,
+  Z_index,
+  type
+) {
+  is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
+  nm <- cg@nodes$name
+  is_valid_adjustment(
+    cg,
+    nm[.resolve_idx0_xy(cg@session, X, X_index, "X") + 1L],
+    nm[.resolve_idx0_xy(cg@session, Y, Y_index, "Y") + 1L],
+    nm[.resolve_idx0_mget(cg@session, Z, Z_index) + 1L],
+    type = type
   )
 }

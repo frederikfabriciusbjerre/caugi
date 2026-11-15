@@ -40,7 +40,8 @@ up to size \code{max_size}, which per default is 3.
 et al., 2018), which is complete, so every valid adjustment set up to
 \code{max_size} is found. Works on DAGs and ADMGs.
 \item \code{"backdoor"}: the generalized back-door criterion (Maathuis & Colombo,
-2015), as checked by \code{\link[=is_valid_backdoor]{is_valid_backdoor()}}. DAGs only.
+2015), as checked by \code{is_valid_adjustment(type = "backdoor")}. DAGs
+only.
 }
 
 Every back-door set is a valid adjustment set, but not the other way
@@ -89,8 +90,7 @@ Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
 Other adjustment:
 \code{\link[=adjustment_set]{adjustment_set()}},
 \code{\link[=d_separated]{d_separated()}},
-\code{\link[=is_valid_adjustment_admg]{is_valid_adjustment_admg()}},
-\code{\link[=is_valid_backdoor]{is_valid_backdoor()}},
+\code{\link[=is_valid_adjustment]{is_valid_adjustment()}},
 \code{\link[=minimal_separator]{minimal_separator()}}
 }
 \concept{adjustment}

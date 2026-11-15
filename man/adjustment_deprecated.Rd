@@ -2,10 +2,32 @@
 % Please edit documentation in R/adjustment.R
 \name{adjustment_deprecated}
 \alias{adjustment_deprecated}
+\alias{is_valid_backdoor}
+\alias{is_valid_adjustment_admg}
 \alias{all_backdoor_sets}
 \alias{all_adjustment_sets_admg}
 \title{Deprecated adjustment functions}
 \usage{
+is_valid_backdoor(
+  cg,
+  X = NULL,
+  Y = NULL,
+  Z = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  Z_index = NULL
+)
+
+is_valid_adjustment_admg(
+  cg,
+  X = NULL,
+  Y = NULL,
+  Z = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  Z_index = NULL
+)
+
 all_backdoor_sets(
   cg,
   X = NULL,
@@ -31,17 +53,21 @@ all_adjustment_sets_admg(
 
 \item{X, Y}{Node names; one or more each.}
 
-\item{X_index, Y_index}{Deprecated; pass node names instead.}
+\item{Z}{See \code{\link[=is_valid_adjustment]{is_valid_adjustment()}}.}
+
+\item{X_index, Y_index, Z_index}{Deprecated; pass node names instead.}
 
 \item{minimal, max_size}{See \code{\link[=all_adjustment_sets]{all_adjustment_sets()}}.}
 }
 \value{
-See \code{\link[=all_adjustment_sets]{all_adjustment_sets()}}.
+See \code{\link[=is_valid_adjustment]{is_valid_adjustment()}} and \code{\link[=all_adjustment_sets]{all_adjustment_sets()}}.
 }
 \description{
 These functions are deprecated and will be removed in caugi
 2.0.0:
 \itemize{
+\item \code{is_valid_backdoor()}: use \code{is_valid_adjustment(type = "backdoor")}.
+\item \code{is_valid_adjustment_admg()}: use \code{\link[=is_valid_adjustment]{is_valid_adjustment()}}.
 \item \code{all_backdoor_sets()}: use \code{all_adjustment_sets(type = "backdoor")}.
 \item \code{all_adjustment_sets_admg()}: use \code{\link[=all_adjustment_sets]{all_adjustment_sets()}}.
 }

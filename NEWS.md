@@ -102,6 +102,12 @@
   The two differ when a valid set holds a descendant of `X` off the causal
   paths (#354).
 
+* `is_valid_adjustment()` checks whether a set is a valid adjustment set in a
+  DAG or an ADMG. `type = "adjustment"` (the default) uses the generalized
+  adjustment criterion, which is complete and is new for DAGs;
+  `type = "backdoor"` uses the generalized back-door criterion on DAGs, as
+  `is_valid_backdoor()` did (#355).
+
 ## Performance Improvements
 
 * `all_backdoor_sets()` tests each candidate set as it generates it, and keeps
@@ -490,6 +496,11 @@
   will be removed in caugi 2.0.0. Use `all_adjustment_sets(type = "backdoor")`
   and `all_adjustment_sets()` instead. Calling them still works but warns
   (#354).
+
+* `is_valid_backdoor()` and `is_valid_adjustment_admg()` are deprecated and
+  will be removed in caugi 2.0.0. Use `is_valid_adjustment(type = "backdoor")`
+  and `is_valid_adjustment()` instead. Calling them still works but warns
+  (#355).
 
 # caugi 1.4.0
 
