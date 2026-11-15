@@ -472,6 +472,13 @@
   `hd()` and `markov_equivalent()` do. Supplying them still works but warns
   (#362).
 
+* Passing equations in `...` to `simulate_data()` is deprecated and will be
+  removed in caugi 2.0.0. Pass them as a named list of one-sided formulas in
+  the new `equations` argument instead, e.g.
+  `equations = list(B = ~ 0.5 * A + rnorm(n))`. This also works for nodes
+  named like `simulate_data()`'s own arguments, such as `n`, `c` or `seed`.
+  Passing them in `...` still works but warns (#369).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.

@@ -112,10 +112,13 @@ generate_graph <- function(
 #'
 #' @param cg A `caugi` object of class DAG.
 #' @param n Integer; number of observations to simulate.
-#' @param ... Named expressions for custom structural equations. Names must
-#'   match node names in the graph. Expressions can reference parent node names
-#'   and the variable `n` (sample size). Nodes without custom equations use
-#'   auto-generated linear Gaussian relationships.
+#' @param ... Deprecated; pass the equations in `equations`.
+#' @param equations A named list of one-sided formulas, one per node with a
+#'   custom structural equation, e.g. `list(B = ~ 0.5 * A + rnorm(n))`. Names
+#'   must match node names in the graph. A formula must reference all of the
+#'   node's parents and no other node, and can use `n`, the sample size, and
+#'   any variable from where the formula was written. Nodes without an
+#'   equation use auto-generated linear Gaussian relationships.
 #' @param standardize Logical; if `TRUE`, standardize all variables to have
 #'   mean 0 and standard deviation 1. A constant variable is only centered.
 #'   Default is `TRUE`.
@@ -139,10 +142,10 @@ generate_graph <- function(
 #' df <- simulate_data(cg, n = 100, standardize = TRUE)
 #'
 #' # Custom equations for some nodes
-#' df <- simulate_data(cg, n = 100,
-#'   A = rnorm(n, mean = 10, sd = 2),
-#'   B = 0.5 * A + rnorm(n, sd = 0.5)
-#' )
+#' df <- simulate_data(cg, n = 100, equations = list(
+#'   A = ~ rnorm(n, mean = 10, sd = 2),
+#'   B = ~ 0.5 * A + rnorm(n, sd = 0.5)
+#' ))
 #'
 #' # Reproducible simulation
 #' df <- simulate_data(cg, n = 100, seed = 42)
@@ -155,6 +158,7 @@ simulate_data <- function(
   cg,
   n,
   ...,
+  equations = list(),
   standardize = TRUE,
   coef_range = c(0.1, 0.9),
   error_sd = 1,
@@ -202,8 +206,40 @@ simulate_data <- function(
     stop("`error_sd` must be a single finite number >= 0.", call. = FALSE)
   }
 
-  # capture custom equations
-  equations <- as.list(substitute(list(...)))[-1L]
+  # Each equation is an expression and the environment its free variables
+  # come from.
+  dots <- as.list(substitute(list(...)))[-1L]
+  if (length(dots) > 0L) {
+    if (length(equations) > 0L) {
+      stop("Pass the equations in `equations` only.", call. = FALSE)
+    }
+    warning(
+      "Passing equations in `...` to `simulate_data()` is deprecated and ",
+      "will be removed in caugi 2.0.0. Use `equations = list(B = ~ A + ",
+      "rnorm(n))` instead.",
+      call. = FALSE
+    )
+    eq_envs <- rep(list(parent.frame()), length(dots))
+    names(eq_envs) <- names(dots)
+    equations <- dots
+  } else {
+    is_eq <- vapply(
+      equations,
+      function(f) inherits(f, "formula") && length(f) == 2L,
+      logical(1L)
+    )
+    named <- length(equations) == 0L ||
+      (!is.null(names(equations)) && all(nzchar(names(equations))))
+    if (!is.list(equations) || !all(is_eq) || !named) {
+      stop(
+        "`equations` must be a named list of one-sided formulas, e.g. ",
+        "`list(B = ~ A + rnorm(n))`.",
+        call. = FALSE
+      )
+    }
+    eq_envs <- lapply(equations, environment)
+    equations <- lapply(equations, `[[`, 2L)
+  }
   node_order <- topological_sort(cg)
   node_names <- nodes(cg)$name
 
@@ -220,10 +256,6 @@ simulate_data <- function(
     }
   }
 
-  # create evaluation environment
-  env <- new.env(parent = parent.frame())
-  env$n <- n
-
   data <- list()
 
   for (node in node_order) {
@@ -233,11 +265,6 @@ simulate_data <- function(
     }
 
     if (node %in% eq_names) {
-      # user-specified equation: make parent data available
-      for (p in pa) {
-        env[[p]] <- data[[p]]
-      }
-
       # validate that the equation references all parents and no other node
       eq_vars <- all.vars(equations[[node]])
       missing_parents <- setdiff(pa, eq_vars)
@@ -263,6 +290,8 @@ simulate_data <- function(
         )
       }
 
+      # The equation sees `n` and its parents' data.
+      env <- list2env(c(list(n = n), data[pa]), parent = eq_envs[[node]])
       data[[node]] <- eval(equations[[node]], envir = env)
 
       if (length(data[[node]]) != n) {
