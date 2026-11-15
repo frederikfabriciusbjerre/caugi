@@ -456,6 +456,10 @@
   `ancestors()`, `descendants()`, `anteriors()` and `posteriors()` instead.
   Setting it to `FALSE` still works but warns (#364).
 
+* The `x` argument of `caugi_layout()` is deprecated and will be removed in
+  caugi 2.0.0. Use `cg`, as every other function does. Supplying `x` still
+  works but warns (#363).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.

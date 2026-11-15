@@ -111,3 +111,49 @@
   }
   rs_indices_of(cg@session, nodes)
 }
+
+#' @title Call a function whose arguments were renamed
+#'
+#' @description Re-matches the caller's call as the old signature did, so
+#' positional arguments keep their old meaning, renames the old arguments
+#' with a deprecation warning, and evaluates the call again.
+#'
+#' @param fn Function name, without `()`.
+#' @param old_formals The old formal arguments, in order.
+#' @param renamed Named character vector mapping old to new names.
+#'
+#' @returns The result of calling `fn` with the new names.
+#'
+#' @keywords internal
+#' @noRd
+.call_renamed <- function(fn, old_formals, renamed) {
+  def <- function() NULL
+  all <- c(old_formals, unname(renamed))
+  formals(def) <- stats::setNames(rep(list(quote(expr = )), length(all)), all)
+  call <- match.call(def, sys.call(-1L), envir = parent.frame(2L))
+  for (old in intersect(names(renamed), names(call))) {
+    .warn_renamed_arg(fn, old, renamed[[old]])
+    names(call)[names(call) == old] <- renamed[[old]]
+  }
+  call[[1L]] <- get(fn, envir = asNamespace("caugi"))
+  eval(call, parent.frame(2L))
+}
+
+#' @title Warn that an argument was renamed
+#'
+#' @param fn Function name, without `()`.
+#' @param old,new Old and new argument names.
+#'
+#' @keywords internal
+#' @noRd
+.warn_renamed_arg <- function(fn, old, new) {
+  warning(
+    sprintf(
+      "The `%s` argument of `%s()` is deprecated and will be removed in caugi 2.0.0. Use `%s` instead.",
+      old,
+      fn,
+      new
+    ),
+    call. = FALSE
+  )
+}
