@@ -519,7 +519,7 @@ impl GraphView {
         }
     }
 
-    pub fn all_adjustment_sets_admg(
+    pub fn all_adjustment_sets(
         &self,
         xs: &[u32],
         ys: &[u32],
@@ -527,8 +527,9 @@ impl GraphView {
         max_size: u32,
     ) -> Result<Vec<Vec<u32>>, String> {
         match self {
+            GraphView::Dag(d) => Ok(d.all_adjustment_sets(xs, ys, minimal, max_size)),
             GraphView::Admg(g) => Ok(g.all_adjustment_sets(xs, ys, minimal, max_size)),
-            _ => Err("all_adjustment_sets_admg is only defined for ADMGs".into()),
+            _ => Err("all_adjustment_sets is only defined for DAGs and ADMGs".into()),
         }
     }
 
@@ -1264,10 +1265,8 @@ mod tests {
             "is_valid_adjustment_set_admg is only defined for ADMGs"
         );
         assert_eq!(
-            v_dag
-                .all_adjustment_sets_admg(&[0], &[2], true, 2)
-                .unwrap_err(),
-            "all_adjustment_sets_admg is only defined for ADMGs"
+            v_pdag.all_adjustment_sets(&[0], &[2], true, 2).unwrap_err(),
+            "all_adjustment_sets is only defined for DAGs and ADMGs"
         );
 
         // Pdag -> MPDAG via meek closure

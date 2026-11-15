@@ -261,20 +261,39 @@ is_valid_backdoor <- function(
   rs_is_valid_backdoor_set(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
-#' @title Get all backdoor sets up to a certain size.
+#' @title Get all valid adjustment sets up to a certain size
 #'
-#' @description This function returns the backdoor sets up to size `max_size`,
-#' which per default is set to 3. A set is a backdoor set when
-#' [is_valid_backdoor()] accepts it, i.e. it satisfies the generalized
-#' back-door criterion.
+#' @description Enumerates the sets that adjust for the effect of `X` on `Y`,
+#' up to size `max_size`, which per default is 3.
 #'
-#' @param cg A `caugi`.
+#' @details `type` picks the criterion:
+#' * `"adjustment"` (default): the generalized adjustment criterion (Perković
+#'   et al., 2018), which is complete, so every valid adjustment set up to
+#'   `max_size` is found. Works on DAGs and ADMGs.
+#' * `"backdoor"`: the generalized back-door criterion (Maathuis & Colombo,
+#'   2015), as checked by [is_valid_backdoor()]. DAGs only.
+#'
+#' Every back-door set is a valid adjustment set, but not the other way
+#' round: in `X --> Y, X --> W`, `{W}` is a valid adjustment set but not a
+#' back-door set, as `W` is a descendant of `X`.
+#'
+#' @references
+#' Perković, E., Textor, J., Kalisch, M. & Maathuis, M. H. (2018). Complete
+#' graphical characterization and construction of adjustment sets in Markov
+#' equivalence classes of ancestral graphs. \emph{Journal of Machine Learning
+#' Research}, 18(220), 1--62.
+#'
+#' Maathuis, M. H. & Colombo, D. (2015). A generalized back-door criterion.
+#' \emph{The Annals of Statistics}, 43(3), 1060--1088.
+#' \doi{10.1214/14-AOS1295}.
+#'
+#' @param cg A `caugi` object of class `"DAG"` or `"ADMG"`.
 #' @param X,Y Node names; one or more each.
-#' @param X_index,Y_index Deprecated; pass node names instead.
+#' @param type `"adjustment"` (default) or `"backdoor"`; see Details.
 #' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
 #' @param max_size Integer; maximum size of sets to consider (default 3).
 #'
-#' @returns A list of character vectors, each an adjustment set
+#' @returns A list of character vectors, each a valid adjustment set
 #' (possibly empty). The list is empty if no set qualifies, as when `X` and
 #' `Y` overlap.
 #'
@@ -292,54 +311,46 @@ is_valid_backdoor <- function(
 #'   class = "DAG"
 #' )
 #'
-#' all_backdoor_sets(cg, X = "X", Y = "Y", max_size = 3L, minimal = FALSE)
-#' #> [[1]]
-#' #> [1] "A"
-#' #>
-#' #> [[2]]
-#' #> [1] "K"
-#' #>
-#' #> [[3]]
-#' #> [1] "C" "A"
-#' #>
-#' #> [[4]]
-#' #> [1] "C" "K"
-#' #>
-#' #> [[5]]
-#' #> [1] "A" "K"
-#' #>
-#' #> [[6]]
-#' #> [1] "C" "A" "K"
+#' all_adjustment_sets(cg, X = "X", Y = "Y") # {A}, {K}
+#' all_adjustment_sets(cg, X = "X", Y = "Y", minimal = FALSE)
 #'
-#' all_backdoor_sets(cg, X = "X", Y = "Y", max_size = 3L, minimal = TRUE)
-#' #> [[1]]
-#' #> [1] "A"
-#' #>
-#' #> [[2]]
-#' #> [1] "K"
+#' # A descendant of X off the causal paths is allowed, but not in a
+#' # back-door set
+#' cg2 <- caugi(X %-->% Y + W, class = "DAG")
+#' all_adjustment_sets(cg2, "X", "Y", minimal = FALSE) # {}, {W}
+#' all_adjustment_sets(cg2, "X", "Y", type = "backdoor", minimal = FALSE) # {}
+#'
+#' # ADMG
+#' admg <- caugi(L %-->% X, X %-->% Y, L %-->% Y, M %<->% Y, class = "ADMG")
+#' all_adjustment_sets(admg, X = "X", Y = "Y") # {L}
 #'
 #' @family adjustment
 #' @concept adjustment
 #'
 #' @export
-all_backdoor_sets <- function(
+all_adjustment_sets <- function(
   cg,
   X = NULL,
   Y = NULL,
-  X_index = NULL,
-  Y_index = NULL,
+  type = c("adjustment", "backdoor"),
   minimal = TRUE,
   max_size = 3L
 ) {
   is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
+  type <- match.arg(type)
+  .check_adjustment_class(cg, type)
+  X_idx0 <- .resolve_idx0_xy(cg@session, X, NULL, "X")
+  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, NULL, "Y")
   if (!.disjoint(X_idx0, Y_idx0)) {
     return(list())
   }
 
-  sets_idx0 <- rs_all_backdoor_sets(
+  enumerate <- switch(
+    type,
+    adjustment = rs_all_adjustment_sets,
+    backdoor = rs_all_backdoor_sets
+  )
+  sets_idx0 <- enumerate(
     cg@session,
     X_idx0,
     Y_idx0,
@@ -592,64 +603,6 @@ is_valid_adjustment_admg <- function(
   rs_is_valid_adjustment_set_admg(cg@session, X_idx0, Y_idx0, Z_idx0)
 }
 
-#' @title Get all valid adjustment sets in an ADMG
-#'
-#' @description Enumerates all valid adjustment sets for estimating the causal
-#' effect of `X` on `Y` in an ADMG, up to a specified maximum size.
-#'
-#' @param cg A `caugi` object of class ADMG.
-#' @param X,Y Node names (can be vectors for multiple treatments/outcomes).
-#' @param X_index,Y_index Deprecated; pass node names instead.
-#' @param minimal Logical; if `TRUE` (default), only minimal sets are returned.
-#' @param max_size Integer; maximum size of sets to consider (default 3).
-#'
-#' @returns A list of character vectors, each a valid adjustment set
-#' (an empty list if none exist, as when `X` and `Y` overlap).
-#'
-#' @examples
-#' cg <- caugi(
-#'   L %-->% X,
-#'   X %-->% Y,
-#'   L %-->% Y,
-#'   M %-->% Y,
-#'   class = "ADMG"
-#' )
-#'
-#' all_adjustment_sets_admg(cg, X = "X", Y = "Y", minimal = TRUE)
-#' # Returns {L} as minimal adjustment set
-#'
-#' @family adjustment
-#' @concept adjustment
-#'
-#' @export
-all_adjustment_sets_admg <- function(
-  cg,
-  X = NULL,
-  Y = NULL,
-  X_index = NULL,
-  Y_index = NULL,
-  minimal = TRUE,
-  max_size = 3L
-) {
-  is_caugi(cg, throw_error = TRUE)
-  .warn_index_deprecated()
-  X_idx0 <- .resolve_idx0_xy(cg@session, X, X_index, "X")
-  Y_idx0 <- .resolve_idx0_xy(cg@session, Y, Y_index, "Y")
-  if (!.disjoint(X_idx0, Y_idx0)) {
-    return(list())
-  }
-
-  sets_idx0 <- rs_all_adjustment_sets_admg(
-    cg@session,
-    X_idx0,
-    Y_idx0,
-    minimal,
-    .check_max_size(max_size)
-  )
-  nm <- cg@nodes$name
-  lapply(sets_idx0, \(idx0) nm[idx0 + 1L])
-}
-
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────────── Helpers ────────────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
@@ -732,4 +685,123 @@ all_adjustment_sets_admg <- function(
     stop("`max_size` must be a single whole number >= 0.", call. = FALSE)
   }
   as.integer(max_size)
+}
+
+#' @title Check the graph class for an adjustment criterion
+#'
+#' @param cg A `caugi` object.
+#' @param type `"adjustment"` or `"backdoor"`.
+#'
+#' @keywords internal
+#' @noRd
+.check_adjustment_class <- function(cg, type) {
+  ok <- if (type == "backdoor") "DAGs" else "DAGs and ADMGs"
+  if (!cg@graph_class %in% c("DAG", if (type == "adjustment") "ADMG")) {
+    stop(
+      sprintf(
+        "`type = \"%s\"` is only defined for %s, not for class %s.",
+        type,
+        ok,
+        cg@graph_class
+      ),
+      call. = FALSE
+    )
+  }
+}
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────── Deprecated ──────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+
+#' @title Deprecated adjustment functions
+#'
+#' @description These functions are deprecated and will be removed in caugi
+#' 2.0.0:
+#' * `all_backdoor_sets()`: use `all_adjustment_sets(type = "backdoor")`.
+#' * `all_adjustment_sets_admg()`: use [all_adjustment_sets()].
+#'
+#' @param cg A `caugi` object.
+#' @param X,Y Node names; one or more each.
+#' @param X_index,Y_index Deprecated; pass node names instead.
+#' @param minimal,max_size See [all_adjustment_sets()].
+#'
+#' @returns See [all_adjustment_sets()].
+#'
+#' @name adjustment_deprecated
+#' @keywords internal
+NULL
+
+#' @rdname adjustment_deprecated
+#' @export
+all_backdoor_sets <- function(
+  cg,
+  X = NULL,
+  Y = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  minimal = TRUE,
+  max_size = 3L
+) {
+  .warn_deprecated_fn(
+    "all_backdoor_sets()",
+    "all_adjustment_sets(type = \"backdoor\")"
+  )
+  .all_adjustment_sets_old(
+    cg,
+    X,
+    Y,
+    X_index,
+    Y_index,
+    minimal,
+    max_size,
+    "backdoor"
+  )
+}
+
+#' @rdname adjustment_deprecated
+#' @export
+all_adjustment_sets_admg <- function(
+  cg,
+  X = NULL,
+  Y = NULL,
+  X_index = NULL,
+  Y_index = NULL,
+  minimal = TRUE,
+  max_size = 3L
+) {
+  .warn_deprecated_fn("all_adjustment_sets_admg()", "all_adjustment_sets()")
+  .all_adjustment_sets_old(
+    cg,
+    X,
+    Y,
+    X_index,
+    Y_index,
+    minimal,
+    max_size,
+    "adjustment"
+  )
+}
+
+# The deprecated enumerators also take node indices.
+.all_adjustment_sets_old <- function(
+  cg,
+  X,
+  Y,
+  X_index,
+  Y_index,
+  minimal,
+  max_size,
+  type
+) {
+  is_caugi(cg, throw_error = TRUE)
+  .warn_index_deprecated()
+  nm <- cg@nodes$name
+  all_adjustment_sets(
+    cg,
+    nm[.resolve_idx0_xy(cg@session, X, X_index, "X") + 1L],
+    nm[.resolve_idx0_xy(cg@session, Y, Y_index, "Y") + 1L],
+    type = type,
+    minimal = minimal,
+    max_size = max_size
+  )
 }

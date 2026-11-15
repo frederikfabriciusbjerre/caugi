@@ -236,7 +236,7 @@ test_that("ADMG adjustment rejects opened bidirected collider chains", {
   expect_true(is_valid_adjustment_admg(admg, "a", "d", Z = "b"))
   expect_true(is_valid_adjustment_admg(admg, "a", "d", Z = "c"))
   expect_false(is_valid_adjustment_admg(admg, "a", "d", Z = c("b", "c")))
-  sets <- all_adjustment_sets_admg(admg, "a", "d", minimal = FALSE)
+  sets <- all_adjustment_sets(admg, "a", "d", minimal = FALSE)
   expect_length(sets, 3)
   expect_false(any(vapply(sets, setequal, logical(1), c("b", "c"))))
 })
@@ -272,7 +272,7 @@ test_that("is_valid_adjustment_admg rejects forbidden descendants", {
   expect_true(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = "L"))
 })
 
-test_that("all_adjustment_sets_admg finds valid sets", {
+test_that("all_adjustment_sets() finds valid sets in an ADMG", {
   admg <- caugi(
     L %-->% X,
     X %-->% Y,
@@ -280,7 +280,7 @@ test_that("all_adjustment_sets_admg finds valid sets", {
     class = "ADMG"
   )
 
-  sets <- all_adjustment_sets_admg(admg, X = "X", Y = "Y", minimal = TRUE)
+  sets <- all_adjustment_sets(admg, X = "X", Y = "Y", minimal = TRUE)
 
   # Should find {L} as minimal adjustment set
   expect_true(any(sapply(sets, function(s) identical(s, "L"))))
@@ -301,11 +301,11 @@ test_that("M-bias collider at confounder admits no adjustment set (#277)", {
   expect_false(is_valid_adjustment_admg(admg, X = "X", Y = "Y", Z = "C"))
 
   expect_identical(
-    all_adjustment_sets_admg(admg, X = "X", Y = "Y", minimal = TRUE),
+    all_adjustment_sets(admg, X = "X", Y = "Y", minimal = TRUE),
     list()
   )
   expect_identical(
-    all_adjustment_sets_admg(admg, X = "X", Y = "Y", minimal = FALSE),
+    all_adjustment_sets(admg, X = "X", Y = "Y", minimal = FALSE),
     list()
   )
 })
@@ -347,7 +347,7 @@ test_that("is_valid_adjustment_admg errors when X or Y is missing or empty", {
   )
 })
 
-test_that("all_adjustment_sets_admg errors when X or Y is missing or empty", {
+test_that("all_adjustment_sets() errors when X or Y is missing or empty", {
   admg <- caugi(
     L %-->% X,
     X %-->% Y,
@@ -357,28 +357,28 @@ test_that("all_adjustment_sets_admg errors when X or Y is missing or empty", {
 
   # Missing X
   expect_error(
-    all_adjustment_sets_admg(admg, Y = "Y"),
+    all_adjustment_sets(admg, Y = "Y"),
     "X must be provided"
   )
 
   # Missing Y
   expect_error(
-    all_adjustment_sets_admg(admg, X = "X"),
+    all_adjustment_sets(admg, X = "X"),
     "Y must be provided"
   )
 
   # Missing both X and Y
   expect_error(
-    all_adjustment_sets_admg(admg),
+    all_adjustment_sets(admg),
     "X must be provided"
   )
 
   expect_error(
-    all_adjustment_sets_admg(admg, X = character(0), Y = "Y"),
+    all_adjustment_sets(admg, X = character(0), Y = "Y"),
     "`X` must name at least one node"
   )
   expect_error(
-    all_adjustment_sets_admg(admg, X = "X", Y = character(0)),
+    all_adjustment_sets(admg, X = "X", Y = character(0)),
     "`Y` must name at least one node"
   )
 })

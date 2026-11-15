@@ -53,8 +53,7 @@ d_separated(cg, c("C", "X"), c("K", "Y"), Z = c("A", "D")) # TRUE
 \seealso{
 Other adjustment:
 \code{\link[=adjustment_set]{adjustment_set()}},
-\code{\link[=all_adjustment_sets_admg]{all_adjustment_sets_admg()}},
-\code{\link[=all_backdoor_sets]{all_backdoor_sets()}},
+\code{\link[=all_adjustment_sets]{all_adjustment_sets()}},
 \code{\link[=is_valid_adjustment_admg]{is_valid_adjustment_admg()}},
 \code{\link[=is_valid_backdoor]{is_valid_backdoor()}},
 \code{\link[=minimal_separator]{minimal_separator()}}

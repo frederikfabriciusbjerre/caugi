@@ -95,6 +95,13 @@
   single-pair results are unchanged. `is_valid_backdoor()` is now linear in
   the graph size; it was cubic in the number of parents of `X`.
 
+* `all_adjustment_sets()` enumerates the adjustment sets of a DAG or an ADMG.
+  `type = "adjustment"` (the default) uses the generalized adjustment
+  criterion, which is complete and is new for DAGs; `type = "backdoor"` uses
+  the generalized back-door criterion on DAGs, as `all_backdoor_sets()` did.
+  The two differ when a valid set holds a descendant of `X` off the causal
+  paths (#354).
+
 ## Performance Improvements
 
 * `all_backdoor_sets()` tests each candidate set as it generates it, and keeps
@@ -478,6 +485,11 @@
   `equations = list(B = ~ 0.5 * A + rnorm(n))`. This also works for nodes
   named like `simulate_data()`'s own arguments, such as `n`, `c` or `seed`.
   Passing them in `...` still works but warns (#369).
+
+* `all_backdoor_sets()` and `all_adjustment_sets_admg()` are deprecated and
+  will be removed in caugi 2.0.0. Use `all_adjustment_sets(type = "backdoor")`
+  and `all_adjustment_sets()` instead. Calling them still works but warns
+  (#354).
 
 # caugi 1.4.0
 
