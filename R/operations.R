@@ -112,13 +112,20 @@ meek_closure <- function(cg) {
   }
 }
 
-#' @title Project latent variables from a DAG to an ADMG
+#' @title Project latent variables out of a DAG or an ADMG
 #'
 #' @description
-#' Projects out latent (unobserved) variables from a DAG to produce an
-#' Acyclic Directed Mixed Graph (ADMG) over the observed variables.
+#' Projects out latent (unobserved) variables from a DAG or an ADMG to produce
+#' an Acyclic Directed Mixed Graph (ADMG) over the observed variables.
 #'
-#' @param cg A `caugi` object of class `"DAG"`.
+#' @details
+#' In the projection, `a --> b` when the graph has a directed path from `a` to
+#' `b` whose inner nodes are all latent, and `a <-> b` when it has a path
+#' between them whose inner nodes are all latent non-colliders, with an
+#' arrowhead at both `a` and `b`. Projecting out latents one set at a time
+#' gives the same ADMG as projecting them out together.
+#'
+#' @param cg A `caugi` object of class `"DAG"` or `"ADMG"`.
 #' @param latents Character vector of latent variable names to project out.
 #'
 #' @returns A `caugi` object of class `"ADMG"` containing only the observed
@@ -150,6 +157,10 @@ meek_closure <- function(cg) {
 #' # Result: X -> Y (directed path X -> L -> Y becomes X -> Y)
 #' edges(admg2)
 #'
+#' # ADMG: a bidirected edge into a latent non-collider carries over
+#' admg3 <- caugi(A %<->% L, L %-->% B, class = "ADMG")
+#' edges(latent_project(admg3, latents = "L")) # A <-> B
+#'
 #' @family operations
 #' @concept operations
 #'
@@ -157,8 +168,11 @@ meek_closure <- function(cg) {
 latent_project <- function(cg, latents) {
   is_caugi(cg, throw_error = TRUE)
 
-  if (!is_dag(cg)) {
-    stop("latent_project() can only be applied to DAGs.", call. = FALSE)
+  if (!cg@graph_class %in% c("DAG", "ADMG")) {
+    stop(
+      "latent_project() can only be applied to DAGs and ADMGs.",
+      call. = FALSE
+    )
   }
 
   if (!is.character(latents)) {

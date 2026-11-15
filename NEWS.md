@@ -108,6 +108,9 @@
   `type = "backdoor"` uses the generalized back-door criterion on DAGs, as
   `is_valid_backdoor()` did (#355).
 
+* `latent_project()` also takes ADMGs, so latents can be projected out of a
+  graph that already has bidirected edges, or in several steps (#353).
+
 ## Performance Improvements
 
 * `all_backdoor_sets()` tests each candidate set as it generates it, and keeps

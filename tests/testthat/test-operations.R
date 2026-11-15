@@ -514,7 +514,7 @@ test_that("latent_project no shared latent ancestors (no bidirected edges)", {
   expect_null(spouses(admg, "Y"))
 })
 
-test_that("latent_project fails on non-DAGs", {
+test_that("latent_project fails on classes other than DAG and ADMG", {
   cg_pdag <- caugi(
     A %-->% B,
     B %---% C,
@@ -523,7 +523,7 @@ test_that("latent_project fails on non-DAGs", {
 
   expect_error(
     latent_project(cg_pdag, latents = "A"),
-    "latent_project\\(\\) can only be applied to DAGs\\."
+    "latent_project\\(\\) can only be applied to DAGs and ADMGs\\."
   )
 
   cg_ug <- caugi(
@@ -533,7 +533,7 @@ test_that("latent_project fails on non-DAGs", {
 
   expect_error(
     latent_project(cg_ug, latents = "A"),
-    "latent_project\\(\\) can only be applied to DAGs\\."
+    "latent_project\\(\\) can only be applied to DAGs and ADMGs\\."
   )
 })
 
@@ -1507,5 +1507,99 @@ test_that("enumerate_dags matches pcalg::pdag2allDags on random CPDAGs", {
     }
     expect_identical(caugi_dags, pcalg_dags)
     expect_equal(count_dags(cg), length(pcalg_dags))
+  }
+})
+
+test_that("latent_project on an ADMG matches the path definition (#353)", {
+  # The projection has a --> b for a directed path from a to b, and a <-> b
+  # for a path with an arrowhead at a and at b, both with every inner node
+  # latent and a non-collider.
+  project_by_paths <- function(edges, latents, nodes) {
+    bi <- edges$edge == "<->"
+    # Each edge seen from each end: the far node, and whether the edge has an
+    # arrowhead here and at the far node.
+    steps <- data.frame(
+      at = c(edges$from, edges$to),
+      to = c(edges$to, edges$from),
+      head_here = c(bi, rep(TRUE, nrow(edges))),
+      head_there = c(rep(TRUE, nrow(edges)), bi)
+    )
+    out <- character(0)
+    walk <- function(a, cur, seen, head_at_a, head_into_cur, directed) {
+      for (i in which(steps$at == cur)) {
+        nxt <- steps$to[i]
+        if (nxt %in% seen) {
+          next
+        }
+        first <- cur == a
+        if (!first && head_into_cur && steps$head_here[i]) {
+          next # cur would be a collider
+        }
+        h_a <- if (first) steps$head_here[i] else head_at_a
+        dir <- directed && !steps$head_here[i]
+        if (nxt %in% latents) {
+          walk(a, nxt, c(seen, nxt), h_a, steps$head_there[i], dir)
+        } else {
+          if (dir) {
+            out <<- c(out, paste(a, "-->", nxt))
+          }
+          if (h_a && steps$head_there[i]) {
+            out <<- c(out, paste(sort(c(a, nxt)), collapse = " <-> "))
+          }
+        }
+      }
+    }
+    for (a in setdiff(nodes, latents)) {
+      walk(a, a, a, NA, NA, TRUE)
+    }
+    sort(unique(out))
+  }
+  edge_keys <- function(cg) {
+    e <- edges(cg)
+    if (nrow(e) == 0L) {
+      return(character(0))
+    }
+    sort(ifelse(
+      e$edge == "-->",
+      paste(e$from, "-->", e$to),
+      vapply(
+        seq_len(nrow(e)),
+        function(i) paste(sort(c(e$from[i], e$to[i])), collapse = " <-> "),
+        ""
+      )
+    ))
+  }
+
+  set.seed(353)
+  nodes <- paste0("V", 1:6)
+  for (rep in seq_len(200)) {
+    ord <- sample(nodes)
+    pairs <- t(combn(6, 2))
+    dir <- runif(nrow(pairs)) < 0.3
+    bid <- runif(nrow(pairs)) < 0.2
+    edges <- data.frame(
+      from = c(ord[pairs[dir, 1]], ord[pairs[bid, 1]]),
+      edge = rep(c("-->", "<->"), c(sum(dir), sum(bid))),
+      to = c(ord[pairs[dir, 2]], ord[pairs[bid, 2]])
+    )
+    cg <- caugi(
+      from = edges$from,
+      edge = edges$edge,
+      to = edges$to,
+      nodes = nodes,
+      class = "ADMG"
+    )
+    latents <- sample(nodes, sample(1:3, 1))
+    projected <- latent_project(cg, latents)
+    expect_identical(
+      edge_keys(projected),
+      project_by_paths(edges, latents, nodes),
+      label = paste("rep", rep)
+    )
+
+    # Projecting in two steps gives the same graph.
+    two_step <- latent_project(latent_project(cg, latents[1]), latents[-1])
+    expect_identical(nodes(two_step)$name, nodes(projected)$name)
+    expect_identical(edge_keys(two_step), edge_keys(projected))
   }
 })

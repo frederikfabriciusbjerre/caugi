@@ -2,12 +2,12 @@
 % Please edit documentation in R/operations.R
 \name{latent_project}
 \alias{latent_project}
-\title{Project latent variables from a DAG to an ADMG}
+\title{Project latent variables out of a DAG or an ADMG}
 \usage{
 latent_project(cg, latents)
 }
 \arguments{
-\item{cg}{A \code{caugi} object of class \code{"DAG"}.}
+\item{cg}{A \code{caugi} object of class \code{"DAG"} or \code{"ADMG"}.}
 
 \item{latents}{Character vector of latent variable names to project out.}
 }
@@ -16,8 +16,15 @@ A \code{caugi} object of class \code{"ADMG"} containing only the observed
 variables.
 }
 \description{
-Projects out latent (unobserved) variables from a DAG to produce an
-Acyclic Directed Mixed Graph (ADMG) over the observed variables.
+Projects out latent (unobserved) variables from a DAG or an ADMG to produce
+an Acyclic Directed Mixed Graph (ADMG) over the observed variables.
+}
+\details{
+In the projection, \verb{a --> b} when the graph has a directed path from \code{a} to
+\code{b} whose inner nodes are all latent, and \verb{a <-> b} when it has a path
+between them whose inner nodes are all latent non-colliders, with an
+arrowhead at both \code{a} and \code{b}. Projecting out latents one set at a time
+gives the same ADMG as projecting them out together.
 }
 \examples{
 # DAG with latent confounder U
@@ -44,6 +51,10 @@ dag2 <- caugi(
 admg2 <- latent_project(dag2, latents = "L")
 # Result: X -> Y (directed path X -> L -> Y becomes X -> Y)
 edges(admg2)
+
+# ADMG: a bidirected edge into a latent non-collider carries over
+admg3 <- caugi(A \%<->\% L, L \%-->\% B, class = "ADMG")
+edges(latent_project(admg3, latents = "L")) # A <-> B
 
 }
 \seealso{
