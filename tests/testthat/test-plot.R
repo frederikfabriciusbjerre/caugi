@@ -981,7 +981,7 @@ test_that("plot layout validation branch is covered", {
 
 test_that("plot routes edges around collinear nodes by default", {
   cg <- caugi(A %---% B + C, B %---% C)
-  layout <- caugi_layout_tiered(
+  layout <- .layout_tiered(
     cg,
     list(c("A", "B", "C")),
     orientation = "rows"
@@ -1012,7 +1012,7 @@ test_that("plot accepts a factor name column in a precomputed layout", {
 
 test_that("plot routing works for partial edge types", {
   cg <- caugi(A %o-o% B + C, B %o-o% C, class = "UNKNOWN")
-  layout <- caugi_layout_tiered(
+  layout <- .layout_tiered(
     cg,
     list(c("A", "B", "C")),
     orientation = "rows"
@@ -1026,7 +1026,7 @@ test_that("plot routing works for partial edge types", {
 
 test_that("plot routing can be disabled per edge type", {
   cg <- caugi(A %-->% B + C, B %-->% C, class = "DAG")
-  layout <- caugi_layout_tiered(
+  layout <- .layout_tiered(
     cg,
     list(c("A", "B", "C")),
     orientation = "rows"

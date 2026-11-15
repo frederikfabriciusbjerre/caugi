@@ -6,7 +6,7 @@
 
 * `markov_blanket()` accepts PAGs, reading the blanket off a member MAG.
 
-* `markov_equivalent(g1, g2)` checks whether two DAGs or CPDAGs are Markov
+* `markov_equivalent(cg1, cg2)` checks whether two DAGs or CPDAGs are Markov
   equivalent, by comparing their CPDAGs (#442).
 
 * `dag_to_cpdag()` returns the CPDAG of a DAG's Markov equivalence class (#441).
@@ -94,6 +94,19 @@
   one treatment and one outcome this is Pearl's back-door criterion, so
   single-pair results are unchanged. `is_valid_backdoor()` is now linear in
   the graph size; it was cubic in the number of parents of `X`.
+
+* `all_adjustment_sets()` enumerates the adjustment sets of a DAG or an ADMG.
+  `type = "adjustment"` (the default) uses the generalized adjustment
+  criterion, which is complete and is new for DAGs; `type = "backdoor"` uses
+  the generalized back-door criterion on DAGs, as `all_backdoor_sets()` did.
+  The two differ when a valid set holds a descendant of `X` off the causal
+  paths (#354).
+
+* `is_valid_adjustment()` checks whether a set is a valid adjustment set in a
+  DAG or an ADMG. `type = "adjustment"` (the default) uses the generalized
+  adjustment criterion, which is complete and is new for DAGs;
+  `type = "backdoor"` uses the generalized back-door criterion on DAGs, as
+  `is_valid_backdoor()` did (#355).
 
 ## Performance Improvements
 
@@ -455,6 +468,39 @@
   and will be removed in caugi 2.0.0. Pass the `open` argument to
   `ancestors()`, `descendants()`, `anteriors()` and `posteriors()` instead.
   Setting it to `FALSE` still works but warns (#364).
+
+* The `x` argument of `caugi_layout()` is deprecated and will be removed in
+  caugi 2.0.0. Use `cg`, as every other function does. Supplying `x` still
+  works but warns (#363).
+
+* `caugi_layout_sugiyama()`, `caugi_layout_fruchterman_reingold()`,
+  `caugi_layout_kamada_kawai()`, `caugi_layout_bipartite()`,
+  `caugi_layout_tiered()` and `caugi_layout_circle()` are deprecated and will
+  be removed in caugi 2.0.0. Use `caugi_layout()` with the matching `method`
+  instead; it takes `partition`, `tiers` and `orientation` in `...`, now
+  documented there. Calling them still works but warns (#367).
+
+* The `truth` and `guess` arguments of `aid()` are deprecated and will be
+  removed in caugi 2.0.0. Use `cg1` (the true graph) and `cg2`, as `shd()`,
+  `hd()` and `markov_equivalent()` do. Supplying them still works but warns
+  (#362).
+
+* Passing equations in `...` to `simulate_data()` is deprecated and will be
+  removed in caugi 2.0.0. Pass them as a named list of one-sided formulas in
+  the new `equations` argument instead, e.g.
+  `equations = list(B = ~ 0.5 * A + rnorm(n))`. This also works for nodes
+  named like `simulate_data()`'s own arguments, such as `n`, `c` or `seed`.
+  Passing them in `...` still works but warns (#369).
+
+* `all_backdoor_sets()` and `all_adjustment_sets_admg()` are deprecated and
+  will be removed in caugi 2.0.0. Use `all_adjustment_sets(type = "backdoor")`
+  and `all_adjustment_sets()` instead. Calling them still works but warns
+  (#354).
+
+* `is_valid_backdoor()` and `is_valid_adjustment_admg()` are deprecated and
+  will be removed in caugi 2.0.0. Use `is_valid_adjustment(type = "backdoor")`
+  and `is_valid_adjustment()` instead. Calling them still works but warns
+  (#355).
 
 # caugi 1.4.0
 

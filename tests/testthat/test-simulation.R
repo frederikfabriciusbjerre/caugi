@@ -187,7 +187,11 @@ test_that("simulate_data: errors on invalid coef_range or error_sd", {
 
 test_that("simulate_data: standardizing centers a constant column", {
   cg <- caugi(A %-->% B, class = "DAG")
-  df <- simulate_data(cg, n = 10, A = rep(3, n), B = A + rnorm(n))
+  df <- simulate_data(
+    cg,
+    n = 10,
+    equations = list(A = ~ rep(3, n), B = ~ A + rnorm(n))
+  )
   expect_identical(df$A, rep(0, 10))
   expect_identical(nrow(simulate_data(cg, n = 1)), 1L)
   expect_false(anyNA(simulate_data(cg, n = 1)))
@@ -196,7 +200,7 @@ test_that("simulate_data: standardizing centers a constant column", {
 test_that("simulate_data: errors on unknown node in equations", {
   cg <- caugi(A %-->% B, class = "DAG")
   expect_error(
-    simulate_data(cg, n = 10, X = rnorm(n)),
+    simulate_data(cg, n = 10, equations = list(X = ~ rnorm(n))),
     "Unknown node"
   )
 })
@@ -204,7 +208,7 @@ test_that("simulate_data: errors on unknown node in equations", {
 test_that("simulate_data: errors on equation length mismatch", {
   cg <- caugi(A %-->% B, class = "DAG")
   expect_error(
-    simulate_data(cg, n = 10, A = rnorm(5)),
+    simulate_data(cg, n = 10, equations = list(A = ~ rnorm(5))),
     "produced 5 values, expected 10"
   )
 })
@@ -214,19 +218,23 @@ test_that("simulate_data: errors when custom equation doesn't reference all pare
 
   # Missing both parents
   expect_error(
-    simulate_data(cg, n = 10, B = rnorm(n)),
+    simulate_data(cg, n = 10, equations = list(B = ~ rnorm(n))),
     "must reference all parent nodes"
   )
 
   # Missing one parent
   expect_error(
-    simulate_data(cg, n = 10, B = 0.5 * A + rnorm(n)),
+    simulate_data(cg, n = 10, equations = list(B = ~ 0.5 * A + rnorm(n))),
     "Missing: C"
   )
 
   # All parents referenced - should work
   expect_no_error(
-    simulate_data(cg, n = 10, B = 0.5 * A + 0.3 * C + rnorm(n))
+    simulate_data(
+      cg,
+      n = 10,
+      equations = list(B = ~ 0.5 * A + 0.3 * C + rnorm(n))
+    )
   )
 })
 
@@ -314,8 +322,7 @@ test_that("simulate_data: custom equations are applied", {
     cg,
     n = 100,
     standardize = FALSE,
-    A = rep(5, n),
-    B = A + 1
+    equations = list(A = ~ rep(5, n), B = ~ A + 1)
   )
 
   expect_true(all(df$A == 5))
@@ -329,9 +336,7 @@ test_that("simulate_data: parent variables accessible in equations", {
     n = 50,
     standardize = FALSE,
     seed = 1,
-    A = rep(1, n),
-    B = 2 * A,
-    C = 3 * B
+    equations = list(A = ~ rep(1, n), B = ~ 2 * A, C = ~ 3 * B)
   )
 
   expect_true(all(df$A == 1))
@@ -341,7 +346,12 @@ test_that("simulate_data: parent variables accessible in equations", {
 
 test_that("simulate_data: n is available in custom equations", {
   cg <- caugi(A %-->% B, class = "DAG")
-  df <- simulate_data(cg, n = 75, standardize = FALSE, A = seq_len(n))
+  df <- simulate_data(
+    cg,
+    n = 75,
+    standardize = FALSE,
+    equations = list(A = ~ seq_len(n))
+  )
 
   expect_equal(df$A, 1:75)
 })
@@ -353,7 +363,7 @@ test_that("simulate_data: mix of custom and auto-generated", {
     n = 100,
     standardize = FALSE,
     seed = 1,
-    A = rep(10, n)
+    equations = list(A = ~ rep(10, n))
   )
 
   # A is custom
@@ -450,9 +460,9 @@ test_that("simulate_data keeps non-syntactic node names (#402)", {
   df <- simulate_data(
     cg,
     n = 5,
-    `y-z` = `my var` + `1x`,
     standardize = FALSE,
-    seed = 1
+    seed = 1,
+    equations = list(`y-z` = ~ `my var` + `1x`)
   )
   expect_equal(df[["y-z"]], df[["my var"]] + df[["1x"]])
 })
@@ -461,15 +471,43 @@ test_that("simulate_data equations may only reference parents (#403)", {
   D <- 100
   cg <- caugi(A %-->% B, B %-->% D, class = "DAG")
   expect_error(
-    simulate_data(cg, n = 3, B = A + D, seed = 1),
+    simulate_data(cg, n = 3, seed = 1, equations = list(B = ~ A + D)),
     "may only reference its parents. Not parents: D"
   )
   expect_error(
-    simulate_data(cg, n = 3, B = A + B, seed = 1),
+    simulate_data(cg, n = 3, seed = 1, equations = list(B = ~ A + B)),
     "Not parents: B"
   )
   # Variables that are not graph nodes are still fine.
   k <- 2
-  df <- simulate_data(cg, n = 3, B = k * A, standardize = FALSE, seed = 1)
+  df <- simulate_data(
+    cg,
+    n = 3,
+    standardize = FALSE,
+    seed = 1,
+    equations = list(B = ~ k * A)
+  )
   expect_equal(df$B, 2 * df$A)
+})
+
+test_that("simulate_data() takes equations for nodes named like its arguments (#369)", {
+  cg <- caugi(seed %-->% c, class = "DAG")
+  df <- simulate_data(
+    cg,
+    n = 3,
+    equations = list(c = ~ 2 * seed),
+    standardize = FALSE,
+    seed = 1
+  )
+  expect_equal(df$c, 2 * df$seed)
+})
+
+test_that("simulate_data() rejects equations that are not named one-sided formulas", {
+  cg <- caugi(A %-->% B, class = "DAG")
+  for (bad in list(list(~A), list(B = 2), list(B = y ~ A))) {
+    expect_error(
+      simulate_data(cg, n = 3, equations = bad),
+      "named list of one-sided formulas"
+    )
+  }
 })

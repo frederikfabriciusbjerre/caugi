@@ -4,13 +4,13 @@
 \alias{markov_equivalent}
 \title{Are two graphs Markov equivalent?}
 \usage{
-markov_equivalent(g1, g2)
+markov_equivalent(cg1, cg2)
 }
 \arguments{
-\item{g1, g2}{\code{caugi} objects of class \code{"DAG"} or \code{"CPDAG"}.}
+\item{cg1, cg2}{\code{caugi} objects of class \code{"DAG"} or \code{"CPDAG"}.}
 }
 \value{
-\code{TRUE} if \code{g1} and \code{g2} are Markov equivalent, \code{FALSE} otherwise,
+\code{TRUE} if \code{cg1} and \code{cg2} are Markov equivalent, \code{FALSE} otherwise,
 including when their nodes differ.
 }
 \description{
