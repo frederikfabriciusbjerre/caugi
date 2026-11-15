@@ -223,7 +223,7 @@ the other. You can also specify the partition explicitly:</p>
 <code class="sourceCode R"><span><span class="va">partition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.caugi.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">bipartite_graph</span>,</span>
-<span>  layout <span class="op">=</span> <span class="va">caugi_layout_bipartite</span>,</span>
+<span>  layout <span class="op">=</span> <span class="st">"bipartite"</span>,</span>
 <span>  partition <span class="op">=</span> <span class="va">partition</span>,</span>
 <span>  orientation <span class="op">=</span> <span class="st">"rows"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -279,7 +279,12 @@ directly.</p>
 <span>  tier <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">layout_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_layout_tiered.html">caugi_layout_tiered</a></span><span class="op">(</span><span class="va">cg_tiered</span>, <span class="va">tiers_df</span>, orientation <span class="op">=</span> <span class="st">"rows"</span><span class="op">)</span></span>
+<span><span class="va">layout_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_layout.html">caugi_layout</a></span><span class="op">(</span></span>
+<span>  <span class="va">cg_tiered</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"tiered"</span>,</span>
+<span>  tiers <span class="op">=</span> <span class="va">tiers_df</span>,</span>
+<span>  orientation <span class="op">=</span> <span class="st">"rows"</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.caugi.html">plot</a></span><span class="op">(</span><span class="va">cg_tiered</span>, layout <span class="op">=</span> <span class="va">layout_df</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualization_files/figure-html/tiered-dataframe-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
@@ -512,9 +517,10 @@ untouched:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cg_clique</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi.html">caugi</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="../reference/edge_operators.html">%---%</a></span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span>, <span class="va">B</span> <span class="op"><a href="../reference/edge_operators.html">%---%</a></span> <span class="va">C</span><span class="op">)</span></span>
 <span><span class="va">tiers_clique</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">layout_clique</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_layout_tiered.html">caugi_layout_tiered</a></span><span class="op">(</span></span>
+<span><span class="va">layout_clique</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/caugi_layout.html">caugi_layout</a></span><span class="op">(</span></span>
 <span>  <span class="va">cg_clique</span>,</span>
-<span>  <span class="va">tiers_clique</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"tiered"</span>,</span>
+<span>  tiers <span class="op">=</span> <span class="va">tiers_clique</span>,</span>
 <span>  orientation <span class="op">=</span> <span class="st">"rows"</span></span>
 <span><span class="op">)</span></span>
 <span></span>

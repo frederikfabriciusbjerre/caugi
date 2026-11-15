@@ -10,18 +10,18 @@ a CPDAG as it is.
 ## Usage
 
 ``` r
-markov_equivalent(g1, g2)
+markov_equivalent(cg1, cg2)
 ```
 
 ## Arguments
 
-- g1, g2:
+- cg1, cg2:
 
   `caugi` objects of class `"DAG"` or `"CPDAG"`.
 
 ## Value
 
-`TRUE` if `g1` and `g2` are Markov equivalent, `FALSE` otherwise,
+`TRUE` if `cg1` and `cg2` are Markov equivalent, `FALSE` otherwise,
 including when their nodes differ.
 
 ## References

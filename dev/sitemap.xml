@@ -16,11 +16,11 @@
 <url><loc>https://caugi.org/dev/index.html</loc></url>
 <url><loc>https://caugi.org/dev/news/index.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/adjustment_deprecated.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/adjustment_set.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/aid.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/all.equal.caugi-caugi.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/all_adjustment_sets_admg.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/all_backdoor_sets.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/all_adjustment_sets.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/ancestors.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/anteriors.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/as.data.frame.caugi.html</loc></url>
@@ -39,12 +39,7 @@
 <url><loc>https://caugi.org/dev/reference/caugi_export.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/caugi_graphml.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/caugi_layout.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/caugi_layout_bipartite.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/caugi_layout_circle.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/caugi_layout_fruchterman_reingold.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/caugi_layout_kamada_kawai.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/caugi_layout_sugiyama.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/caugi_layout_tiered.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/caugi_layout_deprecated.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/caugi_mermaid.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/caugi_options.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/caugi_plot.html</loc></url>
@@ -126,8 +121,7 @@
 <url><loc>https://caugi.org/dev/reference/is_pdag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_simple.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_ug.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/is_valid_adjustment_admg.html</loc></url>
-<url><loc>https://caugi.org/dev/reference/is_valid_backdoor.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/is_valid_adjustment.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_visible_edge.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/knit_print.caugi_export.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/latent_project.html</loc></url>

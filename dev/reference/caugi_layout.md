@@ -8,11 +8,12 @@ automatically before computing the layout.
 
 ``` r
 caugi_layout(
-  x,
+  cg,
   method = c("auto", "sugiyama", "fruchterman-reingold", "kamada-kawai", "bipartite",
     "tiered", "circle"),
   packing_ratio = 1.618034,
-  ...
+  ...,
+  x
 )
 ```
 
@@ -34,7 +35,7 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 
 ## Arguments
 
-- x:
+- cg:
 
   A `caugi` object. Must contain only directed edges for Sugiyama
   layout.
@@ -78,16 +79,37 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
 
 - ...:
 
-  Additional arguments passed to the specific layout function. For
-  bipartite layouts, use `partition` (logical vector) and `orientation`
-  (`"columns"` or `"rows"`). For tiered layouts, use `tiers` (list,
-  named vector, or data.frame) and `orientation` (`"rows"` or
-  `"columns"`).
+  Arguments of the `"bipartite"` and `"tiered"` methods:
+
+  - `partition` (bipartite): Optional logical vector with one value per
+    node. Nodes with `TRUE` are placed in one partition and nodes with
+    `FALSE` in the other; both must be non-empty. If `NULL` (default),
+    the nodes without incoming edges form one partition and the rest the
+    other.
+
+  - `tiers` (tiered): The tier of each node, as a list of character
+    vectors of node names, one per tier in order (element names are
+    ignored); a numeric vector of tier indices named by node; or a
+    data.frame with columns `name` and `tier`. Every node must be in a
+    tier, no tier may be empty, and tier indices must be consecutive
+    from 0 or 1.
+
+  - `orientation`: `"columns"` (default) or `"rows"`. With `"columns"`,
+    the first partition is the right column (x = 1) and the first tier
+    the left column (x = 0). With `"rows"`, the first partition or tier
+    is the top row (y = 1).
+
+- x:
+
+  Deprecated; use `cg`.
 
 ## Value
 
 A `data.frame` with columns `name`, `x`, and `y` containing node names
-and their coordinates.
+and their coordinates. The `"tiered"` method adds a `tier` column
+(0-indexed) and an `orientation` attribute, which
+[`plot()`](https://caugi.org/dev/reference/plot.caugi.md) reads, so the
+tiers need not be passed again.
 
 ## Layout Algorithms
 
@@ -122,16 +144,19 @@ at the top and subsequent nodes proceed counter-clockwise. Useful for
 small graphs, cycle visualization, and as a deterministic fallback.
 Works with all edge types and ignores edge structure.
 
+**Bipartite**
+
+Places nodes in two parallel rows or columns, one per side of a
+`partition`.
+
+**Tiered**
+
+Places nodes in parallel rows or columns, one per tier of `tiers`.
+
 ## See also
 
 Other plotting:
 [`add-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md),
-[`caugi_layout_bipartite()`](https://caugi.org/dev/reference/caugi_layout_bipartite.md),
-[`caugi_layout_circle()`](https://caugi.org/dev/reference/caugi_layout_circle.md),
-[`caugi_layout_fruchterman_reingold()`](https://caugi.org/dev/reference/caugi_layout_fruchterman_reingold.md),
-[`caugi_layout_kamada_kawai()`](https://caugi.org/dev/reference/caugi_layout_kamada_kawai.md),
-[`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md),
-[`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_tiered.md),
 [`caugi_plot()`](https://caugi.org/dev/reference/caugi_plot.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md),
 [`plot.caugi()`](https://caugi.org/dev/reference/plot.caugi.md)

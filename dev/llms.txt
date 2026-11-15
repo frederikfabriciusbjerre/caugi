@@ -321,16 +321,12 @@ Did you find run into problems? That’s *paw-ful*! Please report an
 
 - [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
   : Compute an adjustment set
-- [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
-  : Get all valid adjustment sets in an ADMG
-- [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
-  : Get all backdoor sets up to a certain size.
+- [`all_adjustment_sets()`](https://caugi.org/dev/reference/all_adjustment_sets.md)
+  : Get all valid adjustment sets up to a certain size
 - [`d_separated()`](https://caugi.org/dev/reference/d_separated.md) :
   Are X and Y d-separated given Z?
-- [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
-  : Is a set a valid adjustment set in an ADMG?
-- [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
-  : Is a backdoor set valid?
+- [`is_valid_adjustment()`](https://caugi.org/dev/reference/is_valid_adjustment.md)
+  : Is a set a valid adjustment set?
 - [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
   [`minimal_d_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
   : Compute a minimal separator
@@ -509,18 +505,6 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   : Compose Plots Horizontally
 - [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md) :
   Compute Graph Layout
-- [`caugi_layout_bipartite()`](https://caugi.org/dev/reference/caugi_layout_bipartite.md)
-  : Bipartite Graph Layout
-- [`caugi_layout_circle()`](https://caugi.org/dev/reference/caugi_layout_circle.md)
-  : Circle Layout
-- [`caugi_layout_fruchterman_reingold()`](https://caugi.org/dev/reference/caugi_layout_fruchterman_reingold.md)
-  : Fruchterman-Reingold Force-Directed Layout
-- [`caugi_layout_kamada_kawai()`](https://caugi.org/dev/reference/caugi_layout_kamada_kawai.md)
-  : Kamada-Kawai Stress Minimization Layout
-- [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md)
-  : Sugiyama Hierarchical Layout
-- [`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_tiered.md)
-  : Tiered Graph Layout
 - [`caugi_plot()`](https://caugi.org/dev/reference/caugi_plot.md) : S7
   Class for caugi Plot
 - [`` `/`( ``*`<caugi_plot>`*`)`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md)

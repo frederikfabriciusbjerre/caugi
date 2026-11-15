@@ -14,6 +14,7 @@ simulate_data(
   cg,
   n,
   ...,
+  equations = list(),
   standardize = TRUE,
   coef_range = c(0.1, 0.9),
   error_sd = 1,
@@ -33,10 +34,16 @@ simulate_data(
 
 - ...:
 
-  Named expressions for custom structural equations. Names must match
-  node names in the graph. Expressions can reference parent node names
-  and the variable `n` (sample size). Nodes without custom equations use
-  auto-generated linear Gaussian relationships.
+  Deprecated; pass the equations in `equations`.
+
+- equations:
+
+  A named list of one-sided formulas, one per node with a custom
+  structural equation, e.g. `list(B = ~ 0.5 * A + rnorm(n))`. Names must
+  match node names in the graph. A formula must reference all of the
+  node's parents and no other node, and can use `n`, the sample size,
+  and any variable from where the formula was written. Nodes without an
+  equation use auto-generated linear Gaussian relationships.
 
 - standardize:
 
@@ -81,10 +88,10 @@ df <- simulate_data(cg, n = 100)
 df <- simulate_data(cg, n = 100, standardize = TRUE)
 
 # Custom equations for some nodes
-df <- simulate_data(cg, n = 100,
-  A = rnorm(n, mean = 10, sd = 2),
-  B = 0.5 * A + rnorm(n, sd = 0.5)
-)
+df <- simulate_data(cg, n = 100, equations = list(
+  A = ~ rnorm(n, mean = 10, sd = 2),
+  B = ~ 0.5 * A + rnorm(n, sd = 0.5)
+))
 
 # Reproducible simulation
 df <- simulate_data(cg, n = 100, seed = 42)

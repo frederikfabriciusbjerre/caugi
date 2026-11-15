@@ -2,25 +2,32 @@
 
 Compute the Adjustment Identification Distance (AID) between two graphs.
 AID counts how often the adjustment-identification strategy applied to
-`guess` yields a causal inference that is incorrect relative to `truth`.
+`cg2` yields a causal inference that is incorrect relative to `cg1`.
 Implemented in caugi's Rust backend following Henckel, Würtzen &
 Weichwald (2024), <doi:10.48550/arXiv.2402.08616>.
 
 ## Usage
 
 ``` r
-aid(truth, guess, type = c("oset", "ancestor", "parent"), normalized = TRUE)
+aid(
+  cg1,
+  cg2,
+  type = c("oset", "ancestor", "parent"),
+  normalized = TRUE,
+  truth,
+  guess
+)
 ```
 
 ## Arguments
 
-- truth:
+- cg1:
 
-  A `caugi` object of class `"DAG"` or `"CPDAG"`.
+  The true graph, a `caugi` object of class `"DAG"` or `"CPDAG"`.
 
-- guess:
+- cg2:
 
-  A `caugi` object of class `"DAG"` or `"CPDAG"`.
+  The estimated graph, a `caugi` object of class `"DAG"` or `"CPDAG"`.
 
 - type:
 
@@ -31,6 +38,10 @@ aid(truth, guess, type = c("oset", "ancestor", "parent"), normalized = TRUE)
 
   Logical; if `TRUE`, returns the normalized AID. If `FALSE`, returns
   the count.
+
+- truth, guess:
+
+  Deprecated; use `cg1` and `cg2`.
 
 ## Value
 

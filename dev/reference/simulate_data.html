@@ -67,6 +67,7 @@ linear Gaussian relationships.</p>
 <span>  <span class="va">cg</span>,</span>
 <span>  <span class="va">n</span>,</span>
 <span>  <span class="va">...</span>,</span>
+<span>  equations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  standardize <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  coef_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
 <span>  error_sd <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -87,10 +88,16 @@ linear Gaussian relationships.</p>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Named expressions for custom structural equations. Names must
-match node names in the graph. Expressions can reference parent node names
-and the variable <code>n</code> (sample size). Nodes without custom equations use
-auto-generated linear Gaussian relationships.</p></dd>
+<dd><p>Deprecated; pass the equations in <code>equations</code>.</p></dd>
+
+
+<dt id="arg-equations">equations<a class="anchor" aria-label="anchor" href="#arg-equations"></a></dt>
+<dd><p>A named list of one-sided formulas, one per node with a
+custom structural equation, e.g. <code>list(B = ~ 0.5 * A + rnorm(n))</code>. Names
+must match node names in the graph. A formula must reference all of the
+node's parents and no other node, and can use <code>n</code>, the sample size, and
+any variable from where the formula was written. Nodes without an
+equation use auto-generated linear Gaussian relationships.</p></dd>
 
 
 <dt id="arg-standardize">standardize<a class="anchor" aria-label="anchor" href="#arg-standardize"></a></dt>
@@ -136,10 +143,10 @@ according to the node order in the graph.</p>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">simulate_data</span><span class="op">(</span><span class="va">cg</span>, n <span class="op">=</span> <span class="fl">100</span>, standardize <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Custom equations for some nodes</span></span></span>
-<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">simulate_data</span><span class="op">(</span><span class="va">cg</span>, n <span class="op">=</span> <span class="fl">100</span>,</span></span>
-<span class="r-in"><span>  A <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fl">10</span>, sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  B <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">A</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">simulate_data</span><span class="op">(</span><span class="va">cg</span>, n <span class="op">=</span> <span class="fl">100</span>, equations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  A <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fl">10</span>, sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  B <span class="op">=</span> <span class="op">~</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">A</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Reproducible simulation</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">simulate_data</span><span class="op">(</span><span class="va">cg</span>, n <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span></span>

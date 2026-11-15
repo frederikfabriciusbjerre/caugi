@@ -9,7 +9,7 @@
 - [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md)
   accepts PAGs, reading the blanket off a member MAG.
 
-- `markov_equivalent(g1, g2)` checks whether two DAGs or CPDAGs are
+- `markov_equivalent(cg1, cg2)` checks whether two DAGs or CPDAGs are
   Markov equivalent, by comparing their CPDAGs
   ([\#442](https://github.com/frederikfabriciusbjerre/caugi/issues/442)).
 
@@ -135,8 +135,8 @@
   total effect on them is zero. A dropped node can itself be in the
   returned set, e.g. `Y2` for `X --> Y1 <-- Y2`.
 
-- [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md),
-  [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
+- [`is_valid_backdoor()`](https://caugi.org/dev/reference/adjustment_deprecated.md),
+  [`all_backdoor_sets()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and [`d_separated()`](https://caugi.org/dev/reference/d_separated.md)
   now accept several treatments `X` and outcomes `Y` on DAGs. The
   back-door functions use the generalized back-door criterion of
@@ -145,13 +145,32 @@
   treatments blocks every back-door path from `Xi` to `Y`. With one
   treatment and one outcome this is Pearl’s back-door criterion, so
   single-pair results are unchanged.
-  [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
+  [`is_valid_backdoor()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   is now linear in the graph size; it was cubic in the number of parents
   of `X`.
 
+- [`all_adjustment_sets()`](https://caugi.org/dev/reference/all_adjustment_sets.md)
+  enumerates the adjustment sets of a DAG or an ADMG.
+  `type = "adjustment"` (the default) uses the generalized adjustment
+  criterion, which is complete and is new for DAGs; `type = "backdoor"`
+  uses the generalized back-door criterion on DAGs, as
+  [`all_backdoor_sets()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
+  did. The two differ when a valid set holds a descendant of `X` off the
+  causal paths
+  ([\#354](https://github.com/frederikfabriciusbjerre/caugi/issues/354)).
+
+- [`is_valid_adjustment()`](https://caugi.org/dev/reference/is_valid_adjustment.md)
+  checks whether a set is a valid adjustment set in a DAG or an ADMG.
+  `type = "adjustment"` (the default) uses the generalized adjustment
+  criterion, which is complete and is new for DAGs; `type = "backdoor"`
+  uses the generalized back-door criterion on DAGs, as
+  [`is_valid_backdoor()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
+  did
+  ([\#355](https://github.com/frederikfabriciusbjerre/caugi/issues/355)).
+
 ### Performance Improvements
 
-- [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
+- [`all_backdoor_sets()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   tests each candidate set as it generates it, and keeps only the
   back-door sets. It used to build every subset up to `max_size` in
   memory first
@@ -282,9 +301,9 @@
   centers a constant column under `standardize = TRUE` instead of
   filling it with `NaN`.
 
-- [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+- [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
-  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   error when `X` or `Y` names no nodes, as
   [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
   does. They returned `TRUE` and `list(character(0))`.
@@ -341,9 +360,9 @@
   e.g. `descendants(cg, character(0))`, now say which argument is empty
   instead of “Expected non zero length”.
 
-- [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
+- [`all_backdoor_sets()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
-  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   now validate `max_size` in R, with a plain error instead of a message
   about the input having “been subtracted with 1”.
 
@@ -370,7 +389,7 @@
   used to come back as `-->` edges in both directions. A matrix with
   circle marks can now be read with `class = "UNKNOWN"`.
 
-- [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
+- [`is_valid_backdoor()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   now rejects a `Z` that contains a node of `Y`. It accepted, for
   example, `Z = "Y"` for `X <-- U --> Y`.
 
@@ -382,18 +401,18 @@
   first. Adjustment sets are defined for pairwise disjoint `X`, `Y` and
   `Z`, so the adjustment functions treat any other triple as not
   admissible:
-  [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
+  [`is_valid_backdoor()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
-  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   return `FALSE`,
   [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
   returns `NULL`, and
-  [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md)
+  [`all_backdoor_sets()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
-  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   return [`list()`](https://rdrr.io/r/base/list.html), where some of
   them errored and
-  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   accepted a `Z` holding `Y` when `X` has no effect on `Y`.
   [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md)
   returns `NULL` when `X` and `Y` overlap or `I` contains a node of
@@ -624,15 +643,15 @@
   [`read_caugi()`](https://caugi.org/dev/reference/read_caugi.md) now
   expand `~` in `path`.
 
-- [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md)
+- [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md)
   now places parents above their children, matching the documented
   top-to-bottom flow. This also fixes automatic layouts and plots of
   DAGs, including graphs with disconnected components
   ([\#421](https://github.com/frederikfabriciusbjerre/caugi/issues/421)).
 
-- [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+- [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
-  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   no longer reject valid adjustment sets that contain a descendant of a
   treatment. The forbidden set counted every treatment that is an
   ancestor of `Y` as a node on a causal path, so it forbade all of
@@ -671,11 +690,11 @@
   [`d_separated()`](https://caugi.org/dev/reference/d_separated.md),
   [`m_separated()`](https://caugi.org/dev/reference/m_separated.md),
   [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md),
-  [`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md),
-  [`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md),
+  [`is_valid_backdoor()`](https://caugi.org/dev/reference/adjustment_deprecated.md),
+  [`all_backdoor_sets()`](https://caugi.org/dev/reference/adjustment_deprecated.md),
   [`minimal_separator()`](https://caugi.org/dev/reference/minimal_separator.md),
-  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md),
-  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md),
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
   [`is_visible_edge()`](https://caugi.org/dev/reference/is_visible_edge.md)
   (`X_index`, `Y_index`, `Z_index`, `I_index`, `R_index`, `from_index`,
@@ -694,6 +713,64 @@
   [`posteriors()`](https://caugi.org/dev/reference/posteriors.md)
   instead. Setting it to `FALSE` still works but warns
   ([\#364](https://github.com/frederikfabriciusbjerre/caugi/issues/364)).
+
+- The `x` argument of
+  [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md) is
+  deprecated and will be removed in caugi 2.0.0. Use `cg`, as every
+  other function does. Supplying `x` still works but warns
+  ([\#363](https://github.com/frederikfabriciusbjerre/caugi/issues/363)).
+
+- [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md),
+  [`caugi_layout_fruchterman_reingold()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md),
+  [`caugi_layout_kamada_kawai()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md),
+  [`caugi_layout_bipartite()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md),
+  [`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md)
+  and
+  [`caugi_layout_circle()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md)
+  are deprecated and will be removed in caugi 2.0.0. Use
+  [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md)
+  with the matching `method` instead; it takes `partition`, `tiers` and
+  `orientation` in `...`, now documented there. Calling them still works
+  but warns
+  ([\#367](https://github.com/frederikfabriciusbjerre/caugi/issues/367)).
+
+- The `truth` and `guess` arguments of
+  [`aid()`](https://caugi.org/dev/reference/aid.md) are deprecated and
+  will be removed in caugi 2.0.0. Use `cg1` (the true graph) and `cg2`,
+  as [`shd()`](https://caugi.org/dev/reference/shd.md),
+  [`hd()`](https://caugi.org/dev/reference/hd.md) and
+  [`markov_equivalent()`](https://caugi.org/dev/reference/markov_equivalent.md)
+  do. Supplying them still works but warns
+  ([\#362](https://github.com/frederikfabriciusbjerre/caugi/issues/362)).
+
+- Passing equations in `...` to
+  [`simulate_data()`](https://caugi.org/dev/reference/simulate_data.md)
+  is deprecated and will be removed in caugi 2.0.0. Pass them as a named
+  list of one-sided formulas in the new `equations` argument instead,
+  e.g. `equations = list(B = ~ 0.5 * A + rnorm(n))`. This also works for
+  nodes named like
+  [`simulate_data()`](https://caugi.org/dev/reference/simulate_data.md)’s
+  own arguments, such as `n`, `c` or `seed`. Passing them in `...` still
+  works but warns
+  ([\#369](https://github.com/frederikfabriciusbjerre/caugi/issues/369)).
+
+- [`all_backdoor_sets()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
+  and
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
+  are deprecated and will be removed in caugi 2.0.0. Use
+  `all_adjustment_sets(type = "backdoor")` and
+  [`all_adjustment_sets()`](https://caugi.org/dev/reference/all_adjustment_sets.md)
+  instead. Calling them still works but warns
+  ([\#354](https://github.com/frederikfabriciusbjerre/caugi/issues/354)).
+
+- [`is_valid_backdoor()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
+  and
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
+  are deprecated and will be removed in caugi 2.0.0. Use
+  `is_valid_adjustment(type = "backdoor")` and
+  [`is_valid_adjustment()`](https://caugi.org/dev/reference/is_valid_adjustment.md)
+  instead. Calling them still works but warns
+  ([\#355](https://github.com/frederikfabriciusbjerre/caugi/issues/355)).
 
 ## caugi 1.4.0
 
@@ -758,9 +835,9 @@ CRAN release: 2026-10-27
 - [`m_separated()`](https://caugi.org/dev/reference/m_separated.md) now
   handles ADMG collider paths with multiple bidirected edges, such as
   `a -> b <-> c <-> d` given `{b, c}`. This also fixes
-  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
-  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md),
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md),
   which use the same separation routine in the proper backdoor graph.
 
 - [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md)
@@ -934,7 +1011,7 @@ CRAN release: 2026-05-05
 ### New Features
 
 - Add
-  [`caugi_layout_circle()`](https://caugi.org/dev/reference/caugi_layout_circle.md)
+  [`caugi_layout_circle()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md)
   and a `"circle"` method for
   [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md)
   that places nodes evenly along the perimeter of a circle
@@ -973,9 +1050,9 @@ CRAN release: 2026-05-05
   co-parents and gave false positives (e.g. claimed `Z ⊥ Y | X` for
   `Z -> X -> Y`, `X <-> Y`).
 - Fix
-  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
-  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   to verify the GAC’s m-separation condition in the proper backdoor
   graph rather than via a per-neighbour decomposition. The old check
   trivially accepted neighbours of `X` that were themselves in `Z`, so
@@ -1133,12 +1210,12 @@ CRAN release: 2026-01-22
   [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md)
   function to compute node coordinates for graph visualization.
 - Add dedicated layout functions:
-  [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md),
-  [`caugi_layout_fruchterman_reingold()`](https://caugi.org/dev/reference/caugi_layout_fruchterman_reingold.md),
-  [`caugi_layout_kamada_kawai()`](https://caugi.org/dev/reference/caugi_layout_kamada_kawai.md),
-  [`caugi_layout_bipartite()`](https://caugi.org/dev/reference/caugi_layout_bipartite.md),
+  [`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md),
+  [`caugi_layout_fruchterman_reingold()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md),
+  [`caugi_layout_kamada_kawai()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md),
+  [`caugi_layout_bipartite()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md),
   and
-  [`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_tiered.md).
+  [`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md).
   Each function provides an API for its specific algorithm.
 - Add [`to_dot()`](https://caugi.org/dev/reference/to_dot.md) and
   [`write_dot()`](https://caugi.org/dev/reference/write_dot.md)
@@ -1171,7 +1248,7 @@ CRAN release: 2026-01-22
   calls internally.
 - Adopt [air](https://github.com/posit-dev/air) as the R code formatter
   for the package.
-- [`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_tiered.md)
+- [`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_deprecated.md)
   now returns a `tier` column and `orientation` attribute in the layout
   data.frame, allowing
   [`plot()`](https://caugi.org/dev/reference/plot.caugi.md) to
@@ -1204,9 +1281,9 @@ CRAN release: 2026-01-22
   [`m_separated()`](https://caugi.org/dev/reference/m_separated.md)
   (generalization of d-separation for graphs with bidirected edges).
 - Add functions for adjustment set validation in ADMGs:
-  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md)
+  [`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   and
-  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md)
+  [`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
   implementing the Generalized Adjustment Criterion.
 - Add
   [`mutate_caugi()`](https://caugi.org/dev/reference/mutate_caugi.md)

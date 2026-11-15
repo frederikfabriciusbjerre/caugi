@@ -96,11 +96,9 @@ on Uncertainty in Artificial Intelligence (UAI 2020)*, PMLR 115:637–647.
 
 Other adjustment:
 [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md),
-[`all_adjustment_sets_admg()`](https://caugi.org/dev/reference/all_adjustment_sets_admg.md),
-[`all_backdoor_sets()`](https://caugi.org/dev/reference/all_backdoor_sets.md),
+[`all_adjustment_sets()`](https://caugi.org/dev/reference/all_adjustment_sets.md),
 [`d_separated()`](https://caugi.org/dev/reference/d_separated.md),
-[`is_valid_adjustment_admg()`](https://caugi.org/dev/reference/is_valid_adjustment_admg.md),
-[`is_valid_backdoor()`](https://caugi.org/dev/reference/is_valid_backdoor.md)
+[`is_valid_adjustment()`](https://caugi.org/dev/reference/is_valid_adjustment.md)
 
 ## Examples
 

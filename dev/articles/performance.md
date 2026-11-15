@@ -424,11 +424,11 @@ pipeline (`task all`) and per-language details.
     #> [1] stats     graphics  grDevices utils     datasets  methods   base     
     #> 
     #> other attached packages:
-    #> [1] ggplot2_4.0.3
+    #> [1] ggplot2_4.0.4
     #> 
     #> loaded via a namespace (and not attached):
     #>  [1] vctrs_0.7.3        cli_3.6.6          knitr_1.52         rlang_1.3.0       
-    #>  [5] xfun_0.62          otel_0.2.0         generics_0.1.4     S7_0.2.2          
+    #>  [5] xfun_0.62          otel_0.3.0         generics_0.1.4     S7_0.2.2          
     #>  [9] textshaping_1.0.5  jsonlite_2.0.0     glue_1.8.1         htmltools_0.5.9   
     #> [13] ragg_1.5.2         sass_0.4.10        scales_1.4.0       rmarkdown_2.32    
     #> [17] grid_4.6.2         tibble_3.3.1       evaluate_1.0.5     jquerylib_0.1.4   

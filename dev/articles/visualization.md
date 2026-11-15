@@ -185,7 +185,7 @@ the other. You can also specify the partition explicitly:
 partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE)
 plot(
   bipartite_graph,
-  layout = caugi_layout_bipartite,
+  layout = "bipartite",
   partition = partition,
   orientation = "rows"
 )
@@ -259,7 +259,12 @@ tiers_df <- data.frame(
   tier = c(1, 1, 2, 2, 3)
 )
 
-layout_df <- caugi_layout_tiered(cg_tiered, tiers_df, orientation = "rows")
+layout_df <- caugi_layout(
+  cg_tiered,
+  method = "tiered",
+  tiers = tiers_df,
+  orientation = "rows"
+)
 
 plot(cg_tiered, layout = layout_df)
 ```
@@ -522,9 +527,10 @@ edge around the node, leaving all node positions untouched:
 
 cg_clique <- caugi(A %---% B + C, B %---% C)
 tiers_clique <- list(c("A", "B", "C"))
-layout_clique <- caugi_layout_tiered(
+layout_clique <- caugi_layout(
   cg_clique,
-  tiers_clique,
+  method = "tiered",
+  tiers = tiers_clique,
   orientation = "rows"
 )
 

@@ -32,9 +32,9 @@ plot(x, layout = "auto", node_style = list(),
     [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md)
     for details.
 
-  - A layout function: e.g., `caugi_layout_sugiyama`,
-    `caugi_layout_bipartite`, etc. The function will be called with `x`
-    and any additional arguments passed via `...`.
+  - A layout function, called with `x` and any additional arguments
+    passed via `...`, that returns a data.frame like
+    [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md).
 
   - A pre-computed layout data.frame with columns `name`, `x`, and `y`.
 
@@ -166,12 +166,6 @@ The plot is automatically drawn when printed or explicitly plotted.
 Other plotting:
 [`add-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/add-caugi_plot-caugi_plot.md),
 [`caugi_layout()`](https://caugi.org/dev/reference/caugi_layout.md),
-[`caugi_layout_bipartite()`](https://caugi.org/dev/reference/caugi_layout_bipartite.md),
-[`caugi_layout_circle()`](https://caugi.org/dev/reference/caugi_layout_circle.md),
-[`caugi_layout_fruchterman_reingold()`](https://caugi.org/dev/reference/caugi_layout_fruchterman_reingold.md),
-[`caugi_layout_kamada_kawai()`](https://caugi.org/dev/reference/caugi_layout_kamada_kawai.md),
-[`caugi_layout_sugiyama()`](https://caugi.org/dev/reference/caugi_layout_sugiyama.md),
-[`caugi_layout_tiered()`](https://caugi.org/dev/reference/caugi_layout_tiered.md),
 [`caugi_plot()`](https://caugi.org/dev/reference/caugi_plot.md),
 [`divide-caugi_plot-caugi_plot`](https://caugi.org/dev/reference/divide-caugi_plot-caugi_plot.md)
 
@@ -192,19 +186,15 @@ plot(cg)
 plot(cg, layout = "kamada-kawai")
 
 
-# Use a layout function
-plot(cg, layout = caugi_layout_sugiyama)
-
-
 # Pre-compute layout and use it
-coords <- caugi_layout_fruchterman_reingold(cg)
+coords <- caugi_layout(cg, method = "fruchterman-reingold")
 plot(cg, layout = coords)
 
 
-# Bipartite layout with a function
+# Bipartite layout
 cg_bp <- caugi(A %-->% X, B %-->% X, C %-->% Y)
 partition <- c(TRUE, TRUE, TRUE, FALSE, FALSE)
-plot(cg_bp, layout = caugi_layout_bipartite, partition = partition)
+plot(cg_bp, layout = "bipartite", partition = partition)
 
 
 # Customize nodes

@@ -55,11 +55,12 @@ be built automatically before computing the layout.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">caugi_layout</span><span class="op">(</span></span>
-<span>  <span class="va">x</span>,</span>
+<span>  <span class="va">cg</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"sugiyama"</span>, <span class="st">"fruchterman-reingold"</span>, <span class="st">"kamada-kawai"</span>, <span class="st">"bipartite"</span>,</span>
 <span>    <span class="st">"tiered"</span>, <span class="st">"circle"</span><span class="op">)</span>,</span>
 <span>  packing_ratio <span class="op">=</span> <span class="fl">1.618034</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  <span class="va">x</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -80,7 +81,7 @@ Systems, Man, and Cybernetics, 11(2), 109-125.
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dl><dt id="arg-cg">cg<a class="anchor" aria-label="anchor" href="#arg-cg"></a></dt>
 <dd><p>A <code>caugi</code> object. Must contain only directed edges for Sugiyama
 layout.</p></dd>
 
@@ -110,17 +111,32 @@ widescreen displays. Use <code>1.0</code> for square grid, <code>2.0</code> for 
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments passed to the specific layout function.
-For bipartite layouts, use <code>partition</code> (logical vector) and <code>orientation</code>
-(<code>"columns"</code> or <code>"rows"</code>).
-For tiered layouts, use <code>tiers</code> (list, named vector, or data.frame) and
-<code>orientation</code> (<code>"rows"</code> or <code>"columns"</code>).</p></dd>
+<dd><p>Arguments of the <code>"bipartite"</code> and <code>"tiered"</code> methods:</p><ul><li><p><code>partition</code> (bipartite): Optional logical vector with one value per
+node. Nodes with <code>TRUE</code> are placed in one partition and nodes with
+<code>FALSE</code> in the other; both must be non-empty. If <code>NULL</code> (default), the
+nodes without incoming edges form one partition and the rest the other.</p></li>
+<li><p><code>tiers</code> (tiered): The tier of each node, as a list of character vectors
+of node names, one per tier in order (element names are ignored); a
+numeric vector of tier indices named by node; or a data.frame with
+columns <code>name</code> and <code>tier</code>. Every node must be in a tier, no tier may be
+empty, and tier indices must be consecutive from 0 or 1.</p></li>
+<li><p><code>orientation</code>: <code>"columns"</code> (default) or <code>"rows"</code>. With <code>"columns"</code>, the
+first partition is the right column (x = 1) and the first tier the left
+column (x = 0). With <code>"rows"</code>, the first partition or tier is the top
+row (y = 1).</p></li>
+</ul></dd>
+
+
+<dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>Deprecated; use <code>cg</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.frame</code> with columns <code>name</code>, <code>x</code>, and <code>y</code> containing node
-names and their coordinates.</p>
+names and their coordinates. The <code>"tiered"</code> method adds a <code>tier</code> column
+(0-indexed) and an <code>orientation</code> attribute, which <code><a href="plot.caugi.html">plot()</a></code> reads, so the
+tiers need not be passed again.</p>
     </div>
     <div class="section level2">
     <h2 id="layout-algorithms">Layout Algorithms<a class="anchor" aria-label="anchor" href="#layout-algorithms"></a></h2>
@@ -149,17 +165,16 @@ produces deterministic results.</p>
 the top and subsequent nodes proceed counter-clockwise. Useful for small
 graphs, cycle visualization, and as a deterministic fallback. Works with
 all edge types and ignores edge structure.</p>
+<p><strong>Bipartite</strong></p>
+<p>Places nodes in two parallel rows or columns, one per side of a
+<code>partition</code>.</p>
+<p><strong>Tiered</strong></p>
+<p>Places nodes in parallel rows or columns, one per tier of <code>tiers</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other plotting:
 <code><a href="add-caugi_plot-caugi_plot.html">add-caugi_plot-caugi_plot</a></code>,
-<code><a href="caugi_layout_bipartite.html">caugi_layout_bipartite()</a></code>,
-<code><a href="caugi_layout_circle.html">caugi_layout_circle()</a></code>,
-<code><a href="caugi_layout_fruchterman_reingold.html">caugi_layout_fruchterman_reingold()</a></code>,
-<code><a href="caugi_layout_kamada_kawai.html">caugi_layout_kamada_kawai()</a></code>,
-<code><a href="caugi_layout_sugiyama.html">caugi_layout_sugiyama()</a></code>,
-<code><a href="caugi_layout_tiered.html">caugi_layout_tiered()</a></code>,
 <code><a href="caugi_plot.html">caugi_plot()</a></code>,
 <code><a href="divide-caugi_plot-caugi_plot.html">divide-caugi_plot-caugi_plot</a></code>,
 <code><a href="plot.caugi.html">plot.caugi()</a></code></p></div>
