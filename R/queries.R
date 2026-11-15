@@ -1533,9 +1533,9 @@ formals(subgraph) <- alist(cg = , nodes = NULL, index = NULL)
 #' have the same CPDAG, so a DAG is compared through [dag_to_cpdag()] and a
 #' CPDAG as it is.
 #'
-#' @param g1,g2 `caugi` objects of class `"DAG"` or `"CPDAG"`.
+#' @param cg1,cg2 `caugi` objects of class `"DAG"` or `"CPDAG"`.
 #'
-#' @returns `TRUE` if `g1` and `g2` are Markov equivalent, `FALSE` otherwise,
+#' @returns `TRUE` if `cg1` and `cg2` are Markov equivalent, `FALSE` otherwise,
 #'   including when their nodes differ.
 #'
 #' @references
@@ -1554,16 +1554,16 @@ formals(subgraph) <- alist(cg = , nodes = NULL, index = NULL)
 #' @concept queries
 #'
 #' @export
-markov_equivalent <- function(g1, g2) {
-  is_caugi(g1, throw_error = TRUE)
-  is_caugi(g2, throw_error = TRUE)
+markov_equivalent <- function(cg1, cg2) {
+  is_caugi(cg1, throw_error = TRUE)
+  is_caugi(cg2, throw_error = TRUE)
   cpdag_of <- function(cg) {
     switch(
       cg@graph_class,
       DAG = dag_to_cpdag(cg),
       CPDAG = cg,
-      stop("`g1` and `g2` must be DAGs or CPDAGs.", call. = FALSE)
+      stop("`cg1` and `cg2` must be DAGs or CPDAGs.", call. = FALSE)
     )
   }
-  cpdag_of(g1) == cpdag_of(g2)
+  cpdag_of(cg1) == cpdag_of(cg2)
 }

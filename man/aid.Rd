@@ -4,18 +4,28 @@
 \alias{aid}
 \title{Adjustment Identification Distance}
 \usage{
-aid(truth, guess, type = c("oset", "ancestor", "parent"), normalized = TRUE)
+aid(
+  cg1,
+  cg2,
+  type = c("oset", "ancestor", "parent"),
+  normalized = TRUE,
+  truth,
+  guess
+)
 }
 \arguments{
-\item{truth}{A \code{caugi} object of class \code{"DAG"} or \code{"CPDAG"}.}
+\item{cg1}{The true graph, a \code{caugi} object of class \code{"DAG"} or \code{"CPDAG"}.}
 
-\item{guess}{A \code{caugi} object of class \code{"DAG"} or \code{"CPDAG"}.}
+\item{cg2}{The estimated graph, a \code{caugi} object of class \code{"DAG"} or
+\code{"CPDAG"}.}
 
 \item{type}{A character string specifying the type of AID to compute.
 Options are \code{"oset"} (default), \code{"ancestor"}, and \code{"parent"}.}
 
 \item{normalized}{Logical; if \code{TRUE}, returns the normalized AID. If \code{FALSE},
 returns the count.}
+
+\item{truth, guess}{Deprecated; use \code{cg1} and \code{cg2}.}
 }
 \value{
 A numeric representing the AID between the two graphs, if
@@ -24,7 +34,7 @@ A numeric representing the AID between the two graphs, if
 \description{
 Compute the Adjustment Identification Distance (AID) between two
 graphs. AID counts how often the adjustment-identification strategy applied
-to \code{guess} yields a causal inference that is incorrect relative to \code{truth}.
+to \code{cg2} yields a causal inference that is incorrect relative to \code{cg1}.
 Implemented in caugi's Rust backend following Henckel, Würtzen & Weichwald
 (2024), \url{doi:10.48550/arXiv.2402.08616}.
 }

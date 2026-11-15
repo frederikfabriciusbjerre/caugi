@@ -78,16 +78,18 @@ hd <- function(cg1, cg2, normalized = FALSE) {
 #'
 #' @description Compute the Adjustment Identification Distance (AID) between two
 #' graphs. AID counts how often the adjustment-identification strategy applied
-#' to `guess` yields a causal inference that is incorrect relative to `truth`.
+#' to `cg2` yields a causal inference that is incorrect relative to `cg1`.
 #' Implemented in caugi's Rust backend following Henckel, Würtzen & Weichwald
 #' (2024), <doi:10.48550/arXiv.2402.08616>.
 #'
-#' @param truth A `caugi` object of class `"DAG"` or `"CPDAG"`.
-#' @param guess A `caugi` object of class `"DAG"` or `"CPDAG"`.
+#' @param cg1 The true graph, a `caugi` object of class `"DAG"` or `"CPDAG"`.
+#' @param cg2 The estimated graph, a `caugi` object of class `"DAG"` or
+#'   `"CPDAG"`.
 #' @param type A character string specifying the type of AID to compute.
 #' Options are `"oset"` (default), `"ancestor"`, and `"parent"`.
 #' @param normalized Logical; if `TRUE`, returns the normalized AID. If `FALSE`,
 #' returns the count.
+#' @param truth,guess Deprecated; use `cg1` and `cg2`.
 #'
 #' @returns A numeric representing the AID between the two graphs, if
 #' `normalized = TRUE`, or an integer count if `normalized = FALSE`.
@@ -103,21 +105,30 @@ hd <- function(cg1, cg2, normalized = FALSE) {
 #'
 #' @export
 aid <- function(
-  truth,
-  guess,
+  cg1,
+  cg2,
   type = c("oset", "ancestor", "parent"),
-  normalized = TRUE
+  normalized = TRUE,
+  truth,
+  guess
 ) {
+  if (!missing(truth) || !missing(guess)) {
+    return(.call_renamed(
+      "aid",
+      c("truth", "guess", "type", "normalized"),
+      c(truth = "cg1", guess = "cg2")
+    ))
+  }
   type <- match.arg(type)
-  is_caugi(truth, throw_error = TRUE)
-  is_caugi(guess, throw_error = TRUE)
-  same_nodes(truth, guess, throw_error = TRUE)
+  is_caugi(cg1, throw_error = TRUE)
+  is_caugi(cg2, throw_error = TRUE)
+  same_nodes(cg1, cg2, throw_error = TRUE)
 
   res <- switch(
     type,
-    oset = rs_oset_aid(truth@session, guess@session),
-    ancestor = rs_ancestor_aid(truth@session, guess@session),
-    parent = rs_parent_aid(truth@session, guess@session)
+    oset = rs_oset_aid(cg1@session, cg2@session),
+    ancestor = rs_ancestor_aid(cg1@session, cg2@session),
+    parent = rs_parent_aid(cg1@session, cg2@session)
   )
   if (normalized) {
     res$score

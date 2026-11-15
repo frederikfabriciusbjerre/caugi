@@ -6,7 +6,7 @@
 
 * `markov_blanket()` accepts PAGs, reading the blanket off a member MAG.
 
-* `markov_equivalent(g1, g2)` checks whether two DAGs or CPDAGs are Markov
+* `markov_equivalent(cg1, cg2)` checks whether two DAGs or CPDAGs are Markov
   equivalent, by comparing their CPDAGs (#442).
 
 * `dag_to_cpdag()` returns the CPDAG of a DAG's Markov equivalence class (#441).
@@ -466,6 +466,11 @@
   be removed in caugi 2.0.0. Use `caugi_layout()` with the matching `method`
   instead; it takes `partition`, `tiers` and `orientation` in `...`, now
   documented there. Calling them still works but warns (#367).
+
+* The `truth` and `guess` arguments of `aid()` are deprecated and will be
+  removed in caugi 2.0.0. Use `cg1` (the true graph) and `cg2`, as `shd()`,
+  `hd()` and `markov_equivalent()` do. Supplying them still works but warns
+  (#362).
 
 # caugi 1.4.0
 
