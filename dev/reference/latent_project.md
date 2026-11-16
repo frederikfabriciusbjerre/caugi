@@ -1,7 +1,8 @@
-# Project latent variables from a DAG to an ADMG
+# Project latent variables out of a DAG or an ADMG
 
-Projects out latent (unobserved) variables from a DAG to produce an
-Acyclic Directed Mixed Graph (ADMG) over the observed variables.
+Projects out latent (unobserved) variables from a DAG or an ADMG to
+produce an Acyclic Directed Mixed Graph (ADMG) over the observed
+variables.
 
 ## Usage
 
@@ -13,7 +14,7 @@ latent_project(cg, latents)
 
 - cg:
 
-  A `caugi` object of class `"DAG"`.
+  A `caugi` object of class `"DAG"` or `"ADMG"`.
 
 - latents:
 
@@ -23,6 +24,14 @@ latent_project(cg, latents)
 
 A `caugi` object of class `"ADMG"` containing only the observed
 variables.
+
+## Details
+
+In the projection, `a --> b` when the graph has a directed path from `a`
+to `b` whose inner nodes are all latent, and `a <-> b` when it has a
+path between them whose inner nodes are all latent non-colliders, with
+an arrowhead at both `a` and `b`. Projecting out latents one set at a
+time gives the same ADMG as projecting them out together.
 
 ## See also
 
@@ -76,4 +85,11 @@ edges(admg2)
 #>      from   edge     to
 #>    <char> <char> <char>
 #> 1:      X    -->      Y
+
+# ADMG: a bidirected edge into a latent non-collider carries over
+admg3 <- caugi(A %<->% L, L %-->% B, class = "ADMG")
+edges(latent_project(admg3, latents = "L")) # A <-> B
+#>      from   edge     to
+#>    <char> <char> <char>
+#> 1:      A    <->      B
 ```

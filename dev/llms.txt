@@ -429,7 +429,7 @@ Did you find run into problems? That’s *paw-ful*! Please report an
   Exogenize a graph
 
 - [`latent_project()`](https://caugi.org/dev/reference/latent_project.md)
-  : Project latent variables from a DAG to an ADMG
+  : Project latent variables out of a DAG or an ADMG
 
 - [`mag_to_pag()`](https://caugi.org/dev/reference/mag_to_pag.md) :
   Construct the PAG of a MAG's Markov equivalence class

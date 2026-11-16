@@ -168,6 +168,11 @@
   did
   ([\#355](https://github.com/frederikfabriciusbjerre/caugi/issues/355)).
 
+- [`latent_project()`](https://caugi.org/dev/reference/latent_project.md)
+  also takes ADMGs, so latents can be projected out of a graph that
+  already has bidirected edges, or in several steps
+  ([\#353](https://github.com/frederikfabriciusbjerre/caugi/issues/353)).
+
 ### Performance Improvements
 
 - [`all_backdoor_sets()`](https://caugi.org/dev/reference/adjustment_deprecated.md)
