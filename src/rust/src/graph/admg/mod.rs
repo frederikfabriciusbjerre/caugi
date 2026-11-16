@@ -165,6 +165,17 @@ impl Admg {
         )
     }
 
+    /// Project out latent variables, giving an ADMG over the other nodes. See
+    /// [`latent_project_graph`](crate::graph::dag::latent_project_graph).
+    pub fn latent_project(&self, latents: &[u32]) -> Result<Admg, String> {
+        crate::graph::dag::latent_project_graph(
+            self.core_ref(),
+            |u| self.children_of(u),
+            |u| self.spouses_of(u),
+            latents,
+        )
+    }
+
     /// Nodes with no parents (exogenous in directed sense).
     #[inline]
     pub fn exogenous_nodes(&self) -> Vec<u32> {
@@ -1001,5 +1012,50 @@ mod tests {
         // No valid adjustment exists for this graph (the X <-> Y confounding is unblockable)
         let sets = admg.all_adjustment_sets(&[0], &[2], false, 5);
         assert!(sets.is_empty());
+    }
+
+    fn admg_for_projection(n: u32, directed: &[(u32, u32)], bidirected: &[(u32, u32)]) -> Admg {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        let bid = reg.code_of("<->").unwrap();
+        let mut b = GraphBuilder::new_with_registry(n, true, &reg);
+        for &(u, v) in directed {
+            b.add_edge(u, v, d).unwrap();
+        }
+        for &(u, v) in bidirected {
+            b.add_edge(u, v, bid).unwrap();
+        }
+        Admg::new(Arc::new(b.finalize().unwrap())).unwrap()
+    }
+
+    #[test]
+    fn latent_project_keeps_a_bidirected_path_through_a_latent() {
+        // A <-> L --> B: L is a non-collider, so A <-> B.
+        let g = admg_for_projection(3, &[(1, 2)], &[(0, 1)]);
+        let p = g.latent_project(&[1]).unwrap();
+        assert_eq!(p.n(), 2);
+        assert_eq!(p.spouses_of(0), &[1]);
+        assert!(p.children_of(0).is_empty());
+        assert!(p.children_of(1).is_empty());
+    }
+
+    #[test]
+    fn latent_project_drops_a_path_through_a_latent_collider() {
+        // A --> L <-> B: L is a collider, so A and B are not adjacent.
+        let g = admg_for_projection(3, &[(0, 1)], &[(1, 2)]);
+        let p = g.latent_project(&[1]).unwrap();
+        assert!(p.spouses_of(0).is_empty());
+        assert!(p.children_of(0).is_empty());
+        assert!(p.parents_of(0).is_empty());
+    }
+
+    #[test]
+    fn latent_project_adds_a_directed_edge_next_to_an_existing_bidirected_one() {
+        // A --> L --> B and A <-> B: the result has both A --> B and A <-> B.
+        let g = admg_for_projection(3, &[(0, 1), (1, 2)], &[(0, 2)]);
+        let p = g.latent_project(&[1]).unwrap();
+        assert_eq!(p.children_of(0), &[1]);
+        assert_eq!(p.spouses_of(0), &[1]);
     }
 }

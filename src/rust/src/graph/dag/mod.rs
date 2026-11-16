@@ -5,6 +5,7 @@ mod adjustment;
 pub use adjustment::finds_no_set;
 mod separation;
 mod transforms;
+pub(crate) use transforms::latent_project_graph;
 
 use super::error::DagError;
 use super::packed::{PackedBuckets, PackedBucketsBuilder};

@@ -707,7 +707,7 @@ impl GraphView {
         }
     }
 
-    /// Project out latent variables from a DAG to produce an ADMG.
+    /// Project out latent variables from a DAG or an ADMG to produce an ADMG.
     ///
     /// Uses vertex elimination: for each latent vertex v, adds directed edges
     /// from Pa(v) to Ch(v), bidirected edges from Sib(v) to Ch(v), and
@@ -727,7 +727,11 @@ impl GraphView {
                 let admg = d.latent_project(latents)?;
                 Ok(GraphView::Admg(Arc::new(admg)))
             }
-            _ => Err("latent_project is only defined for DAGs".into()),
+            GraphView::Admg(a) => {
+                let admg = a.latent_project(latents)?;
+                Ok(GraphView::Admg(Arc::new(admg)))
+            }
+            _ => Err("latent_project is only defined for DAGs and ADMGs".into()),
         }
     }
 

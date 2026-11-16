@@ -375,267 +375,10 @@ impl Dag {
         Ok((dag, kept_old))
     }
 
-    /// Project out latent variables from a DAG to produce an ADMG.
-    ///
-    /// Uses the vertex elimination algorithm for latent projection:
-    /// For each latent vertex v to eliminate:
-    /// 1. Add directed edge p → c for all p ∈ Pa(v), c ∈ Ch(v)
-    /// 2. Add bidirected edge s ↔ c for all s ∈ Sib(v), c ∈ Ch(v)
-    /// 3. Add bidirected edge a ↔ b for all pairs a, b ∈ Ch(v)
-    /// 4. Remove v
-    ///
-    /// Note: The result may have both directed and bidirected edges between
-    /// the same pair of nodes (e.g., X → Y and X ↔ Y), which is valid in ADMGs.
-    ///
-    /// # Arguments
-    /// * `latents` - Slice of node indices to project out (0-indexed)
-    ///
-    /// # Returns
-    /// An `Admg` containing only the observed (non-latent) nodes.
-    ///
-    /// # Errors
-    /// Returns an error if any latent index is out of bounds.
+    /// Project out latent variables from a DAG to produce an ADMG. See
+    /// [`latent_project_graph`].
     pub fn latent_project(&self, latents: &[u32]) -> Result<Admg, String> {
-        let n = self.n() as usize;
-
-        // Validate and build remove mask
-        let mut remove = vec![false; n];
-        for &v in latents {
-            if v >= self.n() {
-                return Err(format!(
-                    "Latent index {} is out of bounds (n = {})",
-                    v,
-                    self.n()
-                ));
-            }
-            remove[v as usize] = true;
-        }
-
-        // Find edge codes
-        let specs = &self.core_ref().registry.specs;
-        let mut dir_code: Option<u8> = None;
-        let mut bid_code: Option<u8> = None;
-        for (i, s) in specs.iter().enumerate() {
-            match s.class {
-                EdgeClass::Directed => {
-                    if dir_code.is_none() || s.glyph == "-->" {
-                        dir_code = Some(i as u8)
-                    }
-                }
-                EdgeClass::Bidirected => {
-                    if bid_code.is_none() || s.glyph == "<->" {
-                        bid_code = Some(i as u8)
-                    }
-                }
-                _ => {}
-            }
-        }
-        let dir = dir_code.ok_or("No Directed edge spec in registry")?;
-        let bid = bid_code.ok_or("No Bidirected edge spec in registry")?;
-
-        // If everything removed, return empty ADMG
-        if remove.iter().all(|&x| x) {
-            let core = CaugiGraph::from_csr(
-                vec![0u32],
-                vec![],
-                vec![],
-                vec![],
-                true, // empty graph is simple
-                self.core_ref().registry.clone(),
-            )?;
-            return Admg::new(Arc::new(core));
-        }
-
-        // Build mutable adjacency over ALL nodes (including ones to be removed later)
-        // Using BTreeSet for deterministic ordering
-        let mut pa: Vec<BTreeSet<u32>> = vec![BTreeSet::new(); n]; // parents
-        let mut ch: Vec<BTreeSet<u32>> = vec![BTreeSet::new(); n]; // children
-        let mut bi: Vec<BTreeSet<u32>> = vec![BTreeSet::new(); n]; // spouses (bidirected)
-
-        // Populate from DAG (only directed edges, no bidirected in a DAG)
-        for u in 0..(n as u32) {
-            for &c in self.children_of(u) {
-                ch[u as usize].insert(c);
-                pa[c as usize].insert(u);
-            }
-        }
-
-        // Helper closures for adding edges
-        fn add_dir(u: u32, v: u32, pa: &mut [BTreeSet<u32>], ch: &mut [BTreeSet<u32>]) {
-            if u == v {
-                return;
-            }
-            if ch[u as usize].insert(v) {
-                pa[v as usize].insert(u);
-            }
-        }
-        fn add_bi(a: u32, b: u32, bi: &mut [BTreeSet<u32>]) {
-            if a == b {
-                return;
-            }
-            bi[a as usize].insert(b);
-            bi[b as usize].insert(a);
-        }
-
-        // Eliminate in deterministic order
-        let mut elim: Vec<u32> = latents.to_vec();
-        elim.sort_unstable();
-        elim.dedup();
-
-        for &v in &elim {
-            let vi = v as usize;
-            if vi >= n {
-                continue;
-            }
-
-            // Snapshot neighborhoods of v in the CURRENT graph
-            let parents_v: Vec<u32> = pa[vi].iter().copied().collect();
-            let children_v: Vec<u32> = ch[vi].iter().copied().collect();
-            let siblings_v: Vec<u32> = bi[vi].iter().copied().collect();
-
-            // 1) Directed projections: Pa(v) -> Ch(v)
-            for &p in &parents_v {
-                for &c in &children_v {
-                    add_dir(p, c, &mut pa, &mut ch);
-                }
-            }
-
-            // 2) Bidirected projections: Sib(v) <-> Ch(v)
-            for &s in &siblings_v {
-                for &c in &children_v {
-                    add_bi(s, c, &mut bi);
-                }
-            }
-
-            // 3) Bidirected among children of v
-            for i in 0..children_v.len() {
-                for j in (i + 1)..children_v.len() {
-                    add_bi(children_v[i], children_v[j], &mut bi);
-                }
-            }
-
-            // Remove v and all incident edges
-            for &p in &parents_v {
-                ch[p as usize].remove(&v);
-            }
-            for &c in &children_v {
-                pa[c as usize].remove(&v);
-            }
-            for &s in &siblings_v {
-                bi[s as usize].remove(&v);
-            }
-
-            pa[vi].clear();
-            ch[vi].clear();
-            bi[vi].clear();
-        }
-
-        // Collect kept nodes
-        let kept: Vec<u32> = (0..self.n()).filter(|&u| !remove[u as usize]).collect();
-        let m = kept.len();
-
-        // old -> new mapping
-        let mut old_to_new: Vec<Option<u32>> = vec![None; n];
-        for (new_i, &old_i) in kept.iter().enumerate() {
-            old_to_new[old_i as usize] = Some(new_i as u32);
-        }
-
-        // Check if the graph has parallel edges (both directed and bidirected between same pair)
-        // Only set simple=false if such pairs exist
-        let mut has_parallel_edges = false;
-        'outer: for &old_i in &kept {
-            let oi = old_i as usize;
-            // Check if any child is also a spouse (or vice versa)
-            for &c in ch[oi].iter() {
-                if bi[oi].contains(&c) {
-                    has_parallel_edges = true;
-                    break 'outer;
-                }
-            }
-            // Check if any parent is also a spouse
-            for &p in pa[oi].iter() {
-                if bi[oi].contains(&p) {
-                    has_parallel_edges = true;
-                    break 'outer;
-                }
-            }
-        }
-
-        // Build CSR for new graph
-        let mut row_index = Vec::with_capacity(m + 1);
-        row_index.push(0u32);
-
-        // Precompute row lengths
-        for &old_i in &kept {
-            let oi = old_i as usize;
-            let pa_ct = pa[oi]
-                .iter()
-                .filter(|&&p| old_to_new[p as usize].is_some())
-                .count() as u32;
-            let bi_ct = bi[oi]
-                .iter()
-                .filter(|&&s| old_to_new[s as usize].is_some())
-                .count() as u32;
-            let ch_ct = ch[oi]
-                .iter()
-                .filter(|&&c| old_to_new[c as usize].is_some())
-                .count() as u32;
-            let last = *row_index.last().unwrap();
-            row_index.push(last + pa_ct + bi_ct + ch_ct);
-        }
-
-        let nnz = *row_index.last().unwrap() as usize;
-        let mut col_index = vec![0u32; nnz];
-        let mut etype = vec![0u8; nnz];
-        let mut side = vec![0u8; nnz];
-
-        let mut cur = row_index[..m].to_vec();
-        for (new_i, &old_i) in kept.iter().enumerate() {
-            let oi = old_i as usize;
-
-            // parents (dir, side=1)
-            for &p in pa[oi].iter() {
-                if let Some(np) = old_to_new[p as usize] {
-                    let k = cur[new_i] as usize;
-                    col_index[k] = np;
-                    etype[k] = dir;
-                    side[k] = 1;
-                    cur[new_i] += 1;
-                }
-            }
-
-            // spouses (bid, side=0)
-            for &s in bi[oi].iter() {
-                if let Some(ns) = old_to_new[s as usize] {
-                    let k = cur[new_i] as usize;
-                    col_index[k] = ns;
-                    etype[k] = bid;
-                    side[k] = 0;
-                    cur[new_i] += 1;
-                }
-            }
-
-            // children (dir, side=0)
-            for &c in ch[oi].iter() {
-                if let Some(nc) = old_to_new[c as usize] {
-                    let k = cur[new_i] as usize;
-                    col_index[k] = nc;
-                    etype[k] = dir;
-                    side[k] = 0;
-                    cur[new_i] += 1;
-                }
-            }
-        }
-
-        let core = CaugiGraph::from_csr(
-            row_index,
-            col_index,
-            etype,
-            side,
-            !has_parallel_edges, // simple=true unless we have parallel edges
-            self.core_ref().registry.clone(),
-        )?;
-        Admg::new(Arc::new(core))
+        latent_project_graph(self.core_ref(), |u| self.children_of(u), |_| &[], latents)
     }
 
     /// Convert DAG to CPDAG: the essential graph of the DAG's Markov
@@ -760,6 +503,282 @@ impl Dag {
         let mpdag = Mpdag::from_closed_unchecked(pdag);
         Ok(Cpdag::from_valid_unchecked(mpdag))
     }
+}
+
+/// Project out latent variables from a DAG or an ADMG to produce an ADMG.
+///
+/// Uses the vertex elimination algorithm for latent projection:
+/// For each latent vertex v to eliminate:
+/// 1. Add directed edge p → c for all p ∈ Pa(v), c ∈ Ch(v)
+/// 2. Add bidirected edge s ↔ c for all s ∈ Sib(v), c ∈ Ch(v)
+/// 3. Add bidirected edge a ↔ b for all pairs a, b ∈ Ch(v)
+/// 4. Remove v
+///
+/// Note: The result may have both directed and bidirected edges between
+/// the same pair of nodes (e.g., X → Y and X ↔ Y), which is valid in ADMGs.
+///
+/// The elimination order does not matter, so this is the latent projection of
+/// a DAG and of an ADMG alike.
+///
+/// # Arguments
+/// * `core` - The input graph, for its node count and edge registry.
+/// * `children_of`, `spouses_of` - Its children and its `<->` neighbours.
+/// * `latents` - Slice of node indices to project out (0-indexed)
+///
+/// # Returns
+/// An `Admg` containing only the observed (non-latent) nodes.
+///
+/// # Errors
+/// Returns an error if any latent index is out of bounds.
+pub(crate) fn latent_project_graph<'a>(
+    core: &CaugiGraph,
+    children_of: impl Fn(u32) -> &'a [u32],
+    spouses_of: impl Fn(u32) -> &'a [u32],
+    latents: &[u32],
+) -> Result<Admg, String> {
+    let n = core.n() as usize;
+
+    // Validate and build remove mask
+    let mut remove = vec![false; n];
+    for &v in latents {
+        if v >= core.n() {
+            return Err(format!(
+                "Latent index {} is out of bounds (n = {})",
+                v,
+                core.n()
+            ));
+        }
+        remove[v as usize] = true;
+    }
+
+    // Find edge codes
+    let specs = &core.registry.specs;
+    let mut dir_code: Option<u8> = None;
+    let mut bid_code: Option<u8> = None;
+    for (i, s) in specs.iter().enumerate() {
+        match s.class {
+            EdgeClass::Directed => {
+                if dir_code.is_none() || s.glyph == "-->" {
+                    dir_code = Some(i as u8)
+                }
+            }
+            EdgeClass::Bidirected => {
+                if bid_code.is_none() || s.glyph == "<->" {
+                    bid_code = Some(i as u8)
+                }
+            }
+            _ => {}
+        }
+    }
+    let dir = dir_code.ok_or("No Directed edge spec in registry")?;
+    let bid = bid_code.ok_or("No Bidirected edge spec in registry")?;
+
+    // If everything removed, return empty ADMG
+    if remove.iter().all(|&x| x) {
+        let core = CaugiGraph::from_csr(
+            vec![0u32],
+            vec![],
+            vec![],
+            vec![],
+            true, // empty graph is simple
+            core.registry.clone(),
+        )?;
+        return Admg::new(Arc::new(core));
+    }
+
+    // Build mutable adjacency over ALL nodes (including ones to be removed later)
+    // Using BTreeSet for deterministic ordering
+    let mut pa: Vec<BTreeSet<u32>> = vec![BTreeSet::new(); n]; // parents
+    let mut ch: Vec<BTreeSet<u32>> = vec![BTreeSet::new(); n]; // children
+    let mut bi: Vec<BTreeSet<u32>> = vec![BTreeSet::new(); n]; // spouses (bidirected)
+
+    // Populate from the input graph
+    for u in 0..(n as u32) {
+        for &c in children_of(u) {
+            ch[u as usize].insert(c);
+            pa[c as usize].insert(u);
+        }
+        for &sp in spouses_of(u) {
+            bi[u as usize].insert(sp);
+        }
+    }
+
+    // Helper closures for adding edges
+    fn add_dir(u: u32, v: u32, pa: &mut [BTreeSet<u32>], ch: &mut [BTreeSet<u32>]) {
+        if u == v {
+            return;
+        }
+        if ch[u as usize].insert(v) {
+            pa[v as usize].insert(u);
+        }
+    }
+    fn add_bi(a: u32, b: u32, bi: &mut [BTreeSet<u32>]) {
+        if a == b {
+            return;
+        }
+        bi[a as usize].insert(b);
+        bi[b as usize].insert(a);
+    }
+
+    // Eliminate in deterministic order
+    let mut elim: Vec<u32> = latents.to_vec();
+    elim.sort_unstable();
+    elim.dedup();
+
+    for &v in &elim {
+        let vi = v as usize;
+        if vi >= n {
+            continue;
+        }
+
+        // Snapshot neighborhoods of v in the CURRENT graph
+        let parents_v: Vec<u32> = pa[vi].iter().copied().collect();
+        let children_v: Vec<u32> = ch[vi].iter().copied().collect();
+        let siblings_v: Vec<u32> = bi[vi].iter().copied().collect();
+
+        // 1) Directed projections: Pa(v) -> Ch(v)
+        for &p in &parents_v {
+            for &c in &children_v {
+                add_dir(p, c, &mut pa, &mut ch);
+            }
+        }
+
+        // 2) Bidirected projections: Sib(v) <-> Ch(v)
+        for &s in &siblings_v {
+            for &c in &children_v {
+                add_bi(s, c, &mut bi);
+            }
+        }
+
+        // 3) Bidirected among children of v
+        for i in 0..children_v.len() {
+            for j in (i + 1)..children_v.len() {
+                add_bi(children_v[i], children_v[j], &mut bi);
+            }
+        }
+
+        // Remove v and all incident edges
+        for &p in &parents_v {
+            ch[p as usize].remove(&v);
+        }
+        for &c in &children_v {
+            pa[c as usize].remove(&v);
+        }
+        for &s in &siblings_v {
+            bi[s as usize].remove(&v);
+        }
+
+        pa[vi].clear();
+        ch[vi].clear();
+        bi[vi].clear();
+    }
+
+    // Collect kept nodes
+    let kept: Vec<u32> = (0..core.n()).filter(|&u| !remove[u as usize]).collect();
+    let m = kept.len();
+
+    // old -> new mapping
+    let mut old_to_new: Vec<Option<u32>> = vec![None; n];
+    for (new_i, &old_i) in kept.iter().enumerate() {
+        old_to_new[old_i as usize] = Some(new_i as u32);
+    }
+
+    // Check if the graph has parallel edges (both directed and bidirected between same pair)
+    // Only set simple=false if such pairs exist
+    let mut has_parallel_edges = false;
+    'outer: for &old_i in &kept {
+        let oi = old_i as usize;
+        // Check if any child is also a spouse (or vice versa)
+        for &c in ch[oi].iter() {
+            if bi[oi].contains(&c) {
+                has_parallel_edges = true;
+                break 'outer;
+            }
+        }
+        // Check if any parent is also a spouse
+        for &p in pa[oi].iter() {
+            if bi[oi].contains(&p) {
+                has_parallel_edges = true;
+                break 'outer;
+            }
+        }
+    }
+
+    // Build CSR for new graph
+    let mut row_index = Vec::with_capacity(m + 1);
+    row_index.push(0u32);
+
+    // Precompute row lengths
+    for &old_i in &kept {
+        let oi = old_i as usize;
+        let pa_ct = pa[oi]
+            .iter()
+            .filter(|&&p| old_to_new[p as usize].is_some())
+            .count() as u32;
+        let bi_ct = bi[oi]
+            .iter()
+            .filter(|&&s| old_to_new[s as usize].is_some())
+            .count() as u32;
+        let ch_ct = ch[oi]
+            .iter()
+            .filter(|&&c| old_to_new[c as usize].is_some())
+            .count() as u32;
+        let last = *row_index.last().unwrap();
+        row_index.push(last + pa_ct + bi_ct + ch_ct);
+    }
+
+    let nnz = *row_index.last().unwrap() as usize;
+    let mut col_index = vec![0u32; nnz];
+    let mut etype = vec![0u8; nnz];
+    let mut side = vec![0u8; nnz];
+
+    let mut cur = row_index[..m].to_vec();
+    for (new_i, &old_i) in kept.iter().enumerate() {
+        let oi = old_i as usize;
+
+        // parents (dir, side=1)
+        for &p in pa[oi].iter() {
+            if let Some(np) = old_to_new[p as usize] {
+                let k = cur[new_i] as usize;
+                col_index[k] = np;
+                etype[k] = dir;
+                side[k] = 1;
+                cur[new_i] += 1;
+            }
+        }
+
+        // spouses (bid, side=0)
+        for &s in bi[oi].iter() {
+            if let Some(ns) = old_to_new[s as usize] {
+                let k = cur[new_i] as usize;
+                col_index[k] = ns;
+                etype[k] = bid;
+                side[k] = 0;
+                cur[new_i] += 1;
+            }
+        }
+
+        // children (dir, side=0)
+        for &c in ch[oi].iter() {
+            if let Some(nc) = old_to_new[c as usize] {
+                let k = cur[new_i] as usize;
+                col_index[k] = nc;
+                etype[k] = dir;
+                side[k] = 0;
+                cur[new_i] += 1;
+            }
+        }
+    }
+
+    let core = CaugiGraph::from_csr(
+        row_index,
+        col_index,
+        etype,
+        side,
+        !has_parallel_edges, // simple=true unless we have parallel edges
+        core.registry.clone(),
+    )?;
+    Admg::new(Arc::new(core))
 }
 
 #[cfg(test)]
