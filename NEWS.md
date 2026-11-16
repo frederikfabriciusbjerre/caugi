@@ -505,6 +505,11 @@
   and `is_valid_adjustment()` instead. Calling them still works but warns
   (#355).
 
+* The `cond_vars` and `marg_vars` arguments of `condition_marginalize()` are
+  deprecated and will be removed in caugi 2.0.0. Use `selection` and
+  `latents`, as `dag_to_pag()` and `latent_project()` do. Supplying them still
+  works but warns (#361).
+
 # caugi 1.4.0
 
 * Updates for compatibility with S7 > 0.2.2.

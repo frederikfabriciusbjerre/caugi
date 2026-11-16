@@ -39,7 +39,7 @@ test_that("m-separation in the marginalized MAG matches d-separation in the DAG"
 
   # Richardson and Spirtes (2002) Def. 4.2.1: the ancestral graph over the
   # observed variables.
-  mag <- condition_marginalize(mutate_caugi(dag, "AG"), marg_vars = latent)
+  mag <- condition_marginalize(mutate_caugi(dag, "AG"), latents = latent)
   expect_true(is_mag(mag))
   expect_setequal(nodes(mag)$name, observed)
 
