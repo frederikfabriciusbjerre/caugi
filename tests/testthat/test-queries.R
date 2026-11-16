@@ -1370,12 +1370,12 @@ test_that("m_separated on a UG is graph separation", {
 test_that("condition_marginalize works on ADMG and UG input (#383)", {
   adm <- caugi(A %-->% B, B %-->% C, class = "ADMG")
   expect_equal(
-    edges(condition_marginalize(adm, marg_vars = "B")),
+    edges(condition_marginalize(adm, latents = "B")),
     edges(caugi(A %-->% C))
   )
   ug <- caugi(A %---% B, B %---% C, class = "UG")
   expect_equal(
-    edges(condition_marginalize(ug, marg_vars = "B")),
+    edges(condition_marginalize(ug, latents = "B")),
     edges(caugi(A %---% C))
   )
 })

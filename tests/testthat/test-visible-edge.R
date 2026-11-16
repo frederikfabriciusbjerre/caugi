@@ -60,7 +60,7 @@ test_that("visibility needs a witness not adjacent to the head", {
   # The edge in the MAG of A --> L --> B with L latent is visible: C and D
   # rule out a latent confounder of A and B, though not the mediator L.
   dag <- caugi(C %-->% A, D %-->% A, A %-->% L, L %-->% B, class = "DAG")
-  mag <- condition_marginalize(dag, marg_vars = "L")
+  mag <- condition_marginalize(dag, latents = "L")
   expect_true(is_visible_edge(mag, "A", "B"))
   expect_false(is_visible_edge(caugi(A %-->% B, class = "AG"), "A", "B"))
 })

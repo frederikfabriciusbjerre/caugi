@@ -669,7 +669,7 @@ test_that("exogenize fails with non-simple graphs", {
 
 test_that("condition_marginalize() handles a result with no edges", {
   cg <- caugi(X %-->% Z, Y %-->% Z, class = "DAG")
-  res <- condition_marginalize(cg, marg_vars = "Z")
+  res <- condition_marginalize(cg, latents = "Z")
   expect_equal(res@graph_class, "AG")
   expect_setequal(nodes(res)$name, c("X", "Y"))
   expect_equal(nrow(edges(res)), 0L)
@@ -680,7 +680,7 @@ test_that("Marginalization and conditioning work", {
 
   mg <- caugi(U %-->% X + Y, A %-->% X, B %-->% Y, class = "DAG")
 
-  mgmu <- condition_marginalize(mg, marg_vars = "U")
+  mgmu <- condition_marginalize(mg, latents = "U")
   resmu <- caugi(A %-->% X, B %-->% Y, X %<->% Y, class = "AG")
 
   same_graphs <- function(cg1, cg2) {
@@ -697,18 +697,18 @@ test_that("Marginalization and conditioning work", {
   expect_true(same_graphs(mgmu, resmu))
 
   rescu <- caugi(A %-->% X, B %-->% Y)
-  mgcu <- condition_marginalize(mg, cond_vars = "U")
+  mgcu <- condition_marginalize(mg, selection = "U")
 
   expect_true(same_graphs(rescu, mgcu))
 
-  expect_error(condition_marginalize(mg, cond_vars = NULL, marg_vars = NULL))
+  expect_error(condition_marginalize(mg, selection = NULL, latents = NULL))
   expect_error(
-    condition_marginalize(mg, marg_vars = c("U", "Q")),
+    condition_marginalize(mg, latents = c("U", "Q")),
     "Unknown node(s): Q",
     fixed = TRUE
   )
   expect_error(
-    condition_marginalize(mg, cond_vars = "Q"),
+    condition_marginalize(mg, selection = "Q"),
     "Unknown node(s): Q",
     fixed = TRUE
   )
@@ -724,12 +724,12 @@ test_that("Marginalization and conditioning work", {
     D %-->% C
   )
 
-  f11.cS <- condition_marginalize(f11, cond_vars = "S")
-  f11.mL1L2 <- condition_marginalize(f11, marg_vars = c("L1", "L2"))
+  f11.cS <- condition_marginalize(f11, selection = "S")
+  f11.mL1L2 <- condition_marginalize(f11, latents = c("L1", "L2"))
   f11.cSmL1L2 <- condition_marginalize(
     f11,
-    marg_vars = c("L1", "L2"),
-    cond_vars = "S"
+    latents = c("L1", "L2"),
+    selection = "S"
   )
 
   f11.ii <- caugi(
@@ -756,11 +756,11 @@ test_that("Marginalization and conditioning work", {
   ## order doesn't matter
 
   expect_true(same_graphs(
-    condition_marginalize(f11.cS, marg_vars = c("L1", "L2")),
+    condition_marginalize(f11.cS, latents = c("L1", "L2")),
     f11.cSmL1L2
   ))
   expect_true(same_graphs(
-    condition_marginalize(f11.mL1L2, cond_vars = "S"),
+    condition_marginalize(f11.mL1L2, selection = "S"),
     f11.cSmL1L2
   ))
 
@@ -768,11 +768,11 @@ test_that("Marginalization and conditioning work", {
 
   emg <- caugi(U %-->% X + Y, A %-->% X, B %-->% Y, K %<->% Y, class = "AG")
 
-  expect_no_error(condition_marginalize(emg, cond_vars = "U"))
+  expect_no_error(condition_marginalize(emg, selection = "U"))
   expect_error(condition_marginalize(
     f11,
-    cond_vars = c("S", "L1"),
-    marg_vars = c("L1")
+    selection = c("S", "L1"),
+    latents = c("L1")
   ))
 })
 
@@ -1198,12 +1198,12 @@ test_that("pgmpy Meek fixtures: meek_closure on PDAG applies Meek closure", {
 test_that("condition_marginalize and helper branches are covered", {
   cg_ug <- caugi(A %o->% B, class = "UNKNOWN")
   expect_error(
-    condition_marginalize(cg_ug, cond_vars = "A"),
+    condition_marginalize(cg_ug, selection = "A"),
     "`cg` must be an AG for `condition_marginalize\\(\\)`"
   )
 
   cg <- caugi(A %-->% B, class = "DAG")
-  out_trivial <- condition_marginalize(cg, marg_vars = "B")
+  out_trivial <- condition_marginalize(cg, latents = "B")
   expect_equal(out_trivial@graph_class, "AG")
   expect_setequal(out_trivial@nodes$name, "A")
 
@@ -1211,7 +1211,7 @@ test_that("condition_marginalize and helper branches are covered", {
   cg2 <- caugi(A %-->% B %-->% C, class = "DAG")
   expect_error(
     testthat::with_mocked_bindings(
-      condition_marginalize(cg2, cond_vars = "B"),
+      condition_marginalize(cg2, selection = "B"),
       anteriors = function(...) "A",
       .package = "caugi"
     ),
@@ -1221,7 +1221,7 @@ test_that("condition_marginalize and helper branches are covered", {
   edge_rev <- caugi:::.edge_type_from_anteriors(
     node_a = "A",
     node_b = "B",
-    cond_vars = character(0),
+    selection = character(0),
     anteriors_list = list(A = "B", B = NULL)
   )
   expect_identical(edge_rev$from, "B")
@@ -1293,7 +1293,7 @@ test_that("condition_marginalize() keeps exactly the inseparable pairs (#397)", 
     SL <- sample(nodes(cg)$name, sample(min(3, n - 2), 1))
     S <- SL[runif(length(SL)) < 0.5]
     L <- setdiff(SL, S)
-    res <- condition_marginalize(cg, cond_vars = S, marg_vars = L)
+    res <- condition_marginalize(cg, selection = S, latents = L)
 
     pairs <- combn(nodes(res)$name, 2)
     expect_identical(

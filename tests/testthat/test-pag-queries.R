@@ -31,7 +31,7 @@ test_that("PAG Markov blanket is that of every member MAG", {
   for (i in 1:50) {
     dag <- generate_graph(n = 8, p = 0.3, class = "DAG")
     latents <- sample(nodes(dag)$name, 2)
-    mag <- condition_marginalize(dag, marg_vars = latents)
+    mag <- condition_marginalize(dag, latents = latents)
     pag <- dag_to_pag(dag, latents = latents)
     for (v in nodes(pag)$name) {
       expect_setequal(

@@ -4,14 +4,14 @@
 \alias{.edge_type_from_anteriors}
 \title{Infer edge type from anterior relationships}
 \usage{
-.edge_type_from_anteriors(node_a, node_b, cond_vars, anteriors_list)
+.edge_type_from_anteriors(node_a, node_b, selection, anteriors_list)
 }
 \arguments{
 \item{node_a}{First node name.}
 
 \item{node_b}{Second node name.}
 
-\item{cond_vars}{Conditioning variables.}
+\item{selection}{Conditioning variables.}
 
 \item{anteriors_list}{Pre-computed list of anteriors for all nodes.}
 }

@@ -4,14 +4,23 @@
 \alias{condition_marginalize}
 \title{Marginalize and/or condition on variables in an ancestral graph (AG)}
 \usage{
-condition_marginalize(cg, cond_vars = NULL, marg_vars = NULL)
+condition_marginalize(
+  cg,
+  selection = NULL,
+  latents = NULL,
+  cond_vars,
+  marg_vars
+)
 }
 \arguments{
 \item{cg}{A \code{caugi} ancestral graph of class \code{"AG"}.}
 
-\item{cond_vars}{Character vector of nodes to condition on.}
+\item{selection}{Character vector of nodes to condition on, as selection
+variables.}
 
-\item{marg_vars}{Character vector of nodes to marginalize over.}
+\item{latents}{Character vector of nodes to marginalize over.}
+
+\item{cond_vars, marg_vars}{Deprecated; use \code{selection} and \code{latents}.}
 }
 \value{
 A \code{caugi} object of class \code{"AG"}.
@@ -29,8 +38,8 @@ mg <- caugi(
   class = "DAG"
 )
 
-condition_marginalize(mg, marg_vars = "U") # ADMG
-condition_marginalize(mg, cond_vars = "U") # DAG
+condition_marginalize(mg, latents = "U") # ADMG
+condition_marginalize(mg, selection = "U") # DAG
 
 }
 \references{

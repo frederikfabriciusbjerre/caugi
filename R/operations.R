@@ -447,8 +447,10 @@ NULL
 #' bidirected, and undirected edges.
 #'
 #' @param cg A `caugi` ancestral graph of class `"AG"`.
-#' @param cond_vars Character vector of nodes to condition on.
-#' @param marg_vars Character vector of nodes to marginalize over.
+#' @param selection Character vector of nodes to condition on, as selection
+#'   variables.
+#' @param latents Character vector of nodes to marginalize over.
+#' @param cond_vars,marg_vars Deprecated; use `selection` and `latents`.
 #'
 #' @returns A `caugi` object of class `"AG"`.
 #'
@@ -468,11 +470,24 @@ NULL
 #'   class = "DAG"
 #' )
 #'
-#' condition_marginalize(mg, marg_vars = "U") # ADMG
-#' condition_marginalize(mg, cond_vars = "U") # DAG
+#' condition_marginalize(mg, latents = "U") # ADMG
+#' condition_marginalize(mg, selection = "U") # DAG
 #'
 #' @export
-condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
+condition_marginalize <- function(
+  cg,
+  selection = NULL,
+  latents = NULL,
+  cond_vars,
+  marg_vars
+) {
+  if (!missing(cond_vars) || !missing(marg_vars)) {
+    return(.call_renamed(
+      "condition_marginalize",
+      c("cg", "cond_vars", "marg_vars"),
+      c(cond_vars = "selection", marg_vars = "latents")
+    ))
+  }
   is_caugi(cg, throw_error = TRUE)
 
   if (!is_ag(cg)) {
@@ -491,24 +506,24 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
     cg <- mutate_caugi(cg, "AG")
   }
 
-  cond_vars_valid <- is.character(cond_vars) && length(cond_vars) > 0L
-  marg_vars_valid <- is.character(marg_vars) && length(marg_vars) > 0L
+  selection_valid <- is.character(selection) && length(selection) > 0L
+  latents_valid <- is.character(latents) && length(latents) > 0L
 
-  if (!cond_vars_valid && !marg_vars_valid) {
+  if (!selection_valid && !latents_valid) {
     stop(
-      "Either `cond_vars` or `marg_vars` must be a non-empty character vector ",
+      "Either `selection` or `latents` must be a non-empty character vector ",
       "of node names.",
       call. = FALSE
     )
   }
 
-  if (length(intersect(cond_vars, marg_vars)) > 0L) {
-    stop("`cond_vars` and `marg_vars` must be disjoint.", call. = FALSE)
+  if (length(intersect(selection, latents)) > 0L) {
+    stop("`selection` and `latents` must be disjoint.", call. = FALSE)
   }
 
   # Compute remaining nodes after removing conditioned and marginalized vars
   all_node_names <- nodes(cg)$name
-  unknown <- setdiff(c(cond_vars, marg_vars), all_node_names)
+  unknown <- setdiff(c(selection, latents), all_node_names)
   if (length(unknown) > 0L) {
     stop(
       "Unknown node(s): ",
@@ -516,7 +531,7 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
       call. = FALSE
     )
   }
-  removed_vars <- union(cond_vars, marg_vars)
+  removed_vars <- union(selection, latents)
   remaining_nodes <- setdiff(all_node_names, removed_vars)
   n_remaining <- length(remaining_nodes)
 
@@ -526,7 +541,7 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
   }
 
   # Pre-compute anteriors for all relevant nodes
-  nodes_for_anteriors <- union(remaining_nodes, cond_vars)
+  nodes_for_anteriors <- union(remaining_nodes, selection)
   anteriors_list <- anteriors(cg, nodes_for_anteriors, open = TRUE)
   if (!is.list(anteriors_list)) {
     # Single node case: wrap in named list
@@ -546,17 +561,17 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 
     # Theorem 4.2(iv) of Richardson and Spirtes (2002): a and b are adjacent
     # iff they are m-connected given ant({a, b} ∪ S) \ (L ∪ {a, b}).
-    seeds <- c(node_a, node_b, cond_vars)
+    seeds <- c(node_a, node_b, selection)
     z <- setdiff(
       c(seeds, unlist(anteriors_list[seeds], use.names = FALSE)),
-      c(marg_vars, node_a, node_b)
+      c(latents, node_a, node_b)
     )
 
     if (!m_separated(cg, node_a, node_b, z)) {
       edge_list[[j]] <- .edge_type_from_anteriors(
         node_a,
         node_b,
-        cond_vars,
+        selection,
         anteriors_list
       )
     }
@@ -582,7 +597,7 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 #'
 #' @param node_a First node name.
 #' @param node_b Second node name.
-#' @param cond_vars Conditioning variables.
+#' @param selection Conditioning variables.
 #' @param anteriors_list Pre-computed list of anteriors for all nodes.
 #'
 #' @returns A single-row `data.table` with `from`, `edge`, `to` columns.
@@ -591,17 +606,17 @@ condition_marginalize <- function(cg, cond_vars = NULL, marg_vars = NULL) {
 .edge_type_from_anteriors <- function(
   node_a,
   node_b,
-  cond_vars,
+  selection,
   anteriors_list
 ) {
   # Check if a is in ant(b ∪ S): a is in {b ∪ S} or in anteriors of {b ∪ S}
-  nodes_with_b <- c(node_b, cond_vars)
+  nodes_with_b <- c(node_b, selection)
   anteriors_of_b <- unlist(anteriors_list[nodes_with_b], use.names = FALSE)
   a_in_anterior_of_b <- node_a %in% nodes_with_b || node_a %in% anteriors_of_b
 
   # Check if b is in ant(a ∪ S)
 
-  nodes_with_a <- c(node_a, cond_vars)
+  nodes_with_a <- c(node_a, selection)
   anteriors_of_a <- unlist(anteriors_list[nodes_with_a], use.names = FALSE)
   b_in_anterior_of_a <- node_b %in% nodes_with_a || node_b %in% anteriors_of_a
 
@@ -745,7 +760,7 @@ dag_to_pag <- function(cg, latents = NULL, selection = NULL) {
   }
   mag <- cg
   if (length(latents) > 0L || length(selection) > 0L) {
-    mag <- condition_marginalize(cg, cond_vars = selection, marg_vars = latents)
+    mag <- condition_marginalize(cg, selection = selection, latents = latents)
   }
   mag_to_pag(mutate_caugi(mag, "AG"))
 }
