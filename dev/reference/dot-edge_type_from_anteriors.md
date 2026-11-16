@@ -7,7 +7,7 @@ combined with the conditioning set.
 ## Usage
 
 ``` r
-.edge_type_from_anteriors(node_a, node_b, cond_vars, anteriors_list)
+.edge_type_from_anteriors(node_a, node_b, selection, anteriors_list)
 ```
 
 ## Arguments
@@ -20,7 +20,7 @@ combined with the conditioning set.
 
   Second node name.
 
-- cond_vars:
+- selection:
 
   Conditioning variables.
 

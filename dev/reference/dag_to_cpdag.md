@@ -43,14 +43,14 @@ Other operations:
 ``` r
 # A chain is equivalent to its reverse and to the fork, so no edge is fixed.
 dag_to_cpdag(caugi(A %-->% B, B %-->% C, class = "DAG")) # A --- B --- C
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5fc4a55a6df0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x55b6ba08cf30>
 #>   graph_class: CPDAG
 #>   nodes: A, B, C
 #>   edges: A---B, B---C
 
 # A v-structure is shared by every member of its class.
 dag_to_cpdag(caugi(A %-->% C, B %-->% C, class = "DAG")) # A --> C <-- B
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5fc4aaf47d40>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x55b6b51db580>
 #>   graph_class: CPDAG
 #>   nodes: A, B, C
 #>   edges: A-->C, B-->C

@@ -7,7 +7,13 @@ bidirected, and undirected edges.
 ## Usage
 
 ``` r
-condition_marginalize(cg, cond_vars = NULL, marg_vars = NULL)
+condition_marginalize(
+  cg,
+  selection = NULL,
+  latents = NULL,
+  cond_vars,
+  marg_vars
+)
 ```
 
 ## Arguments
@@ -16,13 +22,17 @@ condition_marginalize(cg, cond_vars = NULL, marg_vars = NULL)
 
   A `caugi` ancestral graph of class `"AG"`.
 
-- cond_vars:
+- selection:
 
-  Character vector of nodes to condition on.
+  Character vector of nodes to condition on, as selection variables.
 
-- marg_vars:
+- latents:
 
   Character vector of nodes to marginalize over.
+
+- cond_vars, marg_vars:
+
+  Deprecated; use `selection` and `latents`.
 
 ## Value
 
@@ -62,13 +72,13 @@ mg <- caugi(
   class = "DAG"
 )
 
-condition_marginalize(mg, marg_vars = "U") # ADMG
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5fc4aa41d6c0>
+condition_marginalize(mg, latents = "U") # ADMG
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x55b6b99fe390>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y, X<->Y
-condition_marginalize(mg, cond_vars = "U") # DAG
-#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x5fc4a9ad7c60>
+condition_marginalize(mg, selection = "U") # DAG
+#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x55b6b8089200>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y

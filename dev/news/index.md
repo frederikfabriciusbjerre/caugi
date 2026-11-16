@@ -777,6 +777,15 @@
   instead. Calling them still works but warns
   ([\#355](https://github.com/frederikfabriciusbjerre/caugi/issues/355)).
 
+- The `cond_vars` and `marg_vars` arguments of
+  [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md)
+  are deprecated and will be removed in caugi 2.0.0. Use `selection` and
+  `latents`, as
+  [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md) and
+  [`latent_project()`](https://caugi.org/dev/reference/latent_project.md)
+  do. Supplying them still works but warns
+  ([\#361](https://github.com/frederikfabriciusbjerre/caugi/issues/361)).
+
 ## caugi 1.4.0
 
 CRAN release: 2026-10-27
