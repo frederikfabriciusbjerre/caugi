@@ -9,6 +9,9 @@
 use bitflags::bitflags;
 use std::collections::{BTreeMap, HashMap, VecDeque};
 
+#[cfg(test)]
+mod oracle;
+
 bitflags! {
     /// What the pair {a, b}, a < b, may be.
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
