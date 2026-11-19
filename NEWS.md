@@ -175,6 +175,9 @@
 
 ## Bug Fixes
 
+* caugi builds on Windows with Rust 1.100 or later, which needs the
+  `synchronization` library at link time.
+
 * `write_dot()` and `write_mermaid()` write UTF-8 in every locale. Under a
   non-UTF-8 locale they lost non-ASCII node names (#417).
 
