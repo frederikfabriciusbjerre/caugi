@@ -4,10 +4,12 @@
 \alias{.flatten_edge_chain}
 \title{Flatten a chained edge expression}
 \usage{
-.flatten_edge_chain(call_expr)
+.flatten_edge_chain(call_expr, glyphs = .glyph_map_get())
 }
 \arguments{
 \item{call_expr}{A call expression representing a chained edge.}
+
+\item{glyphs}{Named character vector from operators to glyphs.}
 }
 \value{
 A list with two elements, \code{terms} and \code{ops}.

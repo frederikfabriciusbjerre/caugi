@@ -4,7 +4,7 @@
 \alias{.segment_units}
 \title{Create an edge unit from lhs, op, rhs}
 \usage{
-.segment_units(lhs_term, op_chr, rhs_term)
+.segment_units(lhs_term, op_chr, rhs_term, glyphs = .glyph_map_get())
 }
 \arguments{
 \item{lhs_term}{An expression for the left-hand side nodes.}
@@ -12,6 +12,8 @@
 \item{op_chr}{A string representing the edge operator glyph.}
 
 \item{rhs_term}{An expression for the right-hand side nodes.}
+
+\item{glyphs}{Named character vector from operators to glyphs.}
 }
 \value{
 A list with elements \code{lhs}, \code{rhs}, and \code{glyph}.

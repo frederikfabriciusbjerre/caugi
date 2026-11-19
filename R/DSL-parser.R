@@ -7,12 +7,13 @@
 #' @description This function checks if the expression is an edge call
 #'
 #' @param expr An expression to check
+#' @param glyphs Named character vector from operators to glyphs.
 #'
 #' @returns TRUE if the expression is an edge call, FALSE otherwise
 #'
 #' @keywords internal
-.is_edge_call <- function(expr) {
-  is.call(expr) && as.character(expr[[1L]]) %in% .edge_ops_get()
+.is_edge_call <- function(expr, glyphs = .glyph_map_get()) {
+  is.call(expr) && as.character(expr[[1L]]) %in% names(glyphs)
 }
 
 #' @title Is it a node expr?
@@ -58,21 +59,24 @@
 #' @description Recursively check if the expression contains any edge call.
 #'
 #' @param expr An expression to check
+#' @param glyphs Named character vector from operators to glyphs.
 #'
 #' @returns TRUE if the expression contains an edge call, FALSE otherwise
 #'
 #' @keywords internal
-.contains_edge <- function(expr) {
-  if (.is_edge_call(expr)) {
+.contains_edge <- function(expr, glyphs = .glyph_map_get()) {
+  if (.is_edge_call(expr, glyphs)) {
     return(TRUE)
   }
   if (is.call(expr)) {
     fn <- as.character(expr[[1L]])
     if (fn == "(") {
-      return(.contains_edge(expr[[2L]]))
+      return(.contains_edge(expr[[2L]], glyphs))
     }
     if (fn == "+") {
-      return(.contains_edge(expr[[2L]]) || .contains_edge(expr[[3L]]))
+      return(
+        .contains_edge(expr[[2L]], glyphs) || .contains_edge(expr[[3L]], glyphs)
+      )
     }
   }
   FALSE
@@ -83,16 +87,17 @@
 #' @description Get the glyph string for a given edge operator symbol.
 #'
 #' @param op_sym A symbol representing the edge operator (e.g., `%-->%`).
+#' @param glyphs Named character vector from operators to glyphs.
 #'
 #' @returns A string representing the edge glyph (e.g., `"-->"`).
 #'
 #' @keywords internal
-.glyph_of <- function(op_sym) {
+.glyph_of <- function(op_sym, glyphs = .glyph_map_get()) {
   if (is.null(op_sym)) {
     return(NULL)
   }
   key <- as.character(op_sym)
-  m <- .glyph_map_get()
+  m <- glyphs
   if (is.null(m)) {
     return(NULL)
   }
@@ -206,14 +211,15 @@
 #' @description Parse one caugi(...) argument into edge units
 #'
 #' @param expr An expression representing an edge with nodes
+#' @param glyphs Named character vector from operators to glyphs.
 #'
 #' @returns A list of edge units, each with lhs, rhs, and glyph.
 #'
 #' @keywords internal
-.parse_edge_arg <- function(expr) {
+.parse_edge_arg <- function(expr, glyphs = .glyph_map_get()) {
   terms <- .split_plus(expr)
 
-  is_edge <- vapply(terms, .is_edge_call, TRUE)
+  is_edge <- vapply(terms, .is_edge_call, TRUE, glyphs = glyphs)
   if (!any(is_edge)) {
     stop("Expected an edge expression; got: ", deparse(expr), call. = FALSE)
   }
@@ -221,7 +227,7 @@
   edge_idx <- which(is_edge)
   units <- list()
 
-  keep_node <- function(x) !is.null(x) && !.is_edge_call(x)
+  keep_node <- function(x) !is.null(x) && !.is_edge_call(x, glyphs)
 
   for (k in seq_along(edge_idx)) {
     i <- edge_idx[k]
@@ -252,7 +258,7 @@
     right_nodes_terms <- Filter(keep_node, terms[right_idx])
 
     # Case 1: single edge call (no chaining)
-    if (!is.call(edge_term[[2L]]) || !.is_edge_call(edge_term[[2L]])) {
+    if (!is.call(edge_term[[2L]]) || !.is_edge_call(edge_term[[2L]], glyphs)) {
       lhs <- edge_term[[2L]]
       rhs <- edge_term[[3L]]
       if (length(left_nodes_terms)) {
@@ -266,14 +272,14 @@
         list(list(
           lhs = lhs,
           rhs = rhs,
-          glyph = .glyph_of(edge_term[[1L]])
+          glyph = .glyph_of(edge_term[[1L]], glyphs)
         ))
       )
       next
     }
 
     # Case 2: chained edge expression: lhs is itself an edge call
-    chain <- .flatten_edge_chain(edge_term)
+    chain <- .flatten_edge_chain(edge_term, glyphs)
     chain_terms <- chain$terms # list of term-exprs
     chain_ops <- chain$ops # character(ops)
 
@@ -302,7 +308,8 @@
           .segment_units(
             chain_terms[[j]],
             chain_ops[[j]],
-            chain_terms[[j + 1L]]
+            chain_terms[[j + 1L]],
+            glyphs
           )
         )
       )
@@ -341,13 +348,14 @@
 #' nodes (no edges).
 #'
 #' @param calls A list of expressions from caugi(...)
+#' @param glyphs Named character vector from operators to glyphs.
 #'
 #' @returns A list with two elements:
 #' * edges: a `data.table` with columns `from`, `edge`, `to`
 #' * declared: a character vector of explicitly declared nodes
 #'
 #' @keywords internal
-.collect_edges_nodes <- function(calls) {
+.collect_edges_nodes <- function(calls, glyphs = .glyph_map_get()) {
   units <- list()
   declared <- character()
   i <- 0
@@ -356,8 +364,8 @@
     if (missing(ex)) {
       stop("Argument ", i, " is missing in `caugi`.", call. = FALSE)
     }
-    if (.contains_edge(ex)) {
-      units <- c(units, .parse_edge_arg(ex))
+    if (.contains_edge(ex, glyphs)) {
+      units <- c(units, .parse_edge_arg(ex, glyphs))
     } else if (.is_node_expr(ex)) {
       declared <- c(declared, .expand_nodes(ex))
     } else {
@@ -383,11 +391,12 @@
 #' flatten it into its terms and operators.
 #'
 #' @param call_expr A call expression representing a chained edge.
+#' @param glyphs Named character vector from operators to glyphs.
 #'
 #' @returns A list with two elements, `terms` and `ops`.
 #'
 #' @keywords internal
-.flatten_edge_chain <- function(call_expr) {
+.flatten_edge_chain <- function(call_expr, glyphs = .glyph_map_get()) {
   stopifnot(is.call(call_expr))
   terms <- list()
   ops <- character()
@@ -395,7 +404,7 @@
   cur <- call_expr
   repeat {
     # If this node is an edge call, peel one layer and keep walking left
-    if (.is_edge_call(cur)) {
+    if (.is_edge_call(cur, glyphs)) {
       op_chr <- as.character(cur[[1L]])
       right <- cur[[3L]]
       ops <- c(op_chr, ops)
@@ -417,12 +426,18 @@
 #' @param lhs_term An expression for the left-hand side nodes.
 #' @param op_chr A string representing the edge operator glyph.
 #' @param rhs_term An expression for the right-hand side nodes.
+#' @param glyphs Named character vector from operators to glyphs.
 #'
 #' @returns A list with elements `lhs`, `rhs`, and `glyph`.
 #'
 #' @keywords internal
-.segment_units <- function(lhs_term, op_chr, rhs_term) {
-  glyph <- .glyph_of(as.name(op_chr))
+.segment_units <- function(
+  lhs_term,
+  op_chr,
+  rhs_term,
+  glyphs = .glyph_map_get()
+) {
+  glyph <- .glyph_of(as.name(op_chr), glyphs)
   froms <- .expand_nodes(lhs_term)
   tos <- .expand_nodes(rhs_term)
   list(lhs = lhs_term, rhs = rhs_term, glyph = glyph)

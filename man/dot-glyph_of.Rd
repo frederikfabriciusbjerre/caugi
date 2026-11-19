@@ -4,10 +4,12 @@
 \alias{.glyph_of}
 \title{Get glyph for an operator}
 \usage{
-.glyph_of(op_sym)
+.glyph_of(op_sym, glyphs = .glyph_map_get())
 }
 \arguments{
 \item{op_sym}{A symbol representing the edge operator (e.g., \verb{\%-->\%}).}
+
+\item{glyphs}{Named character vector from operators to glyphs.}
 }
 \value{
 A string representing the edge glyph (e.g., \code{"-->"}).

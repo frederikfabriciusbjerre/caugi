@@ -4,10 +4,12 @@
 \alias{.collect_edges_nodes}
 \title{Collect edges and nodes}
 \usage{
-.collect_edges_nodes(calls)
+.collect_edges_nodes(calls, glyphs = .glyph_map_get())
 }
 \arguments{
 \item{calls}{A list of expressions from caugi(...)}
+
+\item{glyphs}{Named character vector from operators to glyphs.}
 }
 \value{
 A list with two elements:

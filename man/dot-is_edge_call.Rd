@@ -4,10 +4,12 @@
 \alias{.is_edge_call}
 \title{Is it an edge call / expression?}
 \usage{
-.is_edge_call(expr)
+.is_edge_call(expr, glyphs = .glyph_map_get())
 }
 \arguments{
 \item{expr}{An expression to check}
+
+\item{glyphs}{Named character vector from operators to glyphs.}
 }
 \value{
 TRUE if the expression is an edge call, FALSE otherwise

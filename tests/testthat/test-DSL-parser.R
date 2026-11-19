@@ -425,3 +425,19 @@ test_that("table constructors do not modify or share caller vectors", {
     expect_identical(from, c("Z", "A", "M"))
   }
 })
+
+test_that("the parser reads edges with another operator table", {
+  glyphs <- c("%=>%" = "=>")
+  units <- .parse_edge_arg(quote(A %=>% B %=>% C + D), glyphs = glyphs)
+  e <- .edge_units_to_dt(units)
+  expect_equal(e$from, c("A", "B", "B"))
+  expect_equal(e$to, c("B", "C", "D"))
+  expect_equal(unique(e$edge), "=>")
+  expect_false(.contains_edge(quote(A %-->% B), glyphs = glyphs))
+  parsed <- .collect_edges_nodes(
+    list(quote(A %=>% B), quote(E)),
+    glyphs = glyphs
+  )
+  expect_equal(parsed$declared, "E")
+  expect_equal(nrow(parsed$edges), 1L)
+})

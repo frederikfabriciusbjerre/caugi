@@ -4,10 +4,12 @@
 \alias{.parse_edge_arg}
 \title{Parse one caugi(...) argument}
 \usage{
-.parse_edge_arg(expr)
+.parse_edge_arg(expr, glyphs = .glyph_map_get())
 }
 \arguments{
 \item{expr}{An expression representing an edge with nodes}
+
+\item{glyphs}{Named character vector from operators to glyphs.}
 }
 \value{
 A list of edge units, each with lhs, rhs, and glyph.

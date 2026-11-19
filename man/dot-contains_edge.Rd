@@ -4,10 +4,12 @@
 \alias{.contains_edge}
 \title{Does the expression contain an edge call?}
 \usage{
-.contains_edge(expr)
+.contains_edge(expr, glyphs = .glyph_map_get())
 }
 \arguments{
 \item{expr}{An expression to check}
+
+\item{glyphs}{Named character vector from operators to glyphs.}
 }
 \value{
 TRUE if the expression contains an edge call, FALSE otherwise
