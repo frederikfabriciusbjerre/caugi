@@ -667,11 +667,12 @@ is_mag <- function(cg, force_check = FALSE) {
 
 #' @title Get nodes or edges of a `caugi`
 #'
-#' @param cg A `caugi` object.
+#' @param cg A `caugi` object, or background knowledge.
 #'
 #' @param ... Additional arguments (currently unused).
 #'
-#' @returns A `data.table` with a `name` column.
+#' @returns A `data.table` with a `name` column. For background knowledge, also
+#'   `tier` and `exogenous` columns.
 #'
 #' @rdname nodes
 #'
@@ -697,6 +698,11 @@ S7::method(nodes, caugi) <- function(cg) {
   cg@nodes
 }
 
+#' @export
+S7::method(nodes, caugi_knowledge) <- function(cg) {
+  data.table::setDT(rs_kn_nodes(cg@ptr))
+}
+
 #' @rdname nodes
 #' @export
 vertices <- nodes
@@ -707,9 +713,11 @@ V <- nodes # igraph notation
 
 #' @title Get edges of a `caugi`.
 #'
-#' @param cg A `caugi` object.
+#' @param cg A `caugi` object, or background knowledge.
 #'
-#' @param ... Additional arguments (currently unused).
+#' @param ... For background knowledge, `expand = TRUE` lists every pair the
+#'   knowledge constrains, tiers and exogenous nodes included, in the fewest
+#'   statements.
 #'
 #' @rdname edges
 #'
@@ -725,7 +733,8 @@ V <- nodes # igraph notation
 #' @family queries
 #' @concept queries
 #'
-#' @returns A `data.table` with columns `from`, `edge`, and `to`.
+#' @returns A `data.table` with columns `from`, `edge`, and `to`. For background
+#'   knowledge, also `status`: `"required"` or `"forbidden"`.
 #'
 #' @export
 edges <- S7::new_generic("edges", "cg")
@@ -735,6 +744,11 @@ S7::method(edges, caugi) <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
   cg@edges
+}
+
+#' @export
+S7::method(edges, caugi_knowledge) <- function(cg, expand = FALSE) {
+  .kn_table(rs_kn_edges(cg@ptr, expand))
 }
 
 #' @rdname edges

@@ -2,6 +2,9 @@
 
 ## New Features
 
+* `knowledge()` holds background knowledge about a graph: required edges
+  (`A %-->% B`), forbidden edges (`!(A %-->% B)`), tiers and exogenous nodes.
+
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
 
 * `markov_blanket()` accepts PAGs, reading the blanket off a member MAG.
