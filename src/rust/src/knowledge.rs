@@ -7,7 +7,7 @@
 //! the empty set.
 
 use bitflags::bitflags;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap, VecDeque};
 
 bitflags! {
     /// What the pair {a, b}, a < b, may be.
@@ -160,7 +160,57 @@ impl Knowledge {
             .collect()
     }
 
+    /// The tightest statement about each pair the knowledge constrains.
+    pub fn expand(&self) -> Vec<Row> {
+        self.constrained()
+            .into_iter()
+            .map(|(a, b, m)| self.row(a, b, m))
+            .collect()
+    }
+
     // ── Reading ─────────────────────────────────────────────────────────────
+
+    /// The statements combined per pair.
+    fn said(&self) -> BTreeMap<(u32, u32), Allowed> {
+        let mut said = BTreeMap::new();
+        for &(a, b, m) in &self.statements {
+            *said.entry((a, b)).or_insert(Allowed::all()) &= m;
+        }
+        said
+    }
+
+    /// Everything the knowledge says about the pair {a, b}, a < b.
+    fn allowed(&self, said: &BTreeMap<(u32, u32), Allowed>, a: u32, b: u32) -> Allowed {
+        let mut m = said.get(&(a, b)).copied().unwrap_or(Allowed::all());
+        if let (Some(ta), Some(tb)) = (self.tier[a as usize], self.tier[b as usize]) {
+            if ta < tb {
+                m.remove(Allowed::BA);
+            } else if tb < ta {
+                m.remove(Allowed::AB);
+            }
+            if self.max_lag.is_some_and(|lag| ta.abs_diff(tb) > lag) {
+                m &= Allowed::NONE;
+            }
+        }
+        if self.exogenous[b as usize] {
+            m.remove(Allowed::AB);
+        }
+        if self.exogenous[a as usize] {
+            m.remove(Allowed::BA);
+        }
+        m
+    }
+
+    /// Every pair with a constraint, and what it allows.
+    fn constrained(&self) -> Vec<(u32, u32, Allowed)> {
+        let said = self.said();
+        let n = self.names.len() as u32;
+        (0..n)
+            .flat_map(|a| (a + 1..n).map(move |b| (a, b)))
+            .map(|(a, b)| (a, b, self.allowed(&said, a, b)))
+            .filter(|&(_, _, m)| m != Allowed::all())
+            .collect()
+    }
 
     fn row(&self, a: u32, b: u32, m: Allowed) -> Row {
         let (glyph, flip) = m.glyph().expect("a statement allows a set with a glyph");
@@ -242,7 +292,9 @@ impl Knowledge {
         Ok(())
     }
 
-    /// Checks the tiers.
+    /// Checks the tiers, and that some DAG satisfies the knowledge. Only the
+    /// pairs the statements name can be required to be adjacent, so they are
+    /// the only pairs that can contradict each other.
     fn validate(&self) -> Result<()> {
         if !self.tier_names.is_empty() {
             let untiered: Vec<&str> = self
@@ -263,8 +315,57 @@ impl Knowledge {
             return invalid(MAX_LAG);
         }
 
+        let said = self.said();
+        let mut clash = vec![];
+        let mut forced = vec![];
+        for &(a, b) in said.keys() {
+            let m = self.allowed(&said, a, b);
+            if m.is_empty() {
+                clash.push(format!(
+                    "{} and {}",
+                    self.names[a as usize], self.names[b as usize]
+                ));
+            } else if m == Allowed::AB {
+                forced.push((a, b));
+            } else if m == Allowed::BA {
+                forced.push((b, a));
+            }
+        }
+        if !clash.is_empty() {
+            return Err(KnowledgeError::Inconsistent(format!(
+                "Knowledge contradicts itself: {} must be adjacent, but no direction is allowed.",
+                clash.join(", ")
+            )));
+        }
+        if has_cycle(self.names.len(), &forced) {
+            return Err(KnowledgeError::Inconsistent(
+                "Knowledge contradicts itself: the required directions form a cycle.".into(),
+            ));
+        }
         Ok(())
     }
+}
+
+/// Kahn's algorithm: does the directed graph on `n` nodes have a cycle?
+fn has_cycle(n: usize, edges: &[(u32, u32)]) -> bool {
+    let mut indegree = vec![0usize; n];
+    let mut out = vec![vec![]; n];
+    for &(a, b) in edges {
+        out[a as usize].push(b as usize);
+        indegree[b as usize] += 1;
+    }
+    let mut queue: VecDeque<usize> = (0..n).filter(|&v| indegree[v] == 0).collect();
+    let mut seen = 0;
+    while let Some(v) = queue.pop_front() {
+        seen += 1;
+        for &w in &out[v] {
+            indegree[w] -= 1;
+            if indegree[w] == 0 {
+                queue.push_back(w);
+            }
+        }
+    }
+    seen < n
 }
 
 #[cfg(test)]
@@ -297,6 +398,69 @@ mod tests {
         assert_eq!(Allowed::all().glyph(), None);
         assert_eq!(Allowed::empty().glyph(), None);
         assert_eq!(Allowed::of_glyph("<->"), None);
+    }
+
+    #[test]
+    fn expand_gives_the_tightest_statement_per_pair() {
+        let k = kn(
+            &["A", "B", "C", "D"],
+            &[("B", "-->", "A"), ("C", "!-->", "D"), ("A", "!---", "D")],
+        )
+        .unwrap();
+        assert_eq!(
+            k.expand(),
+            vec![
+                ("B".into(), "-->", "A".into()),
+                ("A".into(), "!---", "D".into()),
+                ("C".into(), "!-->", "D".into()),
+            ]
+        );
+        // Statements are kept as written, one way round.
+        assert_eq!(k.statements().len(), 3);
+    }
+
+    #[test]
+    fn tiers_and_exogenous_nodes_constrain_pairs() {
+        let tiers = vec![
+            ("t1".to_string(), s(&["A"])),
+            ("t2".to_string(), s(&["B"])),
+            ("t3".to_string(), s(&["C"])),
+        ];
+        let k =
+            Knowledge::new(&s(&["A", "B", "C"]), &st(&[]), &tiers, Some(1), &s(&["B"])).unwrap();
+        // B is exogenous, and A and C are two tiers apart.
+        assert_eq!(
+            k.expand(),
+            vec![
+                ("A".into(), "!---", "B".into()),
+                ("A".into(), "!---", "C".into()),
+                ("C".into(), "!-->", "B".into()),
+            ]
+        );
+        assert_eq!(k.tier_of(), vec![Some("t1"), Some("t2"), Some("t3")]);
+        assert_eq!(k.tiers()[1], ("t2".to_string(), s(&["B"])));
+    }
+
+    #[test]
+    fn contradictions_are_found() {
+        let inconsistent = |r: Result<Knowledge>| matches!(r, Err(KnowledgeError::Inconsistent(_)));
+        assert!(inconsistent(kn(
+            &["A", "B"],
+            &[("A", "-->", "B"), ("B", "-->", "A")]
+        )));
+        assert!(inconsistent(kn(
+            &["A", "B"],
+            &[("A", "---", "B"), ("B", "!---", "A")]
+        )));
+        assert!(inconsistent(kn(
+            &["A", "B", "C"],
+            &[("A", "-->", "B"), ("B", "-->", "C"), ("C", "-->", "A")]
+        )));
+        assert!(kn(
+            &["A", "B", "C"],
+            &[("A", "-->", "B"), ("B", "-->", "C"), ("A", "-->", "C")]
+        )
+        .is_ok());
     }
 
     #[test]
