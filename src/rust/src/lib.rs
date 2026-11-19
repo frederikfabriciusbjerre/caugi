@@ -6,6 +6,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use std::str::FromStr;
 pub mod edges;
 pub mod graph;
+pub mod knowledge;
 
 use edges::{EdgeClass, EdgeRegistry, EdgeSpec, Mark};
 use graph::builder::GraphBuilder;
