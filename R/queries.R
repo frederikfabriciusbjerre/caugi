@@ -667,11 +667,12 @@ is_mag <- function(cg, force_check = FALSE) {
 
 #' @title Get nodes or edges of a `caugi`
 #'
-#' @param cg A `caugi` object.
+#' @param cg A `caugi` object, or background knowledge.
 #'
 #' @param ... Additional arguments (currently unused).
 #'
-#' @returns A `data.table` with a `name` column.
+#' @returns A `data.table` with a `name` column. For background knowledge, also
+#'   `tier` and `exogenous` columns.
 #'
 #' @rdname nodes
 #'
@@ -697,6 +698,10 @@ S7::method(nodes, caugi) <- function(cg) {
   cg@nodes
 }
 
+S7::method(nodes, caugi_knowledge) <- function(cg) {
+  data.table::setDT(rs_kn_nodes(cg@ptr))
+}
+
 #' @rdname nodes
 #' @export
 vertices <- nodes
@@ -707,9 +712,10 @@ V <- nodes # igraph notation
 
 #' @title Get edges of a `caugi`.
 #'
-#' @param cg A `caugi` object.
+#' @param cg A `caugi` object, or background knowledge.
 #'
-#' @param ... Additional arguments (currently unused).
+#' @param ... For background knowledge, `expand = TRUE` gives the tightest
+#'   statement about each constrained pair; see [knowledge()].
 #'
 #' @rdname edges
 #'
@@ -735,6 +741,11 @@ S7::method(edges, caugi) <- function(cg) {
   is_caugi(cg, throw_error = TRUE)
 
   cg@edges
+}
+
+S7::method(edges, caugi_knowledge) <- function(cg, expand = FALSE) {
+  e <- rs_kn_edges(cg@ptr, expand)
+  .edge_constructor(e$from, e$edge, e$to)
 }
 
 #' @rdname edges

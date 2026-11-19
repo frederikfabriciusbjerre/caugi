@@ -10,9 +10,10 @@ edges(cg, ...)
 E(cg, ...)
 }
 \arguments{
-\item{cg}{A \code{caugi} object.}
+\item{cg}{A \code{caugi} object, or background knowledge.}
 
-\item{...}{Additional arguments (currently unused).}
+\item{...}{For background knowledge, \code{expand = TRUE} gives the tightest
+statement about each constrained pair; see \code{\link[=knowledge]{knowledge()}}.}
 }
 \value{
 A \code{data.table} with columns \code{from}, \code{edge}, and \code{to}.

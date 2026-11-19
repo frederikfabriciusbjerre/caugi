@@ -13,12 +13,13 @@ vertices(cg, ...)
 V(cg, ...)
 }
 \arguments{
-\item{cg}{A \code{caugi} object.}
+\item{cg}{A \code{caugi} object, or background knowledge.}
 
 \item{...}{Additional arguments (currently unused).}
 }
 \value{
-A \code{data.table} with a \code{name} column.
+A \code{data.table} with a \code{name} column. For background knowledge, also
+\code{tier} and \code{exogenous} columns.
 }
 \description{
 Get nodes or edges of a \code{caugi}

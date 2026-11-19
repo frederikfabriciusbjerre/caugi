@@ -2295,6 +2295,129 @@ fn rs_all_adjustment_sets(
     extendr_api::prelude::List::from_values(robjs).into_robj()
 }
 
+// ---------- knowledge ----------
+
+use knowledge::{Knowledge, KnowledgeError};
+
+/// Returns `r` to R. An inconsistency comes back as a condition of class
+/// `caugi_inconsistent`, which the R wrapper raises; other errors are raised
+/// here.
+fn kn_result<T: Into<Robj>>(r: knowledge::Result<T>) -> Robj {
+    match r {
+        Ok(x) => x.into(),
+        Err(KnowledgeError::Invalid(m)) => throw_r_error(m),
+        Err(KnowledgeError::Inconsistent(m)) => {
+            let mut cond = list!(message = m);
+            cond.set_class(&["caugi_inconsistent", "error", "condition"])
+                .unwrap_or_else(|e| throw_r_error(e.to_string()));
+            cond.into_robj()
+        }
+    }
+}
+
+fn kn_strings(x: &Strings) -> Vec<String> {
+    rstrs(x).map(|s| s.to_string()).collect()
+}
+
+fn kn_tiers(names: &Strings, members: &List) -> Vec<(String, Vec<String>)> {
+    kn_strings(names)
+        .into_iter()
+        .zip(members.values())
+        .map(|(name, m)| {
+            let m: Strings = m
+                .try_into()
+                .unwrap_or_else(|_| throw_r_error("Tiers must hold node names."));
+            (name, kn_strings(&m))
+        })
+        .collect()
+}
+
+/// `NULL` for no lag; otherwise a single whole number of at least 1.
+fn kn_max_lag(x: &Robj) -> knowledge::Result<Option<u32>> {
+    if x.is_null() {
+        return Ok(None);
+    }
+    let v = x
+        .as_real()
+        .or_else(|| x.as_integer().filter(|i| !i.is_na()).map(f64::from));
+    match v {
+        Some(v) if x.len() == 1 && v.is_finite() && v >= 1.0 && v.fract() == 0.0 => {
+            Ok(Some(v as u32))
+        }
+        _ => Err(KnowledgeError::Invalid(knowledge::MAX_LAG.into())),
+    }
+}
+
+#[extendr]
+#[allow(clippy::too_many_arguments)]
+fn rs_kn_new(
+    names: Strings,
+    from: Strings,
+    edge: Strings,
+    to: Strings,
+    tier_names: Strings,
+    tier_members: List,
+    max_lag: Robj,
+    exogenous: Strings,
+) -> Robj {
+    let statements: Vec<(String, String, String)> = kn_strings(&from)
+        .into_iter()
+        .zip(kn_strings(&edge))
+        .zip(kn_strings(&to))
+        .map(|((a, g), b)| (a, g, b))
+        .collect();
+    kn_result(kn_max_lag(&max_lag).and_then(|lag| {
+        Knowledge::new(
+            &kn_strings(&names),
+            &statements,
+            &kn_tiers(&tier_names, &tier_members),
+            lag,
+            &kn_strings(&exogenous),
+        )
+        .map(ExternalPtr::new)
+    }))
+}
+
+#[extendr]
+fn rs_kn_nodes(kn: ExternalPtr<Knowledge>) -> Robj {
+    let k = kn.as_ref();
+    let tier: Strings = k
+        .tier_of()
+        .into_iter()
+        .map(|t| t.map_or_else(Rstr::na, Rstr::from))
+        .collect();
+    list!(
+        name = k.names().to_vec(),
+        tier = tier,
+        exogenous = k.exogenous().to_vec()
+    )
+    .into_robj()
+}
+
+#[extendr]
+fn rs_kn_edges(kn: ExternalPtr<Knowledge>, expand: bool) -> Robj {
+    let k = kn.as_ref();
+    let rows = if expand { k.expand() } else { k.statements() };
+    list!(
+        from = rows.iter().map(|r| r.0.clone()).collect::<Vec<_>>(),
+        edge = rows.iter().map(|r| r.1).collect::<Vec<_>>(),
+        to = rows.iter().map(|r| r.2.clone()).collect::<Vec<_>>()
+    )
+    .into_robj()
+}
+
+#[extendr]
+fn rs_kn_tiers(kn: ExternalPtr<Knowledge>) -> Robj {
+    let k = kn.as_ref();
+    let tiers = k.tiers();
+    list!(
+        names = tiers.iter().map(|t| t.0.clone()).collect::<Vec<_>>(),
+        members = List::from_values(tiers.into_iter().map(|t| t.1)),
+        max_lag = k.max_lag().map_or(Rint::na(), |l| Rint::from(l as i32))
+    )
+    .into_robj()
+}
+
 extendr_module! {
     mod caugi;
     // registry
@@ -2403,4 +2526,10 @@ extendr_module! {
     fn deserialize_caugi;
     fn rs_serialize_graphml;
     fn deserialize_graphml;
+
+    // knowledge
+    fn rs_kn_new;
+    fn rs_kn_nodes;
+    fn rs_kn_edges;
+    fn rs_kn_tiers;
 }
