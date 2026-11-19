@@ -10,7 +10,7 @@ knowledge(..., nodes = NULL)
 \item{...}{Statements, as above, or bare node names.}
 
 \item{nodes}{Character vector of node names. If given, the knowledge is about
-exactly these nodes: no statement may name another.}
+exactly these nodes: no statement, and no later edit, may name another.}
 }
 \value{
 A \code{caugi_knowledge} object.
@@ -48,6 +48,7 @@ edges(bk, expand = TRUE)
 \seealso{
 Other knowledge:
 \code{\link[=is_knowledge]{is_knowledge()}},
+\code{\link[=set_tiers]{set_tiers()}},
 \code{\link[=tiers]{tiers()}}
 }
 \concept{knowledge}

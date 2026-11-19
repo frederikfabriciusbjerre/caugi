@@ -30,7 +30,7 @@ caugi_knowledge <- S7::new_class(
 #'
 #' @param ... Statements, as above, or bare node names.
 #' @param nodes Character vector of node names. If given, the knowledge is about
-#'   exactly these nodes: no statement may name another.
+#'   exactly these nodes: no statement, and no later edit, may name another.
 #'
 #' @returns A `caugi_knowledge` object.
 #'
@@ -126,6 +126,61 @@ tiers <- function(bk) {
   if (length(t$names)) stats::setNames(t$members, t$names) else list()
 }
 
+#' @title Set the tiers or exogenous nodes of background knowledge
+#'
+#' @description
+#' `set_tiers()` replaces the tiers, written as in `tier()` of [knowledge()].
+#' `set_exogenous()` replaces the exogenous nodes. Both add nodes they name.
+#'
+#' @param bk Background knowledge, made by [knowledge()].
+#' @param ... Tiers, earliest first, such as `baseline = A + B`, or exogenous
+#'   nodes.
+#' @param tiers A list of character vectors, one per tier, instead of `...`.
+#' @param max_lag Nodes in tiers more than `max_lag` apart are not adjacent.
+#'   If missing, the current `max_lag` is kept. `NULL` removes it.
+#' @param name A character vector of node names, instead of `...`.
+#'
+#' @returns The updated knowledge.
+#'
+#' @examples
+#' bk <- knowledge(A %-->% B)
+#' bk <- set_tiers(bk, baseline = A, followup = B + C)
+#' set_exogenous(bk, A)
+#'
+#' @family knowledge
+#' @concept knowledge
+#'
+#' @export
+set_tiers <- function(bk, ..., tiers = NULL, max_lag) {
+  is_knowledge(bk, throw_error = TRUE)
+  calls <- as.list(substitute(list(...)))[-1L]
+  if (length(calls) && !is.null(tiers)) {
+    stop("Provide tiers via `...` or `tiers`, not both.", call. = FALSE)
+  }
+  t <- if (length(calls)) {
+    .kn_tiers(calls, parent.frame())$tiers
+  } else {
+    .kn_tier_names(lapply(tiers, as.character))
+  }
+  if (missing(max_lag)) {
+    max_lag <- rs_kn_tiers(bk@ptr)$max_lag
+  }
+  .kn_new(rs_kn_set_tiers(
+    bk@ptr,
+    as.character(names(t)),
+    as.list(unname(t)),
+    max_lag
+  ))
+}
+
+#' @rdname set_tiers
+#' @export
+set_exogenous <- function(bk, ..., name = NULL) {
+  is_knowledge(bk, throw_error = TRUE)
+  calls <- as.list(substitute(list(...)))[-1L]
+  .kn_new(rs_kn_set_exogenous(bk@ptr, .get_nodes(name, calls)$name))
+}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────── Internal helpers ───────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
@@ -196,6 +251,40 @@ tiers <- function(bk) {
     ),
     declared = pos$declared
   )
+}
+
+# The edge verbs on knowledge. Rust reads `status`.
+.kn_edit_edges <- function(bk, action, calls, from, edge, to, status) {
+  is_knowledge(bk, throw_error = TRUE)
+  if (length(calls)) {
+    if (!is.null(status)) {
+      stop(
+        "`status` goes with `from` and `to`. In expressions, write a ",
+        "forbidden edge as !(A %-->% B).",
+        call. = FALSE
+      )
+    }
+    s <- .kn_parse(calls)
+    if (length(s$declared)) {
+      stop(
+        "Expected statements, not node(s): ",
+        toString(s$declared),
+        call. = FALSE
+      )
+    }
+    from <- s$from
+    to <- s$to
+    status <- s$status
+  } else if (!all(edge %in% "-->")) {
+    stop("Knowledge statements are written with `-->`.", call. = FALSE)
+  }
+  .kn_new(rs_kn_edit(
+    bk@ptr,
+    action,
+    as.character(from),
+    as.character(to),
+    as.character(status)
+  ))
 }
 
 # Tiers named by position where they have no name.

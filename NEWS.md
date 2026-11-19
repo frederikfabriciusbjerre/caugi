@@ -4,6 +4,8 @@
 
 * `knowledge()` holds background knowledge about a graph: required edges
   (`A %-->% B`), forbidden edges (`!(A %-->% B)`), tiers and exogenous nodes.
+  caugi's verbs edit it, with a `status` argument for the edge verbs, and
+  `set_tiers()` and `set_exogenous()` replace its tiers and exogenous nodes.
 
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
 

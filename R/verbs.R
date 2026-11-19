@@ -9,19 +9,23 @@
 #' @description Add, remove, or and set nodes or edges to / from a `caugi`
 #' object. Edges can be specified using expressions with the infix operators.
 #' Alternatively, the edges to be added are specified using the
-#' `from`, `edge`, and `to` arguments.
+#' `from`, `edge`, and `to` arguments. The same verbs edit background knowledge
+#' made by [knowledge()].
 #'
-#' @param cg A `caugi` object.
+#' @param cg A `caugi` object, or background knowledge.
 #' @param ... Expressions specifying edges to add using the infix operators,
 #' or nodes to add using unquoted names, vectors via `c()`, or `+` composition.
 #' @param from Character vector of source node names. Default is `NULL`.
 #' @param edge Character vector of edge types. Default is `NULL`.
 #' @param to Character vector of target node names. Default is `NULL`.
 #' @param name Character vector of node names. Default is `NULL`.
+#' @param status For background knowledge, with `from` and `to`: `"required"`
+#'   or `"forbidden"`. By default, edges are added as required and removed in
+#'   both kinds.
 #' @param inplace DEPRECATED This parameter is deprecated and will be ignored.
 #' Graphs are always modified via copy-on-write.
 #'
-#' @returns The updated `caugi`.
+#' @returns The updated `caugi` or knowledge.
 #'
 #' @examples
 #' # initialize empty graph and build slowly
@@ -37,6 +41,12 @@
 #'
 #' # Graphs are now built lazily when needed
 #' parents(cg, "B") # triggers compilation
+#'
+#' # background knowledge
+#' bk <- knowledge(A %-->% B)
+#' bk <- add_edges(bk, !(B %-->% C))
+#' bk <- add_edges(bk, from = "C", to = "D", status = "forbidden")
+#' remove_edges(bk, from = "A", to = "B")
 #'
 #' @family verbs
 #' @concept verbs
@@ -73,6 +83,7 @@ add_edges <- function(
   from = NULL,
   edge = NULL,
   to = NULL,
+  status = NULL,
   inplace = FALSE
 ) {
   if (!missing(inplace)) {
@@ -97,6 +108,10 @@ add_edges <- function(
     return(cg)
   }
 
+  if (is_knowledge(cg) || !is.null(status)) {
+    return(.kn_edit_edges(cg, "add", calls, from, edge, to, status))
+  }
+
   # build edges
   edges <- .get_edges(from, edge, to, calls)
 
@@ -112,6 +127,7 @@ remove_edges <- function(
   from = NULL,
   edge = NULL,
   to = NULL,
+  status = NULL,
   inplace = FALSE
 ) {
   if (!missing(inplace)) {
@@ -136,6 +152,10 @@ remove_edges <- function(
   }
   if (!has_expr && !has_vec) {
     return(cg)
+  }
+
+  if (is_knowledge(cg) || !is.null(status)) {
+    return(.kn_edit_edges(cg, "remove", calls, from, edge, to, status))
   }
 
   if (has_vec && is.null(edge)) {
@@ -193,6 +213,7 @@ set_edges <- function(
   from = NULL,
   edge = NULL,
   to = NULL,
+  status = NULL,
   inplace = FALSE
 ) {
   if (!missing(inplace)) {
@@ -215,6 +236,10 @@ set_edges <- function(
   }
   if (!has_expr && !has_vec) {
     return(cg)
+  }
+
+  if (is_knowledge(cg) || !is.null(status)) {
+    return(.kn_edit_edges(cg, "set", calls, from, edge, to, status))
   }
 
   edges <- .get_edges(from, edge, to, calls)
@@ -242,6 +267,9 @@ add_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   if (!nrow(nodes)) {
     return(cg)
   }
+  if (is_knowledge(cg)) {
+    return(.kn_new(rs_kn_edit_nodes(cg@ptr, "add", nodes$name)))
+  }
   .update_caugi(cg, nodes = nodes, action = "add")
 }
 
@@ -260,6 +288,9 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   nodes <- .get_nodes(name, calls)
   if (!nrow(nodes)) {
     return(cg)
+  }
+  if (is_knowledge(cg)) {
+    return(.kn_new(rs_kn_edit_nodes(cg@ptr, "remove", nodes$name)))
   }
   .stop_unknown_nodes(cg, nodes$name)
   .update_caugi(cg, nodes = nodes, action = "remove")

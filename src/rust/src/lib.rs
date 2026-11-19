@@ -2297,7 +2297,7 @@ fn rs_all_adjustment_sets(
 
 // ---------- knowledge ----------
 
-use knowledge::{Knowledge, KnowledgeError, Statement};
+use knowledge::{Edit, Knowledge, KnowledgeError, Statement};
 
 /// Returns `r` to R. An inconsistency comes back as a condition of class
 /// `caugi_inconsistent`, which the R wrapper raises; other errors are raised
@@ -2428,6 +2428,59 @@ fn rs_kn_new(
         )
         .map(ExternalPtr::new)
     }))
+}
+
+// Edits statements. Without a status, adding or setting means required and
+// removing means either kind.
+#[extendr]
+fn rs_kn_edit(
+    kn: ExternalPtr<Knowledge>,
+    action: &str,
+    from: Strings,
+    to: Strings,
+    status: Strings,
+) -> Robj {
+    let (edit, default) = match action {
+        "add" => (Edit::Add, Some(true)),
+        "set" => (Edit::Set, Some(true)),
+        _ => (Edit::Remove, None),
+    };
+    let rows = kn_rows(&from, &to, &status, default);
+    kn_result(kn.as_ref().edit(edit, &rows).map(ExternalPtr::new))
+}
+
+#[extendr]
+fn rs_kn_edit_nodes(kn: ExternalPtr<Knowledge>, action: &str, names: Strings) -> Robj {
+    let names = kn_strings(&names);
+    let k = kn.as_ref();
+    let edited = match action {
+        "add" => k.add_nodes(&names),
+        _ => k.remove_nodes(&names),
+    };
+    kn_result(edited.map(ExternalPtr::new))
+}
+
+#[extendr]
+fn rs_kn_set_tiers(
+    kn: ExternalPtr<Knowledge>,
+    tier_names: Strings,
+    tier_members: List,
+    max_lag: Robj,
+) -> Robj {
+    let tiers = kn_tiers(&tier_names, &tier_members);
+    kn_result(
+        kn_max_lag(&max_lag)
+            .and_then(|lag| kn.as_ref().set_tiers(&tiers, lag).map(ExternalPtr::new)),
+    )
+}
+
+#[extendr]
+fn rs_kn_set_exogenous(kn: ExternalPtr<Knowledge>, names: Strings) -> Robj {
+    kn_result(
+        kn.as_ref()
+            .set_exogenous(&kn_strings(&names))
+            .map(ExternalPtr::new),
+    )
 }
 
 #[extendr]
@@ -2577,6 +2630,10 @@ extendr_module! {
 
     // knowledge
     fn rs_kn_new;
+    fn rs_kn_edit;
+    fn rs_kn_edit_nodes;
+    fn rs_kn_set_tiers;
+    fn rs_kn_set_exogenous;
     fn rs_kn_nodes;
     fn rs_kn_edges;
     fn rs_kn_tiers;

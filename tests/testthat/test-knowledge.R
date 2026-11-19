@@ -19,6 +19,7 @@ test_that("knowledge(nodes = ) fixes the nodes", {
   bk <- knowledge(A, "B", nodes = c("A", "B", "C"))
   expect_equal(nodes(bk)$name, c("A", "B", "C"))
   expect_error(knowledge(D, nodes = c("A", "B")), "Unknown node\\(s\\): D")
+  expect_error(add_edges(bk, A %-->% D), "Unknown node\\(s\\): D")
 })
 
 test_that("tier() names tiers and evaluates max_lag", {
@@ -52,4 +53,71 @@ test_that("is_knowledge() tells knowledge apart", {
   expect_true(is_knowledge(knowledge(A %-->% B)))
   expect_false(is_knowledge(caugi(A %-->% B)))
   expect_error(tiers(caugi(A %-->% B)), "knowledge")
+})
+
+test_that("edge verbs edit knowledge", {
+  bk <- knowledge(A %-->% B) |> add_edges(!(B %-->% C))
+  expect_identical(add_edges(bk), bk)
+  expect_equal(.rows(bk), c("A B required", "B C forbidden"))
+  expect_equal(
+    .rows(set_edges(bk, !(A %-->% B))),
+    c("A B forbidden", "B C forbidden")
+  )
+  expect_equal(.rows(remove_edges(bk, !(B %-->% C))), "A B required")
+  # With vectors, status defaults to required, or to both kinds for removal.
+  expect_equal(
+    .rows(add_edges(bk, from = "C", edge = "-->", to = "D")),
+    c("A B required", "B C forbidden", "C D required")
+  )
+  expect_equal(.rows(remove_edges(bk, from = "B", to = "C")), "A B required")
+  expect_equal(
+    .rows(add_edges(
+      bk,
+      from = c("C", "D"),
+      to = c("E", "E"),
+      status = "forbidden"
+    )),
+    c("A B required", "B C forbidden", "C E forbidden", "D E forbidden")
+  )
+  expect_error(add_edges(bk, C), "Expected statements, not node\\(s\\): C")
+  expect_error(
+    add_edges(bk, !(A %-->% D), status = "forbidden"),
+    "`status` goes with `from` and `to`"
+  )
+  expect_error(
+    add_edges(bk, from = "A", edge = "---", to = "C"),
+    "written with `-->`"
+  )
+  expect_error(
+    add_edges(bk, from = "A", to = "C", status = "maybe"),
+    '"required" or "forbidden"'
+  )
+  expect_error(add_edges(bk, from = c("A", "B"), to = "C"), "equal length")
+  expect_error(
+    set_edges(caugi(A %-->% B), from = "A", to = "B", status = "required"),
+    "made by `knowledge\\(\\)`"
+  )
+})
+
+test_that("node verbs edit knowledge", {
+  bk <- knowledge(A %-->% B)
+  expect_equal(nodes(add_nodes(bk, C))$name, c("A", "B", "C"))
+  expect_equal(nodes(remove_nodes(bk, A))$name, "B")
+})
+
+test_that("set_tiers() and set_exogenous() replace tiers and exogenous nodes", {
+  bk <- set_tiers(knowledge(A %-->% B), t1 = A, t2 = B + C, max_lag = 1)
+  expect_equal(tiers(bk), list(t1 = "A", t2 = c("B", "C")))
+  # max_lag survives new tiers, and goes with max_lag = NULL.
+  kept <- set_tiers(bk, tiers = list(early = c("A", "B"), "C"))
+  expect_equal(tiers(kept), list(early = c("A", "B"), `2` = "C"))
+  expect_identical(rs_kn_tiers(kept@ptr)$max_lag, 1L)
+  expect_null(rs_kn_tiers(set_tiers(bk, A, B, max_lag = NULL)@ptr)$max_lag)
+  expect_equal(tiers(set_tiers(bk)), list())
+  expect_error(set_tiers(bk, A, tiers = list("A")), "not both")
+
+  exo <- function(bk) with(nodes(bk), name[exogenous])
+  expect_equal(exo(set_exogenous(bk, A)), "A")
+  expect_equal(exo(set_exogenous(bk, name = c("A", "D"))), c("A", "D"))
+  expect_error(set_exogenous(caugi(A %-->% B), A), "knowledge")
 })
