@@ -136,6 +136,40 @@ tiers <- function(bk) {
   if (length(t$names)) stats::setNames(t$members, t$names) else list()
 }
 
+S7::method(print, caugi_knowledge) <- function(x, ...) {
+  n <- nodes(x)
+  e <- edges(x)
+  t <- tiers(x)
+  lag <- rs_kn_tiers(x@ptr)$max_lag
+  # Names as R code, backticked where needed.
+  code <- function(v) {
+    vapply(
+      v,
+      function(s) deparse1(as.name(s), backtick = TRUE),
+      "",
+      USE.NAMES = FALSE
+    )
+  }
+  cat("<knowledge; nodes: ", toString(n$name), ">\n", sep = "")
+  lines <- c(
+    if (length(t)) {
+      members <- vapply(t, function(v) paste(code(v), collapse = " + "), "")
+      paste0(
+        "tier(",
+        toString(paste(code(names(t)), "=", members)),
+        if (!is.na(lag)) paste0(", max_lag = ", lag),
+        ")"
+      )
+    },
+    if (any(n$exogenous)) {
+      paste0("exogenous(", toString(code(n$name[n$exogenous])), ")")
+    },
+    paste0(code(e$from), " %", e$edge, "% ", code(e$to), recycle0 = TRUE)
+  )
+  cat(paste0("  ", lines, "\n", recycle0 = TRUE), sep = "")
+  invisible(x)
+}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────── Internal helpers ───────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────

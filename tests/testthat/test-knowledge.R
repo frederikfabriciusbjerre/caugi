@@ -45,6 +45,35 @@ test_that("is_knowledge(), tiers(), nodes() and edges() read knowledge", {
   expect_equal(edges(bk)$to, "B")
 })
 
+test_that("print() shows the statements as code", {
+  bk <- knowledge(
+    tier(A, `2` = B + `x y`, max_lag = 1),
+    A %-->% B,
+    A %!---% `x y`,
+    exogenous(A)
+  )
+  out <- capture.output(print(bk))
+  expect_equal(
+    out,
+    c(
+      "<knowledge; nodes: A, B, x y>",
+      "  tier(`1` = A, `2` = B + `x y`, max_lag = 1)",
+      "  exogenous(A)",
+      "  A %-->% B",
+      "  A %!---% `x y`"
+    )
+  )
+  # The printed statements build the same knowledge.
+  again <- eval(parse(text = paste0("knowledge(", toString(out[-1]), ")")))
+  expect_equal(edges(again), edges(bk))
+  expect_equal(tiers(again), tiers(bk))
+  expect_output(
+    print(knowledge(tier(t1 = A, t2 = B))),
+    "tier\\(t1 = A, t2 = B\\)$"
+  )
+  expect_equal(capture.output(print(knowledge())), "<knowledge; nodes: >")
+})
+
 test_that("edges(expand = TRUE) gives the tightest statement per pair", {
   bk <- knowledge(
     A %!---% B,
