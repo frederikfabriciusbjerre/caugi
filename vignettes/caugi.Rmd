@@ -106,6 +106,18 @@ aid(cg, cg_modified)
 shd(cg, cg_modified, normalized = TRUE)
 ```
 
+## Background knowledge
+
+What you know before looking at data, such as tiers or edges that are required or forbidden, goes into `knowledge()`. `holds()` checks it against a graph, and `orient()` applies it. Here, `A` comes first in time, and `B` does not cause `C`. We apply that to the CPDAG of `cg`, which stands for the DAGs that are Markov equivalent to it.
+
+```{r}
+bk <- knowledge(tier(early = A, late = B + C + D), !(B %-->% C))
+cpdag <- dag_to_cpdag(cg)
+holds(cpdag, bk)
+orient(cpdag, bk)
+plot(bk)
+```
+
 ## There you go!
 
 You have now created a graph, inspected it, modified it, and measured the difference between the two graphs -- both structurally and interventionally. 

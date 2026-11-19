@@ -26,6 +26,7 @@ is_knowledge(caugi(A \%-->\% B)) # FALSE
 Other knowledge:
 \code{\link[=knowledge]{knowledge()}},
 \code{\link[=orient]{orient()}},
+\code{\link[=required]{required()}},
 \code{\link[=set_tiers]{set_tiers()}},
 \code{\link[=tiers]{tiers()}}
 }
