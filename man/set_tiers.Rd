@@ -39,6 +39,7 @@ set_exogenous(bk, A)
 Other knowledge:
 \code{\link[=is_knowledge]{is_knowledge()}},
 \code{\link[=knowledge]{knowledge()}},
+\code{\link[=orient]{orient()}},
 \code{\link[=tiers]{tiers()}}
 }
 \concept{knowledge}

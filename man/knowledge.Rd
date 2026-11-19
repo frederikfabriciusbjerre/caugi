@@ -48,6 +48,7 @@ edges(bk, expand = TRUE)
 \seealso{
 Other knowledge:
 \code{\link[=is_knowledge]{is_knowledge()}},
+\code{\link[=orient]{orient()}},
 \code{\link[=set_tiers]{set_tiers()}},
 \code{\link[=tiers]{tiers()}}
 }

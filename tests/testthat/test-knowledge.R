@@ -121,3 +121,37 @@ test_that("set_tiers() and set_exogenous() replace tiers and exogenous nodes", {
   expect_equal(exo(set_exogenous(bk, name = c("A", "D"))), c("A", "D"))
   expect_error(set_exogenous(caugi(A %-->% B), A), "knowledge")
 })
+
+test_that("holds() and orient() read knowledge against a graph", {
+  cpdag <- caugi(A %---% B, B %---% C, class = "CPDAG")
+  h <- holds(cpdag, knowledge(A %-->% B, !(C %-->% B)))
+  expect_equal(names(h), c("from", "edge", "to", "status", "holds"))
+  expect_equal(h$holds, c(NA, NA))
+  expect_equal(
+    orient(cpdag, knowledge(A %-->% B)),
+    caugi(A %-->% B, B %-->% C, class = "DAG")
+  )
+  expect_equal(
+    orient(mutate_caugi(cpdag, "UNKNOWN"), knowledge(!(C %-->% B))),
+    caugi(A %---% B, B %-->% C, class = "MPDAG")
+  )
+  expect_error(
+    orient(cpdag, knowledge(A %-->% B, C %-->% B)),
+    "follows from the rest",
+    class = "caugi_inconsistent"
+  )
+  expect_error(orient(cpdag, knowledge(A %-->% D)), "Unknown node")
+  expect_error(
+    holds(caugi(A %<->% B, class = "ADMG"), knowledge(A %-->% B)),
+    "must be a DAG or PDAG"
+  )
+  expect_error(holds(cpdag, cpdag), "knowledge")
+})
+
+test_that("dag_to_mpdag() restricts the CPDAG of a DAG", {
+  dag <- caugi(A %-->% B, B %-->% C, class = "DAG")
+  expect_equal(
+    dag_to_mpdag(dag, knowledge(!(C %-->% B))),
+    caugi(A %---% B, B %-->% C, class = "MPDAG")
+  )
+})

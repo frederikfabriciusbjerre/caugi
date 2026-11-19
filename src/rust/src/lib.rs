@@ -2519,6 +2519,42 @@ fn rs_kn_tiers(kn: ExternalPtr<Knowledge>) -> Robj {
     .into_robj()
 }
 
+/// `cg` as a PDAG closed under Meek's rules, for `holds()` and `orient()`.
+fn kn_graph(session: &mut GraphSession) -> graph::mpdag::Mpdag {
+    let core = session.core().unwrap_or_else(|e| throw_r_error(e));
+    graph::pdag::Pdag::new(core)
+        .map_err(|_| "`cg` must be a DAG or PDAG.".to_string())
+        .and_then(|p| p.meek_closure())
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
+fn rs_kn_holds(kn: ExternalPtr<Knowledge>, mut session: ExternalPtr<GraphSession>) -> Robj {
+    let g = kn_graph(session.as_mut());
+    kn_result(kn.as_ref().on(session.as_ref().names()).map(|k| {
+        let rows = k.holds(g.as_pdag());
+        let holds: Logicals = rows
+            .iter()
+            .map(|r| r.1.map_or(Rbool::na(), Rbool::from))
+            .collect();
+        let rows: Vec<Statement> = rows.into_iter().map(|r| r.0).collect();
+        let (from, to, status) = kn_columns(&rows);
+        list!(from = from, to = to, status = status, holds = holds)
+    }))
+}
+
+#[extendr]
+fn rs_kn_orient(kn: ExternalPtr<Knowledge>, mut session: ExternalPtr<GraphSession>) -> Robj {
+    let g = kn_graph(session.as_mut());
+    let names = session.as_ref().names().to_vec();
+    kn_result(
+        kn.as_ref()
+            .on(&names)
+            .and_then(|k| k.orient(&g))
+            .map(|m| ExternalPtr::new(session_from_view(GraphView::Mpdag(Arc::new(m)), names))),
+    )
+}
+
 extendr_module! {
     mod caugi;
     // registry
@@ -2637,4 +2673,6 @@ extendr_module! {
     fn rs_kn_nodes;
     fn rs_kn_edges;
     fn rs_kn_tiers;
+    fn rs_kn_holds;
+    fn rs_kn_orient;
 }

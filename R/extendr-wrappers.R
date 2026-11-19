@@ -215,4 +215,8 @@ rs_kn_edges <- function(kn, expand) .Call(wrap__rs_kn_edges, kn, expand)
 
 rs_kn_tiers <- function(kn) .Call(wrap__rs_kn_tiers, kn)
 
+rs_kn_holds <- function(kn, session) .Call(wrap__rs_kn_holds, kn, session)
+
+rs_kn_orient <- function(kn, session) .Call(wrap__rs_kn_orient, kn, session)
+
 # nolint end

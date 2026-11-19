@@ -181,6 +181,54 @@ set_exogenous <- function(bk, ..., name = NULL) {
   .kn_new(rs_kn_set_exogenous(bk@ptr, .get_nodes(name, calls)$name))
 }
 
+#' @title Apply and check background knowledge
+#'
+#' @description
+#' `orient()` returns the tightest graph that agrees with both `cg` and `bk`:
+#' an MPDAG, or a DAG if every edge is directed. It errors with class
+#' `caugi_inconsistent` if no DAG agrees with both.
+#'
+#' `holds()` checks each statement of `edges(bk, expand = TRUE)`: `TRUE` if it
+#' holds in every DAG `cg` stands for, `FALSE` if in none, and `NA` otherwise.
+#'
+#' @param cg A `caugi` with only `-->` and `---` edges, such as a DAG, PDAG,
+#'   CPDAG or MPDAG.
+#' @param bk Background knowledge, made by [knowledge()].
+#'
+#' @returns `orient()`: a `caugi`. `holds()`: `edges(bk, expand = TRUE)` with
+#'   a logical column `holds`.
+#'
+#' @examples
+#' cpdag <- caugi(A %---% B, B %---% C, class = "CPDAG")
+#' bk <- knowledge(A %-->% B)
+#' holds(cpdag, bk) # NA: some DAGs have A --> B, some B --> A
+#' orient(cpdag, bk) # A --> B --> C
+#'
+#' @references
+#' E. Perkovic, M. Kalisch and M. H. Maathuis (2017). Interpreting and using
+#' CPDAGs with background knowledge. In \emph{Proceedings of the 33rd
+#' Conference on Uncertainty in Artificial Intelligence (UAI-17)}.
+#'
+#' @family knowledge
+#' @concept knowledge
+#'
+#' @export
+orient <- function(cg, bk) {
+  is_caugi(cg, throw_error = TRUE)
+  is_knowledge(bk, throw_error = TRUE)
+  session <- .kn_rust(rs_kn_orient(bk@ptr, cg@session))
+  out <- .session_to_caugi(session, node_names = cg@nodes$name)
+  if (is_dag(out)) mutate_caugi(out, "DAG") else out
+}
+
+#' @rdname orient
+#' @export
+holds <- function(cg, bk) {
+  is_caugi(cg, throw_error = TRUE)
+  is_knowledge(bk, throw_error = TRUE)
+  .kn_table(.kn_rust(rs_kn_holds(bk@ptr, cg@session)))
+}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────── Internal helpers ───────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
@@ -206,13 +254,14 @@ set_exogenous <- function(bk, ..., name = NULL) {
   )
 }
 
-# Statements from Rust as caugi's edge table, plus `status`.
+# Statements from Rust as caugi's edge table, plus `status` (and `holds`).
 .kn_table <- function(x) {
   out <- data.table::data.table(
     from = x$from,
     edge = rep("-->", length(x$from)),
     to = x$to,
-    status = x$status
+    status = x$status,
+    holds = x$holds
   )
   data.table::setorderv(out, c("from", "to", "status"))
 }

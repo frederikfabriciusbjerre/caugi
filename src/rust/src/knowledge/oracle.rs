@@ -3,7 +3,9 @@
 //! the definitions straight off each DAG. A DAG on `n` nodes is a bitmask:
 //! bit `a * n + b` is the edge `a --> b`.
 
+use super::tests::{core, pdag};
 use super::*;
+use crate::graph::dag::Dag;
 
 const NAMES: [&str; 6] = ["A", "B", "C", "D", "E", "F"];
 
@@ -296,5 +298,139 @@ fn edits_match_the_oracle() {
             (Err(KnowledgeError::Inconsistent(_)), Err(KnowledgeError::Inconsistent(_))) => {}
             other => panic!("case {case}: {other:?}"),
         }
+    }
+}
+
+/// The DAG `d` as a bitmask.
+fn mask(n: usize, d: &Dag) -> u64 {
+    (0..n)
+        .flat_map(|a| {
+            d.children_of(a as u32)
+                .iter()
+                .map(move |&b| (a, b as usize))
+        })
+        .fold(0, |m, (a, b)| m | 1 << (a * n + b))
+}
+
+fn members(n: usize, g: &Pdag) -> Vec<u64> {
+    let mut out: Vec<u64> = g
+        .enumerate_mec()
+        .unwrap()
+        .iter()
+        .map(|d| mask(n, d))
+        .collect();
+    out.sort();
+    out
+}
+
+#[test]
+fn holds_and_orient_match_the_dags_a_graph_stands_for() {
+    let mut rng = Rng(3);
+    for case in 0..300 {
+        let n = 4 + rng.below(3);
+        let order = rng.shuffled(n);
+        let p = 0.2 + rng.below(50) as f64 / 100.0;
+        let mut dag = 0u64;
+        for i in 0..n {
+            for j in i + 1..n {
+                if rng.chance(p) {
+                    dag |= 1 << (order[i] * n + order[j]);
+                }
+            }
+        }
+        let dag_edges: Vec<(u32, u32, &str)> = (0..n * n)
+            .filter(|&i| edge(n, dag, i / n, i % n))
+            .map(|i| ((i / n) as u32, (i % n) as u32, "-->"))
+            .collect();
+        // The CPDAG of the DAG, and half the time a PDAG between the two that
+        // Meek's rules haven't closed.
+        let cpdag = Dag::new(core(n as u32, &dag_edges))
+            .unwrap()
+            .to_cpdag()
+            .unwrap();
+        let cpdag = cpdag.as_mpdag().as_pdag();
+        let mut edges = vec![];
+        let mut undirected = vec![];
+        for a in 0..n as u32 {
+            for &b in cpdag.children_of(a) {
+                edges.push((a, b, "-->"));
+            }
+            for &b in cpdag.undirected_of(a).iter().filter(|&&b| b > a) {
+                if rng.chance(0.25) {
+                    let forward = edge(n, dag, a as usize, b as usize);
+                    edges.push(if forward {
+                        (a, b, "-->")
+                    } else {
+                        (b, a, "-->")
+                    });
+                } else {
+                    edges.push((a, b, "---"));
+                    undirected.push((a as usize, b as usize));
+                }
+            }
+        }
+        let graph = pdag(n as u32, &edges);
+        let all = members(n, &graph);
+
+        let spec = match rng.below(4) {
+            0 => random_spec(&mut rng, n, Some(dag)),
+            1 => random_spec(&mut rng, n, None),
+            // Orientations of undirected edges: fine alone, but they can
+            // contradict the graph through Meek's rules.
+            2 => {
+                let mut spec = Spec::new(n);
+                for &(a, b) in &undirected {
+                    if rng.chance(0.5) {
+                        let (f, t) = if rng.chance(0.5) { (a, b) } else { (b, a) };
+                        spec.statements.push((f, t, true));
+                    }
+                }
+                spec
+            }
+            _ => {
+                let mut spec = Spec::new(n);
+                spec.exogenous[rng.below(n)] = true;
+                spec
+            }
+        };
+        // Half the time, the knowledge names only the nodes it constrains.
+        let named: Vec<String> = if rng.chance(0.5) {
+            names(n)
+        } else {
+            let used = |v: usize| {
+                spec.tier[v].is_some()
+                    || spec.exogenous[v]
+                    || spec.statements.iter().any(|s| s.0 == v || s.1 == v)
+            };
+            (0..n)
+                .filter(|&v| used(v))
+                .map(|v| NAMES[v].into())
+                .collect()
+        };
+        let Ok(k) = spec.build(&named) else { continue };
+        let k = k.on(&names(n)).unwrap();
+        let closed = graph.meek_closure().unwrap();
+
+        // holds(): TRUE in every member DAG, FALSE in none, NA otherwise.
+        for (s, holds) in k.holds(closed.as_pdag()) {
+            let one = Spec::of(n, &[s]);
+            let count = all.iter().filter(|&&d| one.holds(d)).count();
+            let expected = match count {
+                c if c == all.len() => Some(true),
+                0 => Some(false),
+                _ => None,
+            };
+            assert_eq!(holds, expected, "case {case}");
+        }
+        // orient(): exactly the member DAGs that satisfy the knowledge.
+        let sat: Vec<u64> = all.iter().copied().filter(|&d| spec.holds(d)).collect();
+        match k.orient(&closed) {
+            Ok(m) => assert_eq!(members(n, m.as_pdag()), sat, "case {case}"),
+            Err(KnowledgeError::Inconsistent(_)) => assert!(sat.is_empty(), "case {case}"),
+            Err(e) => panic!("case {case}: {e:?}"),
+        }
+        // A DAG is only checked.
+        let one = pdag(n as u32, &dag_edges).meek_closure().unwrap();
+        assert_eq!(k.orient(&one).is_ok(), spec.holds(dag), "case {case}");
     }
 }

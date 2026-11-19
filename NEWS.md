@@ -7,6 +7,10 @@
   caugi's verbs edit it, with a `status` argument for the edge verbs, and
   `set_tiers()` and `set_exogenous()` replace its tiers and exogenous nodes.
 
+* `orient(cg, bk)` applies background knowledge to a DAG, PDAG, CPDAG or MPDAG,
+  `holds(cg, bk)` checks it, and `dag_to_mpdag(dag, bk)` gives the MPDAG of a
+  DAG and background knowledge.
+
 * `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
 
 * `markov_blanket()` accepts PAGs, reading the blanket off a member MAG.

@@ -6,8 +6,12 @@
 //! [`Allowed`]. Combining knowledge is intersection, and a contradiction is
 //! the empty set.
 
+use crate::graph::alg::meek;
+use crate::graph::mpdag::Mpdag;
+use crate::graph::pdag::Pdag;
 use bitflags::bitflags;
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
+use std::fmt;
 
 #[cfg(test)]
 mod oracle;
@@ -47,6 +51,18 @@ pub struct Statement {
     pub from: String,
     pub to: String,
     pub required: bool,
+}
+
+/// `A --> B` if required, `!(A --> B)` if forbidden.
+impl fmt::Display for Statement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let edge = format!("{} --> {}", self.from, self.to);
+        if self.required {
+            write!(f, "{edge}")
+        } else {
+            write!(f, "!({edge})")
+        }
+    }
 }
 
 /// What an edit does with the statements it names.
@@ -216,6 +232,88 @@ impl Knowledge {
             .into_iter()
             .flat_map(|(a, b, m)| self.rows(a, b, m))
             .collect()
+    }
+
+    // ── Graphs ──────────────────────────────────────────────────────────────
+
+    /// The same knowledge on a graph's nodes, in its order. Nodes the
+    /// knowledge doesn't name are added, so exogenous nodes rule out edges
+    /// from them too.
+    pub fn on(&self, names: &[String]) -> Result<Self> {
+        let k = self.rebuilt(names, false)?;
+        k.ids(&self.names)?;
+        Ok(k)
+    }
+
+    /// For each statement of [`Knowledge::expand`], whether it holds in every
+    /// DAG `g` stands for (`Some(true)`), in none (`Some(false)`), or in some
+    /// (`None`). `g` must be closed under Meek's rules, on the knowledge's
+    /// nodes.
+    pub fn holds(&self, g: &Pdag) -> Vec<(Statement, Option<bool>)> {
+        self.expand()
+            .into_iter()
+            .map(|s| {
+                let (a, b) = (self.index[&s.from], self.index[&s.to]);
+                let says = if s.required {
+                    Allowed::AB
+                } else {
+                    !Allowed::AB
+                };
+                let have = allowed_in(g, a, b);
+                let holds = if says.contains(have) {
+                    Some(true)
+                } else if (says & have).is_empty() {
+                    Some(false)
+                } else {
+                    None
+                };
+                (s, holds)
+            })
+            .collect()
+    }
+
+    /// The tightest MPDAG that agrees with both `g` and the knowledge. `g`
+    /// must be closed under Meek's rules, on the knowledge's nodes. Edges are
+    /// oriented one at a time, each followed by Meek's rules (Algorithm 1 of
+    /// Perković et al., 2017).
+    pub fn orient(&self, g: &Mpdag) -> Result<Mpdag> {
+        let pdag = g.as_pdag();
+        let undirected = Allowed::AB | Allowed::BA;
+        let mut violated = vec![];
+        let mut required = vec![];
+        for (a, b, m) in self.constrained() {
+            let have = allowed_in(pdag, a, b);
+            match m & have {
+                x if x.is_empty() => violated.extend(self.rows(a, b, m)),
+                Allowed::AB if have == undirected => required.push((a, b)),
+                Allowed::BA if have == undirected => required.push((b, a)),
+                _ => {}
+            }
+        }
+        if !violated.is_empty() {
+            let rows: Vec<String> = violated.iter().map(Statement::to_string).collect();
+            return Err(KnowledgeError::Inconsistent(format!(
+                "Knowledge contradicts the graph: {}",
+                rows.join(", ")
+            )));
+        }
+        let (mut pa, mut ch, mut und) = pdag.adjacency_sets();
+        for (a, b) in required {
+            if ch[a as usize].contains(&b) {
+                continue;
+            }
+            if !und[a as usize].contains(&b) {
+                let (a, b) = (&self.names[a as usize], &self.names[b as usize]);
+                return Err(KnowledgeError::Inconsistent(format!(
+                    "Knowledge contradicts the graph: it needs {a} --> {b}, \
+                     but {b} --> {a} follows from the rest."
+                )));
+            }
+            meek::orient(a, b, &mut und, &mut pa, &mut ch);
+            meek::apply_meek_closure(&mut pa, &mut ch, &mut und, true);
+        }
+        pdag.mpdag_from_sets(&pa, &ch, &und)
+            .map_err(KnowledgeError::Invalid)
     }
 
     // ── Internals ───────────────────────────────────────────────────────────
@@ -437,6 +535,19 @@ impl Knowledge {
     }
 }
 
+/// What the PDAG `g` allows for the pair {a, b}.
+fn allowed_in(g: &Pdag, a: u32, b: u32) -> Allowed {
+    if g.children_of(a).contains(&b) {
+        Allowed::AB
+    } else if g.parents_of(a).contains(&b) {
+        Allowed::BA
+    } else if g.undirected_of(a).contains(&b) {
+        Allowed::AB | Allowed::BA
+    } else {
+        Allowed::NONE
+    }
+}
+
 /// Kahn's algorithm: does the directed graph on `n` nodes have a cycle?
 fn has_cycle(n: usize, edges: &[(u32, u32)]) -> bool {
     let mut indegree = vec![0usize; n];
@@ -462,6 +573,10 @@ fn has_cycle(n: usize, edges: &[(u32, u32)]) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::edges::EdgeRegistry;
+    use crate::graph::builder::GraphBuilder;
+    use crate::graph::CaugiGraph;
+    use std::sync::Arc;
 
     fn s(x: &[&str]) -> Vec<String> {
         x.iter().map(|v| v.to_string()).collect()
@@ -678,5 +793,71 @@ mod tests {
             k.set_exogenous(&[]).unwrap().exogenous(),
             &[false, false, false]
         );
+    }
+
+    /// A graph on `n` nodes, from edges written (from, to, glyph).
+    pub(super) fn core(n: u32, edges: &[(u32, u32, &str)]) -> Arc<CaugiGraph> {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let mut b = GraphBuilder::new_with_registry(n, true, &reg);
+        for &(a, c, g) in edges {
+            b.add_edge(a, c, reg.code_of(g).unwrap()).unwrap();
+        }
+        Arc::new(b.finalize().unwrap())
+    }
+
+    pub(super) fn pdag(n: u32, edges: &[(u32, u32, &str)]) -> Pdag {
+        Pdag::new(core(n, edges)).unwrap()
+    }
+
+    #[test]
+    fn on_moves_knowledge_onto_a_graphs_nodes() {
+        let k = Knowledge::new(&s(&["B"]), &[], &[], None, &s(&["B"]), true).unwrap();
+        let on = k.on(&s(&["A", "B", "C"])).unwrap();
+        assert_eq!(on.expand(), st(&[("A", "B", false), ("C", "B", false)]));
+        assert!(k.on(&s(&["A"])).is_err());
+    }
+
+    #[test]
+    fn holds_reads_statements_against_a_graph() {
+        // A --- B --> C
+        let g = pdag(3, &[(0, 1, "---"), (1, 2, "-->")]);
+        let k = kn(
+            &["A", "B", "C"],
+            &[
+                ("A", "B", true),
+                ("C", "B", false),
+                ("A", "C", false),
+                ("B", "C", false),
+            ],
+        )
+        .unwrap();
+        let holds: Vec<Option<bool>> = k.holds(&g).into_iter().map(|r| r.1).collect();
+        assert_eq!(holds, vec![None, Some(true), Some(false), Some(true)]);
+    }
+
+    #[test]
+    fn orient_applies_knowledge_with_meeks_rules() {
+        let g = pdag(3, &[(0, 1, "---"), (1, 2, "---")])
+            .meek_closure()
+            .unwrap();
+        let m = kn(&["A", "B", "C"], &[("A", "B", true)])
+            .unwrap()
+            .orient(&g)
+            .unwrap();
+        assert!(m.children_of(0).contains(&1) && m.children_of(1).contains(&2));
+        let m = kn(&["A", "B", "C"], &[("C", "B", false)])
+            .unwrap()
+            .orient(&g)
+            .unwrap();
+        assert!(m.children_of(1).contains(&2) && m.undirected_of(0).contains(&1));
+        let err = |r: Result<Mpdag>| match r {
+            Err(KnowledgeError::Inconsistent(m)) => m,
+            _ => panic!("expected an inconsistency"),
+        };
+        let conflict = kn(&["A", "B", "C"], &[("A", "B", true), ("C", "B", true)]);
+        assert!(err(conflict.unwrap().orient(&g)).contains("follows from the rest"));
+        let violated = kn(&["A", "B", "C"], &[("A", "C", true)]);
+        assert!(err(violated.unwrap().orient(&g)).contains("A --> C"));
     }
 }
