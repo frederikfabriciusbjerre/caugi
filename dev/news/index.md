@@ -259,6 +259,9 @@
 
 ### Bug Fixes
 
+- caugi builds on Windows with Rust 1.100 or later, which needs the
+  `synchronization` library at link time.
+
 - [`write_dot()`](https://caugi.org/dev/reference/write_dot.md) and
   [`write_mermaid()`](https://caugi.org/dev/reference/write_mermaid.md)
   write UTF-8 in every locale. Under a non-UTF-8 locale they lost

@@ -434,7 +434,7 @@ pipeline (`task all`) and per-language details.
     #> [17] grid_4.6.2         tibble_3.3.1       evaluate_1.0.5     jquerylib_0.1.4   
     #> [21] fastmap_1.2.0      yaml_2.3.12        lifecycle_1.0.5    compiler_4.6.2    
     #> [25] dplyr_1.2.1        RColorBrewer_1.1-3 fs_2.1.0           pkgconfig_2.0.3   
-    #> [29] htmlwidgets_1.6.4  farver_2.1.2       systemfonts_1.3.2  digest_0.6.39     
+    #> [29] htmlwidgets_1.6.4  farver_2.1.2       systemfonts_1.3.3  digest_0.6.39     
     #> [33] R6_2.6.1           tidyselect_1.2.1   pillar_1.11.1      magrittr_2.0.5    
     #> [37] bslib_0.12.0       withr_3.0.3        tools_4.6.2        gtable_0.3.6      
     #> [41] pkgdown_2.2.1      cachem_1.1.0       desc_1.4.3
