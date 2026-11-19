@@ -61,7 +61,8 @@ knowledge <- function(..., nodes = NULL) {
   args <- lapply(calls[exo], function(ex) as.list(ex)[-1L])
   exogenous <- .get_nodes(NULL, unlist(args, recursive = FALSE))$name
   s <- .kn_parse(calls[!tier & !exo])
-  if (is.null(nodes)) {
+  closed <- !is.null(nodes)
+  if (!closed) {
     nodes <- c(s$declared, unlist(tiers$tiers), exogenous, s$from, s$to)
   } else if (length(setdiff(s$declared, nodes))) {
     stop(
@@ -78,7 +79,8 @@ knowledge <- function(..., nodes = NULL) {
     as.character(names(tiers$tiers)),
     as.list(unname(tiers$tiers)),
     tiers$max_lag,
-    exogenous
+    exogenous,
+    closed
   ))
 }
 

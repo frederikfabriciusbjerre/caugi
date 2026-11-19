@@ -2407,6 +2407,7 @@ fn rs_kn_new(
     tier_members: List,
     max_lag: Robj,
     exogenous: Strings,
+    closed: bool,
 ) -> Robj {
     let statements: Vec<Statement> = kn_rows(&from, &to, &status, Some(true))
         .into_iter()
@@ -2423,6 +2424,7 @@ fn rs_kn_new(
             &kn_tiers(&tier_names, &tier_members),
             lag,
             &kn_strings(&exogenous),
+            closed,
         )
         .map(ExternalPtr::new)
     }))

@@ -7,7 +7,7 @@
 //! the empty set.
 
 use bitflags::bitflags;
-use std::collections::{BTreeMap, HashMap, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 
 #[cfg(test)]
 mod oracle;
@@ -49,6 +49,17 @@ pub struct Statement {
     pub required: bool,
 }
 
+/// What an edit does with the statements it names.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Edit {
+    /// Adds them.
+    Add,
+    /// Replaces what is said about each `from --> to`.
+    Set,
+    /// Removes them; with no status, both kinds.
+    Remove,
+}
+
 /// Background knowledge over a set of named nodes.
 #[derive(Clone, Debug, Default)]
 pub struct Knowledge {
@@ -62,18 +73,21 @@ pub struct Knowledge {
     tier: Vec<Option<u32>>,
     max_lag: Option<u32>,
     exogenous: Vec<bool>,
+    /// When set, the nodes are fixed: no edit may add one.
+    closed: bool,
 }
 
 impl Knowledge {
     /// Knowledge on `names`. Every statement, tier and exogenous node must
     /// name nodes in `names`. Empty tiers are dropped, and `max_lag` with the
-    /// last one.
+    /// last one. With `closed`, later edits may not add nodes.
     pub fn new(
         names: &[String],
         statements: &[Statement],
         tiers: &[(String, Vec<String>)],
         max_lag: Option<u32>,
         exogenous: &[String],
+        closed: bool,
     ) -> Result<Self> {
         let mut k = Self::default();
         for name in names {
@@ -82,8 +96,74 @@ impl Knowledge {
         k.put_statements(statements)?;
         k.put_tiers(tiers, max_lag)?;
         k.put_exogenous(exogenous)?;
+        k.closed = closed;
         k.validate()?;
         Ok(k)
+    }
+
+    // ── Edits ───────────────────────────────────────────────────────────────
+
+    /// The knowledge after an edit of its statements, as (from, to,
+    /// required), where `None` means either kind. Adding or setting a
+    /// statement adds the nodes it names, unless the nodes are closed.
+    pub fn edit(&self, edit: Edit, statements: &[(String, String, Option<bool>)]) -> Result<Self> {
+        self.edited(|k| {
+            if edit == Edit::Remove {
+                let ends = k.ends(statements.iter().map(|r| (&r.0, &r.1)))?;
+                for ((a, b), (_, _, required)) in ends.into_iter().zip(statements) {
+                    k.statements
+                        .retain(|&(f, t, r)| (f, t) != (a, b) || required.is_some_and(|q| q != r));
+                }
+                return Ok(());
+            }
+            let mut rows = vec![];
+            for (from, to, required) in statements {
+                let Some(required) = *required else {
+                    return invalid("A statement must be required or forbidden.");
+                };
+                rows.push(Statement {
+                    from: from.clone(),
+                    to: to.clone(),
+                    required,
+                });
+            }
+            k.grow(rows.iter().flat_map(|s| [&s.from, &s.to]))?;
+            if edit == Edit::Set {
+                let ends = k.ends(rows.iter().map(|s| (&s.from, &s.to)))?;
+                k.statements.retain(|&(f, t, _)| !ends.contains(&(f, t)));
+            }
+            k.put_statements(&rows)
+        })
+    }
+
+    pub fn add_nodes(&self, names: &[String]) -> Result<Self> {
+        self.edited(|k| k.grow(names))
+    }
+
+    /// The knowledge without these nodes and what it says about them.
+    pub fn remove_nodes(&self, names: &[String]) -> Result<Self> {
+        let gone: HashSet<u32> = self.ids(names)?.into_iter().collect();
+        let rest: Vec<String> = (0..self.names.len() as u32)
+            .filter(|i| !gone.contains(i))
+            .map(|i| self.names[i as usize].clone())
+            .collect();
+        self.rebuilt(&rest, self.closed)
+    }
+
+    /// The knowledge with these tiers, adding the nodes they name.
+    pub fn set_tiers(&self, tiers: &[(String, Vec<String>)], max_lag: Option<u32>) -> Result<Self> {
+        self.edited(|k| {
+            k.grow(tiers.iter().flat_map(|t| &t.1))?;
+            k.put_tiers(tiers, max_lag)
+        })
+    }
+
+    /// The knowledge with these exogenous nodes, adding them if new.
+    pub fn set_exogenous(&self, names: &[String]) -> Result<Self> {
+        self.edited(|k| {
+            k.grow(names)?;
+            k.put_exogenous(names)
+        })
     }
 
     // ── Reading ─────────────────────────────────────────────────────────────
@@ -215,6 +295,49 @@ impl Knowledge {
             self.tier.push(None);
             self.exogenous.push(false);
         }
+    }
+
+    /// Adds the nodes it doesn't know yet, or errors if the nodes are closed.
+    fn grow<'a>(&mut self, names: impl IntoIterator<Item = &'a String>) -> Result<()> {
+        if self.closed {
+            return self.ids(names).map(|_| ());
+        }
+        for name in names {
+            self.push_node(name);
+        }
+        Ok(())
+    }
+
+    /// A checked copy of the knowledge after `change`.
+    fn edited(&self, change: impl FnOnce(&mut Self) -> Result<()>) -> Result<Self> {
+        let mut k = self.clone();
+        change(&mut k)?;
+        k.validate()?;
+        Ok(k)
+    }
+
+    /// The knowledge on `names`: what it says about other nodes is dropped,
+    /// and new nodes are added.
+    fn rebuilt(&self, names: &[String], closed: bool) -> Result<Self> {
+        let kept: HashSet<&String> = names.iter().collect();
+        let statements: Vec<Statement> = self
+            .statements()
+            .into_iter()
+            .filter(|s| kept.contains(&s.from) && kept.contains(&s.to))
+            .collect();
+        let tiers: Vec<(String, Vec<String>)> = self
+            .tiers()
+            .into_iter()
+            .map(|(t, m)| (t, m.into_iter().filter(|x| kept.contains(x)).collect()))
+            .collect();
+        let exogenous: Vec<String> = self
+            .names
+            .iter()
+            .zip(&self.exogenous)
+            .filter(|(x, &e)| e && kept.contains(x))
+            .map(|(x, _)| x.clone())
+            .collect();
+        Knowledge::new(names, &statements, &tiers, self.max_lag, &exogenous, closed)
     }
 
     fn ids<'a>(&self, names: impl IntoIterator<Item = &'a String>) -> Result<Vec<u32>> {
@@ -356,7 +479,7 @@ mod tests {
     }
 
     fn kn(nodes: &[&str], rows: &[(&str, &str, bool)]) -> Result<Knowledge> {
-        Knowledge::new(&s(nodes), &st(rows), &[], None, &[])
+        Knowledge::new(&s(nodes), &st(rows), &[], None, &[], false)
     }
 
     fn t(rows: &[(&str, &[&str])]) -> Vec<(String, Vec<String>)> {
@@ -372,13 +495,14 @@ mod tests {
         .unwrap();
         assert_eq!(k.statements(), st(&[("B", "A", false), ("C", "A", true)]));
         let tiers = t(&[("t1", &["A"]), ("t2", &["B"]), ("t3", &[])]);
-        let k = Knowledge::new(&s(&["A", "B", "C"]), &[], &tiers, Some(1), &s(&["C"])).unwrap();
+        let k =
+            Knowledge::new(&s(&["A", "B", "C"]), &[], &tiers, Some(1), &s(&["C"]), true).unwrap();
         assert_eq!(k.tier_of(), vec![Some("t1"), Some("t2"), None]);
         assert_eq!(k.tiers(), tiers[..2]);
         assert_eq!(k.max_lag(), Some(1));
         assert_eq!(k.exogenous(), &[false, false, true]);
         // `max_lag` goes with the last tier.
-        let k = Knowledge::new(&s(&["A"]), &[], &t(&[("t1", &[])]), Some(1), &[]);
+        let k = Knowledge::new(&s(&["A"]), &[], &t(&[("t1", &[])]), Some(1), &[], false);
         assert_eq!(k.unwrap().max_lag(), None);
     }
 
@@ -389,7 +513,7 @@ mod tests {
             other => panic!("expected an invalid input, got {other:?}"),
         };
         let with_tiers = |tiers: &[(&str, &[&str])], lag: Option<u32>| {
-            Knowledge::new(&s(&["A", "B"]), &[], &t(tiers), lag, &[])
+            Knowledge::new(&s(&["A", "B"]), &[], &t(tiers), lag, &[], false)
         };
         assert_eq!(msg(kn(&["A"], &[("A", "D", true)])), "Unknown node(s): D");
         assert!(msg(kn(&["A"], &[("A", "A", true)])).contains("itself"));
@@ -425,8 +549,15 @@ mod tests {
     fn tiers_and_exogenous_nodes_constrain_pairs() {
         // A, B and C in three tiers, at most one apart; B exogenous; D untiered.
         let tiers = t(&[("t1", &["A"]), ("t2", &["B"]), ("t3", &["C"])]);
-        let k =
-            Knowledge::new(&s(&["A", "B", "C", "D"]), &[], &tiers, Some(1), &s(&["B"])).unwrap();
+        let k = Knowledge::new(
+            &s(&["A", "B", "C", "D"]),
+            &[],
+            &tiers,
+            Some(1),
+            &s(&["B"]),
+            false,
+        )
+        .unwrap();
         assert_eq!(
             k.expand(),
             st(&[
@@ -461,6 +592,7 @@ mod tests {
             &t(&[("1", &["A"]), ("2", &["B"])]),
             None,
             &[],
+            false,
         );
         assert!(inconsistent(tiered));
         assert!(kn(
@@ -468,5 +600,83 @@ mod tests {
             &[("A", "B", true), ("B", "C", true), ("A", "C", true)]
         )
         .is_ok());
+    }
+
+    #[test]
+    fn edits_add_set_and_remove_statements() {
+        let rows = |r: &[(&str, &str, Option<bool>)]| -> Vec<(String, String, Option<bool>)> {
+            r.iter()
+                .map(|(a, b, q)| (a.to_string(), b.to_string(), *q))
+                .collect()
+        };
+        let k = kn(&["A", "B"], &[("A", "B", true)]).unwrap();
+        let k = k
+            .edit(Edit::Add, &rows(&[("B", "C", Some(false))]))
+            .unwrap();
+        assert_eq!(k.names(), s(&["A", "B", "C"]).as_slice());
+        let k = k
+            .edit(Edit::Set, &rows(&[("A", "B", Some(false))]))
+            .unwrap();
+        assert_eq!(k.statements(), st(&[("A", "B", false), ("B", "C", false)]));
+        // Setting C --> B leaves B --> C alone.
+        let set = k
+            .edit(Edit::Set, &rows(&[("C", "B", Some(false))]))
+            .unwrap();
+        assert_eq!(set.statements().len(), 3);
+        let both = k.edit(Edit::Remove, &rows(&[("B", "C", None)])).unwrap();
+        assert_eq!(both.statements(), st(&[("A", "B", false)]));
+        let other = k
+            .edit(Edit::Remove, &rows(&[("B", "C", Some(true))]))
+            .unwrap();
+        assert_eq!(other.statements().len(), 2);
+        assert!(k.edit(Edit::Add, &rows(&[("A", "B", None)])).is_err());
+        assert!(k.edit(Edit::Remove, &rows(&[("A", "D", None)])).is_err());
+    }
+
+    #[test]
+    fn closed_knowledge_keeps_its_nodes() {
+        let k = Knowledge::new(&s(&["A", "B"]), &[], &[], None, &[], true).unwrap();
+        let add = vec![("A".to_string(), "C".to_string(), Some(true))];
+        assert!(k.edit(Edit::Add, &add).is_err());
+        assert!(k.add_nodes(&s(&["C"])).is_err());
+        assert!(k.set_exogenous(&s(&["C"])).is_err());
+        assert!(k.set_tiers(&t(&[("1", &["C"])]), None).is_err());
+        assert!(k
+            .remove_nodes(&s(&["B"]))
+            .unwrap()
+            .add_nodes(&s(&["B"]))
+            .is_err());
+    }
+
+    #[test]
+    fn edits_of_nodes_tiers_and_exogenous_nodes() {
+        let tiers = t(&[("t1", &["A", "B"]), ("t2", &["C"])]);
+        let k = Knowledge::new(
+            &s(&["A", "B", "C"]),
+            &st(&[("A", "C", true)]),
+            &tiers,
+            Some(1),
+            &s(&["B"]),
+            false,
+        )
+        .unwrap();
+        let k2 = k.remove_nodes(&s(&["B"])).unwrap();
+        assert_eq!(k2.tiers(), t(&[("t1", &["A"]), ("t2", &["C"])]));
+        assert_eq!(k2.exogenous(), &[false, false]);
+        // An emptied tier goes, and `max_lag` with the last one.
+        let k3 = k.remove_nodes(&s(&["C"])).unwrap();
+        assert_eq!(k3.tiers(), t(&[("t1", &["A", "B"])]));
+        assert_eq!(k3.max_lag(), Some(1));
+        assert_eq!(k3.remove_nodes(&s(&["A", "B"])).unwrap().max_lag(), None);
+        assert_eq!(k.remove_nodes(&s(&["A"])).unwrap().statements(), vec![]);
+        assert!(k.remove_nodes(&s(&["D"])).is_err());
+        assert_eq!(k.add_nodes(&s(&["D"])).unwrap().tier_of()[3], None);
+        assert_eq!(k.set_tiers(&[], None).unwrap().tiers(), vec![]);
+        // C can't be exogenous: A --> C is required.
+        assert!(k.set_exogenous(&s(&["C"])).is_err());
+        assert_eq!(
+            k.set_exogenous(&[]).unwrap().exogenous(),
+            &[false, false, false]
+        );
     }
 }

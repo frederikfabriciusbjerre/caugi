@@ -153,7 +153,14 @@ impl Spec {
 
     fn build(&self, names: &[String]) -> Result<Knowledge> {
         let (tiers, exogenous) = (self.tiers(), self.exogenous());
-        Knowledge::new(names, &self.statements(), &tiers, self.max_lag, &exogenous)
+        Knowledge::new(
+            names,
+            &self.statements(),
+            &tiers,
+            self.max_lag,
+            &exogenous,
+            false,
+        )
     }
 }
 
@@ -224,6 +231,70 @@ fn knowledge_matches_the_oracle_on_every_dag_over_four_nodes() {
                 let same = dags.iter().zip(&sat).all(|(&d, &s)| rows.holds(d) == s);
                 assert!(same, "case {case}: {spec:?}");
             }
+        }
+    }
+}
+
+#[test]
+fn edits_match_the_oracle() {
+    let dags = all_dags(4);
+    let mut rng = Rng(2);
+    for case in 0..500 {
+        // Statements edited one at a time match a plain list, and an edit
+        // that leaves no DAG fails and changes nothing.
+        let mut k = Knowledge::new(&names(4), &[], &[], None, &[], true).unwrap();
+        let mut list = Spec::new(4);
+        for _ in 0..8 {
+            let a = rng.below(4);
+            let b = (a + 1 + rng.below(3)) % 4;
+            let edit = [Edit::Add, Edit::Set, Edit::Remove][rng.below(3)];
+            let status = [None, Some(true), Some(false)][rng.below(3)];
+            let row = [(NAMES[a].to_string(), NAMES[b].to_string(), status)];
+            let mut next = list.clone();
+            let s = &mut next.statements;
+            match (edit, status) {
+                (Edit::Remove, _) => {
+                    s.retain(|&(f, t, r)| (f, t) != (a, b) || status.is_some_and(|q| q != r))
+                }
+                (_, None) => {
+                    assert!(k.edit(edit, &row).is_err(), "case {case}");
+                    continue;
+                }
+                (Edit::Set, Some(r)) => {
+                    s.retain(|&(f, t, _)| (f, t) != (a, b));
+                    s.push((a, b, r));
+                }
+                (_, Some(r)) => s.push((a, b, r)),
+            }
+            s.sort();
+            s.dedup();
+            let possible = dags.iter().any(|&d| next.holds(d));
+            match k.edit(edit, &row) {
+                Ok(edited) => {
+                    assert!(possible, "case {case}: {next:?}");
+                    (k, list) = (edited, next);
+                }
+                Err(KnowledgeError::Inconsistent(_)) => assert!(!possible, "case {case}"),
+                Err(e) => panic!("case {case}: {e:?}"),
+            }
+            assert_eq!(k.statements(), list.statements(), "case {case}");
+        }
+        // Building through the edits gives what new() gives.
+        let truth = rng.chance(0.5).then(|| dags[rng.below(dags.len())]);
+        let spec = random_spec(&mut rng, 4, truth);
+        let rows: Vec<_> = spec
+            .statements()
+            .into_iter()
+            .map(|s| (s.from, s.to, Some(s.required)))
+            .collect();
+        let built = Knowledge::new(&names(4), &[], &[], None, &[], false)
+            .and_then(|k| k.edit(Edit::Add, &rows))
+            .and_then(|k| k.set_exogenous(&spec.exogenous()))
+            .and_then(|k| k.set_tiers(&spec.tiers(), spec.max_lag));
+        match (spec.build(&names(4)), built) {
+            (Ok(a), Ok(b)) => assert_eq!(a.expand(), b.expand(), "case {case}"),
+            (Err(KnowledgeError::Inconsistent(_)), Err(KnowledgeError::Inconsistent(_))) => {}
+            other => panic!("case {case}: {other:?}"),
         }
     }
 }

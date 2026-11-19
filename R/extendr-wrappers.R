@@ -199,7 +199,7 @@ rs_serialize_graphml <- function(session, graph_class) .Call(wrap__rs_serialize_
 
 deserialize_graphml <- function(xml, reg) .Call(wrap__deserialize_graphml, xml, reg)
 
-rs_kn_new <- function(names, from, to, status, tier_names, tier_members, max_lag, exogenous) .Call(wrap__rs_kn_new, names, from, to, status, tier_names, tier_members, max_lag, exogenous)
+rs_kn_new <- function(names, from, to, status, tier_names, tier_members, max_lag, exogenous, closed) .Call(wrap__rs_kn_new, names, from, to, status, tier_names, tier_members, max_lag, exogenous, closed)
 
 rs_kn_nodes <- function(kn) .Call(wrap__rs_kn_nodes, kn)
 
