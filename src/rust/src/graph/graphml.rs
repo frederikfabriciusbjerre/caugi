@@ -160,7 +160,6 @@ pub fn serialize_graphml(
 }
 
 /// Deserialize a GraphML graph.
-/// Deserialize a GraphML graph.
 pub fn deserialize_graphml(
     xml: &str,
     registry: &EdgeRegistry,

@@ -211,47 +211,6 @@ fn smallest_und_edge(und: &[HashSet<u32>]) -> Option<(u32, u32)> {
     best
 }
 
-/// True if orienting `a -> b` would create a new unshielded collider at `b`,
-/// i.e. an existing parent `p` of `b` (other than `a`) is not adjacent to `a`.
-fn would_create_v_structure(
-    a: u32,
-    b: u32,
-    pa: &[HashSet<u32>],
-    ch: &[HashSet<u32>],
-    und: &[HashSet<u32>],
-) -> bool {
-    for &p in &pa[b as usize] {
-        if p != a && !meek::adjacent(a as usize, p as usize, und, pa, ch) {
-            return true;
-        }
-    }
-    false
-}
-
-/// True if a directed path `src -> ... -> tgt` exists using only `ch`.
-fn has_dir_path(ch: &[HashSet<u32>], src: u32, tgt: u32) -> bool {
-    if src == tgt {
-        return true;
-    }
-    let n = ch.len();
-    let mut seen = vec![false; n];
-    let mut stack = vec![src];
-    while let Some(u) = stack.pop() {
-        if u == tgt {
-            return true;
-        }
-        if std::mem::replace(&mut seen[u as usize], true) {
-            continue;
-        }
-        for &w in &ch[u as usize] {
-            if !seen[w as usize] {
-                stack.push(w);
-            }
-        }
-    }
-    false
-}
-
 fn list_dags(
     pa: Vec<HashSet<u32>>,
     ch: Vec<HashSet<u32>>,
@@ -267,10 +226,10 @@ fn list_dags(
         return;
     };
     for (a, b) in [(u, v), (v, u)] {
-        if would_create_v_structure(a, b, &pa, &ch, &und) {
+        if meek::creates_new_unshielded_collider(a as usize, b, &und, &pa, &ch) {
             continue;
         }
-        if has_dir_path(&ch, b, a) {
+        if meek::has_dir_path(&ch, b, a) {
             continue;
         }
         let mut pa2 = pa.clone();
@@ -300,10 +259,10 @@ fn count_dags(
         return;
     };
     for (a, b) in [(u, v), (v, u)] {
-        if would_create_v_structure(a, b, &pa, &ch, &und) {
+        if meek::creates_new_unshielded_collider(a as usize, b, &und, &pa, &ch) {
             continue;
         }
-        if has_dir_path(&ch, b, a) {
+        if meek::has_dir_path(&ch, b, a) {
             continue;
         }
         let mut pa2 = pa.clone();

@@ -192,20 +192,6 @@ impl Admg {
 
 impl crate::graph::traits::Acyclic for Admg {}
 impl crate::graph::traits::NoUndirected for Admg {}
-impl crate::graph::traits::DirectedNeighbors for Admg {
-    #[inline]
-    fn n(&self) -> u32 {
-        Admg::n(self)
-    }
-    #[inline]
-    fn parents_of(&self, i: u32) -> &[u32] {
-        Admg::parents_of(self, i)
-    }
-    #[inline]
-    fn children_of(&self, i: u32) -> &[u32] {
-        Admg::children_of(self, i)
-    }
-}
 
 #[cfg(test)]
 mod tests {

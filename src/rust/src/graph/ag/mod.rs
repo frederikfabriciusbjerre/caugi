@@ -420,20 +420,6 @@ impl Ag {
 }
 
 impl crate::graph::traits::Acyclic for Ag {}
-impl crate::graph::traits::DirectedNeighbors for Ag {
-    #[inline]
-    fn n(&self) -> u32 {
-        Ag::n(self)
-    }
-    #[inline]
-    fn parents_of(&self, i: u32) -> &[u32] {
-        Ag::parents_of(self, i)
-    }
-    #[inline]
-    fn children_of(&self, i: u32) -> &[u32] {
-        Ag::children_of(self, i)
-    }
-}
 
 #[cfg(test)]
 mod tests {

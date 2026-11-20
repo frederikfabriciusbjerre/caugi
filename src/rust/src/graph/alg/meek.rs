@@ -54,7 +54,9 @@ fn try_orient(
     true
 }
 
-fn has_dir_path(ch: &[HashSet<u32>], src: u32, tgt: u32) -> bool {
+/// True if a directed path `src -> ... -> tgt` exists using only `ch`, or
+/// `src == tgt`.
+pub(crate) fn has_dir_path(ch: &[HashSet<u32>], src: u32, tgt: u32) -> bool {
     if src == tgt {
         return true;
     }
@@ -78,8 +80,10 @@ fn has_dir_path(ch: &[HashSet<u32>], src: u32, tgt: u32) -> bool {
     false
 }
 
+/// True if orienting `u -> v` would create a new unshielded collider at `v`:
+/// some other parent of `v` is not adjacent to `u`.
 #[inline]
-fn creates_new_unshielded_collider(
+pub(crate) fn creates_new_unshielded_collider(
     u: usize,
     v: u32,
     und: &[HashSet<u32>],

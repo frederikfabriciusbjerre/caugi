@@ -14,30 +14,6 @@ use std::collections::{BTreeSet, HashSet};
 use std::sync::Arc;
 
 impl Dag {
-    /// Build the moral graph of the entire DAG as an undirected graph core.
-    pub fn moralize_core(&self) -> Result<CaugiGraph, String> {
-        let mask = vec![true; self.n() as usize];
-        let adj = self.moral_adj(&mask);
-        csr::build_ug_core_from_adj(self.core_ref(), &adj)
-    }
-
-    /// Build the skeleton (undirected version) of the DAG as an undirected graph core.
-    pub fn skeleton_core(&self) -> Result<CaugiGraph, String> {
-        let n = self.n() as usize;
-        let mut adj = vec![Vec::<u32>::new(); n];
-        for u in 0..self.n() {
-            for &v in self.children_of(u) {
-                adj[u as usize].push(v);
-                adj[v as usize].push(u);
-            }
-        }
-        for v in &mut adj {
-            v.sort_unstable();
-            v.dedup();
-        }
-        csr::build_ug_core_from_adj(self.core_ref(), &adj)
-    }
-
     /// UG moral graph: undirect all edges and marry parents.
     pub fn moralize(&self) -> Result<Ug, String> {
         let mask = vec![true; self.n() as usize];

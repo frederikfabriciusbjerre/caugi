@@ -237,20 +237,6 @@ impl Pdag {
 
 impl crate::graph::traits::Acyclic for Pdag {}
 impl crate::graph::traits::NoBidirected for Pdag {}
-impl crate::graph::traits::DirectedNeighbors for Pdag {
-    #[inline]
-    fn n(&self) -> u32 {
-        Pdag::n(self)
-    }
-    #[inline]
-    fn parents_of(&self, i: u32) -> &[u32] {
-        Pdag::parents_of(self, i)
-    }
-    #[inline]
-    fn children_of(&self, i: u32) -> &[u32] {
-        Pdag::children_of(self, i)
-    }
-}
 
 #[cfg(test)]
 mod tests {
