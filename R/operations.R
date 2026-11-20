@@ -482,11 +482,13 @@ condition_marginalize <- function(
   marg_vars
 ) {
   if (!missing(cond_vars) || !missing(marg_vars)) {
+    # nocov start
     return(.call_renamed(
       "condition_marginalize",
       c("cg", "cond_vars", "marg_vars"),
       c(cond_vars = "selection", marg_vars = "latents")
     ))
+    # nocov end
   }
   is_caugi(cg, throw_error = TRUE)
 

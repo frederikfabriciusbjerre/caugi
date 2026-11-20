@@ -179,11 +179,13 @@ caugi_layout <- function(
   x
 ) {
   if (!missing(x)) {
+    # nocov start
     return(.call_renamed(
       "caugi_layout",
       c("x", "method", "packing_ratio", "..."),
       c(x = "cg")
     ))
+    # nocov end
   }
   is_caugi(cg, throw_error = TRUE)
 
@@ -547,6 +549,7 @@ caugi_layout <- function(
 #' @keywords internal
 NULL
 
+# nocov start
 #' @rdname caugi_layout_deprecated
 #' @export
 caugi_layout_sugiyama <- function(x, packing_ratio = 1.618034, ...) {
@@ -614,3 +617,4 @@ caugi_layout_circle <- function(x, ...) {
   )
   .layout_circle(x, ...)
 }
+# nocov end

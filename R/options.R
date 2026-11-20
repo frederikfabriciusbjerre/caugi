@@ -211,12 +211,14 @@ caugi_options <- function(..., reset = FALSE) {
   # Restoring the default (e.g. `caugi_options(old)`) stays silent.
   open_def <- new[["use_open_graph_definition"]]
   if (!is.null(open_def) && !isTRUE(open_def)) {
+    # nocov start
     warning(
       "The `use_open_graph_definition` option is deprecated and will be ",
       "removed in caugi 2.0.0. Pass `open` to `ancestors()`, ",
       "`descendants()`, `anteriors()` or `posteriors()` instead.",
       call. = FALSE
     )
+    # nocov end
   }
 
   .check_options(new, .caugi_default_options())

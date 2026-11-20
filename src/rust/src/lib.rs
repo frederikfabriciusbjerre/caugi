@@ -1210,24 +1210,6 @@ fn rs_names(session: ExternalPtr<GraphSession>) -> Strings {
 }
 
 #[extendr]
-fn rs_names_subset(session: ExternalPtr<GraphSession>, indices: Vec<i32>) -> Strings {
-    let names = session.as_ref().names();
-
-    indices
-        .iter()
-        .map(|&i| names[i as usize].as_str())
-        .collect()
-}
-
-#[extendr]
-fn rs_index_of(session: ExternalPtr<GraphSession>, name: &str) -> Robj {
-    match session.as_ref().index_of(name) {
-        Some(idx) => (idx as i32).into_robj(),
-        None => throw_r_error(format!("Non-existent node name: {}", name)),
-    }
-}
-
-#[extendr]
 fn rs_indices_of(session: ExternalPtr<GraphSession>, names: Robj) -> Robj {
     // Handle potential NULL or invalid input
     if names.is_null() {
@@ -1996,15 +1978,6 @@ fn induced_subgraph_session_from_keep(
 }
 
 #[extendr]
-fn rs_induced_subgraph(
-    mut session: ExternalPtr<GraphSession>,
-    keep: Integers,
-) -> ExternalPtr<GraphSession> {
-    let keep_u: Vec<u32> = keep.iter().map(|ri| rint_to_u32(ri, "keep")).collect();
-    induced_subgraph_session_from_keep(&mut session, &keep_u)
-}
-
-#[extendr]
 fn subgraph(cg: Robj, nodes: Robj, index: Robj) -> Robj {
     use std::collections::HashSet;
 
@@ -2586,8 +2559,6 @@ extendr_module! {
     fn rs_class;
     fn rs_graph_class;
     fn rs_names;
-    fn rs_names_subset;
-    fn rs_index_of;
     fn rs_indices_of;
     fn rs_edges_df;
     fn rs_codes_of;
@@ -2629,7 +2600,6 @@ extendr_module! {
     fn rs_latent_project;
     fn rs_exogenize;
     fn rs_normalize_latent_structure;
-    fn rs_induced_subgraph;
     fn subgraph;
     fn rs_d_separated;
     fn rs_minimal_separator;

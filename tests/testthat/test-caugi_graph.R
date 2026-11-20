@@ -101,6 +101,9 @@ test_that("expression and isolated nodes in nodes", {
   )
   expect_s7_class(cg, caugi)
   expect_equal(nodes(cg)$name, c("A", "B", "C", "D", "E"))
+
+  cg <- caugi(A %-->% B, nodes = data.frame(name = c("A", "B", "C")))
+  expect_equal(nodes(cg)$name, c("A", "B", "C"))
 })
 
 test_that("nodes does not drop isolates declared in the DSL", {

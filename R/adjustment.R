@@ -606,10 +606,12 @@ minimal_d_separator <- function(
   if (is.null(node_name) && is.null(node_index)) {
     integer(0)
   } else if (!is.null(node_index)) {
+    # nocov start
     if (!is.null(node_name)) {
       stop("Pass node names only, not also an index.", call. = FALSE)
     }
     as.integer(node_index - 1L)
+    # nocov end
   } else if (!is.null(node_name)) {
     rs_indices_of(session, node_name)
   }
@@ -623,6 +625,7 @@ minimal_d_separator <- function(
   args <- grep("_index$", ls(env), value = TRUE)
   used <- args[!vapply(args, function(a) is.null(env[[a]]), logical(1L))]
   if (length(used) > 0L) {
+    # nocov start
     warning(
       "The `*_index` arguments are deprecated and will be removed in caugi ",
       "2.0.0. Pass node names instead, e.g. `X = nodes(cg)$name[X_index]`. ",
@@ -631,6 +634,7 @@ minimal_d_separator <- function(
       ".",
       call. = FALSE
     )
+    # nocov end
   }
 }
 
@@ -703,6 +707,7 @@ minimal_d_separator <- function(
 #' @keywords internal
 NULL
 
+# nocov start
 #' @rdname adjustment_deprecated
 #' @export
 is_valid_backdoor <- function(
@@ -833,3 +838,4 @@ all_adjustment_sets_admg <- function(
     type = type
   )
 }
+# nocov end

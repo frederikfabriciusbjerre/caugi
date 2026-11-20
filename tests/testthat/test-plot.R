@@ -534,6 +534,26 @@ test_that("plot.caugi renders o-o edges with circles on both ends", {
   expect_s7_class(plot(cg), caugi_plot)
 })
 
+test_that("plot.caugi styles <->, --o and custom edges", {
+  register_caugi_edge("--<", "tail", "other", "directed", FALSE)
+  on.exit(reset_caugi_registry())
+  cg <- caugi(
+    from = c("A", "B", "C"),
+    edge = c("<->", "--o", "--<"),
+    to = c("B", "C", "D"),
+    class = "UNKNOWN"
+  )
+
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+
+  p <- plot(cg, edge_style = list(partial = list(col = "green")))
+  edge <- function(i) grid::getGrob(p@grob, paste0("edge.", i))
+  expect_equal(edge(1)$arrow$ends, 3L) # arrowheads at both ends
+  expect_equal(edge(2)$gp$col, "green")
+  expect_null(edge(3)$arrow)
+})
+
 test_that("plot.caugi accepts circle_size for partial edges", {
   cg <- caugi(A %o->% B, B %o-o% C, class = "UNKNOWN")
 
@@ -1107,5 +1127,13 @@ test_that("a layout function may return rows in any order (#427)", {
   expect_error(
     plot(cg, layout = missing_c),
     "Layout has 2 rows but graph has 3 nodes"
+  )
+  expect_error(
+    plot(cg, layout = function(x, ...) data.frame(name = "A", x = 0, y = 0)),
+    "Layout has 1 row but graph has 3 nodes"
+  )
+  expect_error(
+    plot(caugi(A), layout = missing_c),
+    "Layout has 2 rows but graph has 1 node$"
   )
 })

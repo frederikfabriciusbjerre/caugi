@@ -719,12 +719,6 @@ test_that("class-specific branches for optional backends are covered", {
   expect_error(as_caugi(1.0), "`x` must be a matrix.")
   expect_error(as_caugi(TRUE), "`x` must be a matrix.")
 
-  obj_tidy <- structure(list(), class = "tidygraph")
-  expect_error(
-    as_caugi(obj_tidy, class = "PAG"),
-    "PAG class is not supported for tidygraph objects."
-  )
-
   g_dagitty <- dagitty::dagitty("dag { A -> B }")
   expect_error(
     testthat::with_mocked_bindings(

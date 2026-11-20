@@ -183,6 +183,12 @@ test_that("mutate_caugi throws error, when mutation isn't possible", {
   expect_error(mutate_caugi(cg, class = "DAG"), "Cannot convert caugi of class")
 })
 
+test_that("mutate_caugi converts to UG and rejects unknown classes", {
+  cg <- caugi(A %---% B, class = "UNKNOWN")
+  expect_equal(mutate_caugi(cg, "UG")@graph_class, "UG")
+  expect_error(mutate_caugi(cg, "FOO"), "Unknown target class: FOO")
+})
+
 test_that("mutate_caugi applies the target class's multi-edge rule", {
   # A bow is a valid, non-simple ADMG.
   cg <- caugi(A %-->% B, A %<->% B, class = "UNKNOWN")
@@ -673,6 +679,16 @@ test_that("condition_marginalize() handles a result with no edges", {
   expect_equal(res@graph_class, "AG")
   expect_setequal(nodes(res)$name, c("X", "Y"))
   expect_equal(nrow(edges(res)), 0L)
+})
+
+test_that("condition_marginalize() reads an UNKNOWN ancestral graph as an AG", {
+  cg <- caugi(U %-->% X + Y, class = "UNKNOWN")
+  res <- condition_marginalize(cg, latents = "U")
+  expect_equal(
+    res,
+    condition_marginalize(mutate_caugi(cg, "AG"), latents = "U")
+  )
+  expect_equal(spouses(res, "X"), "Y")
 })
 
 test_that("Marginalization and conditioning work", {
