@@ -16,7 +16,7 @@ V(cg, ...)
 
 - cg:
 
-  A `caugi` object.
+  A `caugi` object, or background knowledge.
 
 - ...:
 
@@ -24,7 +24,8 @@ V(cg, ...)
 
 ## Value
 
-A `data.table` with a `name` column.
+A `data.table` with a `name` column. For background knowledge, also
+`tier` and `exogenous` columns.
 
 ## See also
 

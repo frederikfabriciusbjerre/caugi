@@ -45,7 +45,9 @@
 <h2 class="pkg-version" data-toc-text="development version" id="caugi-development-version">caugi (development version)<a class="anchor" aria-label="anchor" href="#caugi-development-version"></a></h2>
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li><p><code>has_edge(cg, X, Y)</code> checks whether any edge joins <code>X</code> and <code>Y</code>.</p></li>
+<ul><li><p><code><a href="../reference/knowledge.html">knowledge()</a></code> holds background knowledge about a graph: required edges (<code>A %--&gt;% B</code>), forbidden edges (<code>!(A %--&gt;% B)</code>), tiers and exogenous nodes. caugi’s verbs edit it, with a <code>status</code> argument for the edge verbs, and <code><a href="../reference/set_tiers.html">set_tiers()</a></code> and <code><a href="../reference/set_tiers.html">set_exogenous()</a></code> replace its tiers and exogenous nodes.</p></li>
+<li><p><code>orient(cg, bk)</code> applies background knowledge to a DAG, PDAG, CPDAG or MPDAG, <code>holds(cg, bk)</code> checks it, and <code>dag_to_mpdag(dag, bk)</code> gives the MPDAG of a DAG and background knowledge.</p></li>
+<li><p><code>has_edge(cg, X, Y)</code> checks whether any edge joins <code>X</code> and <code>Y</code>.</p></li>
 <li><p><code><a href="../reference/markov_blanket.html">markov_blanket()</a></code> accepts PAGs, reading the blanket off a member MAG.</p></li>
 <li><p><code>markov_equivalent(cg1, cg2)</code> checks whether two DAGs or CPDAGs are Markov equivalent, by comparing their CPDAGs (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/442" class="external-link">#442</a>).</p></li>
 <li><p><code><a href="../reference/dag_to_cpdag.html">dag_to_cpdag()</a></code> returns the CPDAG of a DAG’s Markov equivalence class (<a href="https://github.com/frederikfabriciusbjerre/caugi/issues/441" class="external-link">#441</a>).</p></li>

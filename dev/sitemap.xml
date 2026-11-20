@@ -53,6 +53,7 @@
 <url><loc>https://caugi.org/dev/reference/d_separated.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dag_from_pdag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dag_to_cpdag.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/dag_to_mpdag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/dag_to_pag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/descendants.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/districts.html</loc></url>
@@ -115,6 +116,7 @@
 <url><loc>https://caugi.org/dev/reference/is_dag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_edge_symmetric.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_empty_caugi.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/is_knowledge.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_mag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_mpdag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_pag.html</loc></url>
@@ -124,6 +126,7 @@
 <url><loc>https://caugi.org/dev/reference/is_valid_adjustment.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/is_visible_edge.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/knit_print.caugi_export.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/knowledge.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/latent_project.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/length.caugi.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/m_separated.html</loc></url>
@@ -138,6 +141,7 @@
 <url><loc>https://caugi.org/dev/reference/neighbors.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/nodes.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/normalize_latent_structure.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/orient.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/pag_to_mag.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/parents.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/plot.caugi.html</loc></url>
@@ -148,12 +152,14 @@
 <url><loc>https://caugi.org/dev/reference/register_caugi_edge.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/registry.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/same_nodes.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/set_tiers.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/shd.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/simulate_data.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/skeleton.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/spouses.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/subgraph.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/summary.caugi.html</loc></url>
+<url><loc>https://caugi.org/dev/reference/tiers.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/to_dot.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/to_graphml.html</loc></url>
 <url><loc>https://caugi.org/dev/reference/to_mermaid.html</loc></url>

@@ -43,6 +43,7 @@ Other operations:
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
 [`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md),
+[`dag_to_mpdag()`](https://caugi.org/dev/reference/dag_to_mpdag.md),
 [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
@@ -64,7 +65,7 @@ dag <- caugi(
 )
 
 normalize_latent_structure(dag, latents = "U")
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x5e3e47d5ac20>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x578e4a9a7210>
 #>   graph_class: DAG
 #>   nodes: A, U, X, Y
 #>   edges: A-->X, A-->Y, U-->X, U-->Y
@@ -77,7 +78,7 @@ dag2 <- caugi(
   class = "DAG"
 )
 normalize_latent_structure(dag2, c("U", "U2"))
-#> <caugi object; 5 nodes, 6 edges; simple: TRUE; session=0x5e3e4886ccf0>
+#> <caugi object; 5 nodes, 6 edges; simple: TRUE; session=0x578e4ca43900>
 #>   graph_class: DAG
 #>   nodes: A, U, X, Y, Z
 #>   edges: A-->X, A-->Y, A-->Z, U-->X, U-->Y, U-->Z

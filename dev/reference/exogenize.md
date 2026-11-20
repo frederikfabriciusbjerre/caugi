@@ -32,6 +32,7 @@ Other operations:
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
 [`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md),
+[`dag_to_mpdag()`](https://caugi.org/dev/reference/dag_to_mpdag.md),
 [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`latent_project()`](https://caugi.org/dev/reference/latent_project.md),
@@ -48,7 +49,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% B, class = "DAG")
 exogenize(cg, nodes = "B") # A, B
-#> <caugi object; 2 nodes, 0 edges; simple: TRUE; session=0x5e3e46cadd30>
+#> <caugi object; 2 nodes, 0 edges; simple: TRUE; session=0x578e4f897200>
 #>   graph_class: DAG
 #>   nodes: A, B
 #>   edges: (none)

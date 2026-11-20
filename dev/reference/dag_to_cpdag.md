@@ -26,6 +26,7 @@ Other operations:
 [`condition_marginalize()`](https://caugi.org/dev/reference/condition_marginalize.md),
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
+[`dag_to_mpdag()`](https://caugi.org/dev/reference/dag_to_mpdag.md),
 [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
@@ -43,14 +44,14 @@ Other operations:
 ``` r
 # A chain is equivalent to its reverse and to the fork, so no edge is fixed.
 dag_to_cpdag(caugi(A %-->% B, B %-->% C, class = "DAG")) # A --- B --- C
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5e3e478ebdf0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x578e4ece7480>
 #>   graph_class: CPDAG
 #>   nodes: A, B, C
 #>   edges: A---B, B---C
 
 # A v-structure is shared by every member of its class.
 dag_to_cpdag(caugi(A %-->% C, B %-->% C, class = "DAG")) # A --> C <-- B
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5e3e41e4edf0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x578e4fa92710>
 #>   graph_class: CPDAG
 #>   nodes: A, B, C
 #>   edges: A-->C, B-->C

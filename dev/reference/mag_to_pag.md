@@ -43,6 +43,7 @@ Other operations:
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
 [`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md),
+[`dag_to_mpdag()`](https://caugi.org/dev/reference/dag_to_mpdag.md),
 [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
@@ -59,7 +60,7 @@ Other operations:
 ``` r
 mag <- caugi(A %-->% B, C %-->% B, class = "AG")
 mag_to_pag(mag) # A o-> B <-o C: both arrowheads are invariant
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5e3e48d47410>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x578e51862b20>
 #>   graph_class: PAG
 #>   nodes: A, C, B
 #>   edges: Ao->B, Co->B
@@ -67,7 +68,7 @@ mag_to_pag(mag) # A o-> B <-o C: both arrowheads are invariant
 # A chain has no invariant marks: it is equivalent to the reversed chain
 # and to the fork.
 mag_to_pag(caugi(A %-->% B, B %-->% C, class = "AG"))
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5e3e41eeefa0>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x578e49ece040>
 #>   graph_class: PAG
 #>   nodes: A, B, C
 #>   edges: Ao-oB, Bo-oC

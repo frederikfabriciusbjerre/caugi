@@ -3,16 +3,41 @@
 Add, remove, or and set nodes or edges to / from a `caugi` object. Edges
 can be specified using expressions with the infix operators.
 Alternatively, the edges to be added are specified using the `from`,
-`edge`, and `to` arguments.
+`edge`, and `to` arguments. The same verbs edit background knowledge
+made by [`knowledge()`](https://caugi.org/dev/reference/knowledge.md).
 
 ## Usage
 
 ``` r
-add_edges(cg, ..., from = NULL, edge = NULL, to = NULL, inplace = FALSE)
+add_edges(
+  cg,
+  ...,
+  from = NULL,
+  edge = NULL,
+  to = NULL,
+  status = NULL,
+  inplace = FALSE
+)
 
-remove_edges(cg, ..., from = NULL, edge = NULL, to = NULL, inplace = FALSE)
+remove_edges(
+  cg,
+  ...,
+  from = NULL,
+  edge = NULL,
+  to = NULL,
+  status = NULL,
+  inplace = FALSE
+)
 
-set_edges(cg, ..., from = NULL, edge = NULL, to = NULL, inplace = FALSE)
+set_edges(
+  cg,
+  ...,
+  from = NULL,
+  edge = NULL,
+  to = NULL,
+  status = NULL,
+  inplace = FALSE
+)
 
 add_nodes(cg, ..., name = NULL, inplace = FALSE)
 
@@ -23,7 +48,7 @@ remove_nodes(cg, ..., name = NULL, inplace = FALSE)
 
 - cg:
 
-  A `caugi` object.
+  A `caugi` object, or background knowledge.
 
 - ...:
 
@@ -43,6 +68,12 @@ remove_nodes(cg, ..., name = NULL, inplace = FALSE)
 
   Character vector of target node names. Default is `NULL`.
 
+- status:
+
+  For background knowledge, with `from` and `to`: `"required"` or
+  `"forbidden"`. By default, edges are added as required and removed in
+  both kinds.
+
 - inplace:
 
   DEPRECATED This parameter is deprecated and will be ignored. Graphs
@@ -54,7 +85,7 @@ remove_nodes(cg, ..., name = NULL, inplace = FALSE)
 
 ## Value
 
-The updated `caugi`.
+The updated `caugi` or knowledge.
 
 ## Details
 
@@ -93,4 +124,12 @@ cg <- remove_edges(cg, B %---% C) |> # A --> B, C, D, E
 # Graphs are now built lazily when needed
 parents(cg, "B") # triggers compilation
 #> [1] "A"
+
+# background knowledge
+bk <- knowledge(A %-->% B)
+bk <- add_edges(bk, !(B %-->% C))
+bk <- add_edges(bk, from = "C", to = "D", status = "forbidden")
+remove_edges(bk, from = "A", to = "B")
+#> <caugi::caugi_knowledge>
+#>  @ ptr:<pointer: 0x578e4cc3b3a0> 
 ```

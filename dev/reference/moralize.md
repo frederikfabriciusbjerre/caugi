@@ -31,6 +31,7 @@ Other operations:
 [`count_dags()`](https://caugi.org/dev/reference/count_dags.md),
 [`dag_from_pdag()`](https://caugi.org/dev/reference/dag_from_pdag.md),
 [`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md),
+[`dag_to_mpdag()`](https://caugi.org/dev/reference/dag_to_mpdag.md),
 [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md),
 [`enumerate_dags()`](https://caugi.org/dev/reference/enumerate_dags.md),
 [`exogenize()`](https://caugi.org/dev/reference/exogenize.md),
@@ -47,7 +48,7 @@ Other operations:
 ``` r
 cg <- caugi(A %-->% C, B %-->% C, class = "DAG")
 moralize(cg) # A -- B, A -- C, B -- C
-#> <caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x5e3e47e55450>
+#> <caugi object; 3 nodes, 3 edges; simple: TRUE; session=0x578e534dace0>
 #>   graph_class: UG
 #>   nodes: A, B, C
 #>   edges: A---B, A---C, B---C

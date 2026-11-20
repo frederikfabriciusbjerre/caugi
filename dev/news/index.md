@@ -4,6 +4,18 @@
 
 ### New Features
 
+- [`knowledge()`](https://caugi.org/dev/reference/knowledge.md) holds
+  background knowledge about a graph: required edges (`A %-->% B`),
+  forbidden edges (`!(A %-->% B)`), tiers and exogenous nodes. caugi’s
+  verbs edit it, with a `status` argument for the edge verbs, and
+  [`set_tiers()`](https://caugi.org/dev/reference/set_tiers.md) and
+  [`set_exogenous()`](https://caugi.org/dev/reference/set_tiers.md)
+  replace its tiers and exogenous nodes.
+
+- `orient(cg, bk)` applies background knowledge to a DAG, PDAG, CPDAG or
+  MPDAG, `holds(cg, bk)` checks it, and `dag_to_mpdag(dag, bk)` gives
+  the MPDAG of a DAG and background knowledge.
+
 - `has_edge(cg, X, Y)` checks whether any edge joins `X` and `Y`.
 
 - [`markov_blanket()`](https://caugi.org/dev/reference/markov_blanket.md)

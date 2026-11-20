@@ -14,15 +14,18 @@ E(cg, ...)
 
 - cg:
 
-  A `caugi` object.
+  A `caugi` object, or background knowledge.
 
 - ...:
 
-  Additional arguments (currently unused).
+  For background knowledge, `expand = TRUE` lists every pair the
+  knowledge constrains, tiers and exogenous nodes included, in the
+  fewest statements.
 
 ## Value
 
-A `data.table` with columns `from`, `edge`, and `to`.
+A `data.table` with columns `from`, `edge`, and `to`. For background
+knowledge, also `status`: `"required"` or `"forbidden"`.
 
 ## See also
 

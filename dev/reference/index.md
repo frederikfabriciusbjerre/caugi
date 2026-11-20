@@ -159,6 +159,21 @@
 
   Manipulate nodes and edges of a `caugi`
 
+## Background knowledge
+
+- [`is_knowledge()`](https://caugi.org/dev/reference/is_knowledge.md) :
+  Is it background knowledge?
+- [`knowledge()`](https://caugi.org/dev/reference/knowledge.md) :
+  Background knowledge
+- [`orient()`](https://caugi.org/dev/reference/orient.md)
+  [`holds()`](https://caugi.org/dev/reference/orient.md) : Apply and
+  check background knowledge
+- [`set_tiers()`](https://caugi.org/dev/reference/set_tiers.md)
+  [`set_exogenous()`](https://caugi.org/dev/reference/set_tiers.md) :
+  Set the tiers or exogenous nodes of background knowledge
+- [`tiers()`](https://caugi.org/dev/reference/tiers.md) : Tiers of
+  background knowledge
+
 ## Adjustment and d-separation
 
 - [`adjustment_set()`](https://caugi.org/dev/reference/adjustment_set.md)
@@ -260,6 +275,9 @@
 
 - [`dag_to_cpdag()`](https://caugi.org/dev/reference/dag_to_cpdag.md) :
   Construct the CPDAG of a DAG
+
+- [`dag_to_mpdag()`](https://caugi.org/dev/reference/dag_to_mpdag.md) :
+  Construct the MPDAG of a DAG and background knowledge
 
 - [`dag_to_pag()`](https://caugi.org/dev/reference/dag_to_pag.md) :
   Construct the PAG of a DAG with latent variables
