@@ -148,7 +148,7 @@ tiers <- function(bk) {
 #'
 #' @export
 required <- function(bk) {
-  .kn_edges_graph(bk, "required", "DAG")
+  .kn_edges_graph(bk, "required", "UNKNOWN")
 }
 
 #' @rdname required
