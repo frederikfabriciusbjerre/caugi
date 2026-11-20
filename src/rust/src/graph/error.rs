@@ -81,6 +81,8 @@ pub enum PdagError {
     DirectedCycle { cycle: Vec<u32> },
     /// An invalid edge type was found (only directed and undirected are allowed).
     InvalidEdgeType { found: String },
+    /// The graph has a self-loop or parallel edges.
+    NotSimple(BuilderError),
 }
 
 impl std::fmt::Display for PdagError {
@@ -94,6 +96,7 @@ impl std::fmt::Display for PdagError {
                 "PDAG can only contain directed and undirected edges, found: {}",
                 found
             ),
+            Self::NotSimple(e) => write!(f, "{e}"),
         }
     }
 }
@@ -107,6 +110,8 @@ impl std::error::Error for PdagError {}
 pub enum UgError {
     /// An invalid edge type was found (only undirected edges are allowed).
     InvalidEdgeType { found: String },
+    /// The graph has a self-loop or parallel edges.
+    NotSimple(BuilderError),
 }
 
 impl std::fmt::Display for UgError {
@@ -115,6 +120,7 @@ impl std::fmt::Display for UgError {
             Self::InvalidEdgeType { found } => {
                 write!(f, "UG can only contain undirected edges, found: {}", found)
             }
+            Self::NotSimple(e) => write!(f, "{e}"),
         }
     }
 }
@@ -134,6 +140,8 @@ pub enum AgError {
     AnteriorConstraintViolation { source: u32, target: u32 },
     /// Undirected constraint violated: a node has both undirected and arrowhead edges.
     UndirectedConstraintViolation { node: u32 },
+    /// The graph has a self-loop or parallel edges.
+    NotSimple(BuilderError),
 }
 
 impl std::fmt::Display for AgError {
@@ -157,6 +165,7 @@ impl std::fmt::Display for AgError {
                 "Undirected constraint violated: node {} has both undirected and arrowhead edges",
                 node
             ),
+            Self::NotSimple(e) => write!(f, "{e}"),
         }
     }
 }
@@ -172,6 +181,8 @@ pub enum PagError {
     InvalidEdgeType { found: String },
     /// The marks are not the invariant marks of a Markov equivalence class.
     NotAnEquivalenceClass { reason: String },
+    /// The graph has a self-loop or parallel edges.
+    NotSimple(BuilderError),
 }
 
 impl std::fmt::Display for PagError {
@@ -185,6 +196,7 @@ impl std::fmt::Display for PagError {
             Self::NotAnEquivalenceClass { reason } => {
                 write!(f, "Not a valid partial ancestral graph: {}", reason)
             }
+            Self::NotSimple(e) => write!(f, "{e}"),
         }
     }
 }

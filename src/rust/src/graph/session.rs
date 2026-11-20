@@ -1050,12 +1050,14 @@ impl GraphSession {
             }
         }
 
-        if let Some(rest) = err.strip_prefix("Self-loops not allowed in simple graphs (node ") {
-            let idx: u32 = rest.trim_end_matches(')').parse().ok()?;
-            return Some(format!(
-                "Self-loops not allowed in simple graphs (node {})",
-                self.format_index(idx)
-            ));
+        for prefix in [
+            "Self-loops not allowed in simple graphs (node ",
+            "ADMG contains a self-loop (node ",
+        ] {
+            if let Some(rest) = err.strip_prefix(prefix) {
+                let idx: u32 = rest.trim_end_matches(')').parse().ok()?;
+                return Some(format!("{prefix}{})", self.format_index(idx)));
+            }
         }
 
         if let Some(rest) = err.strip_prefix("Parallel edges not allowed in simple graphs (") {
@@ -2131,9 +2133,27 @@ mod tests {
         assert!(bow.is_admg_type().unwrap());
         assert!(!bow.is_ag_type().unwrap());
 
-        let mut admg_loop = GraphSession::new(&reg, 2, false, GraphClass::Admg);
-        admg_loop.set_edges_from_vecs(vec![0], vec![0], vec![b]);
-        assert!(admg_loop.view().unwrap_err().contains("self-loop (node 0)"));
+        // Only UNKNOWN admits a self-loop, even when built non-simple.
+        let c = reg.code_of("o-o").unwrap();
+        for (class, glyph) in [
+            (GraphClass::Pdag, u),
+            (GraphClass::Mpdag, u),
+            (GraphClass::Cpdag, u),
+            (GraphClass::Ug, u),
+            (GraphClass::Admg, b),
+            (GraphClass::Ag, u),
+            (GraphClass::Ag, b),
+            (GraphClass::Pag, c),
+        ] {
+            let mut g = GraphSession::new(&reg, 2, false, class);
+            g.set_names(vec!["A".into(), "B".into()]);
+            g.set_edges_from_vecs(vec![0], vec![0], vec![glyph]);
+            let err = g.view().unwrap_err();
+            assert!(
+                err.contains("elf-loop") && err.contains("(node A)"),
+                "{err}"
+            );
+        }
 
         let mut auto_bow = GraphSession::new(&reg, 2, false, GraphClass::Auto);
         auto_bow.set_edges_from_vecs(vec![0, 0], vec![1, 1], vec![d, b]);

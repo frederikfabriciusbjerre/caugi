@@ -50,6 +50,8 @@ impl Ag {
     ///
     /// See [`new`](Self::new) for details.
     pub fn try_new(core: Arc<CaugiGraph>) -> Result<Self, AgError> {
+        // A self-loop or a second edge between two nodes is never ancestral.
+        core.check_simple().map_err(AgError::NotSimple)?;
         let n = core.n() as usize;
 
         // Check acyclicity of directed part
@@ -825,10 +827,11 @@ mod tests {
     #[test]
     fn ag_anterior_constraint_violation_from_bidirected_when_left_is_anterior() {
         let (reg, dir, bid, _und) = setup();
-        let mut b = GraphBuilder::new_with_registry(2, false, &reg);
-        // 0 -> 1 and 0 <-> 1 violates anterior constraint on the bidirected edge:
-        // 0 is an anterior of 1.
-        b.add_edge(0, 1, dir).unwrap();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        // 0 -> 2 -> 1 and 0 <-> 1 violates anterior constraint on the bidirected
+        // edge: 0 is an anterior of 1.
+        b.add_edge(0, 2, dir).unwrap();
+        b.add_edge(2, 1, dir).unwrap();
         b.add_edge(0, 1, bid).unwrap();
 
         let err = Ag::try_new(Arc::new(b.finalize().unwrap())).unwrap_err();
@@ -844,10 +847,11 @@ mod tests {
     #[test]
     fn ag_anterior_constraint_violation_from_bidirected_when_right_is_anterior() {
         let (reg, dir, bid, _und) = setup();
-        let mut b = GraphBuilder::new_with_registry(2, false, &reg);
-        // 1 -> 0 and 0 <-> 1 violates anterior constraint on the bidirected edge:
-        // 1 is an anterior of 0.
-        b.add_edge(1, 0, dir).unwrap();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        // 1 -> 2 -> 0 and 0 <-> 1 violates anterior constraint on the bidirected
+        // edge: 1 is an anterior of 0.
+        b.add_edge(1, 2, dir).unwrap();
+        b.add_edge(2, 0, dir).unwrap();
         b.add_edge(0, 1, bid).unwrap();
 
         let err = Ag::try_new(Arc::new(b.finalize().unwrap())).unwrap_err();

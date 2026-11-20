@@ -184,6 +184,10 @@
 
 ## Bug Fixes
 
+* An AG built with `simple = FALSE` no longer accepts a self-loop such as
+  `A --- A` or `A <-> A`; only UNKNOWN graphs can have self-loops. The ADMG
+  self-loop error names the node instead of giving its index.
+
 * caugi builds on Windows with Rust 1.100 or later, which needs the
   `synchronization` library at link time.
 

@@ -31,6 +31,7 @@ impl Pdag {
 
     /// Builds a `Pdag` view with typed error handling.
     pub fn try_new(core: Arc<CaugiGraph>) -> Result<Self, PdagError> {
+        core.check_simple().map_err(PdagError::NotSimple)?;
         let n = core.n() as usize;
         if let Some(cycle) = find_directed_cycle(&core) {
             return Err(PdagError::DirectedCycle { cycle });

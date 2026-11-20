@@ -82,7 +82,7 @@ impl Pag {
         // The round trip compares one mark pair per node pair, so it cannot
         // see a self-loop or a parallel edge (Richardson and Spirtes 2002,
         // Sec. 2.2). Reject those first.
-        core.check_simple().map_err(|e| invalid(e.to_string()))?;
+        core.check_simple().map_err(PagError::NotSimple)?;
         let pag = Self::index(core)?;
         let marks = MarkedGraph::from_core(pag.core_ref()).map_err(invalid)?;
 
