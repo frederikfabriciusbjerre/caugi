@@ -130,9 +130,8 @@ tiers <- function(bk) {
 #' @title Required and forbidden edges of background knowledge
 #'
 #' @description
-#' The edges `bk` requires or forbids, as written, as a `caugi` on its nodes.
-#' Forbidden edges may run both ways between two nodes, so that graph has class
-#' `"UNKNOWN"`.
+#' The edges `bk` requires or forbids, as written, as a `caugi` of class
+#' `"UNKNOWN"` on its nodes.
 #'
 #' @param bk Background knowledge, made by [knowledge()].
 #'

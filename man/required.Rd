@@ -16,9 +16,8 @@ forbidden(bk)
 A \code{caugi}.
 }
 \description{
-The edges \code{bk} requires or forbids, as written, as a \code{caugi} on its nodes.
-Forbidden edges may run both ways between two nodes, so that graph has class
-\code{"UNKNOWN"}.
+The edges \code{bk} requires or forbids, as written, as a \code{caugi} of class
+\code{"UNKNOWN"} on its nodes.
 }
 \examples{
 bk <- knowledge(A \%-->\% B, !(B \%-->\% C), !(C \%-->\% B))

@@ -182,7 +182,7 @@ test_that("dag_to_mpdag() restricts the CPDAG of a DAG", {
 
 test_that("required() and forbidden() give the statements as graphs", {
   bk <- knowledge(A %-->% B, !(B %-->% C), !(C %-->% B), D)
-  expect_equal(required(bk), caugi(A %-->% B, C, D, class = "DAG"))
+  expect_equal(required(bk), caugi(A %-->% B, C, D, class = "UNKNOWN"))
   expect_equal(
     forbidden(bk),
     caugi(B %-->% C, C %-->% B, A, D, class = "UNKNOWN")
