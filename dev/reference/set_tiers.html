@@ -92,6 +92,7 @@ If missing, the current <code>max_lag</code> is kept. <code>NULL</code> removes 
 <code><a href="is_knowledge.html">is_knowledge()</a></code>,
 <code><a href="knowledge.html">knowledge()</a></code>,
 <code><a href="orient.html">orient()</a></code>,
+<code><a href="required.html">required()</a></code>,
 <code><a href="tiers.html">tiers()</a></code></p></div>
     </div>
 
@@ -100,8 +101,10 @@ If missing, the current <code>max_lag</code> is kept. <code>NULL</code> removes 
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">bk</span> <span class="op">&lt;-</span> <span class="fu"><a href="knowledge.html">knowledge</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">B</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">bk</span> <span class="op">&lt;-</span> <span class="fu">set_tiers</span><span class="op">(</span><span class="va">bk</span>, baseline <span class="op">=</span> <span class="va">A</span>, followup <span class="op">=</span> <span class="va">B</span> <span class="op">+</span> <span class="va">C</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">set_exogenous</span><span class="op">(</span><span class="va">bk</span>, <span class="va">A</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi::caugi_knowledge&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  @ ptr:&lt;pointer: 0x578e4cb35f60&gt; </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;knowledge; nodes: A, B, C&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   tier(baseline = A, followup = B + C)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   exogenous(A)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   A %--&gt;% B</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

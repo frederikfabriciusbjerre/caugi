@@ -50,6 +50,7 @@ Edges are written as in
 Other knowledge:
 [`is_knowledge()`](https://caugi.org/dev/reference/is_knowledge.md),
 [`orient()`](https://caugi.org/dev/reference/orient.md),
+[`required()`](https://caugi.org/dev/reference/required.md),
 [`set_tiers()`](https://caugi.org/dev/reference/set_tiers.md),
 [`tiers()`](https://caugi.org/dev/reference/tiers.md)
 
@@ -63,7 +64,12 @@ bk <- knowledge(
   exogenous(A)
 )
 bk
-#> <caugi::caugi_knowledge>
-#>  @ ptr:<pointer: 0x578e4f6a5c20> 
+#> <knowledge; nodes: A, B, C, D>
+#>   tier(baseline = A + B, followup = C + D)
+#>   exogenous(A)
+#>   A %-->% C
+#>   !(B %-->% D)
 edges(bk, expand = TRUE)
+plot(bk)
+
 ```

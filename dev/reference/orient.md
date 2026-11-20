@@ -44,6 +44,7 @@ Conference on Uncertainty in Artificial Intelligence (UAI-17)*.
 Other knowledge:
 [`is_knowledge()`](https://caugi.org/dev/reference/is_knowledge.md),
 [`knowledge()`](https://caugi.org/dev/reference/knowledge.md),
+[`required()`](https://caugi.org/dev/reference/required.md),
 [`set_tiers()`](https://caugi.org/dev/reference/set_tiers.md),
 [`tiers()`](https://caugi.org/dev/reference/tiers.md)
 
@@ -54,7 +55,7 @@ cpdag <- caugi(A %---% B, B %---% C, class = "CPDAG")
 bk <- knowledge(A %-->% B)
 holds(cpdag, bk) # NA: some DAGs have A --> B, some B --> A
 orient(cpdag, bk) # A --> B --> C
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x578e4fbbbb10>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5b62049f8140>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B-->C

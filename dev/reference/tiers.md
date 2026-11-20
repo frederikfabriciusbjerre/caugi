@@ -25,6 +25,7 @@ Other knowledge:
 [`is_knowledge()`](https://caugi.org/dev/reference/is_knowledge.md),
 [`knowledge()`](https://caugi.org/dev/reference/knowledge.md),
 [`orient()`](https://caugi.org/dev/reference/orient.md),
+[`required()`](https://caugi.org/dev/reference/required.md),
 [`set_tiers()`](https://caugi.org/dev/reference/set_tiers.md)
 
 ## Examples

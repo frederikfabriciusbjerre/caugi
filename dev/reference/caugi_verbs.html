@@ -180,8 +180,9 @@ Graphs are always modified via copy-on-write.</p></dd>
 <span class="r-in"><span><span class="va">bk</span> <span class="op">&lt;-</span> <span class="fu">add_edges</span><span class="op">(</span><span class="va">bk</span>, <span class="op">!</span><span class="op">(</span><span class="va">B</span> <span class="op"><a href="edge_operators.html">%--&gt;%</a></span> <span class="va">C</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">bk</span> <span class="op">&lt;-</span> <span class="fu">add_edges</span><span class="op">(</span><span class="va">bk</span>, from <span class="op">=</span> <span class="st">"C"</span>, to <span class="op">=</span> <span class="st">"D"</span>, status <span class="op">=</span> <span class="st">"forbidden"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">remove_edges</span><span class="op">(</span><span class="va">bk</span>, from <span class="op">=</span> <span class="st">"A"</span>, to <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;caugi::caugi_knowledge&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  @ ptr:&lt;pointer: 0x578e4cc3b3a0&gt; </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;knowledge; nodes: A, B, C, D&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   !(B %--&gt;% C)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   !(C %--&gt;% D)</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

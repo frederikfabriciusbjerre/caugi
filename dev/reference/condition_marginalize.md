@@ -74,12 +74,12 @@ mg <- caugi(
 )
 
 condition_marginalize(mg, latents = "U") # ADMG
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x578e4cdc99d0>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5b62043834b0>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y, X<->Y
 condition_marginalize(mg, selection = "U") # DAG
-#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x578e49f47920>
+#> <caugi object; 4 nodes, 2 edges; simple: TRUE; session=0x5b62044d6ba0>
 #>   graph_class: AG
 #>   nodes: A, B, X, Y
 #>   edges: A-->X, B-->Y

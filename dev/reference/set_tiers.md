@@ -47,6 +47,7 @@ Other knowledge:
 [`is_knowledge()`](https://caugi.org/dev/reference/is_knowledge.md),
 [`knowledge()`](https://caugi.org/dev/reference/knowledge.md),
 [`orient()`](https://caugi.org/dev/reference/orient.md),
+[`required()`](https://caugi.org/dev/reference/required.md),
 [`tiers()`](https://caugi.org/dev/reference/tiers.md)
 
 ## Examples
@@ -55,6 +56,8 @@ Other knowledge:
 bk <- knowledge(A %-->% B)
 bk <- set_tiers(bk, baseline = A, followup = B + C)
 set_exogenous(bk, A)
-#> <caugi::caugi_knowledge>
-#>  @ ptr:<pointer: 0x578e4cb35f60> 
+#> <knowledge; nodes: A, B, C>
+#>   tier(baseline = A, followup = B + C)
+#>   exogenous(A)
+#>   A %-->% B
 ```

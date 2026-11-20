@@ -168,6 +168,9 @@
 - [`orient()`](https://caugi.org/dev/reference/orient.md)
   [`holds()`](https://caugi.org/dev/reference/orient.md) : Apply and
   check background knowledge
+- [`required()`](https://caugi.org/dev/reference/required.md)
+  [`forbidden()`](https://caugi.org/dev/reference/required.md) :
+  Required and forbidden edges of background knowledge
 - [`set_tiers()`](https://caugi.org/dev/reference/set_tiers.md)
   [`set_exogenous()`](https://caugi.org/dev/reference/set_tiers.md) :
   Set the tiers or exogenous nodes of background knowledge

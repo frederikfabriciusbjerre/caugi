@@ -130,6 +130,7 @@ bk <- knowledge(A %-->% B)
 bk <- add_edges(bk, !(B %-->% C))
 bk <- add_edges(bk, from = "C", to = "D", status = "forbidden")
 remove_edges(bk, from = "A", to = "B")
-#> <caugi::caugi_knowledge>
-#>  @ ptr:<pointer: 0x578e4cc3b3a0> 
+#> <knowledge; nodes: A, B, C, D>
+#>   !(B %-->% C)
+#>   !(C %-->% D)
 ```

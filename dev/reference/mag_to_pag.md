@@ -60,7 +60,7 @@ Other operations:
 ``` r
 mag <- caugi(A %-->% B, C %-->% B, class = "AG")
 mag_to_pag(mag) # A o-> B <-o C: both arrowheads are invariant
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x578e51862b20>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5b6204262c70>
 #>   graph_class: PAG
 #>   nodes: A, C, B
 #>   edges: Ao->B, Co->B
@@ -68,7 +68,7 @@ mag_to_pag(mag) # A o-> B <-o C: both arrowheads are invariant
 # A chain has no invariant marks: it is equivalent to the reversed chain
 # and to the fork.
 mag_to_pag(caugi(A %-->% B, B %-->% C, class = "AG"))
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x578e49ece040>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5b61fea47b20>
 #>   graph_class: PAG
 #>   nodes: A, B, C
 #>   edges: Ao-oB, Bo-oC
