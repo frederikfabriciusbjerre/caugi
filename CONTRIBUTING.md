@@ -116,7 +116,7 @@ caugi/
 
 ### R Code
 
-- **Follow the tidyverse style guide**: Use `styler::style_pkg()` before committing
+- **Follow the tidyverse style guide**: Run `air format .` before committing
 - **Naming conventions**:
   - Functions: `snake_case`
   - S7 classes: `snake_case`
@@ -227,9 +227,9 @@ test_that("parents() returns correct parents", {
 
 1. **Style your code**:
 
-   ```r
-   # Style R code
-   styler::style_pkg()
+   ```bash
+   # Style R code (run from the package root)
+   air format .
    ```
 
    ```bash
