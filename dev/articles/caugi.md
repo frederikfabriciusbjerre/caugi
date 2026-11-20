@@ -24,7 +24,7 @@ cg <- caugi(
   class = "DAG"
 )
 cg
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x5c7a3543bc50>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x63bf53bebe50>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, A-->C, B-->C, B-->D
@@ -44,7 +44,7 @@ other *properties*. Let’s check the other properties.
 ``` r
 
 cg@session
-#> <pointer: 0x5c7a3543bc50>
+#> <pointer: 0x63bf53bebe50>
 ```
 
 This is the session pointer to the Rust graph object that `caugi`
@@ -70,7 +70,7 @@ caugi(A %-->% B, B %-->% A, class = "DAG")
 #> Error:
 #> ! Parallel edges not allowed in simple graphs (A -> B)
 caugi(A %-->% B, B %-->% A, class = "UNKNOWN")
-#> <caugi object; 2 nodes, 2 edges; simple: FALSE; session=0x5c7a348c2850>
+#> <caugi object; 2 nodes, 2 edges; simple: FALSE; session=0x63bf53f99f30>
 #>   graph_class: UNKNOWN
 #>   nodes: A, B
 #>   edges: A-->B, B-->A
@@ -130,7 +130,7 @@ cg_modified <- cg |>
   remove_edges(A %-->% B, B %-->% C + D) |>
   add_edges(B %-->% A, D %-->% C)
 cg_modified
-#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x5c7a3410c570>
+#> <caugi object; 4 nodes, 3 edges; simple: TRUE; session=0x63bf4e36e500>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->C, B-->A, D-->C
@@ -171,7 +171,7 @@ bk <- knowledge(tier(early = A, late = B + C + D), !(B %-->% C))
 cpdag <- dag_to_cpdag(cg)
 holds(cpdag, bk)
 orient(cpdag, bk)
-#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x5c7a31c2a5f0>
+#> <caugi object; 4 nodes, 4 edges; simple: TRUE; session=0x63bf54cf0c80>
 #>   graph_class: DAG
 #>   nodes: A, B, C, D
 #>   edges: A-->B, A-->C, B-->D, C-->B
@@ -207,7 +207,7 @@ to do with `caugi`.
 ``` r
 
 cg@session
-#> <pointer: 0x5c7a3543bc50>
+#> <pointer: 0x63bf53bebe50>
 ```
 
 This is the Rust GraphSession pointer that holds the canonical graph

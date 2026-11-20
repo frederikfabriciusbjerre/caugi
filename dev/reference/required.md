@@ -36,12 +36,12 @@ Other knowledge:
 ``` r
 bk <- knowledge(A %-->% B, !(B %-->% C), !(C %-->% B))
 required(bk)
-#> <caugi object; 3 nodes, 1 edges; simple: FALSE; session=0x5b62012dfb70>
+#> <caugi object; 3 nodes, 1 edges; simple: FALSE; session=0x580f492ce3f0>
 #>   graph_class: UNKNOWN
 #>   nodes: A, B, C
 #>   edges: A-->B
 forbidden(bk)
-#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x5b6201189060>
+#> <caugi object; 3 nodes, 2 edges; simple: FALSE; session=0x580f544e4dc0>
 #>   graph_class: UNKNOWN
 #>   nodes: A, B, C
 #>   edges: B-->C, C-->B

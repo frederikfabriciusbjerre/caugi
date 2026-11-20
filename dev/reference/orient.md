@@ -55,7 +55,7 @@ cpdag <- caugi(A %---% B, B %---% C, class = "CPDAG")
 bk <- knowledge(A %-->% B)
 holds(cpdag, bk) # NA: some DAGs have A --> B, some B --> A
 orient(cpdag, bk) # A --> B --> C
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5b62049f8140>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x580f4a11d430>
 #>   graph_class: DAG
 #>   nodes: A, B, C
 #>   edges: A-->B, B-->C

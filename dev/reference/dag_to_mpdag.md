@@ -50,7 +50,7 @@ Other operations:
 ``` r
 dag <- caugi(A %-->% B, B %-->% C, class = "DAG")
 dag_to_mpdag(dag, knowledge(!(C %-->% B))) # A --- B --> C
-#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x5b61ff287d70>
+#> <caugi object; 3 nodes, 2 edges; simple: TRUE; session=0x580f54dc3a90>
 #>   graph_class: MPDAG
 #>   nodes: A, B, C
 #>   edges: A---B, B-->C
