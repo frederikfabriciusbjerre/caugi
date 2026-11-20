@@ -187,32 +187,6 @@ impl Pdag {
         }
         false
     }
-
-    #[inline]
-    pub(crate) fn has_dir_path(&self, src: u32, tgt: u32) -> bool {
-        let n = self.n() as usize;
-        if src == tgt {
-            return true;
-        }
-        let mut seen = vec![false; n];
-        use std::collections::VecDeque;
-        let mut q = VecDeque::new();
-        q.push_back(src);
-        while let Some(u) = q.pop_front() {
-            if u == tgt {
-                return true;
-            }
-            if std::mem::replace(&mut seen[u as usize], true) {
-                continue;
-            }
-            for &w in self.children_of(u) {
-                if !seen[w as usize] {
-                    q.push_back(w);
-                }
-            }
-        }
-        false
-    }
 }
 
 impl crate::graph::traits::Acyclic for Pdag {}
@@ -339,28 +313,8 @@ mod tests {
     }
 
     #[test]
-    fn pdag_internal_helpers_cover_intersection_and_paths() {
-        let mut r = EdgeRegistry::new();
-        r.register_builtins().unwrap();
-        let d = r.code_of("-->").unwrap();
-
-        // 0 -> 1, 0 -> 2, 1 -> 3, 2 -> 3
-        let mut b = GraphBuilder::new_with_registry(5, true, &r);
-        b.add_edge(0, 1, d).unwrap();
-        b.add_edge(0, 2, d).unwrap();
-        b.add_edge(1, 3, d).unwrap();
-        b.add_edge(2, 3, d).unwrap();
-        let g = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
-
-        // intersects_sorted equal-hit and miss branches
+    fn pdag_intersects_sorted_hit_and_miss() {
         assert!(Pdag::intersects_sorted(&[1, 3, 7], &[0, 2, 3]));
         assert!(!Pdag::intersects_sorted(&[1, 4], &[2, 3]));
-
-        // has_dir_path src==tgt fast-path
-        assert!(g.has_dir_path(0, 0));
-        // has_dir_path reaches target in BFS
-        assert!(g.has_dir_path(0, 3));
-        // has_dir_path false branch with revisit/continue path
-        assert!(!g.has_dir_path(0, 4));
     }
 }

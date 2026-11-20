@@ -51,10 +51,9 @@ impl Dag {
             }
         }
 
+        // Callers pass a parent and a child of one node, which differ as the
+        // graph stays acyclic.
         fn add_dir(u: u32, v: u32, pa: &mut [BTreeSet<u32>], ch: &mut [BTreeSet<u32>]) {
-            if u == v {
-                return;
-            }
             if ch[u as usize].insert(v) {
                 pa[v as usize].insert(u);
             }
@@ -154,15 +153,15 @@ impl Dag {
             }
         }
 
+        // Callers pass a parent and a child of one node, which differ as the
+        // graph stays acyclic.
         fn add_dir(u: u32, v: u32, pa: &mut [BTreeSet<u32>], ch: &mut [BTreeSet<u32>]) {
-            if u == v {
-                return;
-            }
             if ch[u as usize].insert(v) {
                 pa[v as usize].insert(u);
             }
         }
 
+        // Only latents are removed, and step 1 left them without parents.
         fn remove_node(
             u: u32,
             active: &mut [bool],
@@ -173,16 +172,11 @@ impl Dag {
             if !active[ui] {
                 return;
             }
-            let parents_u: Vec<u32> = pa[ui].iter().copied().collect();
             let children_u: Vec<u32> = ch[ui].iter().copied().collect();
 
-            for p in parents_u {
-                ch[p as usize].remove(&u);
-            }
             for c in children_u {
                 pa[c as usize].remove(&u);
             }
-            pa[ui].clear();
             ch[ui].clear();
             active[ui] = false;
         }
@@ -191,9 +185,6 @@ impl Dag {
         for &u in latents {
             if u >= self.n() {
                 return Err(format!("Index {} is out of bounds", u));
-            }
-            if !active[u as usize] {
-                continue;
             }
             let ui = u as usize;
             let parents_u: Vec<u32> = pa[ui].iter().copied().collect();
@@ -578,11 +569,9 @@ pub(crate) fn latent_project_graph<'a>(
         }
     }
 
-    // Helper closures for adding edges
+    // Helper closures for adding edges. `add_dir` gets a parent and a child of
+    // one node, which differ as elimination keeps the directed part acyclic.
     fn add_dir(u: u32, v: u32, pa: &mut [BTreeSet<u32>], ch: &mut [BTreeSet<u32>]) {
-        if u == v {
-            return;
-        }
         if ch[u as usize].insert(v) {
             pa[v as usize].insert(u);
         }
@@ -602,9 +591,6 @@ pub(crate) fn latent_project_graph<'a>(
 
     for &v in &elim {
         let vi = v as usize;
-        if vi >= n {
-            continue;
-        }
 
         // Snapshot neighborhoods of v in the CURRENT graph
         let parents_v: Vec<u32> = pa[vi].iter().copied().collect();

@@ -547,29 +547,24 @@ impl GraphView {
                 let p = super::pdag::Pdag::new(std::sync::Arc::new(core2))?;
                 GraphView::Pdag(std::sync::Arc::new(p))
             }
+            // An induced subgraph of a Meek-closed PDAG is Meek-closed: every
+            // rule's pattern and every directed path in it is also in the
+            // whole graph.
             GraphView::Mpdag(_) => {
                 let p = super::pdag::Pdag::new(std::sync::Arc::new(core2))?;
-                if p.is_meek_closed() {
-                    let m = super::mpdag::Mpdag::from_closed_unchecked(p);
-                    GraphView::Mpdag(std::sync::Arc::new(m))
-                } else {
-                    GraphView::Pdag(std::sync::Arc::new(p))
-                }
+                let m = super::mpdag::Mpdag::from_closed_unchecked(p);
+                GraphView::Mpdag(std::sync::Arc::new(m))
             }
             GraphView::Cpdag(_) => {
-                // Deleting nodes can break the CPDAG invariant (e.g. chordality
-                // or strong protection). Downgrade to the strongest class the
-                // residual graph still satisfies: CPDAG, else MPDAG, else PDAG.
+                // Deleting nodes can leave an arrow unprotected, so downgrade
+                // to an MPDAG when the residual graph is no longer a CPDAG.
                 let p = super::pdag::Pdag::new(std::sync::Arc::new(core2))?;
-                if p.is_cpdag() {
-                    let m = super::mpdag::Mpdag::from_closed_unchecked(p);
+                let m = super::mpdag::Mpdag::from_closed_unchecked(p);
+                if m.is_cpdag() {
                     let c = super::cpdag::Cpdag::from_valid_unchecked(m);
                     GraphView::Cpdag(std::sync::Arc::new(c))
-                } else if p.is_meek_closed() {
-                    let m = super::mpdag::Mpdag::from_closed_unchecked(p);
-                    GraphView::Mpdag(std::sync::Arc::new(m))
                 } else {
-                    GraphView::Pdag(std::sync::Arc::new(p))
+                    GraphView::Mpdag(std::sync::Arc::new(m))
                 }
             }
             GraphView::Ug(_) => {

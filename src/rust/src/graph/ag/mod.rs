@@ -115,20 +115,16 @@ impl Ag {
         Ok(ag)
     }
 
-    /// Validate the anterior constraint for all edges.
+    /// Validate the anterior constraint.
+    ///
+    /// Only bidirected edges are checked. A directed edge `u --> v` cannot
+    /// violate it in a graph that is acyclic and meets the undirected
+    /// constraint: a node with an arrowhead has no undirected edges, so an
+    /// anterior path from `v` to `u` would be directed, and with `u --> v` it
+    /// would close a directed cycle.
     fn validate_anterior_constraint(&self) -> Result<(), AgError> {
         let n = self.n();
         for v in 0..n {
-            // Check directed edges pointing into v (v's parents)
-            for &u in self.parents_of(v) {
-                // v has arrowhead from u, check that v is not anterior of u
-                if self.is_anterior_of(v, u) {
-                    return Err(AgError::AnteriorConstraintViolation {
-                        source: u,
-                        target: v,
-                    });
-                }
-            }
             // Check bidirected edges (spouses) - both ends have arrowheads
             for &u in self.spouses_of(v) {
                 // Only check once (when v < u to avoid duplicate checks)

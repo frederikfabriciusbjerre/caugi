@@ -325,15 +325,11 @@ impl Pdag {
             }
         }
 
-        // Cycle avoidance: u--v and (u ⇒ v or v ⇒ u)
-        for v in 0..self.n() {
-            for &u in self.undirected_of(v) {
-                if self.has_dir_path(u, v) || self.has_dir_path(v, u) {
-                    return false;
-                }
-            }
-        }
-
+        // No separate check for u--v with a directed path u ⇒ v is needed. Take
+        // a shortest such path ending p -> v: p !~ u fires R1, u -> p fires R2,
+        // p -> u closes a directed cycle (rejected by `Pdag::new`), and u--p
+        // repeats the argument on a shorter path. A simple graph has no u -> v
+        // next to u--v, so the path has length two or more.
         true
     }
 

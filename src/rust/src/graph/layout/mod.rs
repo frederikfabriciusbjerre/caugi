@@ -142,10 +142,6 @@ pub fn compute_layout(
     let mut component_layouts = Vec::new();
 
     for group in groups {
-        if group.is_empty() {
-            continue;
-        }
-
         // Create node mapping for this subgraph
         let node_map: std::collections::HashMap<usize, usize> = group
             .iter()
