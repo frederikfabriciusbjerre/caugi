@@ -238,20 +238,6 @@ impl Dag {
 impl crate::graph::traits::Acyclic for Dag {}
 impl crate::graph::traits::NoUndirected for Dag {}
 impl crate::graph::traits::NoBidirected for Dag {}
-impl crate::graph::traits::DirectedNeighbors for Dag {
-    #[inline]
-    fn n(&self) -> u32 {
-        Dag::n(self)
-    }
-    #[inline]
-    fn parents_of(&self, i: u32) -> &[u32] {
-        Dag::parents_of(self, i)
-    }
-    #[inline]
-    fn children_of(&self, i: u32) -> &[u32] {
-        Dag::children_of(self, i)
-    }
-}
 
 #[cfg(test)]
 mod tests {

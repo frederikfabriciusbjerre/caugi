@@ -675,6 +675,24 @@ mod tests {
     }
 
     #[test]
+    fn discriminating_path_backtracks_out_of_a_dead_end() {
+        // `0 <-> 1` makes 0 a collider and a parent of 3, but 0 leads to no
+        // source, so the search backs out and finds `4 --> 1` instead.
+        let g = build(
+            5,
+            &[
+                (0, 1, "<->"),
+                (0, 3, "-->"),
+                (1, 2, "<->"),
+                (1, 3, "-->"),
+                (2, 3, "-->"),
+                (4, 1, "-->"),
+            ],
+        );
+        assert_eq!(g.discriminating_path(1, 2, 3), Some(vec![4, 1, 2, 3]));
+    }
+
+    #[test]
     fn discriminating_path_needs_a_source_disconnected_from_c() {
         let g = build(
             4,
@@ -730,6 +748,43 @@ mod tests {
         assert_eq!(und.uncovered_pd_path(0, 2, None, &[]), None);
         let sel = build(3, &[(0, 1, "--o"), (1, 2, "--o")]);
         assert_eq!(sel.uncovered_pd_path(0, 2, None, &[]), Some(vec![0, 1, 2]));
+    }
+
+    #[test]
+    fn uncovered_circle_path_on_a_circle_cycle() {
+        let g = build(
+            4,
+            &[(0, 1, "o-o"), (0, 2, "o-o"), (2, 3, "o-o"), (3, 1, "o-o")],
+        );
+        assert_eq!(g.uncovered_circle_path(0, 1), Some(vec![0, 2, 3, 1]));
+        assert_eq!(g.uncovered_circle_path(0, 0), None);
+        assert_eq!(g.uncovered_circle_path(0, 9), None);
+    }
+
+    #[test]
+    fn code_for_marks_swaps_to_a_registered_mirror() {
+        let directed = crate::edges::EdgeSpec {
+            glyph: "-->".into(),
+            tail: Mark::Tail,
+            head: Mark::Arrow,
+            symmetric: false,
+            class: crate::edges::EdgeClass::Directed,
+        };
+        let registry = RegistrySnapshot::from_specs(Arc::from([directed]), 1);
+        assert_eq!(
+            code_for_marks(&registry, Mark::Tail, Mark::Arrow),
+            Ok((0, false))
+        );
+        assert_eq!(
+            code_for_marks(&registry, Mark::Arrow, Mark::Tail),
+            Ok((0, true))
+        );
+        let err = code_for_marks(&registry, Mark::Circle, Mark::Circle).unwrap_err();
+        assert!(
+            err.contains("no registered edge"),
+            "unexpected error: {}",
+            err
+        );
     }
 
     #[test]

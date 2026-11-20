@@ -211,47 +211,6 @@ fn smallest_und_edge(und: &[HashSet<u32>]) -> Option<(u32, u32)> {
     best
 }
 
-/// True if orienting `a -> b` would create a new unshielded collider at `b`,
-/// i.e. an existing parent `p` of `b` (other than `a`) is not adjacent to `a`.
-fn would_create_v_structure(
-    a: u32,
-    b: u32,
-    pa: &[HashSet<u32>],
-    ch: &[HashSet<u32>],
-    und: &[HashSet<u32>],
-) -> bool {
-    for &p in &pa[b as usize] {
-        if p != a && !meek::adjacent(a as usize, p as usize, und, pa, ch) {
-            return true;
-        }
-    }
-    false
-}
-
-/// True if a directed path `src -> ... -> tgt` exists using only `ch`.
-fn has_dir_path(ch: &[HashSet<u32>], src: u32, tgt: u32) -> bool {
-    if src == tgt {
-        return true;
-    }
-    let n = ch.len();
-    let mut seen = vec![false; n];
-    let mut stack = vec![src];
-    while let Some(u) = stack.pop() {
-        if u == tgt {
-            return true;
-        }
-        if std::mem::replace(&mut seen[u as usize], true) {
-            continue;
-        }
-        for &w in &ch[u as usize] {
-            if !seen[w as usize] {
-                stack.push(w);
-            }
-        }
-    }
-    false
-}
-
 fn list_dags(
     pa: Vec<HashSet<u32>>,
     ch: Vec<HashSet<u32>>,
@@ -267,10 +226,10 @@ fn list_dags(
         return;
     };
     for (a, b) in [(u, v), (v, u)] {
-        if would_create_v_structure(a, b, &pa, &ch, &und) {
+        if meek::creates_new_unshielded_collider(a as usize, b, &und, &pa, &ch) {
             continue;
         }
-        if has_dir_path(&ch, b, a) {
+        if meek::has_dir_path(&ch, b, a) {
             continue;
         }
         let mut pa2 = pa.clone();
@@ -300,10 +259,10 @@ fn count_dags(
         return;
     };
     for (a, b) in [(u, v), (v, u)] {
-        if would_create_v_structure(a, b, &pa, &ch, &und) {
+        if meek::creates_new_unshielded_collider(a as usize, b, &und, &pa, &ch) {
             continue;
         }
-        if has_dir_path(&ch, b, a) {
+        if meek::has_dir_path(&ch, b, a) {
             continue;
         }
         let mut pa2 = pa.clone();
@@ -565,6 +524,88 @@ mod tests {
         }
         assert_eq!(extended + refused, 64);
         assert!(refused > 0 && extended > 0);
+    }
+
+    #[test]
+    fn enumerate_a_pdag_with_no_extension_is_empty() {
+        // The undirected four-cycle, as above.
+        let (reg, _d, u) = setup();
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        for (i, j) in [(0, 1), (1, 2), (2, 3), (3, 0)] {
+            b.add_edge(i, j, u).unwrap();
+        }
+        let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(p.enumerate_mec().unwrap().is_empty());
+        assert_eq!(p.count_mec().unwrap(), 0);
+    }
+
+    #[test]
+    fn listing_an_unclosed_state_rejects_the_breaking_orientation() {
+        // `enumerate_mec` only lists Meek-closed states, where either
+        // orientation of an undirected edge has a consistent extension. On
+        // an unclosed state, one orientation of the first edge must be
+        // rejected for the reason given.
+        let (reg, d, u) = setup();
+        for (what, n, directed, undirected, want) in [
+            (
+                "a new collider",
+                3,
+                &[(0, 1)][..],
+                &[(1, 2)][..],
+                vec![(0, 1), (1, 2)],
+            ),
+            (
+                "a directed cycle",
+                3,
+                &[(0, 1), (1, 2)],
+                &[(0, 2)],
+                vec![(0, 1), (0, 2), (1, 2)],
+            ),
+            (
+                // `0 --> 1` lets R2 orient `0 --> 2`, a collider with 3.
+                "a new collider after the closure",
+                4,
+                &[(1, 2), (3, 2)],
+                &[(0, 1), (0, 2)],
+                vec![(1, 0), (1, 2), (2, 0), (3, 2)],
+            ),
+        ] {
+            let mut b = GraphBuilder::new_with_registry(n, true, &reg);
+            for &(i, j) in directed {
+                b.add_edge(i, j, d).unwrap();
+            }
+            for &(i, j) in undirected {
+                b.add_edge(i, j, u).unwrap();
+            }
+            let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+            let (pa, ch, und) = p.snapshot_sets();
+            let skeleton = build_skeleton(&pa, &ch, &und);
+
+            let mut leaves = Vec::new();
+            list_dags(
+                pa.clone(),
+                ch.clone(),
+                und.clone(),
+                &pa,
+                &skeleton,
+                &mut leaves,
+            );
+            let dags: Vec<Vec<(u32, u32)>> = leaves
+                .iter()
+                .map(|(_, ch)| {
+                    let mut pairs: Vec<(u32, u32)> = (0..n)
+                        .flat_map(|a| ch[a as usize].iter().map(move |&c| (a, c)))
+                        .collect();
+                    pairs.sort_unstable();
+                    pairs
+                })
+                .collect();
+            assert_eq!(dags, vec![want], "{what}");
+
+            let mut count = 0;
+            count_dags(pa.clone(), ch, und, &pa, &skeleton, &mut count);
+            assert_eq!(count, 1, "{what}");
+        }
     }
 
     #[test]

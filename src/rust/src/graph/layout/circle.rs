@@ -90,7 +90,7 @@ mod tests {
         let core = make_graph(6);
         let coords = circle_layout(&core).unwrap();
 
-        // Compute angle differences between consecutive nodes
+        // Consecutive nodes are one step apart, counter-clockwise.
         let angles: Vec<f64> = coords
             .iter()
             .map(|(x, y)| (y - 0.5).atan2(x - 0.5))
@@ -99,18 +99,10 @@ mod tests {
         let expected_step = TAU / 6.0;
         for i in 0..coords.len() {
             let next = (i + 1) % coords.len();
-            let mut diff = angles[next] - angles[i];
-            while diff <= -std::f64::consts::PI {
-                diff += TAU;
-            }
-            while diff > std::f64::consts::PI {
-                diff -= TAU;
-            }
+            let step = (angles[next] - angles[i]).rem_euclid(TAU);
             assert!(
-                (diff.abs() - expected_step).abs() < 1e-9,
-                "uneven spacing: {} vs {}",
-                diff.abs(),
-                expected_step
+                (step - expected_step).abs() < 1e-9,
+                "uneven spacing: {step} vs {expected_step}"
             );
         }
     }

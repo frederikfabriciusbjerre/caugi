@@ -120,6 +120,7 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 #' Warn that `force_check` is deprecated.
 #' @keywords internal
 #' @noRd
+# nocov start
 .warn_force_check_deprecated <- function() {
   warning(
     "The `force_check` argument is deprecated and will be removed in caugi ",
@@ -127,6 +128,7 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
     call. = FALSE
   )
 }
+# nocov end
 
 #' @title Is the `caugi` acyclic?
 #'
@@ -161,11 +163,11 @@ same_nodes <- function(cg1, cg2, throw_error = FALSE) {
 is_acyclic <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
   if (!missing(force_check)) {
-    .warn_force_check_deprecated()
+    .warn_force_check_deprecated() # nocov
   }
 
   if (force_check) {
-    is_it <- rs_is_acyclic(cg@session)
+    is_it <- rs_is_acyclic(cg@session) # nocov
   } else if (
     identical(cg@graph_class, "DAG") ||
       identical(cg@graph_class, "PDAG") ||
@@ -212,7 +214,7 @@ is_acyclic <- function(cg, force_check = FALSE) {
 is_simple <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
   if (!missing(force_check)) {
-    .warn_force_check_deprecated()
+    .warn_force_check_deprecated() # nocov
   }
   rs_is_simple(cg@session)
 }
@@ -261,7 +263,7 @@ is_simple <- function(cg, force_check = FALSE) {
 is_dag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
   if (!missing(force_check)) {
-    .warn_force_check_deprecated()
+    .warn_force_check_deprecated() # nocov
   }
 
   if (identical(cg@graph_class, "DAG") && !force_check) {
@@ -323,7 +325,7 @@ is_dag <- function(cg, force_check = FALSE) {
 is_pdag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
   if (!missing(force_check)) {
-    .warn_force_check_deprecated()
+    .warn_force_check_deprecated() # nocov
   }
 
   if (cg@graph_class %in% c("PDAG", "MPDAG", "CPDAG") && !force_check) {
@@ -465,7 +467,7 @@ is_mpdag <- function(cg) {
 is_ug <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
   if (!missing(force_check)) {
-    .warn_force_check_deprecated()
+    .warn_force_check_deprecated() # nocov
   }
 
   if (identical(cg@graph_class, "UG") && !force_check) {
@@ -513,7 +515,7 @@ is_ug <- function(cg, force_check = FALSE) {
 is_admg <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
   if (!missing(force_check)) {
-    .warn_force_check_deprecated()
+    .warn_force_check_deprecated() # nocov
   }
 
   if (identical(cg@graph_class, "ADMG") && !force_check) {
@@ -563,7 +565,7 @@ is_admg <- function(cg, force_check = FALSE) {
 is_ag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
   if (!missing(force_check)) {
-    .warn_force_check_deprecated()
+    .warn_force_check_deprecated() # nocov
   }
 
   if (identical(cg@graph_class, "AG") && !force_check) {
@@ -656,7 +658,7 @@ is_pag <- function(cg) {
 is_mag <- function(cg, force_check = FALSE) {
   is_caugi(cg, throw_error = TRUE)
   if (!missing(force_check)) {
-    .warn_force_check_deprecated()
+    .warn_force_check_deprecated() # nocov
   }
   rs_is_mag(cg@session)
 }

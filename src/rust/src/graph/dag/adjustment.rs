@@ -23,8 +23,8 @@ impl Dag {
     ///
     /// With one treatment this is valid whenever any valid set exists. With
     /// several it can fail while others succeed, because a parent of one
-    /// treatment can lie on a causal path from another (`W` in
-    /// `X1 -> W -> X2`, `W -> Y`).
+    /// treatment can be a collider on a path from another (`V` in
+    /// `X1 -> V <- W`, `V -> X2 -> Y`, `W -> Y`, where `{W}` is valid).
     ///
     /// # Errors
     ///
@@ -707,6 +707,27 @@ mod tests {
             g.adjustment_set_backdoor(&[0], &[1]).unwrap_err(),
             NO_VALID_SET
         );
+    }
+
+    #[test]
+    fn dag_adjustment_parents_can_fail_where_other_sets_succeed() {
+        // X1=0 -> V=1 <- W=3, V -> X2=2 -> Y=4, W -> Y: the parent V of X2 is
+        // a collider on X1 -> V <- W -> Y, so adjusting for it opens that
+        // path, while {W} is valid.
+        let g = dag_from(5, &[(0, 1), (3, 1), (1, 2), (2, 4), (3, 4)]);
+        assert_eq!(
+            g.adjustment_set_parents(&[0, 2], &[4]).unwrap_err(),
+            PARENTS_NOT_VALID
+        );
+        assert!(g.is_valid_adjustment_set(&[0, 2], &[4], &[3]));
+    }
+
+    #[test]
+    fn finds_no_set_matches_only_the_no_set_errors() {
+        for err in [NO_VALID_SET, PARENTS_NOT_VALID, NO_EFFECT] {
+            assert!(finds_no_set(err));
+        }
+        assert!(!finds_no_set("Index 5 is out of bounds"));
     }
 
     #[test]

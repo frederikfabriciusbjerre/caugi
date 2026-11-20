@@ -98,20 +98,15 @@ impl Ag {
 
         // visited pairs (prev, curr) for collider-path exploration
         let mut visited = vec![0u32; n * n];
-        let mut stamp: u32 = 1;
 
         for s in 0..n as u32 {
             if !mask[s as usize] {
                 continue;
             }
 
-            // Rotate stamp to avoid clearing the visited array each time.
-            if stamp == u32::MAX {
-                visited.fill(0);
-                stamp = 1;
-            } else {
-                stamp += 1;
-            }
+            // A stamp per start node avoids clearing the visited array each
+            // time; `s < n <= u32::MAX`, so `s + 1` cannot overflow.
+            let stamp = s + 1;
 
             let mut q: VecDeque<(u32, u32)> = VecDeque::new();
 

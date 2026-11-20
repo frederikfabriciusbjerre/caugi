@@ -473,9 +473,6 @@
 #'
 #' @keywords internal
 .edge_constructor_idx <- function(from_idx, edge, to_idx, node_names) {
-  if (length(from_idx) != length(edge) || length(edge) != length(to_idx)) {
-    return(.edge_constructor(node_names[from_idx], edge, node_names[to_idx]))
-  }
   dt <- data.table::setDT(list(
     from = node_names[from_idx],
     edge = data.table::copy(edge),

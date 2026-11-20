@@ -39,6 +39,15 @@ test_that("route_edge_path returns NULL when the obstacle is far away", {
   expect_null(path)
 })
 
+test_that("route_edge_path returns NULL when it cannot fit a curve", {
+  route <- function(p2x, r) {
+    route_edge_path(0, 0, p2x, 0, r, r, ox = 5, oy = 0, or = 1, clearance = 1)
+  }
+  expect_null(route(0, 0)) # zero-length chord
+  expect_null(route(10, 100)) # a node swallows the whole curve
+  expect_null(route(10, 8)) # the clipped ends cross over
+})
+
 test_that("route_edge_path returns NULL when there are no obstacles", {
   path <- route_edge_path(
     0,

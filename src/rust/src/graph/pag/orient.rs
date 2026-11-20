@@ -366,6 +366,35 @@ mod tests {
         assert_eq!(m.edges(), want);
     }
 
+    // --- R3 -------------------------------------------------------------
+
+    #[test]
+    fn rule_3_puts_an_arrowhead_at_the_collider() {
+        // `0 o-> 1 <-o 2` with `0 o-o 3 o-o 2`, 0 and 2 non-adjacent, and
+        // `3 o-o 1`: the mark at 1 on the edge to 3 becomes an arrowhead.
+        let mut m = marks(
+            4,
+            &[
+                (0, 1, O, A),
+                (2, 1, O, A),
+                (0, 3, O, O),
+                (3, 2, O, O),
+                (3, 1, O, O),
+            ],
+        );
+        assert!(m.rule_3());
+        assert_marks(
+            &m,
+            &[
+                (0, 1, O, A),
+                (2, 1, O, A),
+                (0, 3, O, O),
+                (3, 2, O, O),
+                (3, 1, O, A),
+            ],
+        );
+    }
+
     // --- R5 -------------------------------------------------------------
     // Ported from causality-lab's `test_orient_by_rule_5`.
 

@@ -150,6 +150,7 @@ mod tests {
         // Access a `Pdag` method via auto-deref (Cpdag -> Mpdag -> Pdag).
         assert_eq!(cpdag.undirected_of(1).len(), 2);
         assert!(cpdag.parents_of(0).is_empty());
+        assert_eq!(cpdag.as_pdag().undirected_of(1), &[0, 2]);
     }
 
     #[test]

@@ -210,6 +210,7 @@ simulate_data <- function(
   # come from.
   dots <- as.list(substitute(list(...)))[-1L]
   if (length(dots) > 0L) {
+    # nocov start
     if (length(equations) > 0L) {
       stop("Pass the equations in `equations` only.", call. = FALSE)
     }
@@ -222,6 +223,7 @@ simulate_data <- function(
     eq_envs <- rep(list(parent.frame()), length(dots))
     names(eq_envs) <- names(dots)
     equations <- dots
+    # nocov end
   } else {
     is_eq <- vapply(
       equations,

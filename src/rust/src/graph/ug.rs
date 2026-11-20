@@ -24,6 +24,7 @@ impl Ug {
 
     /// Builds a `Ug` view with typed error handling.
     pub fn try_new(core: Arc<CaugiGraph>) -> Result<Self, UgError> {
+        core.check_simple().map_err(UgError::NotSimple)?;
         let n = core.n() as usize;
         let mut packed_builder: PackedBucketsBuilder<1> = PackedBucketsBuilder::new(n);
 

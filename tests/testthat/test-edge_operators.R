@@ -68,12 +68,18 @@ test_that("infix operators emit correct glyphs and rows", {
   s4 <- A %o-o% "Z"
   s5 <- A %--o% (B + "C")
   s6 <- A %o->% c(B, "C")
+  s7 <- A %<--% B
+  s8 <- A %<-o% B
+  s9 <- A %o--% B
   expect_equal(unique(s1$edge), "-->")
   expect_equal(unique(s2$edge), "<->")
   expect_equal(unique(s3$edge), "---")
   expect_equal(unique(s4$edge), "o-o")
   expect_equal(unique(s5$edge), "--o")
   expect_equal(unique(s6$edge), "o->")
+  expect_equal(s7$edge, "<--")
+  expect_equal(s8$edge, "<-o")
+  expect_equal(s9$edge, "o--")
   expect_equal(nrow(s1), 2L)
   expect_equal(nrow(s2), 1L)
   expect_equal(nrow(s3), 3L)

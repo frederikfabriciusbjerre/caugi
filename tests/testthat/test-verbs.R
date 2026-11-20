@@ -151,6 +151,15 @@ test_that("remove_edges works and keeps other edges", {
     "Provide expressions"
   )
 
+  expect_error(
+    remove_edges(cg, from = "A", edge = "-->"),
+    "`from`, `edge`, `to` must all be supplied."
+  )
+  expect_error(
+    remove_edges(cg, from = c("A", "A"), edge = "-->", to = c("B", "C")),
+    "`from`, `edge`, `to` must be equal length."
+  )
+
   cg1 <- remove_edges(cg, from = "A", edge = "-->", to = "B")
   # After verbs, session is synced automatically
   expect_true(!is.null(cg1@session))

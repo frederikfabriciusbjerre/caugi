@@ -639,41 +639,6 @@ register_matrix_s4_class <- function() {
 
 S7::method(
   as_caugi,
-  S7::new_S3_class("tidygraph")
-) <- function(
-  x,
-  class = c(
-    "DAG",
-    "UG",
-    "PDAG",
-    "MPDAG",
-    "CPDAG",
-    "ADMG",
-    "AG",
-    "PAG",
-    "UNKNOWN"
-  ),
-  simple = NULL,
-  collapse = FALSE,
-  collapse_to = "---",
-  ...
-) {
-  class <- match.arg(class)
-  if (class == "PAG") {
-    stop("PAG class is not supported for tidygraph objects.", call. = FALSE)
-  }
-  as_caugi(
-    tidygraph::as.igraph(x),
-    class = class,
-    simple = simple,
-    collapse = collapse,
-    collapse_to = collapse_to,
-    ...
-  )
-}
-
-S7::method(
-  as_caugi,
   S7::new_S3_class("dagitty")
 ) <- function(
   x,

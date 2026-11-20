@@ -267,10 +267,22 @@ test_that("separation and adjustment handle overlapping node sets", {
   expect_identical(all_adjustment_sets(admg, "X", "X"), list())
 })
 
+test_that("minimal_separator() rejects graphs outside its classes", {
+  cyc <- caugi(A %-->% B, B %-->% C, C %-->% A, class = "UNKNOWN")
+  expect_error(
+    minimal_separator(cyc, "A", "C"),
+    "only defined for DAGs, ADMGs, AGs, and PAGs. The graph has class \"UNKNOWN\""
+  )
+})
+
 test_that("adjust functions fails with faulty input", {
   expect_error(
     adjustment_set(adjustment_set_cg, X = "X", Y = NULL, type = "parents"),
     "Y must be provided"
+  )
+  expect_error(
+    adjustment_set(adjustment_set_cg, Y = "Y", type = "parents"),
+    "X must be provided"
   )
   for (type in c("optimal", "parents", "backdoor")) {
     expect_error(
@@ -566,8 +578,7 @@ test_that("ADMG adjustment agrees with a brute-force oracle on random graphs", {
       edge = edges$edge,
       to = edges$to,
       nodes = nodes,
-      class = "ADMG",
-      simple = FALSE
+      class = "ADMG"
     )
     X <- sample(nodes, sample(1:2, 1))
     Y <- sample(setdiff(nodes, X), sample(1:2, 1))
@@ -741,8 +752,7 @@ test_that("adjustment agrees with exact do-calculus in random binary models", {
       edge = edges$edge,
       to = edges$to,
       nodes = nodes,
-      class = "ADMG",
-      simple = FALSE
+      class = "ADMG"
     )
     X <- sample(nodes, sample(1:2, 1))
     Y <- sample(setdiff(nodes, X), sample(1:2, 1))

@@ -127,6 +127,12 @@ test_that("seed does not change the caller's RNG state", {
   generate_graph(5, m = 3, seed = 42)
   simulate_data(caugi(A %-->% B, class = "DAG"), n = 5, seed = 42)
   expect_identical(get(".Random.seed", envir = globalenv()), before)
+
+  # With no RNG state before, there is none after.
+  rm(".Random.seed", envir = globalenv())
+  generate_graph(5, m = 3, seed = 42)
+  expect_false(exists(".Random.seed", envir = globalenv(), inherits = FALSE))
+  assign(".Random.seed", before, envir = globalenv())
 })
 
 test_that("generate_graph with seed produces reproducible CPDAGs", {

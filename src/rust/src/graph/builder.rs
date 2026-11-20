@@ -317,6 +317,14 @@ mod tests {
     }
 
     #[test]
+    fn build_from_edge_buffer_handles_an_empty_graph() {
+        let snap = Arc::new(RegistrySnapshot::from_specs(Vec::new().into(), 1));
+        let g = GraphBuilder::build_from_edge_buffer(0, true, &EdgeBuffer::new(), snap).unwrap();
+        assert_eq!(g.n(), 0);
+        assert!(g.col_index.is_empty());
+    }
+
+    #[test]
     fn add_and_finalize_basic() {
         let r = reg();
         let cdir = r.code_of("-->").unwrap();

@@ -447,11 +447,13 @@ remove_nodes <- function(cg, ..., name = NULL, inplace = FALSE) {
   inplace = FALSE
 ) {
   if (!missing(inplace)) {
+    # nocov start
     warning(
       "The `inplace` argument is deprecated and will be ignored. ",
       "Graphs are always modified via copy-on-write.",
       call. = FALSE
     )
+    # nocov end
   }
 
   action <- match.arg(action)

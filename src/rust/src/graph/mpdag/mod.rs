@@ -103,6 +103,25 @@ mod tests {
     }
 
     #[test]
+    fn try_new_rejects_a_closed_pdag_without_an_extension() {
+        // 0 --- 1 --- 2 --- 3 --- 0: a chordless 4-cycle is Meek-closed, but
+        // every orientation of it has a cycle or a new v-structure.
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let und = reg.code_of("---").unwrap();
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        for (u, v) in [(0, 1), (1, 2), (2, 3), (3, 0)] {
+            b.add_edge(u, v, und).unwrap();
+        }
+        let pdag = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert!(pdag.is_meek_closed());
+        assert_eq!(
+            Mpdag::try_new(pdag).unwrap_err(),
+            "graph is not MPDAG (it has no consistent DAG extension)"
+        );
+    }
+
+    #[test]
     fn deref_forwards_to_pdag() {
         let mpdag = Mpdag::try_new(closed_pdag()).unwrap();
         // Access a `Pdag` method via auto-deref.

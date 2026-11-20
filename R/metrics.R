@@ -113,11 +113,13 @@ aid <- function(
   guess
 ) {
   if (!missing(truth) || !missing(guess)) {
+    # nocov start
     return(.call_renamed(
       "aid",
       c("truth", "guess", "type", "normalized"),
       c(truth = "cg1", guess = "cg2")
     ))
+    # nocov end
   }
   type <- match.arg(type)
   is_caugi(cg1, throw_error = TRUE)
