@@ -9,18 +9,42 @@
 \alias{remove_nodes}
 \title{Manipulate nodes and edges of a \code{caugi}}
 \usage{
-add_edges(cg, ..., from = NULL, edge = NULL, to = NULL, inplace = FALSE)
+add_edges(
+  cg,
+  ...,
+  from = NULL,
+  edge = NULL,
+  to = NULL,
+  status = NULL,
+  inplace = FALSE
+)
 
-remove_edges(cg, ..., from = NULL, edge = NULL, to = NULL, inplace = FALSE)
+remove_edges(
+  cg,
+  ...,
+  from = NULL,
+  edge = NULL,
+  to = NULL,
+  status = NULL,
+  inplace = FALSE
+)
 
-set_edges(cg, ..., from = NULL, edge = NULL, to = NULL, inplace = FALSE)
+set_edges(
+  cg,
+  ...,
+  from = NULL,
+  edge = NULL,
+  to = NULL,
+  status = NULL,
+  inplace = FALSE
+)
 
 add_nodes(cg, ..., name = NULL, inplace = FALSE)
 
 remove_nodes(cg, ..., name = NULL, inplace = FALSE)
 }
 \arguments{
-\item{cg}{A \code{caugi} object.}
+\item{cg}{A \code{caugi} object, or background knowledge.}
 
 \item{...}{Expressions specifying edges to add using the infix operators,
 or nodes to add using unquoted names, vectors via \code{c()}, or \code{+} composition.}
@@ -31,19 +55,24 @@ or nodes to add using unquoted names, vectors via \code{c()}, or \code{+} compos
 
 \item{to}{Character vector of target node names. Default is \code{NULL}.}
 
+\item{status}{For background knowledge, with \code{from} and \code{to}: \code{"required"}
+or \code{"forbidden"}. By default, edges are added as required and removed in
+both kinds.}
+
 \item{inplace}{DEPRECATED This parameter is deprecated and will be ignored.
 Graphs are always modified via copy-on-write.}
 
 \item{name}{Character vector of node names. Default is \code{NULL}.}
 }
 \value{
-The updated \code{caugi}.
+The updated \code{caugi} or knowledge.
 }
 \description{
 Add, remove, or and set nodes or edges to / from a \code{caugi}
 object. Edges can be specified using expressions with the infix operators.
 Alternatively, the edges to be added are specified using the
-\code{from}, \code{edge}, and \code{to} arguments.
+\code{from}, \code{edge}, and \code{to} arguments. The same verbs edit background knowledge
+made by \code{\link[=knowledge]{knowledge()}}.
 }
 \details{
 Caugi graph verbs
@@ -75,6 +104,12 @@ cg <- remove_edges(cg, B \%---\% C) |> # A --> B, C, D, E
 
 # Graphs are now built lazily when needed
 parents(cg, "B") # triggers compilation
+
+# background knowledge
+bk <- knowledge(A \%-->\% B)
+bk <- add_edges(bk, !(B \%-->\% C))
+bk <- add_edges(bk, from = "C", to = "D", status = "forbidden")
+remove_edges(bk, from = "A", to = "B")
 
 }
 \seealso{

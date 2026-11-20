@@ -38,6 +38,7 @@ Other operations:
 \code{\link[=condition_marginalize]{condition_marginalize()}},
 \code{\link[=dag_from_pdag]{dag_from_pdag()}},
 \code{\link[=dag_to_cpdag]{dag_to_cpdag()}},
+\code{\link[=dag_to_mpdag]{dag_to_mpdag()}},
 \code{\link[=dag_to_pag]{dag_to_pag()}},
 \code{\link[=enumerate_dags]{enumerate_dags()}},
 \code{\link[=exogenize]{exogenize()}},

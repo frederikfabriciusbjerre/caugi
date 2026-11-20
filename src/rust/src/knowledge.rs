@@ -6,8 +6,15 @@
 //! [`Allowed`]. Combining knowledge is intersection, and a contradiction is
 //! the empty set.
 
+use crate::graph::alg::meek;
+use crate::graph::mpdag::Mpdag;
+use crate::graph::pdag::Pdag;
 use bitflags::bitflags;
-use std::collections::{BTreeMap, HashMap, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
+use std::fmt;
+
+#[cfg(test)]
+mod oracle;
 
 bitflags! {
     /// What the pair {a, b}, a < b, may be.
@@ -46,6 +53,29 @@ pub struct Statement {
     pub required: bool,
 }
 
+/// `A --> B` if required, `!(A --> B)` if forbidden.
+impl fmt::Display for Statement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let edge = format!("{} --> {}", self.from, self.to);
+        if self.required {
+            write!(f, "{edge}")
+        } else {
+            write!(f, "!({edge})")
+        }
+    }
+}
+
+/// What an edit does with the statements it names.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Edit {
+    /// Adds them.
+    Add,
+    /// Replaces what is said about each `from --> to`.
+    Set,
+    /// Removes them; with no status, both kinds.
+    Remove,
+}
+
 /// Background knowledge over a set of named nodes.
 #[derive(Clone, Debug, Default)]
 pub struct Knowledge {
@@ -59,18 +89,21 @@ pub struct Knowledge {
     tier: Vec<Option<u32>>,
     max_lag: Option<u32>,
     exogenous: Vec<bool>,
+    /// When set, the nodes are fixed: no edit may add one.
+    closed: bool,
 }
 
 impl Knowledge {
     /// Knowledge on `names`. Every statement, tier and exogenous node must
     /// name nodes in `names`. Empty tiers are dropped, and `max_lag` with the
-    /// last one.
+    /// last one. With `closed`, later edits may not add nodes.
     pub fn new(
         names: &[String],
         statements: &[Statement],
         tiers: &[(String, Vec<String>)],
         max_lag: Option<u32>,
         exogenous: &[String],
+        closed: bool,
     ) -> Result<Self> {
         let mut k = Self::default();
         for name in names {
@@ -79,8 +112,74 @@ impl Knowledge {
         k.put_statements(statements)?;
         k.put_tiers(tiers, max_lag)?;
         k.put_exogenous(exogenous)?;
+        k.closed = closed;
         k.validate()?;
         Ok(k)
+    }
+
+    // ── Edits ───────────────────────────────────────────────────────────────
+
+    /// The knowledge after an edit of its statements, as (from, to,
+    /// required), where `None` means either kind. Adding or setting a
+    /// statement adds the nodes it names, unless the nodes are closed.
+    pub fn edit(&self, edit: Edit, statements: &[(String, String, Option<bool>)]) -> Result<Self> {
+        self.edited(|k| {
+            if edit == Edit::Remove {
+                let ends = k.ends(statements.iter().map(|r| (&r.0, &r.1)))?;
+                for ((a, b), (_, _, required)) in ends.into_iter().zip(statements) {
+                    k.statements
+                        .retain(|&(f, t, r)| (f, t) != (a, b) || required.is_some_and(|q| q != r));
+                }
+                return Ok(());
+            }
+            let mut rows = vec![];
+            for (from, to, required) in statements {
+                let Some(required) = *required else {
+                    return invalid("A statement must be required or forbidden.");
+                };
+                rows.push(Statement {
+                    from: from.clone(),
+                    to: to.clone(),
+                    required,
+                });
+            }
+            k.grow(rows.iter().flat_map(|s| [&s.from, &s.to]))?;
+            if edit == Edit::Set {
+                let ends = k.ends(rows.iter().map(|s| (&s.from, &s.to)))?;
+                k.statements.retain(|&(f, t, _)| !ends.contains(&(f, t)));
+            }
+            k.put_statements(&rows)
+        })
+    }
+
+    pub fn add_nodes(&self, names: &[String]) -> Result<Self> {
+        self.edited(|k| k.grow(names))
+    }
+
+    /// The knowledge without these nodes and what it says about them.
+    pub fn remove_nodes(&self, names: &[String]) -> Result<Self> {
+        let gone: HashSet<u32> = self.ids(names)?.into_iter().collect();
+        let rest: Vec<String> = (0..self.names.len() as u32)
+            .filter(|i| !gone.contains(i))
+            .map(|i| self.names[i as usize].clone())
+            .collect();
+        self.rebuilt(&rest, self.closed)
+    }
+
+    /// The knowledge with these tiers, adding the nodes they name.
+    pub fn set_tiers(&self, tiers: &[(String, Vec<String>)], max_lag: Option<u32>) -> Result<Self> {
+        self.edited(|k| {
+            k.grow(tiers.iter().flat_map(|t| &t.1))?;
+            k.put_tiers(tiers, max_lag)
+        })
+    }
+
+    /// The knowledge with these exogenous nodes, adding them if new.
+    pub fn set_exogenous(&self, names: &[String]) -> Result<Self> {
+        self.edited(|k| {
+            k.grow(names)?;
+            k.put_exogenous(names)
+        })
     }
 
     // ── Reading ─────────────────────────────────────────────────────────────
@@ -133,6 +232,88 @@ impl Knowledge {
             .into_iter()
             .flat_map(|(a, b, m)| self.rows(a, b, m))
             .collect()
+    }
+
+    // ── Graphs ──────────────────────────────────────────────────────────────
+
+    /// The same knowledge on a graph's nodes, in its order. Nodes the
+    /// knowledge doesn't name are added, so exogenous nodes rule out edges
+    /// from them too.
+    pub fn on(&self, names: &[String]) -> Result<Self> {
+        let k = self.rebuilt(names, false)?;
+        k.ids(&self.names)?;
+        Ok(k)
+    }
+
+    /// For each statement of [`Knowledge::expand`], whether it holds in every
+    /// DAG `g` stands for (`Some(true)`), in none (`Some(false)`), or in some
+    /// (`None`). `g` must be closed under Meek's rules, on the knowledge's
+    /// nodes.
+    pub fn holds(&self, g: &Pdag) -> Vec<(Statement, Option<bool>)> {
+        self.expand()
+            .into_iter()
+            .map(|s| {
+                let (a, b) = (self.index[&s.from], self.index[&s.to]);
+                let says = if s.required {
+                    Allowed::AB
+                } else {
+                    !Allowed::AB
+                };
+                let have = allowed_in(g, a, b);
+                let holds = if says.contains(have) {
+                    Some(true)
+                } else if (says & have).is_empty() {
+                    Some(false)
+                } else {
+                    None
+                };
+                (s, holds)
+            })
+            .collect()
+    }
+
+    /// The tightest MPDAG that agrees with both `g` and the knowledge. `g`
+    /// must be closed under Meek's rules, on the knowledge's nodes. Edges are
+    /// oriented one at a time, each followed by Meek's rules (Algorithm 1 of
+    /// Perković et al., 2017).
+    pub fn orient(&self, g: &Mpdag) -> Result<Mpdag> {
+        let pdag = g.as_pdag();
+        let undirected = Allowed::AB | Allowed::BA;
+        let mut violated = vec![];
+        let mut required = vec![];
+        for (a, b, m) in self.constrained() {
+            let have = allowed_in(pdag, a, b);
+            match m & have {
+                x if x.is_empty() => violated.extend(self.rows(a, b, m)),
+                Allowed::AB if have == undirected => required.push((a, b)),
+                Allowed::BA if have == undirected => required.push((b, a)),
+                _ => {}
+            }
+        }
+        if !violated.is_empty() {
+            let rows: Vec<String> = violated.iter().map(Statement::to_string).collect();
+            return Err(KnowledgeError::Inconsistent(format!(
+                "Knowledge contradicts the graph: {}",
+                rows.join(", ")
+            )));
+        }
+        let (mut pa, mut ch, mut und) = pdag.adjacency_sets();
+        for (a, b) in required {
+            if ch[a as usize].contains(&b) {
+                continue;
+            }
+            if !und[a as usize].contains(&b) {
+                let (a, b) = (&self.names[a as usize], &self.names[b as usize]);
+                return Err(KnowledgeError::Inconsistent(format!(
+                    "Knowledge contradicts the graph: it needs {a} --> {b}, \
+                     but {b} --> {a} follows from the rest."
+                )));
+            }
+            meek::orient(a, b, &mut und, &mut pa, &mut ch);
+            meek::apply_meek_closure(&mut pa, &mut ch, &mut und, true);
+        }
+        pdag.mpdag_from_sets(&pa, &ch, &und)
+            .map_err(KnowledgeError::Invalid)
     }
 
     // ── Internals ───────────────────────────────────────────────────────────
@@ -212,6 +393,49 @@ impl Knowledge {
             self.tier.push(None);
             self.exogenous.push(false);
         }
+    }
+
+    /// Adds the nodes it doesn't know yet, or errors if the nodes are closed.
+    fn grow<'a>(&mut self, names: impl IntoIterator<Item = &'a String>) -> Result<()> {
+        if self.closed {
+            return self.ids(names).map(|_| ());
+        }
+        for name in names {
+            self.push_node(name);
+        }
+        Ok(())
+    }
+
+    /// A checked copy of the knowledge after `change`.
+    fn edited(&self, change: impl FnOnce(&mut Self) -> Result<()>) -> Result<Self> {
+        let mut k = self.clone();
+        change(&mut k)?;
+        k.validate()?;
+        Ok(k)
+    }
+
+    /// The knowledge on `names`: what it says about other nodes is dropped,
+    /// and new nodes are added.
+    fn rebuilt(&self, names: &[String], closed: bool) -> Result<Self> {
+        let kept: HashSet<&String> = names.iter().collect();
+        let statements: Vec<Statement> = self
+            .statements()
+            .into_iter()
+            .filter(|s| kept.contains(&s.from) && kept.contains(&s.to))
+            .collect();
+        let tiers: Vec<(String, Vec<String>)> = self
+            .tiers()
+            .into_iter()
+            .map(|(t, m)| (t, m.into_iter().filter(|x| kept.contains(x)).collect()))
+            .collect();
+        let exogenous: Vec<String> = self
+            .names
+            .iter()
+            .zip(&self.exogenous)
+            .filter(|(x, &e)| e && kept.contains(x))
+            .map(|(x, _)| x.clone())
+            .collect();
+        Knowledge::new(names, &statements, &tiers, self.max_lag, &exogenous, closed)
     }
 
     fn ids<'a>(&self, names: impl IntoIterator<Item = &'a String>) -> Result<Vec<u32>> {
@@ -311,6 +535,19 @@ impl Knowledge {
     }
 }
 
+/// What the PDAG `g` allows for the pair {a, b}.
+fn allowed_in(g: &Pdag, a: u32, b: u32) -> Allowed {
+    if g.children_of(a).contains(&b) {
+        Allowed::AB
+    } else if g.parents_of(a).contains(&b) {
+        Allowed::BA
+    } else if g.undirected_of(a).contains(&b) {
+        Allowed::AB | Allowed::BA
+    } else {
+        Allowed::NONE
+    }
+}
+
 /// Kahn's algorithm: does the directed graph on `n` nodes have a cycle?
 fn has_cycle(n: usize, edges: &[(u32, u32)]) -> bool {
     let mut indegree = vec![0usize; n];
@@ -336,6 +573,10 @@ fn has_cycle(n: usize, edges: &[(u32, u32)]) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::edges::EdgeRegistry;
+    use crate::graph::builder::GraphBuilder;
+    use crate::graph::CaugiGraph;
+    use std::sync::Arc;
 
     fn s(x: &[&str]) -> Vec<String> {
         x.iter().map(|v| v.to_string()).collect()
@@ -353,7 +594,7 @@ mod tests {
     }
 
     fn kn(nodes: &[&str], rows: &[(&str, &str, bool)]) -> Result<Knowledge> {
-        Knowledge::new(&s(nodes), &st(rows), &[], None, &[])
+        Knowledge::new(&s(nodes), &st(rows), &[], None, &[], false)
     }
 
     fn t(rows: &[(&str, &[&str])]) -> Vec<(String, Vec<String>)> {
@@ -369,13 +610,14 @@ mod tests {
         .unwrap();
         assert_eq!(k.statements(), st(&[("B", "A", false), ("C", "A", true)]));
         let tiers = t(&[("t1", &["A"]), ("t2", &["B"]), ("t3", &[])]);
-        let k = Knowledge::new(&s(&["A", "B", "C"]), &[], &tiers, Some(1), &s(&["C"])).unwrap();
+        let k =
+            Knowledge::new(&s(&["A", "B", "C"]), &[], &tiers, Some(1), &s(&["C"]), true).unwrap();
         assert_eq!(k.tier_of(), vec![Some("t1"), Some("t2"), None]);
         assert_eq!(k.tiers(), tiers[..2]);
         assert_eq!(k.max_lag(), Some(1));
         assert_eq!(k.exogenous(), &[false, false, true]);
         // `max_lag` goes with the last tier.
-        let k = Knowledge::new(&s(&["A"]), &[], &t(&[("t1", &[])]), Some(1), &[]);
+        let k = Knowledge::new(&s(&["A"]), &[], &t(&[("t1", &[])]), Some(1), &[], false);
         assert_eq!(k.unwrap().max_lag(), None);
     }
 
@@ -386,7 +628,7 @@ mod tests {
             other => panic!("expected an invalid input, got {other:?}"),
         };
         let with_tiers = |tiers: &[(&str, &[&str])], lag: Option<u32>| {
-            Knowledge::new(&s(&["A", "B"]), &[], &t(tiers), lag, &[])
+            Knowledge::new(&s(&["A", "B"]), &[], &t(tiers), lag, &[], false)
         };
         assert_eq!(msg(kn(&["A"], &[("A", "D", true)])), "Unknown node(s): D");
         assert!(msg(kn(&["A"], &[("A", "A", true)])).contains("itself"));
@@ -422,8 +664,15 @@ mod tests {
     fn tiers_and_exogenous_nodes_constrain_pairs() {
         // A, B and C in three tiers, at most one apart; B exogenous; D untiered.
         let tiers = t(&[("t1", &["A"]), ("t2", &["B"]), ("t3", &["C"])]);
-        let k =
-            Knowledge::new(&s(&["A", "B", "C", "D"]), &[], &tiers, Some(1), &s(&["B"])).unwrap();
+        let k = Knowledge::new(
+            &s(&["A", "B", "C", "D"]),
+            &[],
+            &tiers,
+            Some(1),
+            &s(&["B"]),
+            false,
+        )
+        .unwrap();
         assert_eq!(
             k.expand(),
             st(&[
@@ -458,6 +707,7 @@ mod tests {
             &t(&[("1", &["A"]), ("2", &["B"])]),
             None,
             &[],
+            false,
         );
         assert!(inconsistent(tiered));
         assert!(kn(
@@ -465,5 +715,149 @@ mod tests {
             &[("A", "B", true), ("B", "C", true), ("A", "C", true)]
         )
         .is_ok());
+    }
+
+    #[test]
+    fn edits_add_set_and_remove_statements() {
+        let rows = |r: &[(&str, &str, Option<bool>)]| -> Vec<(String, String, Option<bool>)> {
+            r.iter()
+                .map(|(a, b, q)| (a.to_string(), b.to_string(), *q))
+                .collect()
+        };
+        let k = kn(&["A", "B"], &[("A", "B", true)]).unwrap();
+        let k = k
+            .edit(Edit::Add, &rows(&[("B", "C", Some(false))]))
+            .unwrap();
+        assert_eq!(k.names(), s(&["A", "B", "C"]).as_slice());
+        let k = k
+            .edit(Edit::Set, &rows(&[("A", "B", Some(false))]))
+            .unwrap();
+        assert_eq!(k.statements(), st(&[("A", "B", false), ("B", "C", false)]));
+        // Setting C --> B leaves B --> C alone.
+        let set = k
+            .edit(Edit::Set, &rows(&[("C", "B", Some(false))]))
+            .unwrap();
+        assert_eq!(set.statements().len(), 3);
+        let both = k.edit(Edit::Remove, &rows(&[("B", "C", None)])).unwrap();
+        assert_eq!(both.statements(), st(&[("A", "B", false)]));
+        let other = k
+            .edit(Edit::Remove, &rows(&[("B", "C", Some(true))]))
+            .unwrap();
+        assert_eq!(other.statements().len(), 2);
+        assert!(k.edit(Edit::Add, &rows(&[("A", "B", None)])).is_err());
+        assert!(k.edit(Edit::Remove, &rows(&[("A", "D", None)])).is_err());
+    }
+
+    #[test]
+    fn closed_knowledge_keeps_its_nodes() {
+        let k = Knowledge::new(&s(&["A", "B"]), &[], &[], None, &[], true).unwrap();
+        let add = vec![("A".to_string(), "C".to_string(), Some(true))];
+        assert!(k.edit(Edit::Add, &add).is_err());
+        assert!(k.add_nodes(&s(&["C"])).is_err());
+        assert!(k.set_exogenous(&s(&["C"])).is_err());
+        assert!(k.set_tiers(&t(&[("1", &["C"])]), None).is_err());
+        assert!(k
+            .remove_nodes(&s(&["B"]))
+            .unwrap()
+            .add_nodes(&s(&["B"]))
+            .is_err());
+    }
+
+    #[test]
+    fn edits_of_nodes_tiers_and_exogenous_nodes() {
+        let tiers = t(&[("t1", &["A", "B"]), ("t2", &["C"])]);
+        let k = Knowledge::new(
+            &s(&["A", "B", "C"]),
+            &st(&[("A", "C", true)]),
+            &tiers,
+            Some(1),
+            &s(&["B"]),
+            false,
+        )
+        .unwrap();
+        let k2 = k.remove_nodes(&s(&["B"])).unwrap();
+        assert_eq!(k2.tiers(), t(&[("t1", &["A"]), ("t2", &["C"])]));
+        assert_eq!(k2.exogenous(), &[false, false]);
+        // An emptied tier goes, and `max_lag` with the last one.
+        let k3 = k.remove_nodes(&s(&["C"])).unwrap();
+        assert_eq!(k3.tiers(), t(&[("t1", &["A", "B"])]));
+        assert_eq!(k3.max_lag(), Some(1));
+        assert_eq!(k3.remove_nodes(&s(&["A", "B"])).unwrap().max_lag(), None);
+        assert_eq!(k.remove_nodes(&s(&["A"])).unwrap().statements(), vec![]);
+        assert!(k.remove_nodes(&s(&["D"])).is_err());
+        assert_eq!(k.add_nodes(&s(&["D"])).unwrap().tier_of()[3], None);
+        assert_eq!(k.set_tiers(&[], None).unwrap().tiers(), vec![]);
+        // C can't be exogenous: A --> C is required.
+        assert!(k.set_exogenous(&s(&["C"])).is_err());
+        assert_eq!(
+            k.set_exogenous(&[]).unwrap().exogenous(),
+            &[false, false, false]
+        );
+    }
+
+    /// A graph on `n` nodes, from edges written (from, to, glyph).
+    pub(super) fn core(n: u32, edges: &[(u32, u32, &str)]) -> Arc<CaugiGraph> {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let mut b = GraphBuilder::new_with_registry(n, true, &reg);
+        for &(a, c, g) in edges {
+            b.add_edge(a, c, reg.code_of(g).unwrap()).unwrap();
+        }
+        Arc::new(b.finalize().unwrap())
+    }
+
+    pub(super) fn pdag(n: u32, edges: &[(u32, u32, &str)]) -> Pdag {
+        Pdag::new(core(n, edges)).unwrap()
+    }
+
+    #[test]
+    fn on_moves_knowledge_onto_a_graphs_nodes() {
+        let k = Knowledge::new(&s(&["B"]), &[], &[], None, &s(&["B"]), true).unwrap();
+        let on = k.on(&s(&["A", "B", "C"])).unwrap();
+        assert_eq!(on.expand(), st(&[("A", "B", false), ("C", "B", false)]));
+        assert!(k.on(&s(&["A"])).is_err());
+    }
+
+    #[test]
+    fn holds_reads_statements_against_a_graph() {
+        // A --- B --> C
+        let g = pdag(3, &[(0, 1, "---"), (1, 2, "-->")]);
+        let k = kn(
+            &["A", "B", "C"],
+            &[
+                ("A", "B", true),
+                ("C", "B", false),
+                ("A", "C", false),
+                ("B", "C", false),
+            ],
+        )
+        .unwrap();
+        let holds: Vec<Option<bool>> = k.holds(&g).into_iter().map(|r| r.1).collect();
+        assert_eq!(holds, vec![None, Some(true), Some(false), Some(true)]);
+    }
+
+    #[test]
+    fn orient_applies_knowledge_with_meeks_rules() {
+        let g = pdag(3, &[(0, 1, "---"), (1, 2, "---")])
+            .meek_closure()
+            .unwrap();
+        let m = kn(&["A", "B", "C"], &[("A", "B", true)])
+            .unwrap()
+            .orient(&g)
+            .unwrap();
+        assert!(m.children_of(0).contains(&1) && m.children_of(1).contains(&2));
+        let m = kn(&["A", "B", "C"], &[("C", "B", false)])
+            .unwrap()
+            .orient(&g)
+            .unwrap();
+        assert!(m.children_of(1).contains(&2) && m.undirected_of(0).contains(&1));
+        let err = |r: Result<Mpdag>| match r {
+            Err(KnowledgeError::Inconsistent(m)) => m,
+            _ => panic!("expected an inconsistency"),
+        };
+        let conflict = kn(&["A", "B", "C"], &[("A", "B", true), ("C", "B", true)]);
+        assert!(err(conflict.unwrap().orient(&g)).contains("follows from the rest"));
+        let violated = kn(&["A", "B", "C"], &[("A", "C", true)]);
+        assert!(err(violated.unwrap().orient(&g)).contains("A --> C"));
     }
 }

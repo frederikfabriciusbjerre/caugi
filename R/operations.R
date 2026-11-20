@@ -718,6 +718,32 @@ dag_to_cpdag <- function(cg) {
   .session_to_caugi(rs_to_cpdag(cg@session), node_names = cg@nodes$name)
 }
 
+#' @title Construct the MPDAG of a DAG and background knowledge
+#'
+#' @description
+#' Returns the DAGs Markov equivalent to `cg` that agree with `bk`, as
+#' `orient(dag_to_cpdag(cg), bk)`. Errors with class `caugi_inconsistent` if
+#' `cg` itself does not agree with `bk`.
+#'
+#' @param cg A `caugi` object of class `"DAG"`.
+#' @param bk Background knowledge, made by [knowledge()].
+#'
+#' @returns A `caugi` object of class `"MPDAG"`, or `"DAG"` if the knowledge
+#'   orients every edge.
+#'
+#' @examples
+#' dag <- caugi(A %-->% B, B %-->% C, class = "DAG")
+#' dag_to_mpdag(dag, knowledge(!(C %-->% B))) # A --- B --> C
+#'
+#' @family operations
+#' @concept operations
+#'
+#' @export
+dag_to_mpdag <- function(cg, bk) {
+  orient(cg, bk) # errors unless `cg` agrees with `bk`
+  orient(dag_to_cpdag(cg), bk)
+}
+
 #' @title Construct the PAG of a DAG with latent variables
 #'
 #' @description

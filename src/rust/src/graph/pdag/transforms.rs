@@ -9,6 +9,9 @@ use crate::graph::CaugiGraph;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+/// One set of neighbours per node.
+pub(crate) type Sets = Vec<HashSet<u32>>;
+
 impl Pdag {
     /// Apply Meek closure on a PDAG and return the resulting MPDAG.
     ///
@@ -28,6 +31,13 @@ impl Pdag {
     /// [`Pdag::to_mpdag`] without the extension check, for callers that have
     /// already run [`Pdag::is_extendable`].
     pub(crate) fn closure_of_extendable(&self) -> Result<Mpdag, String> {
+        let (mut pa, mut ch, mut und) = self.adjacency_sets();
+        meek::apply_meek_closure(&mut pa, &mut ch, &mut und, true);
+        self.mpdag_from_sets(&pa, &ch, &und)
+    }
+
+    /// The parents, children and undirected neighbours of each node.
+    pub(crate) fn adjacency_sets(&self) -> (Sets, Sets, Sets) {
         let n = self.n() as usize;
 
         let mut pa: Vec<HashSet<u32>> = vec![HashSet::new(); n];
@@ -40,8 +50,17 @@ impl Pdag {
             ch[i].extend(self.children_of(u).iter().copied());
             und[i].extend(self.undirected_of(u).iter().copied());
         }
+        (pa, ch, und)
+    }
 
-        meek::apply_meek_closure(&mut pa, &mut ch, &mut und, true);
+    /// The MPDAG with these edges, which must be closed under Meek's rules.
+    pub(crate) fn mpdag_from_sets(
+        &self,
+        pa: &[HashSet<u32>],
+        ch: &[HashSet<u32>],
+        und: &[HashSet<u32>],
+    ) -> Result<Mpdag, String> {
+        let n = self.n() as usize;
 
         // Build CSR core (parents | undirected | children)
         let specs = &self.core_ref().registry.specs;

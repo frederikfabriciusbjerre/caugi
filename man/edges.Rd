@@ -10,12 +10,15 @@ edges(cg, ...)
 E(cg, ...)
 }
 \arguments{
-\item{cg}{A \code{caugi} object.}
+\item{cg}{A \code{caugi} object, or background knowledge.}
 
-\item{...}{Additional arguments (currently unused).}
+\item{...}{For background knowledge, \code{expand = TRUE} lists every pair the
+knowledge constrains, tiers and exogenous nodes included, in the fewest
+statements.}
 }
 \value{
-A \code{data.table} with columns \code{from}, \code{edge}, and \code{to}.
+A \code{data.table} with columns \code{from}, \code{edge}, and \code{to}. For background
+knowledge, also \code{status}: \code{"required"} or \code{"forbidden"}.
 }
 \description{
 Get edges of a \code{caugi}.

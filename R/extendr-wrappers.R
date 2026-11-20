@@ -199,4 +199,24 @@ rs_serialize_graphml <- function(session, graph_class) .Call(wrap__rs_serialize_
 
 deserialize_graphml <- function(xml, reg) .Call(wrap__deserialize_graphml, xml, reg)
 
+rs_kn_new <- function(names, from, to, status, tier_names, tier_members, max_lag, exogenous, closed) .Call(wrap__rs_kn_new, names, from, to, status, tier_names, tier_members, max_lag, exogenous, closed)
+
+rs_kn_edit <- function(kn, action, from, to, status) .Call(wrap__rs_kn_edit, kn, action, from, to, status)
+
+rs_kn_edit_nodes <- function(kn, action, names) .Call(wrap__rs_kn_edit_nodes, kn, action, names)
+
+rs_kn_set_tiers <- function(kn, tier_names, tier_members, max_lag) .Call(wrap__rs_kn_set_tiers, kn, tier_names, tier_members, max_lag)
+
+rs_kn_set_exogenous <- function(kn, names) .Call(wrap__rs_kn_set_exogenous, kn, names)
+
+rs_kn_nodes <- function(kn) .Call(wrap__rs_kn_nodes, kn)
+
+rs_kn_edges <- function(kn, expand) .Call(wrap__rs_kn_edges, kn, expand)
+
+rs_kn_tiers <- function(kn) .Call(wrap__rs_kn_tiers, kn)
+
+rs_kn_holds <- function(kn, session) .Call(wrap__rs_kn_holds, kn, session)
+
+rs_kn_orient <- function(kn, session) .Call(wrap__rs_kn_orient, kn, session)
+
 # nolint end

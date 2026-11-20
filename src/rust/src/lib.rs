@@ -2295,6 +2295,266 @@ fn rs_all_adjustment_sets(
     extendr_api::prelude::List::from_values(robjs).into_robj()
 }
 
+// ---------- knowledge ----------
+
+use knowledge::{Edit, Knowledge, KnowledgeError, Statement};
+
+/// Returns `r` to R. An inconsistency comes back as a condition of class
+/// `caugi_inconsistent`, which the R wrapper raises; other errors are raised
+/// here.
+fn kn_result<T: Into<Robj>>(r: knowledge::Result<T>) -> Robj {
+    match r {
+        Ok(x) => x.into(),
+        Err(KnowledgeError::Invalid(m)) => throw_r_error(m),
+        Err(KnowledgeError::Inconsistent(m)) => {
+            let mut cond = list!(message = m);
+            cond.set_class(&["caugi_inconsistent", "error", "condition"])
+                .unwrap_or_else(|e| throw_r_error(e.to_string()));
+            cond.into_robj()
+        }
+    }
+}
+
+fn kn_strings(x: &Strings) -> Vec<String> {
+    rstrs(x).map(|s| s.to_string()).collect()
+}
+
+fn kn_tiers(names: &Strings, members: &List) -> Vec<(String, Vec<String>)> {
+    kn_strings(names)
+        .into_iter()
+        .zip(members.values())
+        .map(|(name, m)| {
+            let m: Strings = m
+                .try_into()
+                .unwrap_or_else(|_| throw_r_error("Tiers must hold node names."));
+            (name, kn_strings(&m))
+        })
+        .collect()
+}
+
+/// `NULL` for no lag; otherwise a single whole number of at least 1.
+fn kn_max_lag(x: &Robj) -> knowledge::Result<Option<u32>> {
+    if x.is_null() {
+        return Ok(None);
+    }
+    let v = x
+        .as_real()
+        .or_else(|| x.as_integer().filter(|i| !i.is_na()).map(f64::from));
+    match v {
+        Some(v) if x.len() == 1 && v.is_finite() && v >= 1.0 && v.fract() == 0.0 => {
+            Ok(Some(v as u32))
+        }
+        _ => Err(KnowledgeError::Invalid(knowledge::MAX_LAG.into())),
+    }
+}
+
+/// Statements from `from`, `to` and `status`: "required", "forbidden", or
+/// `NA` for either kind. One status is recycled, and none means `default`.
+fn kn_rows(
+    from: &Strings,
+    to: &Strings,
+    status: &Strings,
+    default: Option<bool>,
+) -> Vec<(String, String, Option<bool>)> {
+    let status: Vec<Option<bool>> = rstrs(status)
+        .map(|s| match s.as_ref() {
+            _ if s.is_na() => None,
+            "required" => Some(true),
+            "forbidden" => Some(false),
+            _ => throw_r_error("`status` must be \"required\" or \"forbidden\"."),
+        })
+        .collect();
+    let status = match status.len() {
+        0 => vec![default; from.len()],
+        1 => vec![status[0]; from.len()],
+        _ => status,
+    };
+    if from.len() != to.len() || status.len() != from.len() {
+        throw_r_error("`from`, `to` and `status` must be equal length.");
+    }
+    kn_strings(from)
+        .into_iter()
+        .zip(kn_strings(to))
+        .zip(status)
+        .map(|((a, b), r)| (a, b, r))
+        .collect()
+}
+
+fn kn_status(required: bool) -> &'static str {
+    if required {
+        "required"
+    } else {
+        "forbidden"
+    }
+}
+
+fn kn_columns(rows: &[Statement]) -> (Vec<String>, Vec<String>, Vec<&'static str>) {
+    (
+        rows.iter().map(|s| s.from.clone()).collect(),
+        rows.iter().map(|s| s.to.clone()).collect(),
+        rows.iter().map(|s| kn_status(s.required)).collect(),
+    )
+}
+
+#[extendr]
+#[allow(clippy::too_many_arguments)]
+fn rs_kn_new(
+    names: Strings,
+    from: Strings,
+    to: Strings,
+    status: Strings,
+    tier_names: Strings,
+    tier_members: List,
+    max_lag: Robj,
+    exogenous: Strings,
+    closed: bool,
+) -> Robj {
+    let statements: Vec<Statement> = kn_rows(&from, &to, &status, Some(true))
+        .into_iter()
+        .map(|(from, to, r)| Statement {
+            from,
+            to,
+            required: r.unwrap_or(true),
+        })
+        .collect();
+    kn_result(kn_max_lag(&max_lag).and_then(|lag| {
+        Knowledge::new(
+            &kn_strings(&names),
+            &statements,
+            &kn_tiers(&tier_names, &tier_members),
+            lag,
+            &kn_strings(&exogenous),
+            closed,
+        )
+        .map(ExternalPtr::new)
+    }))
+}
+
+// Edits statements. Without a status, adding or setting means required and
+// removing means either kind.
+#[extendr]
+fn rs_kn_edit(
+    kn: ExternalPtr<Knowledge>,
+    action: &str,
+    from: Strings,
+    to: Strings,
+    status: Strings,
+) -> Robj {
+    let (edit, default) = match action {
+        "add" => (Edit::Add, Some(true)),
+        "set" => (Edit::Set, Some(true)),
+        _ => (Edit::Remove, None),
+    };
+    let rows = kn_rows(&from, &to, &status, default);
+    kn_result(kn.as_ref().edit(edit, &rows).map(ExternalPtr::new))
+}
+
+#[extendr]
+fn rs_kn_edit_nodes(kn: ExternalPtr<Knowledge>, action: &str, names: Strings) -> Robj {
+    let names = kn_strings(&names);
+    let k = kn.as_ref();
+    let edited = match action {
+        "add" => k.add_nodes(&names),
+        _ => k.remove_nodes(&names),
+    };
+    kn_result(edited.map(ExternalPtr::new))
+}
+
+#[extendr]
+fn rs_kn_set_tiers(
+    kn: ExternalPtr<Knowledge>,
+    tier_names: Strings,
+    tier_members: List,
+    max_lag: Robj,
+) -> Robj {
+    let tiers = kn_tiers(&tier_names, &tier_members);
+    kn_result(
+        kn_max_lag(&max_lag)
+            .and_then(|lag| kn.as_ref().set_tiers(&tiers, lag).map(ExternalPtr::new)),
+    )
+}
+
+#[extendr]
+fn rs_kn_set_exogenous(kn: ExternalPtr<Knowledge>, names: Strings) -> Robj {
+    kn_result(
+        kn.as_ref()
+            .set_exogenous(&kn_strings(&names))
+            .map(ExternalPtr::new),
+    )
+}
+
+#[extendr]
+fn rs_kn_nodes(kn: ExternalPtr<Knowledge>) -> Robj {
+    let k = kn.as_ref();
+    let tier: Strings = k
+        .tier_of()
+        .into_iter()
+        .map(|t| t.map_or_else(Rstr::na, Rstr::from))
+        .collect();
+    list!(
+        name = k.names().to_vec(),
+        tier = tier,
+        exogenous = k.exogenous().to_vec()
+    )
+    .into_robj()
+}
+
+#[extendr]
+fn rs_kn_edges(kn: ExternalPtr<Knowledge>, expand: bool) -> Robj {
+    let k = kn.as_ref();
+    let rows = if expand { k.expand() } else { k.statements() };
+    let (from, to, status) = kn_columns(&rows);
+    list!(from = from, to = to, status = status).into_robj()
+}
+
+#[extendr]
+fn rs_kn_tiers(kn: ExternalPtr<Knowledge>) -> Robj {
+    let k = kn.as_ref();
+    let tiers = k.tiers();
+    list!(
+        names = tiers.iter().map(|t| t.0.clone()).collect::<Vec<_>>(),
+        members = List::from_values(tiers.into_iter().map(|t| t.1)),
+        max_lag = k.max_lag().map_or(Robj::from(()), |l| Robj::from(l as i32))
+    )
+    .into_robj()
+}
+
+/// `cg` as a PDAG closed under Meek's rules, for `holds()` and `orient()`.
+fn kn_graph(session: &mut GraphSession) -> graph::mpdag::Mpdag {
+    let core = session.core().unwrap_or_else(|e| throw_r_error(e));
+    graph::pdag::Pdag::new(core)
+        .map_err(|_| "`cg` must be a DAG or PDAG.".to_string())
+        .and_then(|p| p.meek_closure())
+        .unwrap_or_else(|e| throw_r_error(e))
+}
+
+#[extendr]
+fn rs_kn_holds(kn: ExternalPtr<Knowledge>, mut session: ExternalPtr<GraphSession>) -> Robj {
+    let g = kn_graph(session.as_mut());
+    kn_result(kn.as_ref().on(session.as_ref().names()).map(|k| {
+        let rows = k.holds(g.as_pdag());
+        let holds: Logicals = rows
+            .iter()
+            .map(|r| r.1.map_or(Rbool::na(), Rbool::from))
+            .collect();
+        let rows: Vec<Statement> = rows.into_iter().map(|r| r.0).collect();
+        let (from, to, status) = kn_columns(&rows);
+        list!(from = from, to = to, status = status, holds = holds)
+    }))
+}
+
+#[extendr]
+fn rs_kn_orient(kn: ExternalPtr<Knowledge>, mut session: ExternalPtr<GraphSession>) -> Robj {
+    let g = kn_graph(session.as_mut());
+    let names = session.as_ref().names().to_vec();
+    kn_result(
+        kn.as_ref()
+            .on(&names)
+            .and_then(|k| k.orient(&g))
+            .map(|m| ExternalPtr::new(session_from_view(GraphView::Mpdag(Arc::new(m)), names))),
+    )
+}
+
 extendr_module! {
     mod caugi;
     // registry
@@ -2403,4 +2663,16 @@ extendr_module! {
     fn deserialize_caugi;
     fn rs_serialize_graphml;
     fn deserialize_graphml;
+
+    // knowledge
+    fn rs_kn_new;
+    fn rs_kn_edit;
+    fn rs_kn_edit_nodes;
+    fn rs_kn_set_tiers;
+    fn rs_kn_set_exogenous;
+    fn rs_kn_nodes;
+    fn rs_kn_edges;
+    fn rs_kn_tiers;
+    fn rs_kn_holds;
+    fn rs_kn_orient;
 }

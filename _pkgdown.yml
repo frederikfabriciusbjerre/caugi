@@ -25,6 +25,9 @@ reference:
   - title: Verbs
     contents:
       - has_concept("verbs")
+  - title: Background knowledge
+    contents:
+      - has_concept("knowledge")
   - title: Adjustment and d-separation
     contents:
       - has_concept("adjustment")
