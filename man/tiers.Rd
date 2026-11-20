@@ -24,6 +24,7 @@ Other knowledge:
 \code{\link[=is_knowledge]{is_knowledge()}},
 \code{\link[=knowledge]{knowledge()}},
 \code{\link[=orient]{orient()}},
+\code{\link[=required]{required()}},
 \code{\link[=set_tiers]{set_tiers()}}
 }
 \concept{knowledge}

@@ -43,6 +43,7 @@ caugi_knowledge <- S7::new_class(
 #' )
 #' bk
 #' edges(bk, expand = TRUE)
+#' plot(bk)
 #'
 #' @family knowledge
 #' @concept knowledge
@@ -124,6 +125,70 @@ tiers <- function(bk) {
   is_knowledge(bk, throw_error = TRUE)
   t <- rs_kn_tiers(bk@ptr)
   if (length(t$names)) stats::setNames(t$members, t$names) else list()
+}
+
+#' @title Required and forbidden edges of background knowledge
+#'
+#' @description
+#' The edges `bk` requires or forbids, as written, as a `caugi` of class
+#' `"UNKNOWN"` on its nodes.
+#'
+#' @param bk Background knowledge, made by [knowledge()].
+#'
+#' @returns A `caugi`.
+#'
+#' @examples
+#' bk <- knowledge(A %-->% B, !(B %-->% C), !(C %-->% B))
+#' required(bk)
+#' forbidden(bk)
+#'
+#' @family knowledge
+#' @concept knowledge
+#'
+#' @export
+required <- function(bk) {
+  .kn_edges_graph(bk, "required", "UNKNOWN")
+}
+
+#' @rdname required
+#' @export
+forbidden <- function(bk) {
+  .kn_edges_graph(bk, "forbidden", "UNKNOWN")
+}
+
+S7::method(print, caugi_knowledge) <- function(x, ...) {
+  n <- nodes(x)
+  e <- edges(x)
+  t <- tiers(x)
+  lag <- rs_kn_tiers(x@ptr)$max_lag
+  # Names as R code, backticked where needed.
+  code <- function(v) {
+    vapply(
+      v,
+      function(s) deparse1(as.name(s), backtick = TRUE),
+      "",
+      USE.NAMES = FALSE
+    )
+  }
+  edge <- paste0(code(e$from), " %-->% ", code(e$to), recycle0 = TRUE)
+  cat("<knowledge; nodes: ", toString(n$name), ">\n", sep = "")
+  lines <- c(
+    if (length(t)) {
+      members <- vapply(t, function(v) paste(code(v), collapse = " + "), "")
+      paste0(
+        "tier(",
+        toString(paste(code(names(t)), "=", members)),
+        if (!is.null(lag)) paste0(", max_lag = ", lag),
+        ")"
+      )
+    },
+    if (any(n$exogenous)) {
+      paste0("exogenous(", toString(code(n$name[n$exogenous])), ")")
+    },
+    ifelse(e$status == "required", edge, paste0("!(", edge, ")"))
+  )
+  cat(paste0("  ", lines, "\n", recycle0 = TRUE), sep = "")
+  invisible(x)
 }
 
 #' @title Set the tiers or exogenous nodes of background knowledge
@@ -229,6 +294,23 @@ holds <- function(cg, bk) {
   .kn_table(.kn_rust(rs_kn_holds(bk@ptr, cg@session)))
 }
 
+# Drawn as a graph: forbidden edges dashed red, laid out by tier when every
+# node has one.
+S7::method(plot, caugi_knowledge) <- function(x, edge_style = list(), ...) {
+  e <- edges(x)
+  by_edge <- list()
+  for (i in which(e$status == "forbidden")) {
+    by_edge[[e$from[i]]][[e$to[i]]] <- list(col = "red", lty = "dashed")
+  }
+  edge_style <- utils::modifyList(list(by_edge = by_edge), edge_style)
+  cg <- .kn_edges_graph(x, c("required", "forbidden"), "UNKNOWN")
+  if (anyNA(nodes(x)$tier)) {
+    plot(cg, edge_style = edge_style, ...)
+  } else {
+    plot(cg, layout = "tiered", tiers = tiers(x), edge_style = edge_style, ...)
+  }
+}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ───────────────────────────── Internal helpers ───────────────────────────────
 # ──────────────────────────────────────────────────────────────────────────────
@@ -264,6 +346,20 @@ holds <- function(cg, bk) {
     holds = x$holds
   )
   data.table::setorderv(out, c("from", "to", "status"))
+}
+
+# `kind`, not `status`: data.table would read `status` as the column.
+.kn_edges_graph <- function(bk, kind, class) {
+  is_knowledge(bk, throw_error = TRUE)
+  e <- edges(bk)
+  e <- e[e$status %in% kind]
+  caugi(
+    from = e$from,
+    edge = e$edge,
+    to = e$to,
+    nodes = nodes(bk)$name,
+    class = class
+  )
 }
 
 # `A %-->% B` is required and `!(A %-->% B)` forbidden, each parsed by caugi's

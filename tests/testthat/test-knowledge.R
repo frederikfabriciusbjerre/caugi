@@ -55,6 +55,30 @@ test_that("is_knowledge() tells knowledge apart", {
   expect_error(tiers(caugi(A %-->% B)), "knowledge")
 })
 
+test_that("print() shows the statements as code", {
+  bk <- knowledge(
+    tier(A, `2` = B + `x y`, max_lag = 1),
+    A %-->% B,
+    !(A %-->% `x y`),
+    exogenous(A)
+  )
+  out <- capture.output(print(bk))
+  expect_equal(
+    out,
+    c(
+      "<knowledge; nodes: A, B, x y>",
+      "  tier(`1` = A, `2` = B + `x y`, max_lag = 1)",
+      "  exogenous(A)",
+      "  A %-->% B",
+      "  !(A %-->% `x y`)"
+    )
+  )
+  # The printed statements build the same knowledge.
+  again <- eval(parse(text = paste0("knowledge(", toString(out[-1]), ")")))
+  expect_equal(capture.output(print(again)), out)
+  expect_equal(capture.output(print(knowledge())), "<knowledge; nodes: >")
+})
+
 test_that("edge verbs edit knowledge", {
   bk <- knowledge(A %-->% B) |> add_edges(!(B %-->% C))
   expect_identical(add_edges(bk), bk)
@@ -154,4 +178,24 @@ test_that("dag_to_mpdag() restricts the CPDAG of a DAG", {
     dag_to_mpdag(dag, knowledge(!(C %-->% B))),
     caugi(A %---% B, B %-->% C, class = "MPDAG")
   )
+})
+
+test_that("required() and forbidden() give the statements as graphs", {
+  bk <- knowledge(A %-->% B, !(B %-->% C), !(C %-->% B), D)
+  expect_equal(required(bk), caugi(A %-->% B, C, D, class = "UNKNOWN"))
+  expect_equal(
+    forbidden(bk),
+    caugi(B %-->% C, C %-->% B, A, D, class = "UNKNOWN")
+  )
+})
+
+test_that("plot() draws knowledge", {
+  tiered <- knowledge(tier(t1 = A + B, t2 = C), A %-->% C, !(B %-->% C))
+  expect_true(S7::S7_inherits(plot(tiered), caugi_plot))
+  untiered <- knowledge(tier(t1 = A), A %-->% B, !(B %-->% A))
+  styled <- plot(
+    untiered,
+    edge_style = list(by_edge = list(B = list(A = list(col = "blue"))))
+  )
+  expect_true(S7::S7_inherits(styled, caugi_plot))
 })

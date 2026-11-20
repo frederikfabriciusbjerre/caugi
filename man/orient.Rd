@@ -43,6 +43,7 @@ Conference on Uncertainty in Artificial Intelligence (UAI-17)}.
 Other knowledge:
 \code{\link[=is_knowledge]{is_knowledge()}},
 \code{\link[=knowledge]{knowledge()}},
+\code{\link[=required]{required()}},
 \code{\link[=set_tiers]{set_tiers()}},
 \code{\link[=tiers]{tiers()}}
 }

@@ -43,12 +43,14 @@ bk <- knowledge(
 )
 bk
 edges(bk, expand = TRUE)
+plot(bk)
 
 }
 \seealso{
 Other knowledge:
 \code{\link[=is_knowledge]{is_knowledge()}},
 \code{\link[=orient]{orient()}},
+\code{\link[=required]{required()}},
 \code{\link[=set_tiers]{set_tiers()}},
 \code{\link[=tiers]{tiers()}}
 }
