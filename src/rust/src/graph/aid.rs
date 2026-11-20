@@ -548,6 +548,77 @@ mod tests {
     }
 
     #[test]
+    fn identical_undirected_cpdag_is_zero() {
+        // 0 --- 1 --- 2: no pair is amenable, in either graph.
+        let c = cpdag(3, &[], &[(0, 1), (1, 2)]);
+        let inv = ident(3);
+        for kind in KINDS {
+            assert_eq!(
+                aid(kind, AidInput::Cpdag(&c), AidInput::Cpdag(&c), &inv).unwrap(),
+                (0.0, 0)
+            );
+        }
+    }
+
+    #[test]
+    fn reach_descendants_tracks_amenability() {
+        // 0 -> 2 <- 1, 2 -> 3, 2 -> 4, 3 --- 4 from t = 2: the walk enters
+        // 3 --- 4 along a directed edge, so it stays amenable.
+        let c = cpdag(5, &[(0, 2), (1, 2), (2, 3), (2, 4)], &[(3, 4)]);
+        let (pd, nam) = reach_descendants(&AidInput::Cpdag(&c), 2);
+        assert_eq!(pd, NodeSet::from_iter([2, 3, 4]));
+        assert!(nam.is_empty());
+
+        // 0 --- 1 -> 2 <- 3 from t = 0: the walk leaves along 0 --- 1, so it is
+        // not amenable, also on through 1 -> 2.
+        let c = cpdag(4, &[(1, 2), (3, 2)], &[(0, 1)]);
+        let (pd, nam) = reach_descendants(&AidInput::Cpdag(&c), 0);
+        assert_eq!(pd, NodeSet::from_iter([0, 1, 2]));
+        assert_eq!(nam, NodeSet::from_iter([1, 2]));
+    }
+
+    #[test]
+    fn reach_validity_on_a_not_amenable_walk() {
+        // 0 --- 1 -> 2 <- 3 from t = 0: 1 and 2 are not amenable whatever Z is,
+        // and adjusting for the collider 2 also opens 0 --- 1 -> 2 <- 3.
+        let c = cpdag(4, &[(1, 2), (3, 2)], &[(0, 1)]);
+        for (z, nva) in [
+            (vec![], vec![1, 2]),
+            (vec![1], vec![1, 2]),
+            (vec![2], vec![1, 2, 3]),
+        ] {
+            let (pd, nam, got) = reach_validity(&AidInput::Cpdag(&c), 0, &NodeSet::from_iter(z));
+            assert_eq!(pd, NodeSet::from_iter([0, 1, 2]));
+            assert_eq!(nam, NodeSet::from_iter([1, 2]));
+            assert_eq!(got, NodeSet::from_iter(nva));
+        }
+    }
+
+    #[test]
+    fn rejects_size_mismatch_and_scores_one_node_zero() {
+        let one = dag(1, &[]);
+        let two = dag(2, &[(0, 1)]);
+        let err = aid(
+            AidType::Ancestor,
+            AidInput::Dag(&two),
+            AidInput::Dag(&one),
+            &ident(2),
+        )
+        .unwrap_err();
+        assert!(err.contains("same number of nodes"));
+        assert_eq!(
+            aid(
+                AidType::Ancestor,
+                AidInput::Dag(&one),
+                AidInput::Dag(&one),
+                &ident(1)
+            )
+            .unwrap(),
+            (0.0, 0)
+        );
+    }
+
+    #[test]
     fn rejects_bad_index_map() {
         let g = dag(3, &[(0, 1), (1, 2)]);
         let bad = [0usize, 1];

@@ -738,6 +738,34 @@ mod tests {
     }
 
     #[test]
+    fn test_deserialize_undirected_default_and_ignores_nested_graphs() {
+        let reg = setup();
+
+        // Self-closing edges follow edgedefault; the graph nested in node A is
+        // skipped, its edgedefault and <data> included.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <graph id="G" edgedefault="undirected">
+    <node id="A">
+      <graph id="inner" edgedefault="directed">
+        <node id="X"/>
+        <data key="graph_class">DAG</data>
+      </graph>
+    </node>
+    <node id="B"/>
+    <edge source="A" target="B"/>
+  </graph>
+</graphml>"#;
+
+        let result = deserialize_graphml(xml, &reg).unwrap();
+        assert_eq!(result.nodes, vec!["A", "B"]);
+        assert_eq!(result.edges_from, vec!["A"]);
+        assert_eq!(result.edges_to, vec!["B"]);
+        assert_eq!(result.edges_type, vec!["---"]);
+        assert_eq!(result.graph_class, "UNKNOWN");
+    }
+
+    #[test]
     fn test_deserialize_unknown_edge_type_errors() {
         let reg = setup();
 

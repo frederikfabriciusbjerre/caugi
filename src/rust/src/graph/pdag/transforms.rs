@@ -230,6 +230,30 @@ mod tests {
     }
 
     #[test]
+    fn meek_closure_prefers_the_builtin_undirected_glyph() {
+        // A second undirected spec registered after `---` is not used.
+        let (mut reg, d, u) = setup();
+        reg.register(crate::edges::EdgeSpec {
+            glyph: "~~~".into(),
+            tail: crate::edges::Mark::Tail,
+            head: crate::edges::Mark::Tail,
+            symmetric: true,
+            class: EdgeClass::Undirected,
+        })
+        .unwrap();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(0, 2, u).unwrap();
+        let p = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let m = p.meek_closure().unwrap();
+        assert_eq!(m.undirected_of(0), &[2]);
+        let core = m.as_pdag().core_ref();
+        let k = core.row_range(0).find(|&k| core.col_index[k] == 2).unwrap();
+        assert_eq!(core.spec(k).glyph, "---");
+    }
+
+    #[test]
     fn pdag_meek_closure_is_idempotent() {
         let (reg, d, u) = setup();
         let mut b = GraphBuilder::new_with_registry(4, true, &reg);

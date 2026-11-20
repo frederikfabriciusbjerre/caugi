@@ -995,6 +995,10 @@ mod tests {
             v.all_backdoor_sets(&[1], &[2], true, 5).unwrap(),
             vec![vec![0]]
         );
+        assert_eq!(
+            v.all_adjustment_sets(&[1], &[2], true, 5).unwrap(),
+            vec![vec![0]]
+        );
     }
 
     // --- d-sep simple chain to hit both true/false via GraphView::Dag ---
@@ -1260,6 +1264,16 @@ mod tests {
         assert_eq!(v_admg.m_separated(&[0], &[2], &[]).unwrap(), false);
         assert_eq!(v_ag.m_separated(&[0], &[1], &[]).unwrap(), false);
         assert_eq!(
+            v_admg
+                .minimal_separator(&[0], &[2], &[], &[0, 1, 2])
+                .unwrap(),
+            Some(vec![1])
+        );
+        assert_eq!(
+            v_ag.minimal_separator(&[0], &[2], &[], &[0, 1, 2]).unwrap(),
+            Some(vec![])
+        );
+        assert_eq!(
             v_pdag.m_separated(&[0], &[2], &[]).unwrap_err(),
             "m_separated is only defined for ADMGs, AGs, PAGs, DAGs, and UGs"
         );
@@ -1294,6 +1308,236 @@ mod tests {
             v_ag.moral_of_ancestors(&[0]).unwrap_err(),
             "moral_of_ancestors is only defined for DAGs"
         );
+
+        // Latent transforms: projecting 1 out of 0 -> 1 -> 2 leaves 0 -> 2;
+        // exogenizing 1 adds 0 -> 2; normalizing drops the one-child latent 0.
+        let projected = v_admg.latent_project(&[1]).unwrap();
+        assert!(matches!(projected, GraphView::Admg(_)));
+        assert_eq!(projected.parents_of(1).unwrap(), vec![0]);
+        assert_eq!(
+            v_dag.exogenize(&[1]).unwrap().parents_of(2).unwrap(),
+            vec![0, 1]
+        );
+        let (normalized, kept) = v_dag.normalize_latent_structure(&[0]).unwrap();
+        assert_eq!((normalized.n(), kept), (2, vec![1, 2]));
+        assert_eq!(
+            v_pdag.exogenize(&[1]).unwrap_err(),
+            "exogenize is only defined for DAGs"
+        );
+        assert_eq!(
+            v_pdag.normalize_latent_structure(&[0]).unwrap_err(),
+            "normalize_latent_structure is only defined for DAGs"
+        );
+    }
+
+    /// A simple graph on `n` nodes with the given edges, by glyph.
+    fn core(n: u32, edges: &[(u32, u32, &str)]) -> Arc<CaugiGraph> {
+        let mut r = EdgeRegistry::new();
+        r.register_builtins().unwrap();
+        let mut b = GraphBuilder::new_with_registry(n, true, &r);
+        for &(u, v, glyph) in edges {
+            b.add_edge(u, v, r.code_of(glyph).unwrap()).unwrap();
+        }
+        Arc::new(b.finalize().unwrap())
+    }
+
+    #[test]
+    fn graphview_pdag_mpdag_cpdag_dispatch_alike() {
+        // 0 --> 2 <-- 1, 2 --> 3 and 4 --- 5: a CPDAG, so also an MPDAG and a
+        // PDAG, and every query gives the same answer through each view.
+        let p = Pdag::new(core(
+            6,
+            &[(0, 2, "-->"), (1, 2, "-->"), (2, 3, "-->"), (4, 5, "---")],
+        ))
+        .unwrap();
+        let views = [
+            GraphView::Pdag(Arc::new(p.clone())),
+            GraphView::Mpdag(Arc::new(Mpdag::try_new(p.clone()).unwrap())),
+            GraphView::Cpdag(Arc::new(Cpdag::try_new(p).unwrap())),
+        ];
+        for v in &views {
+            assert_eq!(v.n(), 6);
+            assert_eq!(v.neighbors_of(2, NeighborMode::All).unwrap(), vec![0, 1, 3]);
+            assert_eq!(v.parents_of(2).unwrap(), vec![0, 1]);
+            assert_eq!(v.children_of(2).unwrap(), vec![3]);
+            assert_eq!(v.undirected_of(4).unwrap(), vec![5]);
+            assert_eq!(v.ancestors_of(3).unwrap(), vec![0, 1, 2]);
+            assert_eq!(v.descendants_of(0).unwrap(), vec![2, 3]);
+            assert_eq!(v.anteriors_of(5).unwrap(), vec![4]);
+            assert_eq!(v.posteriors_of(4).unwrap(), vec![5]);
+            assert_eq!(v.markov_blanket_of(0).unwrap(), vec![1, 2]);
+            assert_eq!(v.exogenous_nodes(false).unwrap(), vec![0, 1, 4, 5]);
+            assert_eq!(v.exogenous_nodes(true).unwrap(), vec![0, 1]);
+            assert_eq!(
+                v.topological_sort().unwrap_err(),
+                "topological_sort is only defined for DAGs"
+            );
+
+            // The extension keeps the arrows and orients 4 --- 5 either way.
+            let ext = v.dag_extension().unwrap();
+            assert!(matches!(ext, GraphView::Dag(_)));
+            assert_eq!(ext.parents_of(2).unwrap(), vec![0, 1]);
+            assert_eq!(ext.neighbors_of(4, NeighborMode::All).unwrap(), vec![5]);
+            assert!(matches!(v.to_mpdag().unwrap(), GraphView::Mpdag(_)));
+
+            // An(3) = {0, 1, 2, 3} keeps the collider, so the class survives.
+            let red = v.ancestral_reduction(&[3]).unwrap();
+            assert_eq!(red.n(), 4);
+            assert_eq!(std::mem::discriminant(&red), std::mem::discriminant(v));
+        }
+
+        // Without the collider, 2 --> 3 is no longer strongly protected.
+        let sub = views[2].induced_subgraph(&[2, 3]).unwrap();
+        assert!(matches!(sub, GraphView::Mpdag(_)));
+        assert!(matches!(views[2].to_cpdag().unwrap(), GraphView::Cpdag(_)));
+    }
+
+    #[test]
+    fn graphview_class_conversions_and_errors() {
+        let edges = [(0, 2, "-->"), (1, 2, "-->")];
+        let v_dag = GraphView::Dag(Arc::new(Dag::new(core(3, &edges)).unwrap()));
+        let v_ug = GraphView::Ug(Arc::new(Ug::new(core(2, &[(0, 1, "---")])).unwrap()));
+
+        // A DAG is its own extension, and its MPDAG is its CPDAG.
+        let ext = v_dag.dag_extension().unwrap();
+        assert!(matches!(ext, GraphView::Dag(_)));
+        assert_eq!(ext.parents_of(2).unwrap(), vec![0, 1]);
+        let m = v_dag.to_mpdag().unwrap();
+        assert!(matches!(m, GraphView::Mpdag(_)));
+        assert_eq!(m.parents_of(2).unwrap(), vec![0, 1]);
+
+        assert_eq!(
+            v_ug.dag_extension().unwrap_err(),
+            "a DAG extension is only defined for PDAGs, MPDAGs and CPDAGs"
+        );
+        assert_eq!(
+            v_ug.to_mpdag().unwrap_err(),
+            "to_mpdag is only defined for DAGs, PDAGs, and MPDAGs"
+        );
+        assert_eq!(
+            v_dag.is_visible_edge(0, 2).unwrap_err(),
+            "is_visible_edge is only defined for MAGs and PAGs"
+        );
+        assert_eq!(
+            v_dag.pag_to_mag().unwrap_err(),
+            "pag_to_mag is only defined for PAGs"
+        );
+        assert_eq!(
+            v_dag.mag_to_pag().unwrap_err(),
+            "mag_to_pag is only defined for MAGs (class 'AG')"
+        );
+
+        // 2 <-> 0 <-> 1 <-> 3 is an inducing path between the non-adjacent 2
+        // and 3, so this ancestral graph is not maximal.
+        let non_max = GraphView::Ag(Arc::new(
+            Ag::new(core(
+                4,
+                &[
+                    (0, 3, "-->"),
+                    (1, 0, "<->"),
+                    (1, 2, "-->"),
+                    (1, 3, "<->"),
+                    (2, 0, "<->"),
+                ],
+            ))
+            .unwrap(),
+        ));
+        assert!(non_max.mag_to_pag().unwrap_err().contains("not maximal"));
+    }
+
+    #[test]
+    fn graphview_pag_dispatch_and_mag_round_trip() {
+        // The PAG of the MAG 0 --> 1 <-> 2 <-- 3, 1 --> 4, and the PAG of the
+        // undirected 4-cycle 5 --- 6 --- 7 --- 8 --- 5 (no DAG has its
+        // m-separations, so the tails are invariant).
+        let pag = Pag::new(core(
+            9,
+            &[
+                (0, 1, "o->"),
+                (1, 2, "<->"),
+                (3, 2, "o->"),
+                (1, 4, "-->"),
+                (5, 6, "---"),
+                (6, 7, "---"),
+                (7, 8, "---"),
+                (8, 5, "---"),
+            ],
+        ))
+        .unwrap();
+        let v = GraphView::Pag(Arc::new(pag));
+        assert_eq!(v.n(), 9);
+        assert_eq!(v.core().n(), 9);
+        let nb = |i, mode| v.neighbors_of(i, mode).unwrap();
+        // `all` lists the neighbours bucket by bucket, so sort it.
+        let mut all = nb(1, NeighborMode::All);
+        all.sort_unstable();
+        assert_eq!(all, vec![0, 2, 4]);
+        assert_eq!(nb(4, NeighborMode::In), vec![1]);
+        assert_eq!(nb(1, NeighborMode::Out), vec![4]);
+        assert_eq!(nb(5, NeighborMode::Undirected), vec![6, 8]);
+        assert_eq!(nb(1, NeighborMode::Bidirected), vec![2]);
+        assert_eq!(nb(1, NeighborMode::Partial), vec![0]);
+
+        // Definite relations ignore the circles.
+        assert_eq!(v.ancestors_of(4).unwrap(), vec![1]);
+        assert_eq!(v.descendants_of(0).unwrap(), Vec::<u32>::new());
+        assert_eq!(v.anteriors_of(5).unwrap(), vec![6, 7, 8]);
+        assert_eq!(v.posteriors_of(1).unwrap(), vec![4]);
+
+        // 2 <-> 1 with 2 not adjacent to 4 makes 1 --> 4 visible.
+        assert!(v.is_visible_edge(1, 4).unwrap());
+        assert_eq!(v.markov_blanket_of(1).unwrap(), vec![0, 2, 3, 4]);
+        assert_eq!(
+            v.exogenous_nodes(false).unwrap(),
+            vec![0, 1, 2, 3, 5, 6, 7, 8]
+        );
+        assert_eq!(v.exogenous_nodes(true).unwrap(), vec![0, 1, 2, 3]);
+        assert_eq!(
+            v.topological_sort().unwrap_err(),
+            "topological_sort is only defined for DAGs"
+        );
+        assert!(v.m_separated(&[0], &[3], &[]).unwrap());
+        assert!(!v.m_separated(&[0], &[3], &[1, 2]).unwrap());
+        let all: Vec<u32> = (0..9).collect();
+        assert_eq!(
+            v.minimal_separator(&[0], &[4], &[], &all).unwrap(),
+            Some(vec![1])
+        );
+
+        // Dropping the 4-cycle leaves a PAG; 1 --> 4 alone is over-oriented.
+        assert!(matches!(
+            v.induced_subgraph(&[0, 1, 2, 3, 4]).unwrap(),
+            GraphView::Pag(_)
+        ));
+        assert!(matches!(
+            v.induced_subgraph(&[1, 4]).unwrap(),
+            GraphView::Raw(_)
+        ));
+
+        // The member MAG turns o-> into -->, and its PAG is the original.
+        let mag = v.pag_to_mag().unwrap();
+        assert!(matches!(mag, GraphView::Ag(_)));
+        assert_eq!(mag.parents_of(1).unwrap(), vec![0]);
+        assert_eq!(mag.parents_of(2).unwrap(), vec![3]);
+        assert!(mag.is_visible_edge(1, 4).unwrap());
+        assert!(!mag.is_visible_edge(0, 1).unwrap());
+        let back = mag.mag_to_pag().unwrap();
+        assert_eq!(
+            back.neighbors_of(1, NeighborMode::Partial).unwrap(),
+            vec![0]
+        );
+        assert_eq!(back.undirected_of(5).unwrap(), vec![6, 8]);
+    }
+
+    #[test]
+    fn raw_reach_skips_bidirected_and_rejects_circles() {
+        let v = GraphView::Raw(core(3, &[(0, 1, "-->"), (2, 1, "<->")]));
+        assert_eq!(v.ancestors_of(1).unwrap(), vec![0]);
+        let v = GraphView::Raw(core(2, &[(0, 1, "o->")]));
+        assert!(v
+            .ancestors_of(1)
+            .unwrap_err()
+            .contains("partially directed"));
     }
 
     #[test]

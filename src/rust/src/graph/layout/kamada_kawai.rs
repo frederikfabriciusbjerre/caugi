@@ -298,12 +298,13 @@ mod tests {
         let core = Arc::new(b.finalize().unwrap());
 
         let distances = compute_shortest_paths(&core, 3);
+        let d = |i: usize, j: usize| distances[i * 3 + j];
         // Connected pair.
-        assert_eq!(distances[0 * 3 + 1], 1.0);
-        assert_eq!(distances[1 * 3 + 0], 1.0);
+        assert_eq!(d(0, 1), 1.0);
+        assert_eq!(d(1, 0), 1.0);
         // Disconnected pairs are assigned 2*n.
-        assert_eq!(distances[0 * 3 + 2], 6.0);
-        assert_eq!(distances[2 * 3 + 1], 6.0);
+        assert_eq!(d(0, 2), 6.0);
+        assert_eq!(d(2, 1), 6.0);
     }
 
     #[test]

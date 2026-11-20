@@ -218,4 +218,21 @@ mod tests {
         // Should be identical (deterministic)
         assert_eq!(coords1, coords2);
     }
+
+    #[test]
+    fn test_force_layout_ignores_self_loops() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cdir = reg.code_of("-->").unwrap();
+        let layout = |self_loop: bool| {
+            let mut b = GraphBuilder::new_with_registry(3, false, &reg);
+            b.add_edge(0, 1, cdir).unwrap();
+            b.add_edge(1, 2, cdir).unwrap();
+            if self_loop {
+                b.add_edge(1, 1, cdir).unwrap();
+            }
+            force_directed_layout(&b.finalize().unwrap()).unwrap()
+        };
+        assert_eq!(layout(true), layout(false));
+    }
 }

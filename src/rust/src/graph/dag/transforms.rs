@@ -870,6 +870,10 @@ mod tests {
         assert_eq!(kept_old, vec![1]);
         assert!(norm.parents_of(0).is_empty());
         assert!(norm.children_of(0).is_empty());
+
+        // A repeated latent is dropped once.
+        let (_, kept_old) = dag.normalize_latent_structure(&[0, 0]).unwrap();
+        assert_eq!(kept_old, vec![1]);
     }
 
     #[test]
@@ -888,9 +892,68 @@ mod tests {
         b.add_edge(1, 3, d).unwrap();
         let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
 
+        // W is dropped whichever latent comes first.
+        for latents in [[0, 1], [1, 0]] {
+            let (norm, kept_old) = dag.normalize_latent_structure(&latents).unwrap();
+            assert_eq!(norm.n(), 4);
+            assert_eq!(kept_old, vec![0, 2, 3, 4]); // W removed
+        }
+    }
+
+    #[test]
+    fn dag_normalize_latent_structure_keeps_incomparable_child_sets() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        // U -> X,Y and W -> Y,Z: neither child set contains the other.
+        // node order: U=0, W=1, X=2, Y=3, Z=4
+        let mut b = GraphBuilder::new_with_registry(5, true, &reg);
+        b.add_edge(0, 2, d).unwrap();
+        b.add_edge(0, 3, d).unwrap();
+        b.add_edge(1, 3, d).unwrap();
+        b.add_edge(1, 4, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
         let (norm, kept_old) = dag.normalize_latent_structure(&[0, 1]).unwrap();
-        assert_eq!(norm.n(), 4);
-        assert_eq!(kept_old, vec![0, 2, 3, 4]); // W removed
+        assert_eq!(kept_old, vec![0, 1, 2, 3, 4]);
+        assert_eq!(norm.parents_of(3), vec![0, 1]);
+    }
+
+    #[test]
+    fn dag_normalize_latent_structure_exogenizes_latent_parents() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        // P -> U -> X,Y with latent U: P -> U becomes P -> X,Y.
+        // node order: P=0, U=1, X=2, Y=3
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        b.add_edge(1, 2, d).unwrap();
+        b.add_edge(1, 3, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        let (norm, kept_old) = dag.normalize_latent_structure(&[1]).unwrap();
+        assert_eq!(kept_old, vec![0, 1, 2, 3]);
+        assert!(norm.parents_of(1).is_empty());
+        assert_eq!(norm.children_of(0), vec![2, 3]);
+        assert_eq!(norm.parents_of(2), vec![0, 1]);
+        assert_eq!(norm.parents_of(3), vec![0, 1]);
+    }
+
+    #[test]
+    fn dag_exogenize_and_normalize_reject_out_of_bounds_index() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let d = reg.code_of("-->").unwrap();
+        let mut b = GraphBuilder::new_with_registry(2, true, &reg);
+        b.add_edge(0, 1, d).unwrap();
+        let dag = Dag::new(Arc::new(b.finalize().unwrap())).unwrap();
+
+        assert_eq!(dag.exogenize(&[2]).unwrap_err(), "Index 2 is out of bounds");
+        assert_eq!(
+            dag.normalize_latent_structure(&[0, 2]).unwrap_err(),
+            "Index 2 is out of bounds"
+        );
     }
 
     #[test]

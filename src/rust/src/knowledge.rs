@@ -623,9 +623,11 @@ mod tests {
 
     #[test]
     fn bad_input_is_invalid() {
-        let msg = |r: Result<Knowledge>| match r {
-            Err(KnowledgeError::Invalid(m)) => m,
-            other => panic!("expected an invalid input, got {other:?}"),
+        let msg = |r: Result<Knowledge>| {
+            let e = r.expect_err("expected an invalid input");
+            assert!(matches!(e, KnowledgeError::Invalid(_)), "{e:?}");
+            let (KnowledgeError::Invalid(m) | KnowledgeError::Inconsistent(m)) = e;
+            m
         };
         let with_tiers = |tiers: &[(&str, &[&str])], lag: Option<u32>| {
             Knowledge::new(&s(&["A", "B"]), &[], &t(tiers), lag, &[], false)
@@ -851,9 +853,11 @@ mod tests {
             .orient(&g)
             .unwrap();
         assert!(m.children_of(1).contains(&2) && m.undirected_of(0).contains(&1));
-        let err = |r: Result<Mpdag>| match r {
-            Err(KnowledgeError::Inconsistent(m)) => m,
-            _ => panic!("expected an inconsistency"),
+        let err = |r: Result<Mpdag>| {
+            let e = r.expect_err("expected an inconsistency");
+            assert!(matches!(e, KnowledgeError::Inconsistent(_)), "{e:?}");
+            let (KnowledgeError::Invalid(m) | KnowledgeError::Inconsistent(m)) = e;
+            m
         };
         let conflict = kn(&["A", "B", "C"], &[("A", "B", true), ("C", "B", true)]);
         assert!(err(conflict.unwrap().orient(&g)).contains("follows from the rest"));

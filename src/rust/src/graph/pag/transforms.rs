@@ -125,33 +125,56 @@ mod tests {
     use crate::edges::EdgeRegistry;
     use crate::graph::builder::GraphBuilder;
 
-    /// Build a MAG from glyphs, then its PAG.
-    fn pag_of(n: u32, edges: &[(u32, u32, &str)]) -> MarkedGraph {
+    /// A graph from glyphs.
+    fn core(n: u32, edges: &[(u32, u32, &str)]) -> Arc<crate::graph::CaugiGraph> {
         let mut reg = EdgeRegistry::new();
         reg.register_builtins().unwrap();
         let mut b = GraphBuilder::new_with_registry(n, true, &reg);
         for &(u, v, glyph) in edges {
             b.add_edge(u, v, reg.code_of(glyph).unwrap()).unwrap();
         }
-        let mag = Ag::new(Arc::new(b.finalize().unwrap())).expect("not a MAG");
+        Arc::new(b.finalize().unwrap())
+    }
+
+    /// Build a MAG from glyphs, then its PAG.
+    fn pag_of(n: u32, edges: &[(u32, u32, &str)]) -> MarkedGraph {
+        let mag = Ag::new(core(n, edges)).expect("not a MAG");
         pag_of_mag(&mag).expect("pag_of_mag failed")
     }
 
-    /// The glyph of the edge `{i, j}` as `<mark at i>-<mark at j>`.
+    /// The glyph of the edge `{i, j}` as `<mark at i>-<mark at j>`, or
+    /// `"none"` when `i` and `j` are not adjacent.
     fn glyph(p: &MarkedGraph, i: u32, j: u32) -> String {
-        let l = match p.mark_at(i, j) {
-            Some(Mark::Arrow) => '<',
-            Some(Mark::Tail) => '-',
-            Some(Mark::Circle) => 'o',
-            _ => return "none".into(),
+        let (Some(at_i), Some(at_j)) = (p.mark_at(i, j), p.mark_at(j, i)) else {
+            return "none".into();
         };
-        let r = match p.mark_at(j, i) {
-            Some(Mark::Arrow) => '>',
-            Some(Mark::Tail) => '-',
-            Some(Mark::Circle) => 'o',
-            _ => return "none".into(),
+        let end = |m: Mark, arrow: char| match m {
+            Mark::Arrow => arrow,
+            Mark::Tail => '-',
+            _ => 'o',
         };
-        format!("{}-{}", l, r)
+        format!("{}-{}", end(at_i, '<'), end(at_j, '>'))
+    }
+
+    #[test]
+    fn from_mag_builds_the_pag() {
+        // A --> B <-- C, A and C non-adjacent.
+        let mag = Ag::new(core(3, &[(0, 1, "-->"), (2, 1, "-->")])).unwrap();
+        let pag = Pag::from_mag(&mag).unwrap();
+        assert_eq!(
+            pag.neighbors_by_marks(1, Mark::Arrow, Mark::Circle),
+            &[0, 2]
+        );
+        assert!(pag.parents_of(1).is_empty());
+    }
+
+    #[test]
+    fn to_mag_resolves_circles_opposite_definite_marks() {
+        // `o->` and `--o` both become `-->`.
+        let pag = Pag::new_unchecked(core(3, &[(0, 1, "o->"), (1, 2, "--o")])).unwrap();
+        let mag = pag.to_mag().unwrap();
+        assert_eq!(mag.parents_of(1), &[0]);
+        assert_eq!(mag.parents_of(2), &[1]);
     }
 
     // The expectations below are ported from `CausalStructures.jl`'s
@@ -271,8 +294,8 @@ mod tests {
         for &(u, v) in &[(0u32, 2u32), (1, 2), (2, 3)] {
             assert!(p.adjacent(u, v));
         }
-        assert!(!p.adjacent(0, 1));
-        assert!(!p.adjacent(0, 3));
+        assert_eq!(glyph(&p, 0, 1), "none");
+        assert_eq!(glyph(&p, 0, 3), "none");
     }
 
     #[test]

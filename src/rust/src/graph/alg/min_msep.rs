@@ -419,6 +419,22 @@ mod tests {
     }
 
     #[test]
+    fn reachable_starts_only_inside_a() {
+        // 0 -> 1 -> 2 with 0 outside A: no walk can start at 0.
+        let mut g = TestGraph::new(3);
+        g.directed(0, 1);
+        g.directed(1, 2);
+        g.finalize();
+
+        let a_mask = [false, true, true];
+        assert_eq!(reachable_mixed(&g, &[0], &a_mask, &[]), vec![false; 3]);
+        assert_eq!(
+            reachable_mixed(&g, &[1], &a_mask, &[]),
+            vec![false, true, true]
+        );
+    }
+
+    #[test]
     fn dag_chain_minimal_sep() {
         // 0 -> 1 -> 2; minimal sep for (0, 2) is {1}.
         let mut g = TestGraph::new(3);
@@ -489,16 +505,21 @@ mod tests {
 
     #[test]
     fn admg_directed_with_bidirected_branch() {
-        // 0 -> 1, 1 <-> 2, 2 -> 3. Sep for (0, 3) requires blocking 1->...->3.
+        // 0 -> 1 -> 3, 0 -> 2 -> 3, 1 <-> 2. {1, 2} blocks both directed
+        // paths; conditioning on the collider 1 opens 0 -> 1 <-> 2, but 2
+        // still blocks 2 -> 3.
         let mut g = TestGraph::new(4);
         g.directed(0, 1);
-        g.bidirected(1, 2);
+        g.directed(1, 3);
+        g.directed(0, 2);
         g.directed(2, 3);
+        g.bidirected(1, 2);
         g.finalize();
 
         let z = find_min_msep(&g, &[0], &[3], &[], &[1, 2])
             .unwrap()
             .unwrap();
+        assert_eq!(z, vec![1, 2]);
         // Z must separate.
         assert!(is_separator(&g, &[0], &[3], &z));
         // Removing any element breaks separation.

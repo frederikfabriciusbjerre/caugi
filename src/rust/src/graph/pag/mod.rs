@@ -287,6 +287,14 @@ mod tests {
         assert_eq!(pag.neighbors_by_marks(0, Mark::Tail, Mark::Circle), &[7]);
         assert_eq!(pag.partial_of(0), vec![6, 7]);
         assert!(pag.undirected_of(0).is_empty());
+        // Bucket by bucket, so not sorted overall.
+        let mut all = pag.neighbors_of(0).to_vec();
+        all.sort_unstable();
+        assert_eq!(all, vec![1, 6, 7]);
+        // No PAG edge carries `Mark::Other`.
+        assert!(pag
+            .neighbors_by_marks(0, Mark::Other, Mark::Arrow)
+            .is_empty());
     }
 
     #[test]
@@ -350,6 +358,21 @@ mod tests {
     }
 
     #[test]
+    fn non_maximal_member_is_rejected() {
+        // `0 <-> 1 <-> 2 <-> 3` with `1 --> 3` and `2 --> 0` is ancestral,
+        // but the path is inducing between the non-adjacent 0 and 3.
+        let edges = [
+            (0, 1, "<->"),
+            (1, 2, "<->"),
+            (2, 3, "<->"),
+            (1, 3, "-->"),
+            (2, 0, "-->"),
+        ];
+        let err = Pag::new(core(4, &edges)).unwrap_err();
+        assert!(err.contains("not maximal"), "unexpected error: {}", err);
+    }
+
+    #[test]
     fn definite_ancestry_ignores_circles() {
         let pag = unchecked(4, &[(0, 1, "-->"), (1, 2, "-->"), (2, 3, "o->")]);
         assert_eq!(pag.ancestors_of(2), &[0, 1]);
@@ -358,10 +381,12 @@ mod tests {
     }
 
     #[test]
-    fn anteriors_follow_undirected_edges() {
+    fn anteriors_and_posteriors_follow_undirected_edges() {
         let pag = unchecked(3, &[(0, 1, "---"), (1, 2, "-->")]);
         assert_eq!(pag.anteriors_of(1), &[0]);
         assert_eq!(pag.anteriors_of(2), &[0, 1]);
+        assert_eq!(pag.posteriors_of(0), &[1, 2]);
+        assert!(pag.posteriors_of(2).is_empty());
     }
 
     #[test]

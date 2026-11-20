@@ -447,22 +447,34 @@ mod tests {
                         }
                     }
             });
-            match g.not_cpdag() {
-                None => assert!(!has_chordless_cycle, "mask {mask}"),
-                Some(NotCpdag::ChordlessCycle(c)) => {
-                    assert!(has_chordless_cycle, "mask {mask}");
-                    let k = c.len() - 1;
-                    assert!(k >= 4 && c[0] == c[k], "mask {mask}: {c:?}");
-                    for i in 0..k {
-                        for j in i + 1..k {
-                            let consecutive = j == i + 1 || (i == 0 && j == k - 1);
-                            assert_eq!(adj(c[i], c[j]), consecutive, "mask {mask}: {c:?}");
-                        }
+            let reason = g.not_cpdag();
+            assert!(
+                matches!(reason, None | Some(NotCpdag::ChordlessCycle(_))),
+                "mask {mask}: {reason:?}"
+            );
+            assert_eq!(reason.is_some(), has_chordless_cycle, "mask {mask}");
+            if let Some(NotCpdag::ChordlessCycle(c)) = reason {
+                let k = c.len() - 1;
+                assert!(k >= 4 && c[0] == c[k], "mask {mask}: {c:?}");
+                for i in 0..k {
+                    for j in i + 1..k {
+                        let consecutive = j == i + 1 || (i == 0 && j == k - 1);
+                        assert_eq!(adj(c[i], c[j]), consecutive, "mask {mask}: {c:?}");
                     }
                 }
-                other => panic!("mask {mask}: {other:?}"),
             }
         }
+    }
+
+    #[test]
+    fn chordless_cycle_needs_a_path_around_v() {
+        // `1 -- 0 -- 2` with nothing else: 1 and 2 meet only at 0.
+        let (reg, _d, u) = setup();
+        let mut b = GraphBuilder::new_with_registry(3, true, &reg);
+        b.add_edge(0, 1, u).unwrap();
+        b.add_edge(0, 2, u).unwrap();
+        let g = Pdag::new(Arc::new(b.finalize().unwrap())).unwrap();
+        assert_eq!(g.chordless_cycle(0, 1, 2), None);
     }
 
     #[test]

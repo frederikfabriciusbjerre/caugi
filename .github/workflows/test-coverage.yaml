@@ -86,7 +86,7 @@ jobs:
 
       - name: Generate lcov from Rust tests
         working-directory: src/rust
-        run: cargo llvm-cov --workspace --all-features --lcov  --ignore-filename-regex "src/lib.rs" --output-path lcov.info
+        run: cargo llvm-cov --workspace --all-features --lcov --ignore-filename-regex "(src/lib|document)\.rs$" --output-path lcov.info
 
       - name: Upload Rust coverage to Codecov (flag=rust)
         uses: codecov/codecov-action@v7

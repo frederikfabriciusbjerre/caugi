@@ -340,6 +340,9 @@ mod tests {
         assert!(g.m_separated_pbg(&[0], &[3], &[1]));
         assert!(!g.m_separated_pbg(&[0], &[3], &[1, 2]));
         assert!(!g.is_valid_adjustment_set(&[0], &[3], &[1, 2]));
+        // An empty side is trivially separated.
+        assert!(g.m_separated_pbg(&[], &[3], &[1, 2]));
+        assert!(g.m_separated_pbg(&[0], &[], &[1, 2]));
     }
 
     #[test]
@@ -408,25 +411,17 @@ mod tests {
 
     #[test]
     fn minimal_m_separator_directed_through_bidirected() {
-        // 0 -> 1, 1 <-> 2, 2 -> 3; minimal sep for (0, 3) within {1, 2}.
+        // 0 -> 1, 1 <-> 2, 2 -> 3: the collider 1 already separates (0, 3), and
+        // once 1 must be included, the non-collider 2 has to block again.
         let g = build_admg(4, &[(0, 1), (2, 3)], &[(1, 2)]);
-        let z = g
-            .minimal_m_separator(&[0], &[3], &[], &[1, 2])
-            .unwrap()
-            .expect("expected a separator");
-        // Z must m-separate.
-        assert!(g.m_separated(&[0], &[3], &z));
-        // Removing any element breaks separation.
-        for i in 0..z.len() {
-            let mut shrunk = z.clone();
-            shrunk.remove(i);
-            assert!(
-                !g.m_separated(&[0], &[3], &shrunk),
-                "Z = {:?} not minimal: removing index {} still m-separates",
-                z,
-                i
-            );
-        }
+        assert_eq!(
+            g.minimal_m_separator(&[0], &[3], &[], &[1, 2]).unwrap(),
+            Some(vec![])
+        );
+        assert_eq!(
+            g.minimal_m_separator(&[0], &[3], &[1], &[1, 2]).unwrap(),
+            Some(vec![1, 2])
+        );
     }
 
     #[test]

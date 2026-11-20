@@ -434,6 +434,7 @@ mod tests {
             LayoutMethod::Sugiyama,
             LayoutMethod::ForceDirected,
             LayoutMethod::KamadaKawai,
+            LayoutMethod::Circle,
         ] {
             let coords = compute_layout(&core, method, 1.0).unwrap();
             assert!(coords.is_empty(), "Empty graph should have no coordinates");
@@ -611,6 +612,25 @@ mod tests {
                 method
             );
         }
+    }
+
+    #[test]
+    fn test_compute_layout_circle_puts_all_components_on_one_circle() {
+        use crate::edges::EdgeRegistry;
+        use crate::graph::builder::GraphBuilder;
+
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let cdir = reg.code_of("-->").unwrap();
+
+        // Two disconnected components: {0->1} and {2->3}
+        let mut b = GraphBuilder::new_with_registry(4, true, &reg);
+        b.add_edge(0, 1, cdir).unwrap();
+        b.add_edge(2, 3, cdir).unwrap();
+        let core = b.finalize().unwrap();
+
+        let coords = compute_layout(&core, LayoutMethod::Circle, 1.0).unwrap();
+        assert_eq!(coords, circle_layout(&core).unwrap());
     }
 
     #[test]

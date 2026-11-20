@@ -222,10 +222,13 @@ fn knowledge_matches_the_oracle_on_every_dag_over_four_nodes() {
         let sat: Vec<bool> = dags.iter().map(|&d| spec.holds(d)).collect();
         match spec.build(&names(4)) {
             // Contradictions are found exactly.
-            Err(KnowledgeError::Inconsistent(_)) => {
+            Err(e) => {
+                assert!(
+                    matches!(e, KnowledgeError::Inconsistent(_)),
+                    "case {case}: {e:?}"
+                );
                 assert!(!sat.contains(&true), "case {case}: {spec:?}")
             }
-            Err(e) => panic!("case {case}: {e:?}"),
             Ok(k) => {
                 assert!(sat.contains(&true), "case {case}: {spec:?}");
                 // The expanded statements allow exactly the same DAGs.
@@ -276,8 +279,13 @@ fn edits_match_the_oracle() {
                     assert!(possible, "case {case}: {next:?}");
                     (k, list) = (edited, next);
                 }
-                Err(KnowledgeError::Inconsistent(_)) => assert!(!possible, "case {case}"),
-                Err(e) => panic!("case {case}: {e:?}"),
+                Err(e) => {
+                    assert!(
+                        matches!(e, KnowledgeError::Inconsistent(_)),
+                        "case {case}: {e:?}"
+                    );
+                    assert!(!possible, "case {case}");
+                }
             }
             assert_eq!(k.statements(), list.statements(), "case {case}");
         }
@@ -293,10 +301,14 @@ fn edits_match_the_oracle() {
             .and_then(|k| k.edit(Edit::Add, &rows))
             .and_then(|k| k.set_exogenous(&spec.exogenous()))
             .and_then(|k| k.set_tiers(&spec.tiers(), spec.max_lag));
+        let inconsistent =
+            |r: &Result<Knowledge>| matches!(r, Err(KnowledgeError::Inconsistent(_)));
         match (spec.build(&names(4)), built) {
             (Ok(a), Ok(b)) => assert_eq!(a.expand(), b.expand(), "case {case}"),
-            (Err(KnowledgeError::Inconsistent(_)), Err(KnowledgeError::Inconsistent(_))) => {}
-            other => panic!("case {case}: {other:?}"),
+            (a, b) => assert!(
+                inconsistent(&a) && inconsistent(&b),
+                "case {case}: {a:?} {b:?}"
+            ),
         }
     }
 }
@@ -426,8 +438,13 @@ fn holds_and_orient_match_the_dags_a_graph_stands_for() {
         let sat: Vec<u64> = all.iter().copied().filter(|&d| spec.holds(d)).collect();
         match k.orient(&closed) {
             Ok(m) => assert_eq!(members(n, m.as_pdag()), sat, "case {case}"),
-            Err(KnowledgeError::Inconsistent(_)) => assert!(sat.is_empty(), "case {case}"),
-            Err(e) => panic!("case {case}: {e:?}"),
+            Err(e) => {
+                assert!(
+                    matches!(e, KnowledgeError::Inconsistent(_)),
+                    "case {case}: {e:?}"
+                );
+                assert!(sat.is_empty(), "case {case}");
+            }
         }
         // A DAG is only checked.
         let one = pdag(n as u32, &dag_edges).meek_closure().unwrap();

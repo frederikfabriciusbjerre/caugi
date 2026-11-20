@@ -114,4 +114,13 @@ mod tests {
 
         assert!(directed_part_is_acyclic(&g));
     }
+
+    #[test]
+    fn empty_graph_is_acyclic() {
+        let mut reg = EdgeRegistry::new();
+        reg.register_builtins().unwrap();
+        let g = GraphBuilder::new(0, true, &reg).finalize().unwrap();
+        assert!(directed_part_is_acyclic(&g));
+        assert_eq!(find_directed_cycle(&g), None);
+    }
 }

@@ -1885,6 +1885,127 @@ mod tests {
     }
 
     #[test]
+    fn sessions_from_data_and_from_a_prebuilt_core_trust_their_edges() {
+        let reg = make_registry();
+        let (d, u) = (reg.code_of("-->").unwrap(), reg.code_of("---").unwrap());
+        let snapshot = snapshot_from_registry(&reg);
+        let names: Vec<String> = ["A", "B", "C", "D"].map(String::from).to_vec();
+
+        // A --> B --- C --> D
+        let mut e = EdgeBuffer::new();
+        e.push(0, 1, d);
+        e.push(1, 2, u);
+        e.push(2, 3, d);
+        let mut s = GraphSession::from_snapshot_with_data(
+            Arc::clone(&snapshot),
+            true,
+            GraphClass::Pdag,
+            e,
+            names.clone(),
+        );
+        assert!(s.edges_trusted && s.built_core().is_none());
+        assert_eq!(s.index_of("D"), Some(3));
+        assert_eq!(s.parents_of(3).unwrap(), vec![2]);
+
+        // The core is kept, and the edge buffer lists each edge once.
+        let (sub, _, _) = s.core().unwrap().induced_subgraph(&[0, 1, 2]).unwrap();
+        let mut p = GraphSession::from_prebuilt_core(
+            snapshot,
+            true,
+            GraphClass::Pdag,
+            sub,
+            names[..3].to_vec(),
+        );
+        assert!(p.edges_trusted && p.built_core().is_some());
+        assert_eq!(p.n(), 3);
+        assert_eq!(p.index_of("C"), Some(2));
+        assert_eq!(p.edge_buffer().from, vec![0, 1]);
+        assert_eq!(p.edge_buffer().to, vec![1, 2]);
+        assert_eq!(p.edge_buffer().etype, vec![d, u]);
+        assert_eq!(p.undirected_of(2).unwrap(), vec![1]);
+    }
+
+    #[test]
+    fn add_edges_skips_present_edges_and_keeps_repeats() {
+        let reg = make_registry();
+        let (d, back) = (reg.code_of("-->").unwrap(), reg.code_of("<--").unwrap());
+        let u = reg.code_of("---").unwrap();
+        let mut s = GraphSession::new(&reg, 3, false, GraphClass::Unknown);
+        s.set_edges_from_vecs(vec![0, 1], vec![1, 2], vec![d, u]);
+        s.core().unwrap();
+
+        // 1 <-- 0 and 2 --- 1 are already present, written the other way.
+        let mut new = EdgeBuffer::new();
+        new.push(1, 0, back);
+        new.push(2, 1, u);
+        new.push(0, 2, d);
+        s.add_edges(new);
+        assert!(s.built_core().is_none());
+        assert_eq!(s.edge_buffer().from, vec![0, 1, 0]);
+        assert_eq!(s.edge_buffer().to, vec![1, 2, 2]);
+        assert_eq!(s.edge_buffer().etype, vec![d, u, d]);
+        assert!(s.core().is_ok());
+
+        // A repeat within the new edges is kept, so the build reports it.
+        let mut repeat = EdgeBuffer::new();
+        repeat.push(2, 0, u);
+        repeat.push(0, 2, u);
+        s.add_edges(repeat);
+        assert_eq!(s.edge_buffer().etype, vec![d, u, d, u, u]);
+        assert!(s.core().unwrap_err().contains("Duplicate"));
+    }
+
+    #[test]
+    fn auto_and_cpdag_resolution_of_a_meek_closed_pdag() {
+        let reg = make_registry();
+        let (d, u) = (reg.code_of("-->").unwrap(), reg.code_of("---").unwrap());
+        // The collider 0 --> 2 <-- 1 beside 3 --- 4 is a CPDAG.
+        let mut s = GraphSession::new(&reg, 5, true, GraphClass::Auto);
+        s.set_edges_from_vecs(vec![0, 1, 3], vec![2, 2, 4], vec![d, d, u]);
+        assert_eq!(
+            s.resolve_class(GraphClass::Auto).unwrap(),
+            GraphClass::Mpdag
+        );
+        assert_eq!(
+            s.resolve_class(GraphClass::Cpdag).unwrap(),
+            GraphClass::Cpdag
+        );
+    }
+
+    #[test]
+    fn markov_equivalence_class_of_a_pdag_is_enumerated_and_counted() {
+        let reg = make_registry();
+        let (u, b) = (reg.code_of("---").unwrap(), reg.code_of("<->").unwrap());
+        // 0 --- 1 --- 2: three DAGs, 0 --> 1 --> 2, 0 <-- 1 <-- 2 and 0 <-- 1 --> 2.
+        let mut s = GraphSession::new(&reg, 3, true, GraphClass::Pdag);
+        s.set_edges_from_vecs(vec![0, 1], vec![1, 2], vec![u, u]);
+        assert_eq!(s.count_dags().unwrap(), 3);
+        let mut children: Vec<Vec<Vec<u32>>> = s
+            .enumerate_dags()
+            .unwrap()
+            .iter()
+            .map(|g| {
+                assert!(matches!(g, GraphView::Dag(_)));
+                (0..3).map(|i| g.children_of(i).unwrap()).collect()
+            })
+            .collect();
+        children.sort();
+        assert_eq!(
+            children,
+            vec![
+                vec![vec![], vec![0], vec![1]],
+                vec![vec![], vec![0, 2], vec![]],
+                vec![vec![1], vec![2], vec![]],
+            ]
+        );
+
+        // A graph that is not a PDAG has no equivalence class to list.
+        s.set_edges_from_vecs(vec![0], vec![1], vec![b]);
+        assert!(s.count_dags().is_err());
+        assert!(s.enumerate_dags().is_err());
+    }
+
+    #[test]
     fn session_map_error_str_rewrites_indexed_messages_with_names() {
         let mut session = make_session();
         session.set_names(vec!["A".into(), "B".into(), "C".into()]);
@@ -2258,12 +2379,8 @@ mod tests {
         );
         // meek_closure on a PDAG yields an MPDAG.
         let mpdag = pdag.meek_closure().unwrap();
-        match mpdag {
-            GraphView::Mpdag(cp) => {
-                assert_eq!(cp.children_of(1), &[2]); // 0->1, 1--2 => 1->2
-            }
-            _ => panic!("expected MPDAG"),
-        }
+        assert!(matches!(mpdag, GraphView::Mpdag(_)));
+        assert_eq!(mpdag.children_of(1).unwrap(), vec![2]); // 0->1, 1--2 => 1->2
 
         // Error paths for PDAG
         assert!(pdag.d_separated(&[0], &[2], &[1]).is_err());
