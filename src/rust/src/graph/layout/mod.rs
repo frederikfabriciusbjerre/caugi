@@ -94,29 +94,26 @@ pub fn compute_layout(
     method: LayoutMethod,
     packing_ratio: f64,
 ) -> Result<Vec<(f64, f64)>, String> {
-    if matches!(method, LayoutMethod::Bipartite) {
-        return Err(
+    let layout: fn(&CaugiGraph) -> Result<Vec<(f64, f64)>, String> = match method {
+        LayoutMethod::Sugiyama => sugiyama_layout,
+        LayoutMethod::ForceDirected => force_directed_layout,
+        LayoutMethod::KamadaKawai => kamada_kawai_layout,
+        // Circle layout places all nodes on a single circle regardless of components,
+        // and is already normalized to [0, 1].
+        LayoutMethod::Circle => return circle_layout(graph),
+        LayoutMethod::Bipartite => return Err(
             "Bipartite layouts require a partition and orientation. Use compute_bipartite_layout instead."
                 .to_string(),
-        );
-    }
-
-    if matches!(method, LayoutMethod::Tiered) {
-        return Err(
+        ),
+        LayoutMethod::Tiered => return Err(
             "Tiered layouts require tier assignments and orientation. Use compute_tiered_layout instead."
                 .to_string(),
-        );
-    }
+        ),
+    };
 
     let n = graph.n() as usize;
     if n == 0 {
         return Ok(Vec::new());
-    }
-
-    // Circle layout places all nodes on a single circle regardless of components,
-    // and is already normalized to [0, 1].
-    if matches!(method, LayoutMethod::Circle) {
-        return circle_layout(graph);
     }
 
     // Detect connected components
@@ -125,12 +122,7 @@ pub fn compute_layout(
 
     // If single component, use standard layout
     if groups.len() == 1 {
-        let mut coords = match method {
-            LayoutMethod::Sugiyama => sugiyama_layout(graph)?,
-            LayoutMethod::ForceDirected => force_directed_layout(graph)?,
-            LayoutMethod::KamadaKawai => kamada_kawai_layout(graph)?,
-            _ => unreachable!(),
-        };
+        let mut coords = layout(graph)?;
 
         // Apply PCA rotation to force-directed layouts for standardized orientation
         if matches!(
@@ -187,12 +179,7 @@ pub fn compute_layout(
         let subgraph = std::sync::Arc::new(subgraph_builder.finalize()?);
 
         // Layout this component
-        let mut coords = match method {
-            LayoutMethod::Sugiyama => sugiyama_layout(&subgraph)?,
-            LayoutMethod::ForceDirected => force_directed_layout(&subgraph)?,
-            LayoutMethod::KamadaKawai => kamada_kawai_layout(&subgraph)?,
-            _ => unreachable!(),
-        };
+        let mut coords = layout(&subgraph)?;
 
         // Apply PCA rotation to force-directed layouts
         if matches!(

@@ -239,15 +239,15 @@ impl CaugiGraph {
             }
         }
 
-        let out = CaugiGraph::from_csr(
+        CaugiGraph::from_csr(
             row_index,
             col_index,
             etype,
             side,
             self.simple,
             self.registry.clone(),
-        )?;
-        Ok((out, new_to_old, old_to_new))
+        )
+        .map(|out| (out, new_to_old, old_to_new))
     }
 }
 

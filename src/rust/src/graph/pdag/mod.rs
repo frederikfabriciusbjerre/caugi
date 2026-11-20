@@ -37,48 +37,28 @@ impl Pdag {
             return Err(PdagError::DirectedCycle { cycle });
         }
         let mut packed_builder: PackedBucketsBuilder<3> = PackedBucketsBuilder::new(n);
-        // Count degrees using mark helpers.
+        // The bucket of slot `k`, or `None` for an edge a PDAG cannot carry.
         // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
+        let bucket = |k: usize| match core.spec(k).class {
+            EdgeClass::Directed if core.is_incoming_arrow(k) => Some(0),
+            EdgeClass::Directed => Some(2),
+            EdgeClass::Undirected => Some(1),
+            _ => None,
+        };
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = core.spec(k);
-                match spec.class {
-                    EdgeClass::Directed => {
-                        if core.is_incoming_arrow(k) {
-                            packed_builder.inc_degree(i, 0);
-                        } else {
-                            packed_builder.inc_degree(i, 2);
-                        }
-                    }
-                    EdgeClass::Undirected => packed_builder.inc_degree(i, 1),
-                    _ => {
-                        return Err(PdagError::InvalidEdgeType {
-                            found: spec.glyph.clone(),
-                        });
-                    }
-                }
+                let b = bucket(k).ok_or_else(|| PdagError::InvalidEdgeType {
+                    found: core.spec(k).glyph.clone(),
+                })?;
+                packed_builder.inc_degree(i, b);
             }
         }
         packed_builder.finalize_degrees();
 
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = core.spec(k);
-                match spec.class {
-                    EdgeClass::Directed => {
-                        if core.is_incoming_arrow(k) {
-                            packed_builder.scatter(i, 0, core.col_index[k]);
-                        } else {
-                            packed_builder.scatter(i, 2, core.col_index[k]);
-                        }
-                    }
-                    EdgeClass::Undirected => {
-                        packed_builder.scatter(i, 1, core.col_index[k]);
-                    }
-                    _ => {
-                        unreachable!("Should have errored on partial/bidirected edges earlier");
-                    }
-                }
+                let b = bucket(k).expect("checked in the count pass");
+                packed_builder.scatter(i, b, core.col_index[k]);
             }
         }
 

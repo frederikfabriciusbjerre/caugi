@@ -54,53 +54,34 @@ impl Admg {
 
         let mut packed_builder: PackedBucketsBuilder<3> = PackedBucketsBuilder::new(n);
 
-        // Count (parents, spouses, children) per node using mark helpers.
+        // Bucket of edge k in its row: parents, spouses, children.
         // is_incoming_arrow(k) = Arrow points INTO me = neighbor is parent
+        let bucket = |k: usize| match core.spec(k).class {
+            EdgeClass::Directed if core.is_incoming_arrow(k) => Some(0),
+            EdgeClass::Directed => Some(2),
+            EdgeClass::Bidirected => Some(1),
+            _ => None,
+        };
+
+        // Count pass, which also rejects self-loops and other edge types.
         for i in 0..n {
             for k in core.row_range(i as u32) {
                 if core.col_index[k] == i as u32 {
                     return Err(AdmgError::SelfLoop { node: i as u32 });
                 }
-                let spec = core.spec(k);
-                match spec.class {
-                    EdgeClass::Directed => {
-                        if core.is_incoming_arrow(k) {
-                            packed_builder.inc_degree(i, 0);
-                        } else {
-                            packed_builder.inc_degree(i, 2);
-                        }
-                    }
-                    EdgeClass::Bidirected => {
-                        packed_builder.inc_degree(i, 1);
-                    }
-                    _ => {
-                        return Err(AdmgError::InvalidEdgeType {
-                            found: spec.glyph.clone(),
-                        });
-                    }
-                }
+                let b = bucket(k).ok_or_else(|| AdmgError::InvalidEdgeType {
+                    found: core.spec(k).glyph.clone(),
+                })?;
+                packed_builder.inc_degree(i, b);
             }
         }
 
         packed_builder.finalize_degrees();
 
-        // Scatter pass using mark helpers
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = core.spec(k);
-                match spec.class {
-                    EdgeClass::Directed => {
-                        if core.is_incoming_arrow(k) {
-                            packed_builder.scatter(i, 0, core.col_index[k]);
-                        } else {
-                            packed_builder.scatter(i, 2, core.col_index[k]);
-                        }
-                    }
-                    EdgeClass::Bidirected => {
-                        packed_builder.scatter(i, 1, core.col_index[k]);
-                    }
-                    _ => unreachable!("Should have errored on invalid edges earlier"),
-                }
+                let b = bucket(k).expect("checked in the count pass");
+                packed_builder.scatter(i, b, core.col_index[k]);
             }
         }
 

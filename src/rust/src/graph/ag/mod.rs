@@ -67,32 +67,23 @@ impl Ag {
         let mut has_undirected = vec![false; n];
         let mut has_arrowhead = vec![false; n];
 
+        // Bucket of edge k in its row: parents, undirected, spouses, children.
+        let bucket = |k: usize| match core.spec(k).class {
+            EdgeClass::Directed if core.is_incoming_arrow(k) => Some(0),
+            EdgeClass::Directed => Some(3),
+            EdgeClass::Undirected => Some(1),
+            EdgeClass::Bidirected => Some(2),
+            _ => None,
+        };
+
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = core.spec(k);
-                match spec.class {
-                    EdgeClass::Directed => {
-                        if core.is_incoming_arrow(k) {
-                            packed_builder.inc_degree(i, 0);
-                            has_arrowhead[i] = true;
-                        } else {
-                            packed_builder.inc_degree(i, 3);
-                        }
-                    }
-                    EdgeClass::Undirected => {
-                        packed_builder.inc_degree(i, 1);
-                        has_undirected[i] = true;
-                    }
-                    EdgeClass::Bidirected => {
-                        packed_builder.inc_degree(i, 2);
-                        has_arrowhead[i] = true;
-                    }
-                    _ => {
-                        return Err(AgError::InvalidEdgeType {
-                            found: spec.glyph.clone(),
-                        });
-                    }
-                }
+                let b = bucket(k).ok_or_else(|| AgError::InvalidEdgeType {
+                    found: core.spec(k).glyph.clone(),
+                })?;
+                packed_builder.inc_degree(i, b);
+                has_undirected[i] |= b == 1;
+                has_arrowhead[i] |= b == 0 || b == 2;
             }
         }
 
@@ -105,26 +96,10 @@ impl Ag {
 
         packed_builder.finalize_degrees();
 
-        // Scatter pass using mark helpers
         for i in 0..n {
             for k in core.row_range(i as u32) {
-                let spec = core.spec(k);
-                match spec.class {
-                    EdgeClass::Directed => {
-                        if core.is_incoming_arrow(k) {
-                            packed_builder.scatter(i, 0, core.col_index[k]);
-                        } else {
-                            packed_builder.scatter(i, 3, core.col_index[k]);
-                        }
-                    }
-                    EdgeClass::Undirected => {
-                        packed_builder.scatter(i, 1, core.col_index[k]);
-                    }
-                    EdgeClass::Bidirected => {
-                        packed_builder.scatter(i, 2, core.col_index[k]);
-                    }
-                    _ => unreachable!("Should have errored on invalid edges earlier"),
-                }
+                let b = bucket(k).expect("checked in the count pass");
+                packed_builder.scatter(i, b, core.col_index[k]);
             }
         }
 

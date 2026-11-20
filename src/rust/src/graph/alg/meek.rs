@@ -43,11 +43,7 @@ fn try_orient(
     pa: &mut [HashSet<u32>],
     ch: &mut [HashSet<u32>],
 ) -> bool {
-    let ai = a as usize;
-    if !und[ai].contains(&b) {
-        return false;
-    }
-    if has_dir_path(ch, b, a) {
+    if !und[a as usize].contains(&b) || has_dir_path(ch, b, a) {
         return false;
     }
     orient(a, b, und, pa, ch);
@@ -57,9 +53,6 @@ fn try_orient(
 /// True if a directed path `src -> ... -> tgt` exists using only `ch`, or
 /// `src == tgt`.
 pub(crate) fn has_dir_path(ch: &[HashSet<u32>], src: u32, tgt: u32) -> bool {
-    if src == tgt {
-        return true;
-    }
     let n = ch.len();
     let mut seen = vec![false; n];
     let mut q = VecDeque::new();
@@ -141,16 +134,14 @@ pub(crate) fn apply_meek_closure(
             let uab: Vec<u32> = und[a].clone().into_iter().collect();
             for b_u in uab {
                 let b = b_u as usize;
-                if ch[a].iter().any(|w| pa[b].contains(w)) {
-                    if try_orient(a as u32, b_u, und, pa, ch) {
-                        changed = true;
-                        continue;
-                    }
+                let forward = ch[a].iter().any(|w| pa[b].contains(w));
+                if forward && try_orient(a as u32, b_u, und, pa, ch) {
+                    changed = true;
+                    continue;
                 }
-                if ch[b].iter().any(|w| pa[a].contains(w)) {
-                    if try_orient(b_u, a as u32, und, pa, ch) {
-                        changed = true;
-                    }
+                let backward = ch[b].iter().any(|w| pa[a].contains(w));
+                if backward && try_orient(b_u, a as u32, und, pa, ch) {
+                    changed = true;
                 }
             }
         }
@@ -168,11 +159,10 @@ pub(crate) fn apply_meek_closure(
                         if !adjacent(c, d, und, pa, ch)
                             && und[a].contains(&pb[i])
                             && und[a].contains(&pb[j])
+                            && try_orient(a as u32, b_u, und, pa, ch)
                         {
-                            if try_orient(a as u32, b_u, und, pa, ch) {
-                                changed = true;
-                                break 'pairs;
-                            }
+                            changed = true;
+                            break 'pairs;
                         }
                     }
                 }

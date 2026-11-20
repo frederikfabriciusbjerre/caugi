@@ -170,14 +170,13 @@ fn reach_descendants(g: &AidInput, t: u32) -> (NodeSet, NodeSet) {
         }
 
         for (edge, w) in next_steps(g, t, node) {
+            // `next_steps` yields only incoming and undirected edges, so `_`
+            // below is an undirected edge.
             let next = match (walk, edge) {
-                (Walk::Init, Edge::Incoming) => Walk::D,
-                (Walk::Init, Edge::Undirected) => Walk::PdNam,
-                (Walk::D, Edge::Incoming) => Walk::D,
-                (Walk::D, Edge::Undirected) => Walk::PdAm,
-                (Walk::PdAm, _) => Walk::PdAm,
-                (Walk::PdNam, _) => Walk::PdNam,
-                _ => continue,
+                (Walk::Init | Walk::D, Edge::Incoming) => Walk::D,
+                (Walk::Init, _) => Walk::PdNam,
+                (Walk::D, _) => Walk::PdAm,
+                (Walk::PdAm | Walk::PdNam, _) => walk,
             };
             stack.push((edge, w, next));
         }
@@ -237,8 +236,8 @@ fn reach_validity(g: &AidInput, t: u32, z: &NodeSet) -> (NodeSet, NodeSet, NodeS
                 Walk::Init => match edge {
                     Edge::Incoming => Walk::PdOpenAm,
                     Edge::Outgoing => Walk::NonCausalOpen,
-                    Edge::Undirected => Walk::PdOpenNam,
-                    Edge::Init => continue,
+                    // Undirected; `next_steps_conditioned` never yields Init.
+                    _ => Walk::PdOpenNam,
                 },
                 Walk::PdOpenAm | Walk::PdBlockedAm => match edge {
                     Edge::Incoming | Edge::Undirected if blocked => Walk::PdBlockedAm,

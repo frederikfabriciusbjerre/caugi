@@ -296,24 +296,21 @@ pub(crate) fn find_min_msep<G: MixedGraph>(
         Some(z) => z,
         None => return Ok(None),
     };
-    let zy = match find_nearest_sep(g, ys, xs, include, &zx)? {
-        Some(z) => z,
-        None => return Ok(None),
-    };
-
+    // zx separates X from Y, so the search from Y within zx always succeeds.
     let n = g.n();
-    let n_us = n as usize;
     let zx_mask = bitset::mask_from(&zx, n);
-    let mut result = vec![false; n_us];
-    for &v in &zy {
-        if zx_mask[v as usize] {
-            result[v as usize] = true;
+    Ok(find_nearest_sep(g, ys, xs, include, &zx)?.map(|zy| {
+        let mut result = vec![false; n as usize];
+        for &v in &zy {
+            if zx_mask[v as usize] {
+                result[v as usize] = true;
+            }
         }
-    }
-    for &i in include {
-        result[i as usize] = true;
-    }
-    Ok(Some(bitset::collect_from_mask(&result)))
+        for &i in include {
+            result[i as usize] = true;
+        }
+        bitset::collect_from_mask(&result)
+    }))
 }
 
 #[cfg(test)]

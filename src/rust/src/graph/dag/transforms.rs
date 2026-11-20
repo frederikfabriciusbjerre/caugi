@@ -111,15 +111,15 @@ impl Dag {
             }
         }
 
-        let core = CaugiGraph::from_csr(
+        CaugiGraph::from_csr(
             row_index,
             col_index,
             etype,
             side,
             /*simple=*/ true,
             self.core_ref().registry.clone(),
-        )?;
-        Dag::new(Arc::new(core))
+        )
+        .and_then(|core| Dag::new(Arc::new(core)))
     }
 
     /// Normalize latent structure in a DAG for a given latent set.
@@ -339,16 +339,16 @@ impl Dag {
             }
         }
 
-        let core = CaugiGraph::from_csr(
+        CaugiGraph::from_csr(
             row_index,
             col_index,
             etype,
             side,
             /*simple=*/ true,
             self.core_ref().registry.clone(),
-        )?;
-        let dag = Dag::new(Arc::new(core))?;
-        Ok((dag, kept_old))
+        )
+        .and_then(|core| Dag::new(Arc::new(core)))
+        .map(|dag| (dag, kept_old))
     }
 
     /// Project out latent variables from a DAG to produce an ADMG. See
@@ -467,17 +467,16 @@ impl Dag {
             }
         }
 
-        let core = CaugiGraph::from_csr(
+        CaugiGraph::from_csr(
             row_index,
             col_index,
             etype,
             side,
             /*simple=*/ true,
             self.core_ref().registry.clone(),
-        )?;
-        let pdag = Pdag::new(Arc::new(core))?;
-        let mpdag = Mpdag::from_closed_unchecked(pdag);
-        Ok(Cpdag::from_valid_unchecked(mpdag))
+        )
+        .and_then(|core| Pdag::new(Arc::new(core)))
+        .map(|pdag| Cpdag::from_valid_unchecked(Mpdag::from_closed_unchecked(pdag)))
     }
 }
 
@@ -551,15 +550,15 @@ pub(crate) fn latent_project_graph<'a>(
 
     // If everything removed, return empty ADMG
     if remove.iter().all(|&x| x) {
-        let core = CaugiGraph::from_csr(
+        return CaugiGraph::from_csr(
             vec![0u32],
             vec![],
             vec![],
             vec![],
             true, // empty graph is simple
             core.registry.clone(),
-        )?;
-        return Admg::new(Arc::new(core));
+        )
+        .and_then(|core| Admg::new(Arc::new(core)));
     }
 
     // Build mutable adjacency over ALL nodes (including ones to be removed later)
@@ -746,15 +745,15 @@ pub(crate) fn latent_project_graph<'a>(
         }
     }
 
-    let core = CaugiGraph::from_csr(
+    CaugiGraph::from_csr(
         row_index,
         col_index,
         etype,
         side,
         !has_parallel_edges, // simple=true unless we have parallel edges
         core.registry.clone(),
-    )?;
-    Admg::new(Arc::new(core))
+    )
+    .and_then(|core| Admg::new(Arc::new(core)))
 }
 
 #[cfg(test)]

@@ -129,16 +129,16 @@ impl Pdag {
             }
         }
 
-        let core = CaugiGraph::from_csr(
+        CaugiGraph::from_csr(
             row_index,
             col_index,
             etype,
             side,
             /*simple=*/ true,
             self.core_ref().registry.clone(),
-        )?;
-        let pdag = Pdag::new(Arc::new(core))?;
-        Ok(Mpdag::from_closed_unchecked(pdag))
+        )
+        .and_then(|core| Pdag::new(Arc::new(core)))
+        .map(Mpdag::from_closed_unchecked)
     }
 
     /// Orient all compelled edges implied by Meek rules (R1..R4).
